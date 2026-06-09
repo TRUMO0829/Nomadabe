@@ -2,85 +2,77 @@
 
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
+import { useLanguage } from "./language-provider";
 
-const QUOTES = [
-  {
-    name: "Sofia M.",
-    trip: "Altai Tavan Bogd · 9 days",
-    body: "I booked solo and ended up with a tiny crew of six and a guide who knew every ridge by name. The morning we crossed the glacier I cried — not from cold, just awe.",
-    avatar:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&q=80&auto=format&fit=crop&crop=faces",
-  },
-  {
-    name: "Marcus L.",
-    trip: "Eagle hunters · 6 days",
-    body: "Staying in a Kazakh family's ger, drinking salty tea while the eagle perched two metres away — Nomadabe pulled off something I genuinely didn't think was bookable.",
-    avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&q=80&auto=format&fit=crop&crop=faces",
-  },
-  {
-    name: "Anya K.",
-    trip: "Gobi expedition · 7 days",
-    body: "The logistics were flawless and the trip was *not* the polished safari version of the Gobi. We slept under stars, ate with herders, and broke down twice. Perfect.",
-    avatar:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&q=80&auto=format&fit=crop&crop=faces",
-  },
+const AVATARS = [
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&q=80&auto=format&fit=crop&crop=faces",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&q=80&auto=format&fit=crop&crop=faces",
+  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&q=80&auto=format&fit=crop&crop=faces",
 ];
 
 export function Testimonials() {
+  const { t } = useLanguage();
+
   return (
-    <section className="py-24 lg:py-32 bg-muted">
+    <section id="journal" className="bg-muted py-14 lg:py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12 lg:mb-16">
+        <div className="mb-7 flex flex-col justify-between gap-5 lg:mb-8 lg:flex-row lg:items-end">
           <div className="max-w-2xl">
-            <p className="text-xs lg:text-sm tracking-[0.2em] uppercase text-accent font-semibold mb-4">
-              ★ From the campfire
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-foreground lg:text-xs">
+              ★ {t.testimonials.eyebrow}
             </p>
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl tracking-tight text-balance">
-              What our adventurers <span className="italic">actually</span> say.
+            <h2 className="font-display text-2xl text-balance sm:text-3xl lg:text-4xl">
+              {t.testimonials.titleStart}{" "}
+              <span className="italic">{t.testimonials.titleEmphasis}</span>{" "}
+              {t.testimonials.titleEnd}
             </h2>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-accent text-accent" />
+                <Star
+                  key={i}
+                  className="h-4 w-4 fill-foreground text-foreground"
+                />
               ))}
             </div>
-            <span className="text-sm font-semibold">
-              4.9 / 5 · 412 verified reviews
+            <span className="text-xs font-semibold text-foreground/75 lg:text-sm">
+              {t.testimonials.rating}
             </span>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-5 lg:gap-6">
-          {QUOTES.map((q, idx) => (
+        <div className="grid gap-4 lg:grid-cols-3 lg:gap-5">
+          {t.testimonials.quotes.map((quote, idx) => (
             <motion.figure
-              key={q.name}
-              initial={{ opacity: 0, y: 20 }}
+              key={quote.name}
+              initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
-              className="bg-card rounded-3xl p-7 lg:p-8 flex flex-col gap-6 border border-border"
+              transition={{ duration: 0.5, delay: idx * 0.08 }}
+              className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5 shadow-sm"
             >
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className="w-4 h-4 fill-foreground text-foreground"
+                    className="h-3.5 w-3.5 fill-accent text-accent"
                   />
                 ))}
               </div>
-              <blockquote className="font-display text-lg lg:text-xl leading-snug text-balance flex-1">
-                “{q.body}”
+              <blockquote className="flex-1 text-sm leading-relaxed text-foreground/80 lg:text-base">
+                “{quote.body}”
               </blockquote>
-              <figcaption className="flex items-center gap-3 mt-2">
+              <figcaption className="mt-1 flex items-center gap-3">
                 <div
-                  className="w-11 h-11 rounded-full bg-cover bg-center"
-                  style={{ backgroundImage: `url(${q.avatar})` }}
+                  className="h-10 w-10 rounded-full bg-cover bg-center"
+                  style={{ backgroundImage: `url(${AVATARS[idx]})` }}
                 />
                 <div>
-                  <div className="font-semibold text-sm">{q.name}</div>
-                  <div className="text-xs text-muted-foreground">{q.trip}</div>
+                  <div className="text-sm font-semibold">{quote.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {quote.trip}
+                  </div>
                 </div>
               </figcaption>
             </motion.figure>

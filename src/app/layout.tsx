@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Nomadabe — Adventures across Mongolia and beyond",
+  title: "Nomadabe - Монгол болон олон улсын аялал",
   description:
-    "Small-group adventures led by local experts. Trek the Altai, ride with eagle hunters, and explore the world the nomad way.",
+    "Бизнес, expo, амралт зугаалга болон захиалгат аяллыг Улаанбаатараас төлөвлөн зохион байгуулна.",
+  icons: {
+    icon: [{ url: "/nomadabe-mark.png", type: "image/png" }],
+    shortcut: "/nomadabe-mark.png",
+  },
 };
 
 export default function RootLayout({
@@ -13,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="mn" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
       </body>

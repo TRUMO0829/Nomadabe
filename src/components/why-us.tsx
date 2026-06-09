@@ -1,93 +1,74 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Compass, Leaf, ShieldCheck, HeartHandshake } from "lucide-react";
+import { Compass, HeartHandshake, Leaf, ShieldCheck } from "lucide-react";
+import { useLanguage } from "./language-provider";
 
-const REASONS = [
-  {
-    icon: Compass,
-    title: "Local guides, always",
-    body: "Every trip is led by someone who grew up on the land you're exploring — herders, mountaineers, hunters.",
-  },
-  {
-    icon: Leaf,
-    title: "Low-impact by design",
-    body: "Small groups, locally-owned gers and lodges, carbon-offset flights. Tourism that gives back, not takes.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Flexible booking",
-    body: "Free changes up to 60 days out. Full medical and evacuation cover included on every itinerary.",
-  },
-  {
-    icon: HeartHandshake,
-    title: "Real travellers, no fluff",
-    body: "Honest pre-trip calls, no upsells, no surprises. Just the kind of adventure we'd book ourselves.",
-  },
-];
+const ICONS = [Compass, Leaf, ShieldCheck, HeartHandshake];
 
 export function WhyUs() {
+  const { t } = useLanguage();
+
   return (
     <section id="about" className="py-24 lg:py-32 bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20 items-start">
           <div className="lg:sticky lg:top-28">
-            <p className="text-xs lg:text-sm tracking-[0.2em] uppercase text-accent font-semibold mb-4">
-              ★ Why Nomadabe
+            <p className="text-xs lg:text-sm tracking-[0.2em] uppercase text-foreground font-bold mb-4">
+              ★ {t.why.eyebrow}
             </p>
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl tracking-tight text-balance">
-              We built the trip we wished <span className="italic">we</span> could book.
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-balance">
+              {t.why.titleStart}{" "}
+              <span className="italic text-accent">{t.why.titleEmphasis}</span>{" "}
+              {t.why.titleEnd}
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-md">
-              Most tour companies sell brochures. We sell a handshake with a
-              herder, a horse, and a horizon you&apos;ve never seen.
+              {t.why.body}
             </p>
             <a
               href="#story"
-              className="mt-8 inline-flex items-center gap-2 font-semibold text-foreground border-b-2 border-accent pb-1 hover:gap-3 transition-all"
+              className="mt-8 inline-flex items-center gap-2 font-semibold text-foreground border-b-2 border-accent pb-1 hover:text-accent transition-colors"
             >
-              Read our story →
+              {t.why.link} →
             </a>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-5">
-            {REASONS.map((r, idx) => (
-              <motion.div
-                key={r.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, delay: idx * 0.08 }}
-                className="rounded-3xl bg-card border border-border p-6 lg:p-7"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mb-5">
-                  <r.icon className="w-6 h-6" />
-                </div>
-                <h3 className="font-display text-xl lg:text-2xl mb-2 leading-snug">
-                  {r.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed text-sm lg:text-base">
-                  {r.body}
-                </p>
-              </motion.div>
-            ))}
+            {t.why.reasons.map((reason, idx) => {
+              const Icon = ICONS[idx];
+
+              return (
+                <motion.div
+                  key={reason.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.55, delay: idx * 0.08 }}
+                  className="rounded-lg bg-card border border-border p-6 lg:p-7 shadow-sm"
+                >
+                  <div className="w-12 h-12 rounded-md bg-accent text-accent-foreground flex items-center justify-center mb-5">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-display text-xl lg:text-2xl mb-2 leading-snug">
+                    {reason.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed text-sm lg:text-base">
+                    {reason.body}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Stats strip */}
         <div className="mt-20 lg:mt-28 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10 border-y border-border py-10 lg:py-12">
-          {[
-            { v: "1,200+", l: "Happy travellers" },
-            { v: "84", l: "Curated trips" },
-            { v: "4.9★", l: "Average rating" },
-            { v: "27", l: "Local guides" },
-          ].map((s) => (
-            <div key={s.l}>
-              <div className="font-display text-4xl lg:text-6xl tracking-tight">
-                {s.v}
+          {t.why.stats.map((stat) => (
+            <div key={stat.label}>
+              <div className="font-display text-4xl lg:text-6xl">
+                {stat.value}
               </div>
               <div className="text-xs lg:text-sm tracking-wider uppercase text-muted-foreground mt-2">
-                {s.l}
+                {stat.label}
               </div>
             </div>
           ))}
