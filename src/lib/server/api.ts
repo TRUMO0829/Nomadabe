@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { ADVENTURES, type Adventure, type TravelCategory } from "@/lib/adventures";
+import type { Adventure, TravelCategory } from "@/lib/adventures";
 
 export type ApiErrorCode =
   | "BAD_REQUEST"
+  | "UNAUTHORIZED"
   | "NOT_FOUND"
   | "METHOD_NOT_ALLOWED"
   | "INTERNAL_ERROR";
@@ -30,12 +31,11 @@ export function apiError(
   );
 }
 
-export function getTripsFromSearchParams(params: URLSearchParams) {
+export function getTripsFromSearchParams(params: URLSearchParams, sourceTrips: Adventure[]) {
   const category = params.get("category");
   const query = params.get("q")?.trim().toLowerCase();
   const featured = params.get("featured");
-
-  let trips = [...ADVENTURES];
+  let trips = [...sourceTrips];
 
   if (category) {
     trips = trips.filter((trip) => trip.category === category);
@@ -52,21 +52,17 @@ export function getTripsFromSearchParams(params: URLSearchParams) {
   return trips;
 }
 
-function matchesTripQuery(trip: Adventure, query: string) {
-  const haystack = [
-    trip.title,
-    trip.summary,
-    trip.location,
-    trip.country,
-    trip.category,
-    ...trip.tags,
-    ...trip.idealFor,
-    ...trip.businessSupport,
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  return haystack.includes(query);
+export function getTripSummary(trips: Adventure[]) {
+  return {
+    total: trips.length,
+    featured: trips.filter((trip) => trip.featured).length,
+    categories: {
+      business: trips.filter((trip) => trip.category === "business").length,
+      expo: trips.filter((trip) => trip.category === "expo").length,
+      leisure: trips.filter((trip) => trip.category === "leisure").length,
+      custom: trips.filter((trip) => trip.category === "custom").length,
+    },
+  };
 }
 
 export function isTravelCategory(value: string): value is TravelCategory {
@@ -81,4 +77,24 @@ export function sanitizeTrip(trip: Adventure) {
         ? `${trip.price.toLocaleString()} ${trip.currency}`
         : "Үнийн санал авах",
   };
+}
+
+function matchesTripQuery(trip: Adventure, query: string) {
+  const haystack = [
+    trip.title,
+    trip.summary,
+    trip.location,
+    trip.country,
+    trip.category,
+    trip.nextDeparture ?? "",
+    trip.groupSize,
+    ...trip.tags,
+    ...trip.idealFor,
+    ...trip.includes,
+    ...trip.businessSupport,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return haystack.includes(query);
 }

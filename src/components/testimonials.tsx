@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
+import type { Language } from "@/lib/i18n";
 
 const QUOTES = [
   {
@@ -27,17 +28,32 @@ const QUOTES = [
   },
 ];
 
-export function Testimonials() {
+const TEXT = {
+  mn: {
+    eyebrow: "★ Аялагчдын сэтгэгдэл",
+    title: "Манай аялагчид юу гэж хэлдэг вэ.",
+    reviews: "4.9 / 5 · 412 баталгаажсан үнэлгээ",
+  },
+  en: {
+    eyebrow: "★ From the campfire",
+    title: "What our adventurers actually say.",
+    reviews: "4.9 / 5 · 412 verified reviews",
+  },
+};
+
+export function Testimonials({ language }: { language: Language }) {
+  const text = TEXT[language];
+
   return (
-    <section className="py-24 lg:py-32 bg-muted">
+    <section id="journal" className="py-24 lg:py-32 bg-muted">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12 lg:mb-16">
           <div className="max-w-2xl">
             <p className="text-xs lg:text-sm tracking-[0.2em] uppercase text-accent font-semibold mb-4">
-              ★ From the campfire
+              {text.eyebrow}
             </p>
             <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl tracking-tight text-balance">
-              What our adventurers <span className="italic">actually</span> say.
+              {text.title}
             </h2>
           </div>
           <div className="flex items-center gap-3">
@@ -47,7 +63,7 @@ export function Testimonials() {
               ))}
             </div>
             <span className="text-sm font-semibold">
-              4.9 / 5 · 412 verified reviews
+              {text.reviews}
             </span>
           </div>
         </div>

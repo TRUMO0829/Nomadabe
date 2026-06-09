@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Compass, Leaf, ShieldCheck, HeartHandshake } from "lucide-react";
+import type { Language } from "@/lib/i18n";
 
 const REASONS = [
   {
@@ -26,27 +27,57 @@ const REASONS = [
   },
 ];
 
-export function WhyUs() {
+const TEXT = {
+  mn: {
+    eyebrow: "★ Яагаад Nomadabe вэ?",
+    title: "Бид өөрсдөө захиалахыг хүсэх аяллаа бүтээсэн.",
+    subtitle:
+      "Бид аяллыг зөвхөн зурагтай танилцуулга биш, нутгийн хүнтэй уулзах, морь унах, шинэ тэнгэр харах бодит туршлага гэж хардаг.",
+    story: "Аяллаа төлөвлөх →",
+    stats: [
+      { v: "1,200+", l: "Аялагч" },
+      { v: "84", l: "Бэлтгэсэн аялал" },
+      { v: "4.9★", l: "Дундаж үнэлгээ" },
+      { v: "27", l: "Орон нутгийн хөтөч" },
+    ],
+  },
+  en: {
+    eyebrow: "★ Why Nomadabe",
+    title: "We built the trip we wished we could book.",
+    subtitle:
+      "Most tour companies sell brochures. We sell a handshake with a herder, a horse, and a horizon you've never seen.",
+    story: "Start planning →",
+    stats: [
+      { v: "1,200+", l: "Happy travellers" },
+      { v: "84", l: "Curated trips" },
+      { v: "4.9★", l: "Average rating" },
+      { v: "27", l: "Local guides" },
+    ],
+  },
+};
+
+export function WhyUs({ language }: { language: Language }) {
+  const text = TEXT[language];
+
   return (
     <section id="about" className="py-24 lg:py-32 bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20 items-start">
           <div className="lg:sticky lg:top-28">
             <p className="text-xs lg:text-sm tracking-[0.2em] uppercase text-accent font-semibold mb-4">
-              ★ Why Nomadabe
+              {text.eyebrow}
             </p>
             <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl tracking-tight text-balance">
-              We built the trip we wished <span className="italic">we</span> could book.
+              {text.title}
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-md">
-              Most tour companies sell brochures. We sell a handshake with a
-              herder, a horse, and a horizon you&apos;ve never seen.
+              {text.subtitle}
             </p>
             <a
-              href="#story"
+              href="#contact"
               className="mt-8 inline-flex items-center gap-2 font-semibold text-foreground border-b-2 border-accent pb-1 hover:gap-3 transition-all"
             >
-              Read our story →
+              {text.story}
             </a>
           </div>
 
@@ -76,12 +107,7 @@ export function WhyUs() {
 
         {/* Stats strip */}
         <div className="mt-20 lg:mt-28 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10 border-y border-border py-10 lg:py-12">
-          {[
-            { v: "1,200+", l: "Happy travellers" },
-            { v: "84", l: "Curated trips" },
-            { v: "4.9★", l: "Average rating" },
-            { v: "27", l: "Local guides" },
-          ].map((s) => (
+            {text.stats.map((s) => (
             <div key={s.l}>
               <div className="font-display text-4xl lg:text-6xl tracking-tight">
                 {s.v}

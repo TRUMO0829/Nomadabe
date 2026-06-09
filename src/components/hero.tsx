@@ -1,61 +1,114 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, MapPin, Calendar, Users, Search } from "lucide-react";
+import { ArrowRight, Calendar, MapPin, Search, Users } from "lucide-react";
+import type { Language } from "@/lib/i18n";
+import type { SiteSettings } from "@/lib/site-settings";
 
-export function Hero() {
+const HERO_TEXT = {
+  mn: {
+    badge: "★★★★★ 1,200+ аялагчийн үнэлгээ",
+    title: "Нүүдэлчин хэв маягаар\nаялъя.",
+    subtitle:
+      "Монгол болон гадаад чиглэлийн жижиг групп аяллууд. Орон нутгийн туршлагатай баг таны аяллыг зохион байгуулна.",
+    est: "2025 оноос · Улаанбаатар",
+    where: "Хаашаа",
+    whereValue: "Хаана ч · Монгол, Ази, Европ",
+    when: "Хэзээ",
+    whenValue: "Дурын сар",
+    who: "Хэн",
+    whoValue: "2 аялагч",
+    search: "Хайх",
+    scroll: "Доош",
+    chips: ["Говь 7 өдөр", "Алтай треккинг", "Бүргэдчид", "Цаатан аялал", "Япон цана"],
+  },
+  en: {
+    est: "Est. 2025 · Ulaanbaatar",
+    where: "Where",
+    whereValue: "Anywhere · Mongolia, Asia, Europe",
+    when: "When",
+    whenValue: "Any month",
+    who: "Who",
+    whoValue: "2 travellers",
+    search: "Search",
+    scroll: "Scroll",
+    chips: ["Gobi 7-day", "Altai trekking", "Eagle hunters", "Reindeer tribe", "Japan ski"],
+  },
+};
+
+type Props = {
+  settings: SiteSettings;
+  language: Language;
+  onSearch: (query: string) => void;
+};
+
+export function Hero({ settings, language, onSearch }: Props) {
+  const text = HERO_TEXT[language];
+  const title = language === "mn" ? HERO_TEXT.mn.title : settings.heroTitle;
+  const subtitle = language === "mn" ? HERO_TEXT.mn.subtitle : settings.heroSubtitle;
+  const badge = language === "mn" ? HERO_TEXT.mn.badge : settings.heroBadge;
+  const overlay = settings.heroOverlayOpacity;
+  const heroTextColor = settings.heroTextColor;
+  const accentColor = settings.accentColor;
+
   return (
     <section className="relative min-h-screen flex flex-col justify-end overflow-hidden">
-      {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center scale-105"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=80&auto=format&fit=crop')",
+          backgroundImage: `url('${settings.heroImage}')`,
         }}
       />
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/80" />
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(to bottom, rgba(0, 0, 0, ${overlay * 0.55}), rgba(0, 0, 0, ${
+            overlay * 0.28
+          }), rgba(0, 0, 0, ${overlay}))`,
+        }}
+      />
 
-      {/* Top tag */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.3 }}
-        className="absolute top-28 lg:top-32 left-6 lg:left-10 right-6 lg:right-10 flex items-center justify-between text-white/80"
+        className="absolute top-28 lg:top-32 left-6 lg:left-10 right-6 lg:right-10 flex items-center justify-between"
+        style={{ color: heroTextColor }}
       >
-        <span className="text-xs lg:text-sm tracking-[0.2em] uppercase">
-          ★★★★★ Rated by 1,200+ adventurers
+        <span className="text-xs lg:text-sm tracking-[0.2em] uppercase opacity-80">
+          {badge}
         </span>
-        <span className="hidden lg:block text-xs tracking-[0.2em] uppercase">
-          Est. 2025 · Ulaanbaatar
+        <span className="hidden lg:block text-xs tracking-[0.2em] uppercase opacity-80">
+          {text.est}
         </span>
       </motion.div>
 
-      {/* Main content */}
       <div className="relative mx-auto max-w-7xl w-full px-6 lg:px-10 pb-16 lg:pb-24 pt-32">
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.1 }}
-          className="font-display text-white text-5xl sm:text-6xl lg:text-8xl xl:text-9xl leading-[0.95] tracking-tight text-balance max-w-5xl"
+          className="font-display text-5xl sm:text-6xl lg:text-8xl xl:text-9xl leading-[0.95] tracking-tight text-balance max-w-5xl"
+          style={{ color: heroTextColor }}
         >
-          Adventure the
-          <br />
-          <span className="italic">nomad</span> way.
+          {title.split("\n").map((line, index) => (
+            <span key={line}>
+              {index > 0 ? <br /> : null}
+              {index === 1 ? <span className="italic">{line}</span> : line}
+            </span>
+          ))}
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.4 }}
-          className="mt-6 text-white/85 text-lg lg:text-xl max-w-2xl"
+          className="mt-6 text-lg lg:text-xl max-w-2xl opacity-85"
+          style={{ color: heroTextColor }}
         >
-          Small-group trips across Mongolia and beyond. Led by local experts.
-          Built for travellers who&apos;d rather ride than read about it.
+          {subtitle}
         </motion.p>
 
-        {/* Search bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -63,69 +116,88 @@ export function Hero() {
           className="mt-10 lg:mt-14 bg-background/95 backdrop-blur rounded-2xl lg:rounded-full p-2 lg:p-2 shadow-2xl max-w-4xl"
         >
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr_1fr_auto] gap-1">
-            <div className="flex items-center gap-3 px-5 py-3 lg:py-2 hover:bg-muted rounded-xl lg:rounded-full transition-colors cursor-pointer">
-              <MapPin className="w-5 h-5 text-accent shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                  Where
-                </div>
-                <div className="text-sm font-medium truncate">
-                  Anywhere · Mongolia, Asia, Europe
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 px-5 py-3 lg:py-2 hover:bg-muted rounded-xl lg:rounded-full transition-colors cursor-pointer border-t lg:border-t-0 lg:border-l border-border/50">
-              <Calendar className="w-5 h-5 text-accent shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                  When
-                </div>
-                <div className="text-sm font-medium truncate">
-                  Any month
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 px-5 py-3 lg:py-2 hover:bg-muted rounded-xl lg:rounded-full transition-colors cursor-pointer border-t lg:border-t-0 lg:border-l border-border/50">
-              <Users className="w-5 h-5 text-accent shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                  Who
-                </div>
-                <div className="text-sm font-medium truncate">
-                  2 travellers
-                </div>
-              </div>
-            </div>
-            <button className="flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl lg:rounded-full px-6 py-3.5 font-semibold transition-colors">
+            <button
+              type="button"
+              onClick={() => onSearch(language === "mn" ? "Монгол" : "Mongolia")}
+              className="flex items-center gap-3 px-5 py-3 lg:py-2 hover:bg-muted rounded-xl lg:rounded-full transition-colors text-left"
+            >
+              <MapPin className="w-5 h-5 shrink-0" style={{ color: accentColor }} />
+              <span className="flex-1 min-w-0">
+                <span className="block text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                  {text.where}
+                </span>
+                <span className="block text-sm font-medium truncate">
+                  {text.whereValue}
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSearch("2026")}
+              className="flex items-center gap-3 px-5 py-3 lg:py-2 hover:bg-muted rounded-xl lg:rounded-full transition-colors cursor-pointer border-t lg:border-t-0 lg:border-l border-border/50 text-left"
+            >
+              <Calendar className="w-5 h-5 shrink-0" style={{ color: accentColor }} />
+              <span className="flex-1 min-w-0">
+                <span className="block text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                  {text.when}
+                </span>
+                <span className="block text-sm font-medium truncate">
+                  {text.whenValue}
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSearch("Small group")}
+              className="flex items-center gap-3 px-5 py-3 lg:py-2 hover:bg-muted rounded-xl lg:rounded-full transition-colors cursor-pointer border-t lg:border-t-0 lg:border-l border-border/50 text-left"
+            >
+              <Users className="w-5 h-5 shrink-0" style={{ color: accentColor }} />
+              <span className="flex-1 min-w-0">
+                <span className="block text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                  {text.who}
+                </span>
+                <span className="block text-sm font-medium truncate">
+                  {text.whoValue}
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSearch("")}
+              className="flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-semibold text-white transition-opacity hover:opacity-90 lg:rounded-full"
+              style={{ backgroundColor: accentColor }}
+            >
               <Search className="w-5 h-5" />
-              <span>Search</span>
+              <span>{text.search}</span>
             </button>
           </div>
         </motion.div>
 
-        {/* Quick links */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.9, delay: 0.9 }}
           className="mt-8 flex flex-wrap gap-2"
         >
-          {["Gobi 7-day", "Altai trekking", "Eagle hunters", "Reindeer tribe", "Japan ski"].map(
-            (q) => (
-              <button
-                key={q}
-                className="text-xs lg:text-sm text-white/90 border border-white/30 hover:bg-white hover:text-foreground rounded-full px-4 py-1.5 transition-colors backdrop-blur-sm"
-              >
-                {q}
-              </button>
-            )
-          )}
+          {text.chips.map((query) => (
+            <button
+              key={query}
+              type="button"
+              onClick={() => onSearch(query)}
+              className="text-xs lg:text-sm border rounded-full px-4 py-1.5 transition-colors backdrop-blur-sm hover:bg-white hover:text-foreground"
+              style={{ color: heroTextColor, borderColor: `${heroTextColor}66` }}
+            >
+              {query}
+            </button>
+          ))}
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-6 right-6 lg:right-10 text-white/70 text-xs tracking-[0.3em] uppercase rotate-90 origin-bottom-right hidden lg:flex items-center gap-3">
-        <span>Scroll</span>
+      <div
+        className="absolute bottom-6 right-6 hidden origin-bottom-right rotate-90 items-center gap-3 text-xs uppercase tracking-[0.3em] opacity-70 lg:right-10 lg:flex"
+        style={{ color: heroTextColor }}
+      >
+        <span>{text.scroll}</span>
         <ArrowRight className="w-4 h-4" />
       </div>
     </section>

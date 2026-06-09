@@ -1,23 +1,12 @@
-import { Navbar } from "@/components/navbar";
-import { Hero } from "@/components/hero";
-import { FeaturedAdventures } from "@/components/featured-adventures";
-import { TravelStyles } from "@/components/travel-styles";
-import { WhyUs } from "@/components/why-us";
-import { Testimonials } from "@/components/testimonials";
-import { CtaFooter } from "@/components/cta-footer";
+import { HomePageClient } from "@/components/home-page-client";
+import { getSiteSettings, getTrips } from "@/lib/server/admin-store";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [adventures, siteSettings] = await Promise.all([getTrips(), getSiteSettings()]);
+
   return (
-    <>
-      <Navbar />
-      <main className="flex-1">
-        <Hero />
-        <FeaturedAdventures />
-        <TravelStyles />
-        <WhyUs />
-        <Testimonials />
-        <CtaFooter />
-      </main>
-    </>
+    <HomePageClient adventures={adventures} siteSettings={siteSettings} />
   );
 }

@@ -1,45 +1,44 @@
 import { apiError, ok } from "@/lib/server/api";
-import { getInquiryStats, saveInquiry, validateInquiry } from "@/lib/server/inquiries";
+import { getTrips } from "@/lib/server/admin-store";
+import { saveInquiry, validateInquiry } from "@/lib/server/inquiries";
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  const stats = await getInquiryStats();
+export async function POST(request: Request) {
+  try {
+    const payload = await request.json();
+    const tripSlug = getTripSlug(payload);
 
-  return ok({
-    inquiries: stats,
-  });
+    if (tripSlug) {
+      const exists = (await getTrips()).some((trip) => trip.slug === tripSlug);
+
+      if (!exists) {
+        return apiError("BAD_REQUEST", "Selected trip was not found.", 400);
+      }
+    }
+
+    const validation = validateInquiry(payload);
+
+    if (!validation.ok) {
+      return apiError("BAD_REQUEST", "Please check the inquiry fields.", 400, validation.errors);
+    }
+
+    const inquiry = await saveInquiry(validation.value);
+    return ok({ inquiry }, { status: 201 });
+  } catch (error) {
+    return apiError("BAD_REQUEST", getErrorMessage(error), 400);
+  }
 }
 
-export async function POST(request: Request) {
-  let payload: unknown;
-
-  try {
-    payload = await request.json();
-  } catch {
-    return apiError("BAD_REQUEST", "Invalid JSON body.", 400);
+function getTripSlug(payload: unknown) {
+  if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
+    return "";
   }
 
-  const validation = validateInquiry(payload);
+  const value = (payload as Record<string, unknown>).tripSlug;
+  return typeof value === "string" ? value.trim() : "";
+}
 
-  if (!validation.ok) {
-    return apiError("BAD_REQUEST", "Inquiry validation failed.", 400, validation.errors);
-  }
-
-  try {
-    const inquiry = await saveInquiry(validation.value);
-
-    return ok(
-      {
-        inquiry: {
-          id: inquiry.id,
-          status: inquiry.status,
-          createdAt: inquiry.createdAt,
-        },
-      },
-      { status: 201 }
-    );
-  } catch {
-    return apiError("INTERNAL_ERROR", "Could not save inquiry.", 500);
-  }
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Could not save inquiry.";
 }

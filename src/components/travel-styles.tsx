@@ -1,60 +1,96 @@
 "use client";
 
 import { motion } from "framer-motion";
+import type { Language } from "@/lib/i18n";
 
 const STYLES = [
   {
     title: "Trekking",
+    mnTitle: "Треккинг",
+    query: "trekking",
     count: 28,
     image:
       "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80&auto=format&fit=crop",
   },
   {
     title: "Horseback",
+    mnTitle: "Морин аялал",
+    query: "horse",
     count: 14,
     image:
       "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80&auto=format&fit=crop",
   },
   {
     title: "Desert",
+    mnTitle: "Говь",
+    query: "Gobi",
     count: 9,
     image:
       "https://images.unsplash.com/photo-1547234935-80c7145ec969?w=800&q=80&auto=format&fit=crop",
   },
   {
     title: "Winter & Ski",
+    mnTitle: "Өвөл ба цана",
+    query: "ski",
     count: 12,
     image:
       "https://images.unsplash.com/photo-1551524559-8af4e6624178?w=800&q=80&auto=format&fit=crop",
   },
   {
     title: "Culture",
+    mnTitle: "Соёл",
+    query: "culture",
     count: 21,
     image:
       "https://images.unsplash.com/photo-1612538498488-cd6f02d4b0bf?w=800&q=80&auto=format&fit=crop",
   },
   {
     title: "Wildlife",
+    mnTitle: "Байгаль",
+    query: "wildlife",
     count: 7,
     image:
       "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80&auto=format&fit=crop",
   },
 ];
 
-export function TravelStyles() {
+const TEXT = {
+  mn: {
+    eyebrow: "★ Та ямар аялал хүсэж байна?",
+    title: "Өөрт тохирох аяллын хэв маягаа сонго.",
+    subtitle:
+      "Тал нутгийн тайван морин аяллаас эхлээд уулын треккинг хүртэл өөрийн хэмнэлд таарсан аяллыг сонгоорой.",
+    trips: "аялал",
+  },
+  en: {
+    eyebrow: "★ How do you adventure?",
+    title: "Pick your style of trip.",
+    subtitle:
+      "From quiet horseback days on the steppe to lung-burning ridge climbs, choose the kind of adventure that fits you.",
+    trips: "trips",
+  },
+};
+
+type Props = {
+  language: Language;
+  onStyleSelect: (query: string) => void;
+};
+
+export function TravelStyles({ language, onStyleSelect }: Props) {
+  const text = TEXT[language];
+
   return (
     <section id="destinations" className="py-24 lg:py-32 bg-foreground text-primary-foreground">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="max-w-3xl mb-12 lg:mb-16">
           <p className="text-xs lg:text-sm tracking-[0.2em] uppercase text-accent font-semibold mb-4">
-            ★ How do you adventure?
+            {text.eyebrow}
           </p>
           <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl tracking-tight text-balance">
-            Pick your <span className="italic">style</span> of trip.
+            {text.title}
           </h2>
           <p className="mt-5 text-primary-foreground/70 text-lg max-w-xl">
-            From quiet horseback days on the steppe to lung-burning ridge climbs
-            — choose the kind of adventure that fits you.
+            {text.subtitle}
           </p>
         </div>
 
@@ -62,7 +98,11 @@ export function TravelStyles() {
           {STYLES.map((s, idx) => (
             <motion.a
               key={s.title}
-              href={`#style-${s.title}`}
+              href="#adventures"
+              onClick={(event) => {
+                event.preventDefault();
+                onStyleSelect(s.query);
+              }}
               initial={{ opacity: 0, scale: 0.96 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-60px" }}
@@ -76,9 +116,11 @@ export function TravelStyles() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
               <div className="absolute bottom-0 left-0 right-0 p-5 lg:p-7">
                 <h3 className="font-display text-2xl lg:text-4xl text-white leading-tight">
-                  {s.title}
+                  {language === "mn" ? s.mnTitle : s.title}
                 </h3>
-                <p className="text-white/80 text-sm mt-1">{s.count} trips</p>
+                <p className="text-white/80 text-sm mt-1">
+                  {s.count} {text.trips}
+                </p>
               </div>
               <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 →

@@ -4,17 +4,32 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LANGUAGE_LABELS, type Language } from "@/lib/i18n";
 
-const NAV = [
-  { label: "Adventures", href: "#adventures" },
-  { label: "Destinations", href: "#destinations" },
-  { label: "Journal", href: "#journal" },
-  { label: "About", href: "#about" },
-];
+const NAV: Record<Language, { label: string; href: string }[]> = {
+  mn: [
+    { label: "Аяллууд", href: "#adventures" },
+    { label: "Чиглэлүүд", href: "#destinations" },
+    { label: "Сэтгэгдэл", href: "#journal" },
+    { label: "Бидний тухай", href: "#about" },
+  ],
+  en: [
+    { label: "Adventures", href: "#adventures" },
+    { label: "Destinations", href: "#destinations" },
+    { label: "Journal", href: "#journal" },
+    { label: "About", href: "#about" },
+  ],
+};
 
-export function Navbar() {
+type Props = {
+  language: Language;
+  onLanguageChange: (language: Language) => void;
+};
+
+export function Navbar({ language, onLanguageChange }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const planLabel = language === "mn" ? "Аялал төлөвлөх" : "Plan your trip";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -45,7 +60,7 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">
-          {NAV.map((n) => (
+          {NAV[language].map((n) => (
             <a
               key={n.href}
               href={n.href}
@@ -60,19 +75,39 @@ export function Navbar() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-4">
-          <button
+          <div
             className={cn(
-              "flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-accent",
-              scrolled ? "text-foreground/80" : "text-white/90"
+              "flex items-center gap-1 rounded-full border px-2 py-1",
+              scrolled ? "border-border bg-background/60" : "border-white/25 bg-white/10"
             )}
           >
-            <Globe className="w-4 h-4" /> EN
-          </button>
+            <Globe
+              className={cn("w-4 h-4", scrolled ? "text-foreground/70" : "text-white/80")}
+            />
+            {(["mn", "en"] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                aria-pressed={language === item}
+                onClick={() => onLanguageChange(item)}
+                className={cn(
+                  "rounded-full px-2.5 py-1 text-xs font-semibold transition-colors",
+                  language === item
+                    ? "bg-accent text-accent-foreground"
+                    : scrolled
+                      ? "text-foreground/70 hover:text-accent"
+                      : "text-white/85 hover:text-white"
+                )}
+              >
+                {LANGUAGE_LABELS[item]}
+              </button>
+            ))}
+          </div>
           <Link
             href="#contact"
             className="rounded-full bg-accent hover:bg-accent/90 text-accent-foreground px-5 py-2.5 text-sm font-semibold transition-colors"
           >
-            Plan your trip
+            {planLabel}
           </Link>
         </div>
 
@@ -91,7 +126,7 @@ export function Navbar() {
       {open && (
         <div className="lg:hidden bg-background border-t border-border">
           <div className="px-6 py-4 flex flex-col gap-3">
-            {NAV.map((n) => (
+            {NAV[language].map((n) => (
               <a
                 key={n.href}
                 href={n.href}
@@ -101,12 +136,31 @@ export function Navbar() {
                 {n.label}
               </a>
             ))}
+            <div className="flex items-center gap-2 py-2">
+              <Globe className="w-4 h-4 text-foreground/60" />
+              {(["mn", "en"] as const).map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  aria-pressed={language === item}
+                  onClick={() => onLanguageChange(item)}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                    language === item
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-muted text-foreground/70 hover:text-accent"
+                  )}
+                >
+                  {LANGUAGE_LABELS[item]}
+                </button>
+              ))}
+            </div>
             <Link
               href="#contact"
               onClick={() => setOpen(false)}
               className="mt-2 rounded-full bg-accent text-accent-foreground px-5 py-3 text-sm font-semibold text-center"
             >
-              Plan your trip
+              {planLabel}
             </Link>
           </div>
         </div>
