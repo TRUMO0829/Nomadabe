@@ -16,6 +16,48 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Admin Dashboard
+
+Create `.env.local` from `.env.example` and set:
+
+```bash
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=choose-a-strong-password
+```
+
+Then run the app and open [http://localhost:3000/admin](http://localhost:3000/admin).
+
+Admin backend endpoints are protected with the same Basic Auth credentials:
+
+```text
+GET    /api/admin/dashboard
+GET    /api/admin/inquiries
+PATCH  /api/admin/inquiries/:id
+GET    /api/admin/trips
+POST   /api/admin/trips
+PUT    /api/admin/trips/:id
+DELETE /api/admin/trips/:id
+GET    /api/admin/services
+POST   /api/admin/services
+PUT    /api/admin/services/:id
+DELETE /api/admin/services/:id
+GET    /api/admin/settings
+PUT    /api/admin/settings
+```
+
+Public backend endpoints:
+
+```text
+GET  /api/health
+GET  /api/settings
+GET  /api/services?q=
+GET  /api/trips?category=&featured=&q=
+GET  /api/trips/:slug
+GET  /api/inquiries
+POST /api/inquiries
+POST /api/bookings
+```
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

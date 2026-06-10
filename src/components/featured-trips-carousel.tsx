@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Star } from "lucide-react";
-import { ADVENTURES, getAdventureText } from "@/lib/adventures";
+import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
 import { useLanguage } from "./language-provider";
 
 const COPY = {
@@ -28,13 +28,18 @@ const COPY = {
   },
 } as const;
 
-const FEATURED_TRIPS = ADVENTURES.filter(
-  (adventure) => adventure.featured && adventure.country !== "Mongolia"
-).slice(0, 4);
+type FeaturedTripsCarouselProps = {
+  adventures?: Adventure[];
+};
 
-export function FeaturedTripsCarousel() {
+export function FeaturedTripsCarousel({
+  adventures = ADVENTURES,
+}: FeaturedTripsCarouselProps) {
   const { locale } = useLanguage();
   const copy = COPY[locale];
+  const featuredTrips = adventures
+    .filter((adventure) => adventure.featured && adventure.country !== "Mongolia")
+    .slice(0, 4);
 
   return (
     <section className="bg-background py-20 lg:py-28">
@@ -53,7 +58,7 @@ export function FeaturedTripsCarousel() {
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 lg:gap-6">
-          {FEATURED_TRIPS.map((adventure, idx) => {
+          {featuredTrips.map((adventure, idx) => {
             const text = getAdventureText(adventure, locale);
             const price =
               adventure.price > 0

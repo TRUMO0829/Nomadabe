@@ -1,5 +1,5 @@
-import { findAdventureBySlug } from "@/lib/adventures";
 import { apiError, ok, sanitizeTrip } from "@/lib/server/api";
+import { getTrips } from "@/lib/server/admin-store";
 
 export const runtime = "nodejs";
 
@@ -11,7 +11,7 @@ type RouteContext = {
 
 export async function GET(_request: Request, context: RouteContext) {
   const { slug } = await context.params;
-  const trip = findAdventureBySlug(slug);
+  const trip = (await getTrips()).find((adventure) => adventure.slug === slug);
 
   if (!trip) {
     return apiError("NOT_FOUND", "Trip was not found.", 404);

@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
-import { ADVENTURES, getAdventureText } from "@/lib/adventures";
+import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
 import { useLanguage } from "./language-provider";
 
 const COPY = {
@@ -33,14 +33,19 @@ const COPY = {
   },
 } as const;
 
-const DOMESTIC_OPTIONS = ADVENTURES.filter(
-  (adventure) => adventure.country === "Mongolia"
-);
+type TravelOptionsCarouselProps = {
+  adventures?: Adventure[];
+};
 
-export function TravelOptionsCarousel() {
+export function TravelOptionsCarousel({
+  adventures = ADVENTURES,
+}: TravelOptionsCarouselProps) {
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const domesticOptions = adventures.filter(
+    (adventure) => adventure.country === "Mongolia"
+  );
 
   function scrollByCard(direction: "prev" | "next") {
     scrollerRef.current?.scrollBy({
@@ -89,7 +94,7 @@ export function TravelOptionsCarousel() {
           ref={scrollerRef}
           className="-mx-6 flex snap-x gap-5 overflow-x-auto px-6 pb-4 [scrollbar-width:none] lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden"
         >
-          {DOMESTIC_OPTIONS.map((adventure, idx) => {
+          {domesticOptions.map((adventure, idx) => {
             const text = getAdventureText(adventure, locale);
             const price =
               adventure.price > 0

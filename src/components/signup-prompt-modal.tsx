@@ -23,6 +23,8 @@ const COPY = {
     close: "Хаах",
     optional: "Заавал бүртгүүлэх шаардлагагүй.",
     success: "Баярлалаа. Та аяллаа үргэлжлүүлэн үзэж болно.",
+    codeSent: "Нэвтрэх код илгээгдлээ.",
+    error: "Илгээж чадсангүй. Мэдээллээ шалгаад дахин оролдоно уу.",
   },
   en: {
     title: "Welcome to Nomadabe Travel",
@@ -40,6 +42,8 @@ const COPY = {
     close: "Close",
     optional: "Registration is optional.",
     success: "Thanks. You can continue browsing trips.",
+    codeSent: "A sign-in code has been sent.",
+    error: "Could not send. Please check your details and try again.",
   },
 } as const;
 
@@ -49,10 +53,46 @@ export function SignupPromptModal() {
   const [open, setOpen] = useState(true);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [submitted, setSubmitted] = useState(false);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setMessage("");
+
+    const formData = new FormData(event.currentTarget);
+    const email = String(formData.get("email") ?? "").trim();
+    const phone = String(formData.get("phone") ?? "").trim();
+
+    try {
+      const response = await fetch("/api/auth/request-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: email || phone }),
+      });
+      const result = (await response.json()) as {
+        ok?: boolean;
+        data?: { devCode?: string };
+        error?: { message?: string };
+      };
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error?.message ?? copy.error);
+      }
+
+      setSubmitted(true);
+      setMessage(
+        result.data?.devCode
+          ? `${copy.codeSent} Code: ${result.data.devCode}`
+          : copy.codeSent
+      );
+    } catch (error) {
+      setSubmitted(false);
+      setMessage(error instanceof Error ? error.message : copy.error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -105,6 +145,7 @@ export function SignupPromptModal() {
                     onClick={() => {
                       setMode(item.key as "login" | "register");
                       setSubmitted(false);
+                      setMessage("");
                     }}
                     className={cn(
                       "rounded-md px-4 py-2 text-sm font-bold transition-colors",
@@ -158,8 +199,11 @@ export function SignupPromptModal() {
                   />
                 </label>
 
-                <button className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-5 py-3.5 text-sm font-bold text-accent-foreground transition-colors hover:bg-secondary">
-                  {mode === "login" ? copy.submitLogin : copy.submitRegister}
+                <button
+                  disabled={loading}
+                  className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-5 py-3.5 text-sm font-bold text-accent-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {loading ? "..." : mode === "login" ? copy.submitLogin : copy.submitRegister}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </form>
@@ -173,7 +217,7 @@ export function SignupPromptModal() {
               </button>
 
               <p className="mt-4 text-center text-xs text-muted-foreground">
-                {submitted ? copy.success : copy.optional}
+                {message || (submitted ? copy.success : copy.optional)}
               </p>
             </div>
           </motion.div>

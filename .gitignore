@@ -24,6 +24,13 @@
 .DS_Store
 *.pem
 /data/inquiries.jsonl
+/data/admin-store.json
+/data/customers.json
+/data/auth-codes.json
+/data/customer-sessions.json
+.venv/
+.pyenv/
+.vscode/
 
 # debug
 npm-debug.log*

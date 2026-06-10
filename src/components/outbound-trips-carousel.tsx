@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { type Adventure } from "@/lib/adventures";
 import { useLanguage } from "./language-provider";
 
 const COPY = {
@@ -99,10 +100,32 @@ const OUTBOUND_OPTIONS = [
   },
 ];
 
-export function OutboundTripsCarousel() {
+type OutboundTripsCarouselProps = {
+  adventures?: Adventure[];
+};
+
+export function OutboundTripsCarousel({
+  adventures = [],
+}: OutboundTripsCarouselProps) {
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const backendOptions = adventures
+    .filter((adventure) => adventure.country !== "Mongolia")
+    .map((adventure) => ({
+      id: adventure.id,
+      countryMn: adventure.country,
+      countryEn: adventure.country,
+      titleMn: adventure.title,
+      titleEn: adventure.title,
+      days: adventure.days,
+      price:
+        adventure.price > 0
+          ? `${adventure.price.toLocaleString()} ${adventure.currency}`
+          : copy.priceFrom,
+      image: adventure.image,
+    }));
+  const options = backendOptions.length > 0 ? backendOptions : OUTBOUND_OPTIONS;
 
   function scrollByCard(direction: "prev" | "next") {
     scrollerRef.current?.scrollBy({
@@ -151,7 +174,7 @@ export function OutboundTripsCarousel() {
           ref={scrollerRef}
           className="-mx-6 flex snap-x gap-5 overflow-x-auto px-6 pb-4 [scrollbar-width:none] lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden"
         >
-          {OUTBOUND_OPTIONS.map((option, idx) => {
+          {options.map((option, idx) => {
             const title = locale === "mn" ? option.titleMn : option.titleEn;
             const country =
               locale === "mn" ? option.countryMn : option.countryEn;

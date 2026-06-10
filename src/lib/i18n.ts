@@ -1,4 +1,5 @@
 export type Locale = "mn" | "en";
+export type Language = Locale;
 
 export const DEFAULT_LOCALE: Locale = "mn";
 
@@ -10,6 +11,11 @@ export const LANGUAGES: ReadonlyArray<{
   { code: "mn", short: "MN", label: "Монгол" },
   { code: "en", short: "EN", label: "English" },
 ];
+
+export const LANGUAGE_LABELS: Record<Language, string> = {
+  mn: "MN",
+  en: "EN",
+};
 
 export const UI_COPY = {
   mn: {

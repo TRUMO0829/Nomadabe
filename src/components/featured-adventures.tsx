@@ -20,6 +20,10 @@ import { useLanguage } from "./language-provider";
 
 type TripScope = "all" | "outbound" | "domestic";
 
+type FeaturedAdventuresProps = {
+  adventures?: Adventure[];
+};
+
 const difficultyColor: Record<string, string> = {
   Easy: "bg-accent text-accent-foreground",
   Moderate: "bg-secondary text-foreground",
@@ -56,7 +60,9 @@ const SECTION_COPY = {
   },
 } as const;
 
-export function FeaturedAdventures() {
+export function FeaturedAdventures({
+  adventures = ADVENTURES,
+}: FeaturedAdventuresProps) {
   const [selected, setSelected] = useState<Adventure | null>(null);
   const [scope, setScope] = useState<TripScope>("all");
   const [query, setQuery] = useState("");
@@ -64,18 +70,18 @@ export function FeaturedAdventures() {
   const sectionCopy = SECTION_COPY[locale];
 
   const outboundCount = useMemo(
-    () => ADVENTURES.filter((adventure) => adventure.country !== "Mongolia").length,
-    []
+    () => adventures.filter((adventure) => adventure.country !== "Mongolia").length,
+    [adventures]
   );
   const domesticCount = useMemo(
-    () => ADVENTURES.filter((adventure) => adventure.country === "Mongolia").length,
-    []
+    () => adventures.filter((adventure) => adventure.country === "Mongolia").length,
+    [adventures]
   );
 
   const filteredAdventures = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return ADVENTURES.filter((adventure) => {
+    return adventures.filter((adventure) => {
       const text = getAdventureText(adventure, locale);
       const isDomestic = adventure.country === "Mongolia";
       const searchText = [
@@ -99,13 +105,13 @@ export function FeaturedAdventures() {
 
       return matchesScope && matchesQuery;
     });
-  }, [locale, query, scope]);
+  }, [adventures, locale, query, scope]);
 
   const scopeOptions = [
     {
       key: "all" as const,
       label: sectionCopy.all,
-      count: ADVENTURES.length,
+      count: adventures.length,
       icon: SlidersHorizontal,
     },
     {

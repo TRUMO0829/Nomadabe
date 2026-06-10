@@ -7,7 +7,7 @@
     "dev:local": "next dev -p 3001 --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src middleware.ts next.config.ts",
     "kb:dry-run": "node scripts/import-knowledge-base.mjs --dry-run",
     "kb:import": "node scripts/import-knowledge-base.mjs"
   },
