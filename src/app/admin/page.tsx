@@ -14,7 +14,6 @@ import {
   RefreshCw,
   Save,
   ShieldCheck,
-  Sparkles,
   Trash2,
   Users,
 } from "lucide-react";
@@ -60,19 +59,20 @@ export default async function AdminDashboard() {
   const bookedPeople = inquiries.filter((inquiry) => inquiry.tripSlug).length;
 
   return (
-    <main className="min-h-screen bg-[#f6f2ea] text-[#121815]">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <div className="mx-auto grid min-h-screen w-full max-w-[1560px] lg:grid-cols-[260px_1fr]">
-        <aside className="hidden border-r border-[#ded7ca] bg-[#101915] text-white lg:block">
+        <aside className="hidden border-r border-[var(--border)] bg-[var(--primary)] text-white lg:block">
           <div className="flex h-full min-h-screen flex-col px-5 py-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#e85d2c]">
-                <Sparkles className="h-5 w-5" />
-              </div>
+              <div
+                aria-hidden="true"
+                className="h-12 w-12 rounded-md bg-black bg-[url('/nomadabe-mark.png')] bg-center bg-no-repeat shadow-sm ring-1 ring-white/15 [background-position:center_35%] [background-size:175%]"
+              />
               <div>
-                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[#f6b79f]">
+                <div className="text-xl font-black leading-none text-[var(--accent)]">
                   Nomadabe
                 </div>
-                <div className="text-lg font-semibold">Admin</div>
+                <div className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-white/75">Admin</div>
               </div>
             </div>
 
@@ -83,8 +83,8 @@ export default async function AdminDashboard() {
                   href={`#${item.label.toLowerCase().replace(" ", "-")}`}
                   className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium ${
                     index === 0
-                      ? "bg-white text-[#101915]"
-                      : "text-[#d9d2c3] hover:bg-white/10 hover:text-white"
+                      ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   <item.icon className="h-4 w-4" />
@@ -95,10 +95,10 @@ export default async function AdminDashboard() {
 
             <div className="mt-auto rounded-md border border-white/10 bg-white/5 p-4">
               <div className="flex items-center gap-2 text-sm font-semibold">
-                <ShieldCheck className="h-4 w-4 text-[#f6b79f]" />
+                <ShieldCheck className="h-4 w-4 text-[var(--accent)]" />
                 Protected
               </div>
-              <p className="mt-2 text-sm leading-6 text-[#d9d2c3]">
+              <p className="mt-2 text-sm leading-6 text-white/65">
                 Program management, registration lists and site edits are protected.
               </p>
             </div>
@@ -106,30 +106,38 @@ export default async function AdminDashboard() {
         </aside>
 
         <section className="min-w-0">
-          <header id="overview" className="border-b border-[#ded7ca] bg-white/90 px-5 py-5 backdrop-blur sm:px-8 lg:px-10">
-            <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
+          <header id="overview" className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--primary)] px-5 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-[url('/nomadabe-hero-panorama.png')] bg-cover bg-center opacity-25"
+            />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/35 via-[var(--primary)]/85 to-[var(--primary)]" />
+            <div className="relative flex flex-col justify-between gap-5 xl:flex-row xl:items-center">
               <div>
-                <div className="flex flex-wrap items-center gap-2 text-sm text-[#5c5c56]">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-white/70">
                   <span>Admin dashboard</span>
-                  <span className="h-1 w-1 rounded-full bg-[#c7beac]" />
+                  <span className="h-1 w-1 rounded-full bg-[var(--accent)]" />
                   <span>Last registration: {lastInquiry}</span>
                 </div>
-                <h1 className="mt-2 text-3xl font-semibold tracking-normal text-[#0f1a17] sm:text-4xl">
+                <h1 className="mt-2 max-w-3xl font-display text-4xl leading-none text-balance sm:text-5xl lg:text-6xl">
                   Website control center
                 </h1>
+                <p className="mt-4 max-w-2xl text-sm leading-6 text-white/70 sm:text-base">
+                  Manage Nomadabe trips, registrations, services and homepage visuals from one focused workspace.
+                </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/admin"
-                  className="inline-flex h-10 items-center gap-2 rounded-md border border-[#d9d2c3] bg-white px-3 text-sm font-semibold text-[#0f1a17] hover:border-[#bfb5a3]"
+                  className="inline-flex h-10 items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/15"
                 >
                   <RefreshCw className="h-4 w-4" />
                   Refresh
                 </Link>
                 <Link
                   href="/"
-                  className="inline-flex h-10 items-center gap-2 rounded-md bg-[#0f1a17] px-3 text-sm font-semibold text-white hover:bg-[#22312b]"
+                  className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--accent)] px-3 text-sm font-semibold text-[var(--accent-foreground)] transition-colors hover:bg-[var(--secondary)]"
                 >
                   View site
                   <ArrowUpRight className="h-4 w-4" />
@@ -176,15 +184,15 @@ export default async function AdminDashboard() {
               </div>
 
               <aside className="space-y-6">
-                <section className="rounded-md border border-[#ded7ca] bg-[#0f1a17] p-5 text-white shadow-sm">
+                <section className="rounded-md border border-[var(--border)] bg-[var(--primary)] p-5 text-white shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#f6b79f]">
+                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--accent)]">
                         Pipeline
                       </p>
                       <h2 className="mt-2 text-xl font-semibold">Today at a glance</h2>
                     </div>
-                    <Gauge className="h-6 w-6 text-[#f6b79f]" />
+                    <Gauge className="h-6 w-6 text-[var(--accent)]" />
                   </div>
                   <div className="mt-5 grid grid-cols-2 gap-3">
                     <MiniStat label="All people" value={inquiries.length} />
@@ -195,13 +203,13 @@ export default async function AdminDashboard() {
                 <SidebarSection title="Bookings by program">
                   <div className="space-y-2">
                     {trips.map((trip) => (
-                      <div key={trip.id} className="rounded-md border border-[#ded7ca] bg-white px-4 py-3 shadow-sm">
+                      <div key={trip.id} className="rounded-md border border-[var(--border)] bg-white px-4 py-3 shadow-sm">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <h3 className="truncate text-sm font-semibold">{trip.title}</h3>
-                            <p className="mt-1 text-sm text-[#5c5c56]">{trip.location}</p>
+                            <p className="mt-1 text-sm text-[var(--muted-foreground)]">{trip.location}</p>
                           </div>
-                          <span className="rounded-md bg-[#e8f0eb] px-2 py-1 text-xs font-semibold text-[#2d5f4e]">
+                          <span className="rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold text-[var(--foreground)]">
                             {getBookingCount(bookingStats, trip.slug)}
                           </span>
                         </div>
@@ -213,13 +221,13 @@ export default async function AdminDashboard() {
                 <SidebarSection title="Upcoming departures">
                   <div className="space-y-2">
                     {upcomingDepartures.map((trip) => (
-                      <div key={trip.id} className="rounded-md border border-[#ded7ca] bg-white px-4 py-3 shadow-sm">
+                      <div key={trip.id} className="rounded-md border border-[var(--border)] bg-white px-4 py-3 shadow-sm">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <h3 className="truncate text-sm font-semibold">{trip.title}</h3>
-                            <p className="mt-1 text-sm text-[#5c5c56]">{trip.location}</p>
+                            <p className="mt-1 text-sm text-[var(--muted-foreground)]">{trip.location}</p>
                           </div>
-                          <span className="whitespace-nowrap rounded-md bg-[#fff3ed] px-2 py-1 text-xs font-semibold text-[#c34a21]">
+                          <span className="whitespace-nowrap rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold text-[var(--foreground)]">
                             {trip.nextDeparture}
                           </span>
                         </div>
@@ -235,10 +243,10 @@ export default async function AdminDashboard() {
               {latestInquiries.length === 0 ? (
                 <EmptyState />
               ) : (
-                <div className="overflow-hidden rounded-md border border-[#ded7ca] bg-white shadow-sm">
+                <div className="overflow-hidden rounded-md border border-[var(--border)] bg-white shadow-sm">
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[920px] border-collapse text-left text-sm">
-                      <thead className="border-b border-[#ded7ca] bg-[#f9f6f0] text-xs uppercase tracking-[0.12em] text-[#706b62]">
+                      <thead className="border-b border-[var(--border)] bg-[var(--background)] text-xs uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
                         <tr>
                           <th className="px-5 py-3 font-semibold">Person</th>
                           <th className="px-5 py-3 font-semibold">Request</th>
@@ -247,30 +255,30 @@ export default async function AdminDashboard() {
                           <th className="px-5 py-3 font-semibold">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#eee7dc]">
+                      <tbody className="divide-y divide-[var(--border)]">
                         {latestInquiries.map((inquiry) => (
-                          <tr key={inquiry.id} className="bg-white align-top hover:bg-[#fbfaf7]">
+                          <tr key={inquiry.id} className="bg-white align-top hover:bg-[var(--background)]">
                             <td className="px-5 py-4">
-                              <div className="font-semibold text-[#0f1a17]">{inquiry.name}</div>
-                              <div className="mt-1 text-[#5c5c56]">{inquiry.email}</div>
-                              {inquiry.phone ? <div className="mt-1 text-[#5c5c56]">{inquiry.phone}</div> : null}
+                              <div className="font-semibold text-[var(--primary)]">{inquiry.name}</div>
+                              <div className="mt-1 text-[var(--muted-foreground)]">{inquiry.email}</div>
+                              {inquiry.phone ? <div className="mt-1 text-[var(--muted-foreground)]">{inquiry.phone}</div> : null}
                             </td>
                             <td className="px-5 py-4">
                               <div className="flex items-center gap-2">
                                 <TypePill label={inquiry.inquiryType} />
-                                {inquiry.travelers ? <span className="text-[#5c5c56]">{inquiry.travelers} pax</span> : null}
+                                {inquiry.travelers ? <span className="text-[var(--muted-foreground)]">{inquiry.travelers} pax</span> : null}
                               </div>
-                              <p className="mt-2 max-w-sm text-[#3e4641]">{inquiry.message}</p>
+                              <p className="mt-2 max-w-sm text-[var(--foreground)]">{inquiry.message}</p>
                             </td>
-                            <td className="px-5 py-4 text-[#5c5c56]">{inquiry.tripSlug ?? "General"}</td>
-                            <td className="px-5 py-4 whitespace-nowrap text-[#5c5c56]">{formatDate(inquiry.createdAt)}</td>
+                            <td className="px-5 py-4 text-[var(--muted-foreground)]">{inquiry.tripSlug ?? "General"}</td>
+                            <td className="px-5 py-4 whitespace-nowrap text-[var(--muted-foreground)]">{formatDate(inquiry.createdAt)}</td>
                             <td className="px-5 py-4">
                               <form action={updateInquiryStatusAction} className="flex items-center gap-2">
                                 <input type="hidden" name="id" defaultValue={inquiry.id} />
                                 <select
                                   name="status"
                                   defaultValue={inquiry.status}
-                                  className="h-9 rounded-md border border-[#d9d2c3] bg-white px-2 text-xs font-semibold text-[#0f1a17]"
+                                  className="h-9 rounded-md border border-[var(--border)] bg-white px-2 text-xs font-semibold text-[var(--primary)]"
                                 >
                                   <option value="new">New</option>
                                   <option value="contacted">Contacted</option>
@@ -279,7 +287,7 @@ export default async function AdminDashboard() {
                                 </select>
                                 <button
                                   type="submit"
-                                  className="inline-flex h-9 items-center rounded-md bg-[#0f1a17] px-3 text-xs font-semibold text-white"
+                                  className="inline-flex h-9 items-center rounded-md bg-[var(--primary)] px-3 text-xs font-semibold text-white"
                                 >
                                   Save
                                 </button>
@@ -302,21 +310,21 @@ export default async function AdminDashboard() {
 
 function ServiceEditor({ service }: { service: TravelService }) {
   return (
-    <details className="rounded-md border border-[#ded7ca] bg-white shadow-sm">
+    <details className="rounded-md border border-[var(--border)] bg-white shadow-sm">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
         <div className="min-w-0">
           <TypePill label="Service" />
-          <h3 className="mt-2 truncate text-base font-semibold text-[#0f1a17]">{service.title}</h3>
+          <h3 className="mt-2 truncate text-base font-semibold text-[var(--primary)]">{service.title}</h3>
         </div>
-        <span className="text-sm text-[#5c5c56]">Edit</span>
+        <span className="text-sm text-[var(--muted-foreground)]">Edit</span>
       </summary>
-      <div className="border-t border-[#eee7dc] p-4">
+      <div className="border-t border-[var(--border)] p-4">
         <ServiceForm mode="edit" service={service} />
         <form action={deleteServiceAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={service.id} />
           <button
             type="submit"
-            className="inline-flex h-10 items-center gap-2 rounded-md border border-[#e4b7a5] bg-[#fff3ed] px-4 text-sm font-semibold text-[#c34a21] hover:border-[#c34a21]"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Delete service
@@ -329,7 +337,7 @@ function ServiceEditor({ service }: { service: TravelService }) {
 
 function ServiceForm({ mode, service }: { mode: "create" | "edit"; service?: TravelService }) {
   return (
-    <form action={saveServiceAction} className="rounded-md border border-[#ded7ca] bg-[#fbfaf7] p-4">
+    <form action={saveServiceAction} className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
       <div className="grid gap-4 lg:grid-cols-2">
         <TextField label="Service ID" name="id" defaultValue={service?.id} placeholder="business-travel" />
         <TextField label="Title" name="title" defaultValue={service?.title} required />
@@ -350,7 +358,7 @@ function ServiceForm({ mode, service }: { mode: "create" | "edit"; service?: Tra
       </div>
       <button
         type="submit"
-        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[#0f1a17] px-4 text-sm font-semibold text-white hover:bg-[#22312b]"
+        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
       >
         {mode === "create" ? <Plus className="h-4 w-4" /> : <Save className="h-4 w-4" />}
         {mode === "create" ? "Add service" : "Save service"}
@@ -361,33 +369,33 @@ function ServiceForm({ mode, service }: { mode: "create" | "edit"; service?: Tra
 
 function ProgramEditor({ trip, bookingCount }: { trip: Adventure; bookingCount: number }) {
   return (
-    <details className="rounded-md border border-[#ded7ca] bg-white shadow-sm">
+    <details className="rounded-md border border-[var(--border)] bg-white shadow-sm">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <TypePill label={categoryLabels[trip.category]} />
             {trip.featured ? (
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-[#e8f0eb] px-2 py-1 text-xs font-semibold text-[#2d5f4e]">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold text-[var(--foreground)]">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Featured
               </span>
             ) : null}
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#f4efe6] px-2 py-1 text-xs font-semibold text-[#5c5c56]">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold text-[var(--muted-foreground)]">
               <Users className="h-3.5 w-3.5" />
               {bookingCount} bookings
             </span>
           </div>
-          <h3 className="mt-2 truncate text-base font-semibold text-[#0f1a17]">{trip.title}</h3>
+          <h3 className="mt-2 truncate text-base font-semibold text-[var(--primary)]">{trip.title}</h3>
         </div>
-        <span className="text-sm text-[#5c5c56]">Edit</span>
+        <span className="text-sm text-[var(--muted-foreground)]">Edit</span>
       </summary>
-      <div className="border-t border-[#eee7dc] p-4">
+      <div className="border-t border-[var(--border)] p-4">
         <TripForm mode="edit" trip={trip} />
         <form action={deleteTripAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={trip.id} />
           <button
             type="submit"
-            className="inline-flex h-10 items-center gap-2 rounded-md border border-[#e4b7a5] bg-[#fff3ed] px-4 text-sm font-semibold text-[#c34a21] hover:border-[#c34a21]"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Delete program
@@ -400,7 +408,7 @@ function ProgramEditor({ trip, bookingCount }: { trip: Adventure; bookingCount: 
 
 function TripForm({ mode, trip }: { mode: "create" | "edit"; trip?: Adventure }) {
   return (
-    <form action={saveTripAction} className="rounded-md border border-[#ded7ca] bg-[#fbfaf7] p-4">
+    <form action={saveTripAction} className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
       {trip ? <input type="hidden" name="id" defaultValue={trip.id} /> : null}
       <div className="grid gap-4 lg:grid-cols-3">
         <TextField label="Title" name="title" defaultValue={trip?.title} required />
@@ -424,14 +432,14 @@ function TripForm({ mode, trip }: { mode: "create" | "edit"; trip?: Adventure })
         <TextareaField label="Includes" name="includes" defaultValue={trip?.includes.join(", ")} rows={2} />
         <TextareaField label="Business support" name="businessSupport" defaultValue={trip?.businessSupport.join(", ")} rows={2} />
       </div>
-      <label className="mt-4 flex w-fit items-center gap-2 text-sm font-semibold text-[#0f1a17]">
-        <input type="checkbox" name="featured" defaultChecked={trip?.featured ?? false} className="h-4 w-4 accent-[#e85d2c]" />
+      <label className="mt-4 flex w-fit items-center gap-2 text-sm font-semibold text-[var(--primary)]">
+        <input type="checkbox" name="featured" defaultChecked={trip?.featured ?? false} className="h-4 w-4 accent-[var(--accent)]" />
         Featured on website
       </label>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <button
           type="submit"
-          className="inline-flex h-10 items-center gap-2 rounded-md bg-[#0f1a17] px-4 text-sm font-semibold text-white hover:bg-[#22312b]"
+          className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
         >
           {mode === "create" ? <Plus className="h-4 w-4" /> : <Save className="h-4 w-4" />}
           {mode === "create" ? "Add program" : "Save changes"}
@@ -449,10 +457,10 @@ function TextField({
 }: InputHTMLAttributes<HTMLInputElement> & { label: string; name: string }) {
   return (
     <label className={`block ${className ?? ""}`}>
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#706b62]">{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">{label}</span>
       <input
         name={name}
-        className="mt-2 h-10 w-full rounded-md border border-[#d9d2c3] bg-white px-3 text-sm outline-none focus:border-[#e85d2c] focus:ring-2 focus:ring-[#e85d2c]/15"
+        className="mt-2 h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
         {...props}
       />
     </label>
@@ -467,10 +475,10 @@ function TextareaField({
 }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; name: string }) {
   return (
     <label className={`block ${className ?? ""}`}>
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#706b62]">{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">{label}</span>
       <textarea
         name={name}
-        className="mt-2 w-full rounded-md border border-[#d9d2c3] bg-white px-3 py-2 text-sm outline-none focus:border-[#e85d2c] focus:ring-2 focus:ring-[#e85d2c]/15"
+        className="mt-2 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
         {...props}
       />
     </label>
@@ -490,11 +498,11 @@ function SelectField({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#706b62]">{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">{label}</span>
       <select
         name={name}
         defaultValue={defaultValue}
-        className="mt-2 h-10 w-full rounded-md border border-[#d9d2c3] bg-white px-3 text-sm outline-none focus:border-[#e85d2c] focus:ring-2 focus:ring-[#e85d2c]/15"
+        className="mt-2 h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -511,7 +519,6 @@ function MetricCard({
   label,
   value,
   detail,
-  tone,
 }: {
   icon: LucideIcon;
   label: string;
@@ -519,25 +526,18 @@ function MetricCard({
   detail: string;
   tone: "orange" | "green" | "blue" | "slate";
 }) {
-  const tones = {
-    orange: "bg-[#fff3ed] text-[#c34a21]",
-    green: "bg-[#e8f0eb] text-[#2d5f4e]",
-    blue: "bg-[#edf4ff] text-[#24548f]",
-    slate: "bg-[#eff1ee] text-[#3e4641]",
-  };
-
   return (
-    <div className="rounded-md border border-[#ded7ca] bg-white p-4 shadow-sm">
+    <div className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm transition-colors hover:border-[var(--accent)]">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-sm font-medium text-[#5c5c56]">{label}</div>
-          <div className="mt-2 text-3xl font-semibold text-[#0f1a17]">{value}</div>
+          <div className="text-sm font-medium text-[var(--muted-foreground)]">{label}</div>
+          <div className="mt-2 font-display text-4xl leading-none text-[var(--primary)]">{value}</div>
         </div>
-        <div className={`flex h-11 w-11 items-center justify-center rounded-md ${tones[tone]}`}>
+        <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[var(--accent)] text-[var(--accent-foreground)]">
           <Icon className="h-5 w-5" />
         </div>
       </div>
-      <div className="mt-4 border-t border-[#eee7dc] pt-3 text-sm text-[#5c5c56]">{detail}</div>
+      <div className="mt-4 border-t border-[var(--border)] pt-3 text-sm text-[var(--muted-foreground)]">{detail}</div>
     </div>
   );
 }
@@ -546,10 +546,10 @@ function SectionHeader({ eyebrow, title, action }: { eyebrow: string; title: str
   return (
     <div className="flex items-end justify-between gap-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#e85d2c]">{eyebrow}</p>
-        <h2 className="mt-1 text-2xl font-semibold text-[#0f1a17]">{title}</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--foreground)]">{eyebrow}</p>
+        <h2 className="mt-1 font-display text-3xl leading-none text-[var(--primary)]">{title}</h2>
       </div>
-      <span className="text-sm font-medium text-[#5c5c56]">{action}</span>
+      <span className="text-sm font-medium text-[var(--muted-foreground)]">{action}</span>
     </div>
   );
 }
@@ -557,7 +557,7 @@ function SectionHeader({ eyebrow, title, action }: { eyebrow: string; title: str
 function SidebarSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h2 className="mb-3 text-lg font-semibold text-[#0f1a17]">{title}</h2>
+      <h2 className="mb-3 font-display text-2xl leading-none text-[var(--primary)]">{title}</h2>
       {children}
     </section>
   );
@@ -565,10 +565,10 @@ function SidebarSection({ title, children }: { title: string; children: ReactNod
 
 function EmptyState() {
   return (
-    <div className="rounded-md border border-dashed border-[#cfc6b7] bg-white p-8 text-center shadow-sm">
-      <Inbox className="mx-auto h-8 w-8 text-[#2d5f4e]" />
-      <h3 className="mt-3 text-base font-semibold text-[#0f1a17]">No registrations yet</h3>
-      <p className="mt-2 text-sm text-[#5c5c56]">New website registrations will appear here.</p>
+    <div className="rounded-md border border-dashed border-[var(--border)] bg-white p-8 text-center shadow-sm">
+      <Inbox className="mx-auto h-8 w-8 text-[var(--foreground)]" />
+      <h3 className="mt-3 text-base font-semibold text-[var(--primary)]">No registrations yet</h3>
+      <p className="mt-2 text-sm text-[var(--muted-foreground)]">New website registrations will appear here.</p>
     </div>
   );
 }
@@ -577,14 +577,14 @@ function MiniStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-md bg-white/10 p-3">
       <div className="text-2xl font-semibold">{value}</div>
-      <div className="mt-1 text-sm text-[#d9d2c3]">{label}</div>
+      <div className="mt-1 text-sm text-[var(--border)]">{label}</div>
     </div>
   );
 }
 
 function TypePill({ label }: { label: string }) {
   return (
-    <span className="inline-flex w-fit rounded-md bg-[#f4efe6] px-2 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-[#5c5c56]">
+    <span className="inline-flex w-fit rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
       {label}
     </span>
   );

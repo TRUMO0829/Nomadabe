@@ -34,20 +34,20 @@ export function AdminVisualEditor({ settings }: Props) {
   }
 
   return (
-    <form action={save} className="overflow-hidden rounded-md border border-[#ded7ca] bg-[#151b18] shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-[#0f1a17] px-4 py-3 text-white">
+    <form action={save} className="overflow-hidden rounded-md border border-[var(--border)] bg-[var(--primary)] shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-[var(--primary)] px-4 py-3 text-white">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#e85d2c]">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[var(--accent)] text-[var(--accent-foreground)]">
             <Palette className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#f6b79f]">Visual editor</p>
-            <h3 className="text-base font-semibold">Homepage hero canvas</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Visual editor</p>
+            <h3 className="font-display text-xl leading-none">Homepage hero canvas</h3>
           </div>
         </div>
         <button
           type="submit"
-          className="inline-flex h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-semibold text-[#0f1a17] hover:bg-[#f4efe6] disabled:opacity-70"
+          className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--accent-foreground)] transition-colors hover:bg-[var(--secondary)] disabled:opacity-70"
           disabled={isPending}
         >
           <Save className="h-4 w-4" />
@@ -56,14 +56,14 @@ export function AdminVisualEditor({ settings }: Props) {
       </div>
 
       <div className="grid gap-0 xl:grid-cols-[340px_1fr]">
-        <div className="border-b border-white/10 bg-[#111713] p-4 text-white xl:border-b-0 xl:border-r">
+        <div className="border-b border-white/10 bg-black/25 p-4 text-white xl:border-b-0 xl:border-r">
           <div className="space-y-4">
             <EditorField icon={Type} label="Badge">
               <input
                 name="heroBadge"
                 value={draft.heroBadge}
                 onChange={(event) => updateDraft("heroBadge", event.target.value)}
-                className="h-10 w-full rounded-md border border-white/10 bg-white/10 px-3 text-sm outline-none focus:border-[#f6b79f]"
+                className="h-10 w-full rounded-md border border-white/10 bg-white/10 px-3 text-sm outline-none transition-colors focus:border-[var(--accent)]"
               />
             </EditorField>
 
@@ -73,7 +73,7 @@ export function AdminVisualEditor({ settings }: Props) {
                 value={draft.heroTitle}
                 onChange={(event) => updateDraft("heroTitle", event.target.value)}
                 rows={3}
-                className="w-full rounded-md border border-white/10 bg-white/10 px-3 py-2 text-sm outline-none focus:border-[#f6b79f]"
+                className="w-full rounded-md border border-white/10 bg-white/10 px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)]"
               />
             </EditorField>
 
@@ -83,7 +83,7 @@ export function AdminVisualEditor({ settings }: Props) {
                 value={draft.heroSubtitle}
                 onChange={(event) => updateDraft("heroSubtitle", event.target.value)}
                 rows={4}
-                className="w-full rounded-md border border-white/10 bg-white/10 px-3 py-2 text-sm outline-none focus:border-[#f6b79f]"
+                className="w-full rounded-md border border-white/10 bg-white/10 px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)]"
               />
             </EditorField>
 
@@ -92,7 +92,7 @@ export function AdminVisualEditor({ settings }: Props) {
                 name="heroImage"
                 value={draft.heroImage}
                 onChange={(event) => updateDraft("heroImage", event.target.value)}
-                className="h-10 w-full rounded-md border border-white/10 bg-white/10 px-3 text-sm outline-none focus:border-[#f6b79f]"
+                className="h-10 w-full rounded-md border border-white/10 bg-white/10 px-3 text-sm outline-none transition-colors focus:border-[var(--accent)]"
               />
             </EditorField>
 
@@ -126,22 +126,22 @@ export function AdminVisualEditor({ settings }: Props) {
                 step="0.01"
                 value={draft.heroOverlayOpacity}
                 onChange={(event) => updateDraft("heroOverlayOpacity", Number(event.target.value))}
-                className="w-full accent-[#e85d2c]"
+                className="w-full accent-[var(--accent)]"
               />
             </EditorField>
           </div>
         </div>
 
-        <div className="bg-[#202622] p-4 sm:p-6">
+        <div className="bg-black/35 p-4 sm:p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-white">
             <div className="flex items-center gap-2 text-sm font-semibold">
-              <Layers className="h-4 w-4 text-[#f6b79f]" />
+              <Layers className="h-4 w-4 text-[var(--accent)]" />
               Live preview
             </div>
             <div className="flex items-center gap-2 text-xs text-white/60">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#ff6b57]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-[#ffd166]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-[#6bd48f]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-white/30" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-white/60" />
             </div>
           </div>
 
@@ -172,12 +172,12 @@ export function AdminVisualEditor({ settings }: Props) {
                   {draft.heroSubtitle}
                 </p>
 
-                <div className="mt-8 max-w-3xl rounded-full bg-[#f6f2ea] p-2 shadow-xl">
-                  <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1 text-[#111713]">
+                <div className="mt-8 max-w-3xl rounded-full bg-[var(--background)] p-2 shadow-xl">
+                  <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1 text-[var(--foreground)]">
                     <PreviewSearchItem label="Where" value="Mongolia, Asia, Europe" accent={draft.accentColor} />
                     <PreviewSearchItem label="When" value="Any month" accent={draft.accentColor} />
                     <span
-                      className="inline-flex h-14 items-center justify-center rounded-full px-5 text-sm font-semibold text-white"
+                      className="inline-flex h-14 items-center justify-center rounded-full px-5 text-sm font-semibold text-[var(--accent-foreground)]"
                       style={{ backgroundColor: draft.accentColor }}
                     >
                       Search
@@ -204,8 +204,8 @@ function EditorField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#d9d2c3]">
-        <Icon className="h-3.5 w-3.5 text-[#f6b79f]" />
+      <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--border)]">
+        <Icon className="h-3.5 w-3.5 text-[var(--accent)]" />
         {label}
       </span>
       {children}
@@ -215,8 +215,8 @@ function EditorField({
 
 function PreviewSearchItem({ label, value, accent }: { label: string; value: string; accent: string }) {
   return (
-    <span className="min-w-0 border-r border-[#ded7ca] px-4 py-2">
-      <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[#706b62]">{label}</span>
+    <span className="min-w-0 border-r border-[var(--border)] px-4 py-2">
+      <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">{label}</span>
       <span className="mt-1 block truncate text-sm font-semibold" style={{ color: accent }}>
         {value}
       </span>
