@@ -20,10 +20,10 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_FILE = path.join(DATA_DIR, "admin-store.json");
 
 const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  heroBadge: "★★★★★ Rated by 1,200+ adventurers",
-  heroTitle: "Adventure the\nnomad way.",
+  heroBadge: "★★★★★ 1,200+ аялагчийн үнэлгээ",
+  heroTitle: "Аяллаа\nнүүдэлчин хэмнэлээр.",
   heroSubtitle:
-    "Small-group trips across Mongolia and beyond. Led by local experts. Built for travellers who'd rather ride than read about it.",
+    "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг төлөвлөн зохион байгуулна.",
   heroImage:
     "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=80&auto=format&fit=crop",
   accentColor: "#e85d2c",
@@ -266,19 +266,19 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
     id,
     slug,
     title,
-    location: fields.get("location") || existing?.location || "Custom",
-    country: fields.get("country") || existing?.country || "Custom",
+    location: fields.get("location") || existing?.location || "Захиалгат",
+    country: fields.get("country") || existing?.country || "Захиалгат",
     days: getNumberFromString(fields.get("days"), existing?.days ?? 5),
     groupSize: fields.get("groupSize") || existing?.groupSize || "Flexible",
     difficulty: getDifficulty(fields.get("difficulty") || existing?.difficulty || "Easy"),
     price: getNumberFromString(fields.get("price"), existing?.price ?? 0),
     currency: fields.get("currency") || existing?.currency || "MNT",
     image: fields.get("image") || existing?.image || DEFAULT_SITE_SETTINGS.heroImage,
-    tags: getListFromString(fields.get("tags"), existing?.tags ?? ["Custom"]),
+    tags: getListFromString(fields.get("tags"), existing?.tags ?? ["Захиалгат"]),
     rating: getNumberFromString(fields.get("rating"), existing?.rating ?? 4.8),
     reviews: getNumberFromString(fields.get("reviews"), existing?.reviews ?? 0),
     category: getCategory(fields.get("category") || existing?.category || "custom"),
-    summary: fields.get("summary") || existing?.summary || "Custom travel program.",
+    summary: fields.get("summary") || existing?.summary || "Захиалгат аяллын хөтөлбөр.",
     idealFor: getListFromString(fields.get("idealFor"), existing?.idealFor ?? []),
     includes: getListFromString(fields.get("includes"), existing?.includes ?? []),
     businessSupport: getListFromString(fields.get("businessSupport"), existing?.businessSupport ?? []),
