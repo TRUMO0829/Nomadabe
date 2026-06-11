@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, type ReactNode, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -23,6 +23,7 @@ type TripScope = "all" | "outbound" | "domestic";
 
 type FeaturedAdventuresProps = {
   adventures?: Adventure[];
+  beforeList?: ReactNode;
 };
 
 const difficultyColor: Record<string, string> = {
@@ -327,6 +328,7 @@ function TripRatingWidget({
 
 export function FeaturedAdventures({
   adventures = ADVENTURES,
+  beforeList,
 }: FeaturedAdventuresProps) {
   const [selected, setSelected] = useState<Adventure | null>(null);
   const [scope, setScope] = useState<TripScope>("all");
@@ -461,6 +463,8 @@ export function FeaturedAdventures({
           </div>
         </div>
       </div>
+
+      {beforeList}
 
       <div id="all" className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-20">
         <div className="mb-8 flex flex-col justify-between gap-4 lg:mb-10 lg:flex-row lg:items-end">

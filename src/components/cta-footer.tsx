@@ -16,6 +16,25 @@ const SOCIALS = [
   { label: "IG", href: "https://www.instagram.com/nomadabe.travel/" },
 ];
 
+const CONTACT_EMAIL = "ariunbold.nar@gmail.com";
+const MINISTER_TOWER_ADDRESS =
+  "Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia, Ulaanbaatar, Mongolia, 976";
+const MINISTER_TOWER_MAP_URL =
+  "https://www.google.com/maps/place/Minister+Tower/@47.9153226,106.917978,425m/data=!3m2!1e3!4b1!4m6!3m5!1s0x5d9693649ea1b323:0x8bb14a35346801cd!8m2!3d47.9153226!4d106.9205583!16s%2Fg%2F11ss8zbb4r?hl=en-US&entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D";
+const MINISTER_TOWER_EMBED_URL =
+  "https://maps.google.com/maps?q=47.9153226,106.9205583&z=17&ie=UTF8&iwloc=&output=embed";
+
+const CONTACTS = [
+  { type: "email", label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
+  { type: "phone", label: "9910 3258", href: "tel:+97699103258" },
+  { type: "phone", label: "9918 9317", href: "tel:+97699189317" },
+  {
+    type: "address",
+    label: MINISTER_TOWER_ADDRESS,
+    href: MINISTER_TOWER_MAP_URL,
+  },
+] as const;
+
 const INQUIRY_MESSAGE = {
   mn: "Nomadabe Travel-ийн аяллын төлөвлөлтийн мэдээлэл авах хүсэлтэй байна.",
   en: "I want to receive Nomadabe Travel trip planning information.",
@@ -38,12 +57,7 @@ const FOOTER_COPY = {
       { label: "Сэтгэл ханамж", href: "/#journal" },
       { label: "Холбоо барих", href: "/plan" },
     ],
-    contacts: [
-      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
-      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
-      { type: "address", label: "Улаанбаатар, Монгол", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
-      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
-    ],
+    contacts: CONTACTS,
     mapButton: "Google Maps нээх",
     copyright: "Бүх эрх хуулиар хамгаалагдсан.",
     legal: ["Үйлчилгээний нөхцөл", "Нууцлалын бодлого"],
@@ -61,12 +75,7 @@ const FOOTER_COPY = {
       { label: "Satisfaction", href: "/#journal" },
       { label: "Contact", href: "/plan" },
     ],
-    contacts: [
-      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
-      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
-      { type: "address", label: "Ulaanbaatar, Mongolia", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
-      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
-    ],
+    contacts: CONTACTS,
     mapButton: "Open in Google Maps",
     copyright: "All rights reserved.",
     legal: ["Terms of service", "Privacy policy"],
@@ -84,12 +93,7 @@ const FOOTER_COPY = {
       { label: "满意度", href: "/#journal" },
       { label: "联系", href: "/plan" },
     ],
-    contacts: [
-      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
-      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
-      { type: "address", label: "蒙古，乌兰巴托", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
-      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
-    ],
+    contacts: CONTACTS,
     mapButton: "打开 Google Maps",
     copyright: "版权所有。",
     legal: ["服务条款", "隐私政策"],
@@ -107,12 +111,7 @@ const FOOTER_COPY = {
       { label: "満足度", href: "/#journal" },
       { label: "お問い合わせ", href: "/plan" },
     ],
-    contacts: [
-      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
-      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
-      { type: "address", label: "ウランバートル、モンゴル", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
-      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
-    ],
+    contacts: CONTACTS,
     mapButton: "Google Maps を開く",
     copyright: "All rights reserved.",
     legal: ["利用規約", "プライバシーポリシー"],
@@ -130,12 +129,7 @@ const FOOTER_COPY = {
       { label: "만족도", href: "/#journal" },
       { label: "연락하기", href: "/plan" },
     ],
-    contacts: [
-      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
-      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
-      { type: "address", label: "울란바토르, 몽골", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
-      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
-    ],
+    contacts: CONTACTS,
     mapButton: "Google Maps 열기",
     copyright: "All rights reserved.",
     legal: ["서비스 약관", "개인정보 처리방침"],
@@ -252,7 +246,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
         <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-20">
           <div className="grid gap-10 lg:grid-cols-[1.15fr_0.65fr_1fr_0.95fr]">
             <div>
-              <Link href="/" className="inline-flex items-center gap-3">
+              <Link href="/#home" className="inline-flex items-center gap-3">
                 <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-white p-1.5">
                   <Image
                     src="/nomadabe-mark.png"
@@ -263,10 +257,10 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                   />
                 </span>
                 <span>
-                  <span className="block text-xl font-black uppercase tracking-wide">
+                  <span className="block text-xl font-black uppercase tracking-wide text-accent">
                     Nomadabe
                   </span>
-                  <span className="block text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                  <span className="block text-xs font-bold uppercase tracking-[0.2em] text-white">
                     {footer.tagline}
                   </span>
                 </span>
@@ -315,7 +309,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                 {footer.contactTitle}
               </h3>
               <ul className="space-y-4">
-                {footer.contacts.map((contact) => (
+                {CONTACTS.map((contact) => (
                   <li key={`${contact.type}-${contact.label}`}>
                     <a
                       href={contact.href}
@@ -346,14 +340,14 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
                 <iframe
                   title={footer.mapTitle}
-                  src="https://maps.google.com/maps?q=Ulaanbaatar%20Mongolia&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                  src={MINISTER_TOWER_EMBED_URL}
                   className="h-52 w-full border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
               </div>
               <a
-                href="https://maps.google.com/?q=Ulaanbaatar%20Mongolia"
+                href={MINISTER_TOWER_MAP_URL}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-white/65 transition-colors hover:text-accent"

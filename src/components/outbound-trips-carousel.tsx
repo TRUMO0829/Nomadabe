@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
-import { type Adventure } from "@/lib/adventures";
+import { getAdventureText, type Adventure } from "@/lib/adventures";
 import { useLanguage } from "./language-provider";
 
 const COPY = {
@@ -13,6 +13,7 @@ const COPY = {
     body:
       "Хятад, Япон, Солонгос, Турк зэрэг эрэлттэй чиглэлүүдийн аяллын багцууд.",
     priceFrom: "Эхлэх үнэ",
+    quote: "Санал авах",
     details: "Дэлгэрэнгүй",
     day: "хоног",
     previous: "Өмнөх",
@@ -24,6 +25,7 @@ const COPY = {
     body:
       "Popular travel packages across China, Japan, South Korea, Turkey, and more.",
     priceFrom: "From",
+    quote: "Request quote",
     details: "Details",
     day: "days",
     previous: "Previous",
@@ -35,6 +37,7 @@ const COPY = {
     body:
       "中国、日本、韩国、土耳其等热门目的地的旅行套餐。",
     priceFrom: "起价",
+    quote: "Request quote",
     details: "详情",
     day: "天",
     previous: "上一个",
@@ -46,6 +49,7 @@ const COPY = {
     body:
       "中国、日本、韓国、トルコなど人気目的地の旅行プラン。",
     priceFrom: "開始料金",
+    quote: "Request quote",
     details: "詳細",
     day: "日",
     previous: "前へ",
@@ -57,6 +61,7 @@ const COPY = {
     body:
       "중국, 일본, 한국, 터키 등 인기 목적지의 여행 패키지.",
     priceFrom: "시작가",
+    quote: "Request quote",
     details: "자세히",
     day: "일",
     previous: "이전",
@@ -181,26 +186,30 @@ export function OutboundTripsCarousel({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const backendOptions = adventures
     .filter((adventure) => adventure.country !== "Mongolia")
-    .map((adventure) => ({
-      id: adventure.id,
-      countryMn: adventure.country,
-      countryEn: adventure.country,
-      countryZh: adventure.country,
-      countryJa: adventure.country,
-      countryKo: adventure.country,
-      titleMn: adventure.title,
-      titleEn: adventure.title,
-      titleZh: adventure.title,
-      titleJa: adventure.title,
-      titleKo: adventure.title,
-      days: adventure.days,
-      price:
-        adventure.price > 0
-          ? `${adventure.price.toLocaleString()} ${adventure.currency}`
-          : copy.priceFrom,
-      image: adventure.image,
-    }));
-  const options = backendOptions.length > 0 ? backendOptions : OUTBOUND_OPTIONS;
+    .map((adventure) => {
+      const text = getAdventureText(adventure, contentLocale);
+
+      return {
+        id: `trip-${adventure.id}`,
+        countryMn: text.country,
+        countryEn: text.country,
+        countryZh: text.country,
+        countryJa: text.country,
+        countryKo: text.country,
+        titleMn: text.title,
+        titleEn: text.title,
+        titleZh: text.title,
+        titleJa: text.title,
+        titleKo: text.title,
+        days: adventure.days,
+        price:
+          adventure.price > 0
+            ? `${adventure.price.toLocaleString()} ${adventure.currency}`
+            : copy.quote,
+        image: adventure.image,
+      };
+    });
+  const options = [...OUTBOUND_OPTIONS, ...backendOptions];
 
   function scrollByCard(direction: "prev" | "next") {
     scrollerRef.current?.scrollBy({

@@ -1,19 +1,46 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useLanguage } from "./language-provider";
 
+const HERO_BACKGROUNDS = [
+  "/nomadabe-hero-panorama.png",
+  "/hero-winter.jpg",
+  "/hero-spring.jpg",
+  "/hero-autumn.jpg",
+];
+
 export function Hero() {
   const { t } = useLanguage();
+  const [activeImage, setActiveImage] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveImage((current) => (current + 1) % HERO_BACKGROUNDS.length);
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-primary px-6 py-24 lg:px-10">
-      <div
-        className="absolute inset-0 bg-cover bg-center scale-105"
-        style={{
-          backgroundImage: "url('/nomadabe-hero-panorama.png')",
-        }}
-      />
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-primary px-6 py-24 lg:px-10"
+    >
+      {HERO_BACKGROUNDS.map((image, index) => (
+        <motion.div
+          key={image}
+          aria-hidden="true"
+          initial={false}
+          animate={{ opacity: activeImage === index ? 1 : 0 }}
+          transition={{ duration: 1.1, ease: "easeInOut" }}
+          className="absolute inset-0 scale-105 bg-cover bg-center"
+          style={{
+            backgroundImage: `url('${image}')`,
+          }}
+        />
+      ))}
       <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/35 to-black/85" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
 
@@ -39,7 +66,6 @@ export function Hero() {
           {t.hero.body}
         </motion.p>
       </div>
-
     </section>
   );
 }

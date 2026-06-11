@@ -1,26 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
 import {
-  ArrowRight,
   Building2,
-  CalendarDays,
   Compass,
   Globe2,
-  MapPin,
-  MapPinned,
   MountainSnow,
   Palmtree,
   Search,
   Sparkles,
-  Star,
   Waves,
   type LucideIcon,
 } from "lucide-react";
 import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
 import { cn } from "@/lib/utils";
-import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 
 type LocalizedText = {
@@ -51,37 +44,37 @@ type DestinationPoint = {
   y: number;
 };
 
+export type DestinationFilter = {
+  ids: string[];
+  label: string;
+  active: boolean;
+};
+
 type TravelStylesProps = {
   adventures?: Adventure[];
+  embedded?: boolean;
+  onFilterChange?: (filter: DestinationFilter) => void;
 };
 
 const DESTINATION_COPY = {
   mn: {
-    eyebrow: "Чиглэлүүд",
-    title: "Аялал ба destination нэг дор.",
+    eyebrow: "Аяллууд",
+    title: "Аялал ба очих газар нэг дор.",
     body:
       "Газрын зураг дээрээс очих газраа сонгоод тухайн чиглэлд байгаа аяллуудаа шууд хар.",
     search: "Аялал хайх",
-    regionLabel: "Чиглэл сонгох",
+    regionLabel: "Аяллын чиглэл сонгох",
     mapTitle: "Destination map",
     mapBody:
       "Цэг дээр дарахад тухайн газрын аяллууд доор шүүгдэж, дэлгэрэнгүй мэдээлэл modal-аар нээгдэнэ.",
     selectedRoute: "Сонгосон чиглэл",
     allTrips: "Бүх аялал",
     routePoints: "Газрын цэгүүд",
-    tripList: "Тухайн чиглэлийн аяллууд",
-    tripListBody:
-      "Аяллын card дээр дараад үнэ, хөтөлбөр, багцын нөхцөл, route мэдээллээ харна.",
     trips: "аялал",
-    days: "өдөр",
-    price: "Үнэ",
-    quote: "Үнийн санал",
-    details: "Дэлгэрэнгүй",
-    empty: "Энэ сонголтод таарах аялал одоогоор алга.",
     clear: "Бүгдийг харах",
   },
   en: {
-    eyebrow: "Destinations",
+    eyebrow: "Trips",
     title: "Trips and destinations in one place.",
     body:
       "Choose a destination on the map and the matching trips open below.",
@@ -93,19 +86,11 @@ const DESTINATION_COPY = {
     selectedRoute: "Selected route",
     allTrips: "All trips",
     routePoints: "Map points",
-    tripList: "Trips for this destination",
-    tripListBody:
-      "Open a trip card to view pricing, itinerary, inclusions, and route details.",
     trips: "trips",
-    days: "days",
-    price: "Price",
-    quote: "Quote",
-    details: "Details",
-    empty: "No trips match this destination yet.",
     clear: "View all",
   },
   zh: {
-    eyebrow: "Destinations",
+    eyebrow: "Trips",
     title: "Trips and destinations in one place.",
     body:
       "Choose a destination on the map and the matching trips open below.",
@@ -117,19 +102,11 @@ const DESTINATION_COPY = {
     selectedRoute: "Selected route",
     allTrips: "All trips",
     routePoints: "Map points",
-    tripList: "Trips for this destination",
-    tripListBody:
-      "Open a trip card to view pricing, itinerary, inclusions, and route details.",
     trips: "trips",
-    days: "days",
-    price: "Price",
-    quote: "Quote",
-    details: "Details",
-    empty: "No trips match this destination yet.",
     clear: "View all",
   },
   ja: {
-    eyebrow: "Destinations",
+    eyebrow: "Trips",
     title: "Trips and destinations in one place.",
     body:
       "Choose a destination on the map and the matching trips open below.",
@@ -141,19 +118,11 @@ const DESTINATION_COPY = {
     selectedRoute: "Selected route",
     allTrips: "All trips",
     routePoints: "Map points",
-    tripList: "Trips for this destination",
-    tripListBody:
-      "Open a trip card to view pricing, itinerary, inclusions, and route details.",
     trips: "trips",
-    days: "days",
-    price: "Price",
-    quote: "Quote",
-    details: "Details",
-    empty: "No trips match this destination yet.",
     clear: "View all",
   },
   ko: {
-    eyebrow: "Destinations",
+    eyebrow: "Trips",
     title: "Trips and destinations in one place.",
     body:
       "Choose a destination on the map and the matching trips open below.",
@@ -165,15 +134,7 @@ const DESTINATION_COPY = {
     selectedRoute: "Selected route",
     allTrips: "All trips",
     routePoints: "Map points",
-    tripList: "Trips for this destination",
-    tripListBody:
-      "Open a trip card to view pricing, itinerary, inclusions, and route details.",
     trips: "trips",
-    days: "days",
-    price: "Price",
-    quote: "Quote",
-    details: "Details",
-    empty: "No trips match this destination yet.",
     clear: "View all",
   },
 } as const;
@@ -613,14 +574,15 @@ function matchesPoint(
   return matchesTerms(getSearchText(adventure, text), point.keywords);
 }
 
-export function TravelStyles({ adventures = ADVENTURES }: TravelStylesProps) {
+export function TravelStyles({
+  adventures = ADVENTURES,
+  embedded = false,
+  onFilterChange,
+}: TravelStylesProps) {
   const { contentLocale } = useLanguage();
   const [activeRegionId, setActiveRegionId] = useState("all");
   const [activePointId, setActivePointId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [selectedAdventure, setSelectedAdventure] = useState<Adventure | null>(
-    null
-  );
   const copy = DESTINATION_COPY[contentLocale];
 
   const activeRegion =
@@ -652,6 +614,11 @@ export function TravelStyles({ adventures = ADVENTURES }: TravelStylesProps) {
       );
     });
   }, [activeRegion, adventures, contentLocale, query, selectedPoint]);
+
+  const filteredAdventureIds = useMemo(
+    () => filteredAdventures.map((adventure) => adventure.id),
+    [filteredAdventures]
+  );
 
   const regionCounts = useMemo(
     () =>
@@ -690,41 +657,100 @@ export function TravelStyles({ adventures = ADVENTURES }: TravelStylesProps) {
   const selectedDescription = selectedPoint
     ? selectedPoint.description[contentLocale]
     : activeRegion.description[contentLocale];
+  const selectedRegionId = selectedPoint?.regionId ?? activeRegionId;
+  const mapRegionFill = (regionId: string) =>
+    selectedRegionId === regionId ? "#F2A6B1" : "#DCE9DD";
+  const mapRegionText = (regionId: string) =>
+    selectedRegionId === regionId ? "#E11D2E" : "#626262";
+  const selectMapRegion = (regionId: string) => {
+    setActiveRegionId(regionId);
+    setActivePointId(null);
+  };
+  const handleMapRegionKeyDown = (
+    event: KeyboardEvent<SVGGElement>,
+    regionId: string
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      selectMapRegion(regionId);
+    }
+  };
+
+  useEffect(() => {
+    onFilterChange?.({
+      ids: filteredAdventureIds,
+      label: selectedTitle,
+      active:
+        activeRegionId !== "all" ||
+        activePointId !== null ||
+        query.trim().length > 0,
+    });
+  }, [
+    activePointId,
+    activeRegionId,
+    filteredAdventureIds,
+    onFilterChange,
+    query,
+    selectedTitle,
+  ]);
 
   return (
-    <section id="destinations" className="bg-background font-sans">
-      <div className="relative isolate min-h-[520px] overflow-hidden bg-primary px-6 py-28 text-white lg:px-10 lg:py-36">
-        <div
-          className="absolute inset-0 -z-20 bg-cover bg-center"
-          style={{ backgroundImage: "url('/nomadabe-hero-panorama.png')" }}
-        />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/50 via-primary/62 to-primary/90" />
+    <section
+      id={embedded ? "trip-destinations" : "destinations"}
+      className="bg-background font-sans"
+    >
+      {!embedded && (
+        <div className="relative isolate min-h-[520px] overflow-hidden bg-primary px-6 py-28 text-white lg:px-10 lg:py-36">
+          <div
+            className="absolute inset-0 -z-20 bg-cover bg-center"
+            style={{ backgroundImage: "url('/nomadabe-hero-panorama.png')" }}
+          />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/50 via-primary/62 to-primary/90" />
 
-        <div className="mx-auto flex min-h-[350px] max-w-7xl flex-col justify-end">
-          <p className="mb-4 text-xs font-black uppercase tracking-[0.24em] text-accent lg:text-sm">
-            {copy.eyebrow}
-          </p>
-          <h1 className="max-w-4xl text-balance text-5xl font-black leading-none sm:text-6xl lg:text-7xl">
-            {copy.title}
-          </h1>
-          <p className="mt-5 max-w-2xl text-base font-semibold leading-relaxed text-white/78 lg:text-xl">
-            {copy.body}
-          </p>
+          <div className="mx-auto flex min-h-[350px] max-w-7xl flex-col justify-end">
+            <p className="mb-4 text-xs font-black uppercase tracking-[0.24em] text-accent lg:text-sm">
+              {copy.eyebrow}
+            </p>
+            <h1 className="max-w-4xl text-balance text-5xl font-black leading-none sm:text-6xl lg:text-7xl">
+              {copy.title}
+            </h1>
+            <p className="mt-5 max-w-2xl text-base font-semibold leading-relaxed text-white/78 lg:text-xl">
+              {copy.body}
+            </p>
 
-          <label className="mt-8 flex w-full max-w-md items-center gap-3 rounded-lg border border-white/22 bg-white/12 px-4 py-3 text-white shadow-xl backdrop-blur-sm transition-colors focus-within:border-accent">
-            <Search className="h-5 w-5 shrink-0 text-accent" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={copy.search}
-              aria-label={copy.search}
-              className="min-w-0 flex-1 bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/66"
-            />
-          </label>
+            <label className="mt-8 flex w-full max-w-md items-center gap-3 rounded-lg border border-white/22 bg-white/12 px-4 py-3 text-white shadow-xl backdrop-blur-sm transition-colors focus-within:border-accent">
+              <Search className="h-5 w-5 shrink-0 text-accent" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={copy.search}
+                aria-label={copy.search}
+                className="min-w-0 flex-1 bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/66"
+              />
+            </label>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10 lg:py-16">
+      <div
+        className={cn(
+          "mx-auto max-w-7xl px-6 lg:px-10",
+          embedded ? "py-12 lg:py-14" : "py-12 lg:py-16"
+        )}
+      >
+        {embedded && (
+          <div className="mb-7 max-w-3xl">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">
+              {copy.eyebrow}
+            </p>
+            <h2 className="mt-2 text-3xl font-black leading-tight text-foreground lg:text-4xl">
+              {copy.title}
+            </h2>
+            <p className="mt-3 text-sm font-semibold leading-7 text-muted-foreground lg:text-base">
+              {copy.body}
+            </p>
+          </div>
+        )}
         <div className="mb-7 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">
@@ -791,53 +817,135 @@ export function TravelStyles({ adventures = ADVENTURES }: TravelStylesProps) {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-          <div className="relative min-h-[440px] overflow-hidden rounded-lg border border-border bg-[#111410] shadow-sm">
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),transparent_38%),linear-gradient(135deg,rgba(255,212,0,0.12),transparent_42%)]" />
+          <div className="relative min-h-[480px] overflow-hidden rounded-lg border border-border bg-[#F4F4F1] shadow-sm">
+            <div className="absolute inset-y-0 right-0 w-[34%] bg-[#E5E5E5]" />
             <svg
-              aria-hidden="true"
+              aria-label={copy.mapTitle}
+              role="img"
               viewBox="0 0 1000 520"
-              className="absolute inset-0 h-full w-full text-white/13"
+              className="absolute inset-0 h-full w-full"
               preserveAspectRatio="none"
             >
               <path
-                d="M92 190 164 138l85 18 45-35 92 29 70-44 94 21 54 64 91 14 78 62 93 21 55 88-37 75-92 28-103-27-86 40-109-20-82 35-107-35-86 20-86-50 20-85-60-49 37-67-28-71Z"
-                fill="currentColor"
+                d="M682 0h318v520H668c24-42 29-86 12-132-19-51 2-96 44-121 35-21 37-58 10-96-31-44-24-83 20-117 20-16 18-36-72-54Z"
+                fill="#E6E6E4"
               />
-              <path
-                d="M615 157 706 133l93 34 74 73-22 88-87 53-96-23-61-80 8-121Z"
-                fill="rgba(255,255,255,0.11)"
-              />
-              <path
-                d="M320 285 398 244l101 18 72 62-31 69-99 30-96-18-54 31-77-37 22-70 84-44Z"
-                fill="rgba(255,212,0,0.14)"
-              />
-              <path
-                d="M130 330c109-31 192-18 282 9 103 31 187 26 286-10 78-28 143-27 247 15"
+              {[
+                {
+                  id: "turkey",
+                  label: "TURKEY",
+                  d: "M86 307 138 260l105 16 47 53-14 74-78 43-101-31-47-60 36-48Z",
+                  text: { x: 102, y: 418 },
+                },
+                {
+                  id: "mongolia",
+                  label: "MONGOLIA",
+                  d: "M312 157 449 111l164 36 66 81-42 93-172 28-142-42-62-81 51-69Z",
+                  text: { x: 384, y: 254 },
+                },
+                {
+                  id: "china",
+                  label: "CHINA",
+                  d: "M296 320 437 293l155 31 103 82-42 83-175 31-149-33-77-80 44-87Z",
+                  text: { x: 438, y: 418 },
+                },
+                {
+                  id: "korea",
+                  label: "KOREA",
+                  d: "M676 245 734 260l24 61-31 62-59-23-20-66 28-49Z",
+                  text: { x: 720, y: 380 },
+                },
+                {
+                  id: "japan",
+                  label: "JAPAN",
+                  d: "M798 128c38 16 70 48 72 82 2 37-30 70-67 86-26 11-49 39-45 71 34-11 74-38 104-72 53-59 65-133 27-187-24-35-59-53-91-70v90Z",
+                  text: { x: 835, y: 245 },
+                },
+                {
+                  id: "islands",
+                  label: "ISLANDS",
+                  d: "M592 438c26-13 56-9 74 10 20 21 13 50-15 62-31 13-68 1-83-22-11-18-1-39 24-50Z",
+                  text: { x: 633, y: 494 },
+                },
+              ].map((region) => (
+                <g
+                  key={region.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={region.label}
+                  className="cursor-pointer outline-none"
+                  onClick={() => selectMapRegion(region.id)}
+                  onKeyDown={(event) => handleMapRegionKeyDown(event, region.id)}
+                >
+                  <path
+                    d={region.d}
+                    fill={mapRegionFill(region.id)}
+                    stroke="#FFFFFF"
+                    strokeWidth="2"
+                    className="transition-colors duration-200"
+                  />
+                  <text
+                    x={region.text.x}
+                    y={region.text.y}
+                    fill={mapRegionText(region.id)}
+                    fontFamily="Arial, Helvetica, sans-serif"
+                    fontSize="26"
+                    fontWeight="800"
+                    fontStyle="italic"
+                  >
+                    {region.label}
+                  </text>
+                </g>
+              ))}
+              <g
                 fill="none"
-                stroke="rgba(255,212,0,0.32)"
-                strokeWidth="3"
-                strokeDasharray="9 14"
-              />
-              <path
-                d="M183 420c126-38 223-28 337 8 113 36 213 24 344-24"
-                fill="none"
-                stroke="rgba(255,255,255,0.17)"
+                stroke="#B8B8B8"
                 strokeWidth="2"
-                strokeDasharray="8 16"
-              />
+                strokeLinecap="round"
+                fontFamily="Arial, Helvetica, sans-serif"
+                fontWeight="800"
+              >
+                <path d="M162 243h111v34" />
+                <path d="M482 112V70h130" />
+                <path d="M628 407h120" />
+                <path d="M770 246h111" />
+                <path d="M116 304H38" />
+                <path d="M646 454h124" />
+              </g>
+              <g
+                fill="#8C8C8C"
+                fontFamily="Arial, Helvetica, sans-serif"
+                fontSize="19"
+                fontWeight="900"
+              >
+                <text x="38" y="302">ISTANBUL</text>
+                <text x="612" y="75">ULAANBAATAR</text>
+                <text x="748" y="413">SEOUL</text>
+                <text x="881" y="252">TOKYO</text>
+                <text x="42" y="239">CAPPADOCIA</text>
+                <text x="770" y="459">BALI</text>
+              </g>
+              <g fill="#8C8C8C">
+                <circle cx="162" cy="243" r="4" />
+                <circle cx="482" cy="112" r="4" />
+                <circle cx="628" cy="407" r="4" />
+                <circle cx="770" cy="246" r="4" />
+                <circle cx="116" cy="304" r="4" />
+                <circle cx="646" cy="454" r="4" />
+              </g>
             </svg>
 
-            <div className="relative z-10 flex min-h-[440px] flex-col justify-between p-5 text-white lg:p-7">
+            <div className="relative z-10 flex min-h-[480px] flex-col justify-between p-5 text-foreground lg:p-7">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-accent">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-foreground">
                     {copy.mapTitle}
                   </p>
-                  <p className="mt-2 max-w-xl text-sm font-semibold leading-relaxed text-white/70">
+                  <p className="mt-2 max-w-xl text-sm font-semibold leading-relaxed text-muted-foreground">
                     {copy.mapBody}
                   </p>
                 </div>
-                <div className="rounded-md border border-white/15 bg-white/10 px-3 py-2 text-xs font-black text-white/82 backdrop-blur-sm">
+                <div className="rounded-md border border-border bg-card px-3 py-2 text-xs font-black text-foreground shadow-sm">
                   {filteredAdventures.length} {copy.trips}
                 </div>
               </div>
@@ -868,18 +976,18 @@ export function TravelStyles({ adventures = ADVENTURES }: TravelStylesProps) {
                     >
                       <span
                         className={cn(
-                          "block h-4 w-4 rounded-full border-2 transition-all",
+                          "block h-3.5 w-3.5 rounded-full border-2 transition-all",
                           pointSelected
-                            ? "scale-125 border-accent bg-accent shadow-[0_0_0_8px_rgba(255,212,0,0.20)]"
-                            : "border-white bg-white hover:border-accent hover:bg-accent"
+                            ? "scale-125 border-[#E11D2E] bg-[#E11D2E] shadow-[0_0_0_7px_rgba(225,29,46,0.16)]"
+                            : "border-[#8C8C8C] bg-[#8C8C8C] hover:border-[#E11D2E] hover:bg-[#E11D2E]"
                         )}
                       />
                       <span
                         className={cn(
-                          "mt-2 hidden whitespace-nowrap rounded-md px-2 py-1 text-xs font-black shadow-sm sm:block",
+                          "mt-2 hidden whitespace-nowrap text-[11px] font-black uppercase tracking-wider sm:block",
                           pointSelected
-                            ? "bg-accent text-accent-foreground"
-                            : "bg-black/55 text-white backdrop-blur"
+                            ? "text-[#E11D2E]"
+                            : "text-[#707070]"
                         )}
                       >
                         {point.title[contentLocale]}
@@ -952,146 +1060,7 @@ export function TravelStyles({ adventures = ADVENTURES }: TravelStylesProps) {
           </aside>
         </div>
 
-        <div className="mt-12 border-t border-border pt-10">
-          <div className="mb-7 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">
-                {copy.tripList}
-              </p>
-              <h2 className="mt-2 text-3xl font-black leading-tight text-foreground lg:text-4xl">
-                {selectedTitle}
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm font-semibold leading-7 text-muted-foreground lg:text-base">
-                {copy.tripListBody}
-              </p>
-            </div>
-            <div className="rounded-full border border-border bg-card px-5 py-2 text-sm font-black text-foreground">
-              {filteredAdventures.length} {copy.trips}
-            </div>
-          </div>
-
-          {filteredAdventures.length > 0 ? (
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {filteredAdventures.map((adventure, index) => {
-                const text = getAdventureText(adventure, contentLocale);
-
-                return (
-                  <motion.article
-                    key={adventure.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-80px" }}
-                    transition={{
-                      duration: 0.45,
-                      delay: Math.min(index * 0.04, 0.2),
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setSelectedAdventure(adventure)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        setSelectedAdventure(adventure);
-                      }
-                    }}
-                    className="group cursor-pointer overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all hover:border-accent hover:shadow-xl"
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <div
-                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                        style={{ backgroundImage: `url(${adventure.image})` }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/76 via-black/10 to-transparent" />
-                      <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                        {text.tags.slice(0, 2).map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-md bg-white/95 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-foreground"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="absolute bottom-4 left-4 right-4 text-white">
-                        <div className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-white/75">
-                          <MapPin className="h-4 w-4 text-accent" />
-                          {text.location}, {text.country}
-                        </div>
-                        <h3 className="text-2xl font-black leading-tight text-balance">
-                          {text.title}
-                        </h3>
-                      </div>
-                    </div>
-
-                    <div className="p-5">
-                      <p className="line-clamp-3 min-h-[4.875rem] text-sm font-semibold leading-6 text-muted-foreground">
-                        {text.summary}
-                      </p>
-
-                      <div className="mt-5 grid grid-cols-3 gap-2 border-y border-border py-4 text-sm">
-                        <div>
-                          <div className="mb-1 flex items-center gap-1.5 text-muted-foreground">
-                            <CalendarDays className="h-4 w-4 text-accent" />
-                            <span className="text-xs font-bold">
-                              {copy.days}
-                            </span>
-                          </div>
-                          <div className="font-black text-foreground">
-                            {adventure.days}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="mb-1 flex items-center gap-1.5 text-muted-foreground">
-                            <Star className="h-4 w-4 fill-accent text-accent" />
-                            <span className="text-xs font-bold">Rating</span>
-                          </div>
-                          <div className="font-black text-foreground">
-                            {adventure.rating}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="mb-1 text-xs font-bold text-muted-foreground">
-                            {copy.price}
-                          </div>
-                          <div className="truncate font-black text-foreground">
-                            {adventure.price > 0
-                              ? `${adventure.price.toLocaleString()}`
-                              : copy.quote}
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setSelectedAdventure(adventure);
-                        }}
-                        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-black text-primary-foreground transition-colors group-hover:bg-accent group-hover:text-accent-foreground"
-                      >
-                        {copy.details}
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </motion.article>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-lg border border-border bg-card p-10 text-center">
-              <MapPinned className="mx-auto h-10 w-10 text-accent" />
-              <p className="mt-4 text-base font-black text-foreground">
-                {copy.empty}
-              </p>
-            </div>
-          )}
-        </div>
       </div>
-
-      <AdventureModal
-        adventure={selectedAdventure}
-        onClose={() => setSelectedAdventure(null)}
-      />
     </section>
   );
 }

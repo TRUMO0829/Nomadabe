@@ -36,12 +36,12 @@
 *::before,
 *::after {
   border-color: var(--border);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif !important;
 }
 
 html {
   scroll-behavior: smooth;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif !important;
 }
 
 body {
@@ -51,19 +51,22 @@ body {
     var(--background);
   background-size: 42px 42px;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif !important;
   -webkit-font-smoothing: antialiased;
 }
 
-.font-display {
-  font-family: Arial, Helvetica, sans-serif;
+.font-display,
+.font-sans,
+.font-serif,
+.font-mono {
+  font-family: Arial, Helvetica, sans-serif !important;
 }
 
 button,
 input,
 select,
 textarea {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif !important;
 }
 
 .text-balance {

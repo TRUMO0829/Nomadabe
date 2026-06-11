@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/navbar";
-import { FeaturedAdventures } from "@/components/featured-adventures";
+import { ToursExperience } from "@/components/tours-experience";
 import { CtaFooter } from "@/components/cta-footer";
 import { getTrips } from "@/lib/server/admin-store";
 
@@ -19,7 +19,7 @@ export default async function ToursPage() {
     <>
       <Navbar />
       <main className="flex-1">
-        <FeaturedAdventures adventures={adventures} />
+        <ToursExperience adventures={adventures} />
         <CtaFooter />
       </main>
     </>

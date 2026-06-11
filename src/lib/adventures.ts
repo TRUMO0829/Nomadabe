@@ -1368,22 +1368,25 @@ export function getAdventureGalleryImages(adventure: Adventure): string[] {
 
 export function getAdventureText(adventure: Adventure, locale: Locale): AdventureText {
   const copyLocale = getCopyLocale(locale);
+  const localizedText = ADVENTURE_TEXT[copyLocale][adventure.id];
 
-  return (
-    ADVENTURE_TEXT[copyLocale][adventure.id] ?? {
-      title: adventure.title,
-      location: adventure.location,
-      country: adventure.country,
-      groupSize: adventure.groupSize,
-      difficulty: adventure.difficulty,
-      tags: adventure.tags,
-      summary: adventure.summary,
-      idealFor: adventure.idealFor,
-      includes: adventure.includes,
-      businessSupport: adventure.businessSupport,
-      nextDeparture: adventure.nextDeparture,
-    }
-  );
+  if (localizedText && adventure.slug !== "gobi-seven-day-private-trip") {
+    return localizedText;
+  }
+
+  return {
+    title: adventure.title,
+    location: adventure.location,
+    country: adventure.country,
+    groupSize: adventure.groupSize,
+    difficulty: adventure.difficulty,
+    tags: adventure.tags,
+    summary: adventure.summary,
+    idealFor: adventure.idealFor,
+    includes: adventure.includes,
+    businessSupport: adventure.businessSupport,
+    nextDeparture: adventure.nextDeparture,
+  };
 }
 
 export function getAdventureDetailInfo(

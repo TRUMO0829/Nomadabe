@@ -18,29 +18,29 @@ import { useLanguage } from "./language-provider";
 
 const NAV_DESTINATION_COPY = {
   mn: {
-    title: "Чиглэлүүд",
-    body: "Улс, хот, сонирхол болон аяллын хэв маягаар чиглэлүүдийг үзээрэй.",
-    viewAll: "Бүх чиглэлийг харах",
+    title: "Аяллууд",
+    body: "Аялал, чиглэл, очих газраа нэг дороос сонго.",
+    viewAll: "Бүх аяллыг харах",
   },
   en: {
-    title: "Destinations",
-    body: "Browse outbound and domestic routes by country and travel type.",
-    viewAll: "View all destinations",
+    title: "Trips",
+    body: "Browse trips and destinations together by country and travel type.",
+    viewAll: "View all trips",
   },
   zh: {
-    title: "Destinations",
-    body: "Browse outbound and domestic routes by country and travel type.",
-    viewAll: "View all destinations",
+    title: "Trips",
+    body: "Browse trips and destinations together by country and travel type.",
+    viewAll: "View all trips",
   },
   ja: {
-    title: "Destinations",
-    body: "Browse outbound and domestic routes by country and travel type.",
-    viewAll: "View all destinations",
+    title: "Trips",
+    body: "Browse trips and destinations together by country and travel type.",
+    viewAll: "View all trips",
   },
   ko: {
-    title: "Destinations",
-    body: "Browse outbound and domestic routes by country and travel type.",
-    viewAll: "View all destinations",
+    title: "Trips",
+    body: "Browse trips and destinations together by country and travel type.",
+    viewAll: "View all trips",
   },
 } as const;
 
@@ -106,7 +106,7 @@ function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
           </p>
         </div>
         <Link
-          href="/destinations"
+          href="/tours"
           className="inline-flex items-center justify-center rounded-md bg-accent px-4 py-3 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary lg:justify-self-end"
         >
           {copy.viewAll}
@@ -129,7 +129,7 @@ function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
                 {group.items.map((item) => (
                   <li key={item}>
                     <Link
-                      href="/destinations"
+                      href="/tours"
                       className="block rounded-md px-2 py-1.5 text-sm font-semibold text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
                     >
                       {item}
@@ -172,13 +172,18 @@ export function Navbar() {
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-10 h-16 lg:h-20 flex items-center justify-between">
         <Link
-          href="/"
+          href="/#home"
           aria-label="Nomadabe Travel"
           className="flex shrink-0 items-center gap-3"
         >
           <span
             aria-hidden="true"
-            className="h-10 w-10 rounded-md bg-black bg-[url('/nomadabe-mark.png')] bg-center bg-no-repeat shadow-sm ring-1 ring-white/20 [background-size:175%] [background-position:center_35%] lg:h-12 lg:w-12"
+            className={cn(
+              "h-10 w-10 bg-[url('/nomadabe-mark-transparent.png')] bg-center bg-no-repeat [background-size:175%] [background-position:center_35%] lg:h-12 lg:w-12",
+              scrolled
+                ? "invert"
+                : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
+            )}
           />
           <span className="flex flex-col leading-none">
             <span className="font-sans text-xl font-black text-accent lg:text-2xl">
@@ -197,9 +202,9 @@ export function Navbar() {
 
         <nav className="hidden lg:flex items-center gap-8">
           {t.nav.items.map((n) => {
-            const isDestination = n.href === "/destinations";
+            const isTrips = n.href === "/tours";
 
-            if (!isDestination) {
+            if (!isTrips) {
               return (
                 <a
                   key={n.href}

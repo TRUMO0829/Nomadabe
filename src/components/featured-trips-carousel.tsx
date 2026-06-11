@@ -62,14 +62,25 @@ type FeaturedTripsCarouselProps = {
   adventures?: Adventure[];
 };
 
+function uniqueBySlug(trips: Adventure[]) {
+  const seen = new Set<string>();
+
+  return trips.filter((trip) => {
+    if (seen.has(trip.slug)) return false;
+    seen.add(trip.slug);
+    return true;
+  });
+}
+
 export function FeaturedTripsCarousel({
   adventures = ADVENTURES,
 }: FeaturedTripsCarouselProps) {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
-  const featuredTrips = adventures
-    .filter((adventure) => adventure.featured && adventure.country !== "Mongolia")
-    .slice(0, 4);
+  const featuredTrips = uniqueBySlug([
+    ...adventures.filter((adventure) => adventure.featured),
+    ...ADVENTURES.filter((adventure) => adventure.featured),
+  ]).slice(0, 4);
 
   return (
     <section className="bg-background py-20 lg:py-28">
