@@ -37,7 +37,7 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "Аяллууд", href: "/tours" },
-        { label: "Чиглэлүүд", href: "/#destinations" },
+        { label: "Чиглэлүүд", href: "/destinations" },
         { label: "Сэтгэгдэл", href: "/#journal" },
         { label: "Бидний тухай", href: "/#about" },
       ],
@@ -209,7 +209,7 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "Adventures", href: "/tours" },
-        { label: "Destinations", href: "/#destinations" },
+        { label: "Destinations", href: "/destinations" },
         { label: "Reviews", href: "/#journal" },
         { label: "About", href: "/#about" },
       ],
@@ -375,7 +375,7 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "旅游", href: "/tours" },
-        { label: "目的地", href: "/#destinations" },
+        { label: "目的地", href: "/destinations" },
         { label: "评价", href: "/#journal" },
         { label: "关于我们", href: "/#about" },
       ],
@@ -541,7 +541,7 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "ツアー", href: "/tours" },
-        { label: "目的地", href: "/#destinations" },
+        { label: "目的地", href: "/destinations" },
         { label: "レビュー", href: "/#journal" },
         { label: "私たちについて", href: "/#about" },
       ],
@@ -707,7 +707,7 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "여행", href: "/tours" },
-        { label: "목적지", href: "/#destinations" },
+        { label: "목적지", href: "/destinations" },
         { label: "후기", href: "/#journal" },
         { label: "회사 소개", href: "/#about" },
       ],

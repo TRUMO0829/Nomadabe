@@ -9,9 +9,11 @@ import { ArrowRight, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
 import { useLanguage } from "./language-provider";
 
 const SOCIALS = [
-  { label: "FB", href: "#" },
-  { label: "IG", href: "#" },
-  { label: "TT", href: "#" },
+  {
+    label: "FB",
+    href: "https://www.facebook.com/p/Nomadabe-Travel-61564497080885/",
+  },
+  { label: "IG", href: "https://www.instagram.com/nomadabe.travel/" },
 ];
 
 const INQUIRY_MESSAGE = {
@@ -264,13 +266,13 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                   <span className="block text-xl font-black uppercase tracking-wide">
                     Nomadabe
                   </span>
-                  <span className="block text-xs font-bold uppercase tracking-[0.2em] text-white/55">
+                  <span className="block text-xs font-bold uppercase tracking-[0.2em] text-accent">
                     {footer.tagline}
                   </span>
                 </span>
               </Link>
 
-              <p className="mt-6 max-w-sm text-sm leading-7 text-white/68">
+              <p className="mt-6 max-w-sm text-sm leading-7 text-white/70">
                 {footer.description}
               </p>
 
@@ -279,8 +281,10 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                   <a
                     key={social.label}
                     href={social.href}
+                    target="_blank"
+                    rel="noreferrer"
                     aria-label={social.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-xs font-black text-white transition-colors hover:bg-accent hover:text-accent-foreground"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-xs font-black text-white transition-colors hover:border-accent hover:bg-accent hover:text-accent-foreground"
                   >
                     {social.label}
                   </a>
@@ -289,7 +293,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </div>
 
             <nav>
-              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-red-500">
+              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-accent">
                 {footer.linksTitle}
               </h3>
               <ul className="space-y-3">
@@ -307,7 +311,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </nav>
 
             <div>
-              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-red-500">
+              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-accent">
                 {footer.contactTitle}
               </h3>
               <ul className="space-y-4">
@@ -317,7 +321,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       href={contact.href}
                       className="group flex gap-3 text-sm leading-6 text-white/72"
                     >
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition-colors group-hover:bg-red-500 group-hover:text-white">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
                         {contact.type === "phone" ? (
                           <Phone className="h-4 w-4" />
                         ) : contact.type === "address" ? (
@@ -336,7 +340,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </div>
 
             <div>
-              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-red-500">
+              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-accent">
                 {footer.mapTitle}
               </h3>
               <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">

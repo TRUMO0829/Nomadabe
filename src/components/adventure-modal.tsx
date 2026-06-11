@@ -248,7 +248,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                     <ul className="space-y-3 text-sm text-foreground/80">
                       {details.excluded.map((item) => (
                         <li key={item} className="flex gap-2.5">
-                          <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+                          <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
                           <span>{item}</span>
                         </li>
                       ))}

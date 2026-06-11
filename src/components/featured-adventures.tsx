@@ -29,7 +29,7 @@ const difficultyColor: Record<string, string> = {
   Easy: "bg-accent text-accent-foreground",
   Moderate: "bg-secondary text-foreground",
   Challenging: "bg-primary text-primary-foreground",
-  Tough: "bg-red-100 text-red-800",
+  Tough: "bg-accent text-accent-foreground",
 };
 
 const SECTION_COPY = {
@@ -245,7 +245,7 @@ function TripRatingWidget({
           }}
           className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs font-black text-foreground transition-colors hover:border-accent hover:bg-accent"
         >
-          <Star className="h-4 w-4 fill-red-500 text-red-500" />
+          <Star className="h-4 w-4 fill-accent text-accent" />
           {status === "success" ? copy.done : copy.rate}
         </button>
       ) : (
@@ -264,7 +264,7 @@ function TripRatingWidget({
                 aria-label={`${copy.score} ${value}`}
                 aria-pressed={rating === value}
                 onClick={() => setRating(value)}
-                className="rounded-sm p-0.5 text-red-500 transition-transform hover:scale-110"
+                className="rounded-sm p-0.5 text-accent transition-transform hover:scale-110"
               >
                 <Star
                   className={`h-4 w-4 ${
