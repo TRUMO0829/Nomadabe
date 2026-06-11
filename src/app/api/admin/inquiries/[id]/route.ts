@@ -1,4 +1,5 @@
 import { apiError, ok } from "@/lib/server/api";
+import { getAdminFromRequest } from "@/lib/server/admin-auth";
 import { getInquiries, isInquiryStatus, updateInquiryStatus } from "@/lib/server/inquiries";
 
 export const runtime = "nodejs";
@@ -9,7 +10,11 @@ type RouteContext = {
   }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
+  if (!getAdminFromRequest(request)) {
+    return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
+  }
+
   const { id } = await context.params;
   const inquiry = (await getInquiries()).find((item) => item.id === id);
 
@@ -21,6 +26,10 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
+  if (!getAdminFromRequest(request)) {
+    return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
+  }
+
   const { id } = await context.params;
   const payload = await request.json().catch(() => null);
   const status = isRecord(payload) && typeof payload.status === "string" ? payload.status : "";

@@ -18,10 +18,14 @@ import {
   Trash2,
   UserCheck,
   Users,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { AdminVisualEditor } from "@/components/admin-visual-editor";
 import type { Adventure, TravelService } from "@/lib/adventures";
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
   getAdminDashboardData,
   getBookingCount,
@@ -30,6 +34,7 @@ import {
   deleteServiceAction,
   deleteTripAction,
   emailLatestInquiryAction,
+  logoutAdminAction,
   saveServiceAction,
   saveTripAction,
   sendAdminEmailAction,
@@ -57,6 +62,13 @@ const navItems = [
 ];
 
 export default async function AdminDashboard() {
+  const cookieStore = await cookies();
+  const admin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
+
+  if (!admin) {
+    redirect("/admin/login");
+  }
+
   const [{ trips, services, siteSettings, inquiries, bookingStats }, customers, emailLogs] =
     await Promise.all([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
   const featuredTrips = trips.filter((trip) => trip.featured);
@@ -110,8 +122,18 @@ export default async function AdminDashboard() {
                 Хамгаалагдсан
               </div>
               <p className="mt-2 text-sm leading-6 text-white/65">
-                Хөтөлбөр, бүртгэл, вебийн засварын хэсэг нэвтрэлтээр хамгаалагдсан.
+                {admin?.email ?? "Админ"} эрхээр нэвтэрсэн. Хөтөлбөр, бүртгэл,
+                вебийн засварын хэсэг нэвтрэлтээр хамгаалагдсан.
               </p>
+              <form action={logoutAdminAction} className="mt-4">
+                <button
+                  type="submit"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-white/15 bg-white/10 px-3 text-sm font-semibold text-white transition-colors hover:bg-white/15"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Гарах
+                </button>
+              </form>
             </div>
           </div>
         </aside>
@@ -139,6 +161,15 @@ export default async function AdminDashboard() {
               </div>
 
               <div className="flex flex-wrap gap-2">
+                <form action={logoutAdminAction}>
+                  <button
+                    type="submit"
+                    className="inline-flex h-10 items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/15"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Гарах
+                  </button>
+                </form>
                 <Link
                   href="/admin"
                   className="inline-flex h-10 items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/15"

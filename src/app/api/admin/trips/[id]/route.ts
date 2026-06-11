@@ -1,5 +1,6 @@
 import { apiError, ok } from "@/lib/server/api";
 import { deleteTripById, getTrips, upsertTripFromJson } from "@/lib/server/admin-store";
+import { getAdminFromRequest } from "@/lib/server/admin-auth";
 
 export const runtime = "nodejs";
 
@@ -9,7 +10,11 @@ type RouteContext = {
   }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
+  if (!getAdminFromRequest(request)) {
+    return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
+  }
+
   const { id } = await context.params;
   const trip = (await getTrips()).find((item) => item.id === id);
 
@@ -21,6 +26,10 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 export async function PUT(request: Request, context: RouteContext) {
+  if (!getAdminFromRequest(request)) {
+    return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
+  }
+
   const { id } = await context.params;
 
   try {
@@ -36,6 +45,10 @@ export async function PUT(request: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
+  if (!getAdminFromRequest(request)) {
+    return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
+  }
+
   const { id } = await context.params;
   const existing = (await getTrips()).find((trip) => trip.id === id);
 
@@ -56,7 +69,11 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_request: Request, context: RouteContext) {
+export async function DELETE(request: Request, context: RouteContext) {
+  if (!getAdminFromRequest(request)) {
+    return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
+  }
+
   const { id } = await context.params;
   const exists = (await getTrips()).some((trip) => trip.id === id);
 

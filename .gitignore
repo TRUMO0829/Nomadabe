@@ -27,6 +27,7 @@
 /data/admin-store.json
 /data/customers.json
 /data/auth-codes.json
+/data/admin-auth-codes.json
 /data/customer-sessions.json
 /data/email-log.json
 .venv/

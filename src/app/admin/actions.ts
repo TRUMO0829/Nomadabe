@@ -1,6 +1,9 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
   deleteTripById,
   deleteServiceById,
@@ -12,12 +15,14 @@ import { getInquiries, isInquiryStatus, updateInquiryStatus } from "@/lib/server
 import { sendEmail, sendEmailFromForm } from "@/lib/server/mail";
 
 export async function saveTripAction(formData: FormData) {
+  await assertAdminAction();
   await upsertTripFromForm(formData);
   revalidatePath("/");
   revalidatePath("/admin");
 }
 
 export async function deleteTripAction(formData: FormData) {
+  await assertAdminAction();
   const id = formData.get("id");
 
   if (typeof id === "string" && id) {
@@ -29,12 +34,14 @@ export async function deleteTripAction(formData: FormData) {
 }
 
 export async function saveSiteSettingsAction(formData: FormData) {
+  await assertAdminAction();
   await updateSiteSettingsFromForm(formData);
   revalidatePath("/");
   revalidatePath("/admin");
 }
 
 export async function saveServiceAction(formData: FormData) {
+  await assertAdminAction();
   await upsertServiceFromForm(formData);
   revalidatePath("/");
   revalidatePath("/admin");
@@ -42,6 +49,7 @@ export async function saveServiceAction(formData: FormData) {
 }
 
 export async function deleteServiceAction(formData: FormData) {
+  await assertAdminAction();
   const id = formData.get("id");
 
   if (typeof id === "string" && id) {
@@ -54,6 +62,7 @@ export async function deleteServiceAction(formData: FormData) {
 }
 
 export async function updateInquiryStatusAction(formData: FormData) {
+  await assertAdminAction();
   const id = formData.get("id");
   const status = formData.get("status");
 
@@ -74,11 +83,13 @@ export async function updateInquiryStatusAction(formData: FormData) {
 }
 
 export async function sendAdminEmailAction(formData: FormData) {
+  await assertAdminAction();
   await sendEmailFromForm(formData);
   revalidatePath("/admin");
 }
 
 export async function emailLatestInquiryAction(formData: FormData) {
+  await assertAdminAction();
   const subject = formData.get("subject");
   const body = formData.get("body");
   const inquiries = await getInquiries();
@@ -99,4 +110,24 @@ export async function emailLatestInquiryAction(formData: FormData) {
   }
 
   revalidatePath("/admin");
+}
+
+export async function logoutAdminAction() {
+  const cookieStore = await cookies();
+  cookieStore.set(ADMIN_SESSION_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    expires: new Date(0),
+  });
+  redirect("/admin/login");
+}
+
+async function assertAdminAction() {
+  const cookieStore = await cookies();
+  const admin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
+
+  if (!admin) {
+    redirect("/admin/login");
+  }
 }
