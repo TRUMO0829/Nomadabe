@@ -28,6 +28,7 @@
 /data/customers.json
 /data/auth-codes.json
 /data/customer-sessions.json
+/data/email-log.json
 .venv/
 .pyenv/
 .vscode/

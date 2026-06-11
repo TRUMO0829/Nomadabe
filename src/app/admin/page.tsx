@@ -4,17 +4,19 @@ import {
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
-  ClipboardList,
   Gauge,
   Inbox,
   LayoutDashboard,
+  Mail,
   Palette,
   Plane,
   Plus,
   RefreshCw,
   Save,
+  Send,
   ShieldCheck,
   Trash2,
+  UserCheck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -27,10 +29,14 @@ import {
 import {
   deleteServiceAction,
   deleteTripAction,
+  emailLatestInquiryAction,
   saveServiceAction,
   saveTripAction,
+  sendAdminEmailAction,
   updateInquiryStatusAction,
 } from "./actions";
+import { getCustomers } from "@/lib/server/customer-auth";
+import { getEmailLogs } from "@/lib/server/mail";
 
 export const dynamic = "force-dynamic";
 
@@ -44,14 +50,19 @@ const categoryLabels = {
 const navItems = [
   { label: "Overview", icon: LayoutDashboard },
   { label: "Registrations", icon: Users },
+  { label: "Customers", icon: UserCheck },
   { label: "Programs", icon: Plane },
+  { label: "Mail sender", icon: Mail },
   { label: "Visual editor", icon: Palette },
 ];
 
 export default async function AdminDashboard() {
-  const { trips, services, siteSettings, inquiries, bookingStats } = await getAdminDashboardData();
+  const [{ trips, services, siteSettings, inquiries, bookingStats }, customers, emailLogs] =
+    await Promise.all([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
   const featuredTrips = trips.filter((trip) => trip.featured);
   const latestInquiries = inquiries.slice(0, 12);
+  const latestCustomers = customers.slice(0, 12);
+  const latestEmailLogs = emailLogs.slice(0, 8);
   const upcomingDepartures = trips
     .filter((trip) => trip.nextDeparture)
     .sort((left, right) => String(left.nextDeparture).localeCompare(String(right.nextDeparture)));
@@ -147,12 +158,13 @@ export default async function AdminDashboard() {
           </header>
 
           <div className="space-y-8 px-5 py-6 sm:px-8 lg:px-10">
-            <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
               <MetricCard icon={Inbox} label="Total registrations" value={inquiries.length} detail={lastInquiry} tone="orange" />
               <MetricCard icon={Users} label="Program bookings" value={bookedPeople} detail="Trip-specific requests" tone="green" />
+              <MetricCard icon={UserCheck} label="Customers" value={customers.length} detail="Verified sign-ins" tone="slate" />
               <MetricCard icon={Plane} label="Programs" value={trips.length} detail={`${featuredTrips.length} featured`} tone="blue" />
               <MetricCard icon={CalendarDays} label="Departures" value={upcomingDepartures.length} detail="Scheduled programs" tone="slate" />
-              <MetricCard icon={ClipboardList} label="Services" value={services.length} detail="Service categories" tone="orange" />
+              <MetricCard icon={Mail} label="Emails" value={emailLogs.length} detail="Sent or queued" tone="orange" />
             </section>
 
             <section id="visual-editor" className="grid gap-6 xl:grid-cols-[1fr_380px]">
@@ -163,6 +175,11 @@ export default async function AdminDashboard() {
                 <SectionHeader eyebrow="Management" title="Add new program" action="Appears on website" />
                 <TripForm mode="create" />
 
+                <section id="mail-sender" className="space-y-4">
+                  <SectionHeader eyebrow="Automation" title="Mail sender" action="Manual and automatic emails" />
+                  <EmailComposer />
+                </section>
+
                 <SectionHeader eyebrow="Services" title="Manage services" action={`${services.length} total`} />
                 <ServiceForm mode="create" />
                 <div className="grid gap-3 lg:grid-cols-2">
@@ -171,16 +188,18 @@ export default async function AdminDashboard() {
                   ))}
                 </div>
 
-                <SectionHeader eyebrow="Programs" title="Edit programs" action={`${trips.length} total`} />
-                <div className="space-y-4">
-                  {trips.map((trip) => (
-                    <ProgramEditor
-                      key={trip.id}
-                      trip={trip}
-                      bookingCount={getBookingCount(bookingStats, trip.slug)}
-                    />
-                  ))}
-                </div>
+                <section id="programs" className="space-y-4">
+                  <SectionHeader eyebrow="Programs" title="Edit programs" action={`${trips.length} total`} />
+                  <div className="space-y-4">
+                    {trips.map((trip) => (
+                      <ProgramEditor
+                        key={trip.id}
+                        trip={trip}
+                        bookingCount={getBookingCount(bookingStats, trip.slug)}
+                      />
+                    ))}
+                  </div>
+                </section>
               </div>
 
               <aside className="space-y-6">
@@ -199,6 +218,28 @@ export default async function AdminDashboard() {
                     <MiniStat label="Booked trips" value={bookedPeople} />
                   </div>
                 </section>
+
+                <SidebarSection title="Email activity">
+                  <div className="space-y-2">
+                    {latestEmailLogs.length === 0 ? (
+                      <div className="rounded-md border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--muted-foreground)] shadow-sm">
+                        No emails yet
+                      </div>
+                    ) : (
+                      latestEmailLogs.map((log) => (
+                        <div key={log.id} className="rounded-md border border-[var(--border)] bg-white px-4 py-3 shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className="truncate text-sm font-semibold">{log.subject}</h3>
+                              <p className="mt-1 truncate text-sm text-[var(--muted-foreground)]">{log.to}</p>
+                            </div>
+                            <StatusPill label={log.status} />
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </SidebarSection>
 
                 <SidebarSection title="Bookings by program">
                   <div className="space-y-2">
@@ -301,6 +342,38 @@ export default async function AdminDashboard() {
                 </div>
               )}
             </section>
+
+            <section id="customers" className="space-y-4">
+              <SectionHeader eyebrow="Accounts" title="Customer registrations" action={`${latestCustomers.length} visible`} />
+              {latestCustomers.length === 0 ? (
+                <div className="rounded-md border border-dashed border-[var(--border)] bg-white p-8 text-center shadow-sm">
+                  <UserCheck className="mx-auto h-8 w-8 text-[var(--accent-foreground)]" />
+                  <h3 className="mt-3 text-base font-semibold text-[var(--primary)]">No verified customers yet</h3>
+                  <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                    Customers appear here after they verify an email or phone code.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {latestCustomers.map((customer) => (
+                    <div key={customer.id} className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="truncate text-sm font-semibold text-[var(--primary)]">
+                            {customer.email ?? customer.phone ?? "Customer"}
+                          </h3>
+                          <p className="mt-1 text-xs text-[var(--muted-foreground)]">ID: {customer.id.slice(0, 8)}</p>
+                        </div>
+                        <StatusPill label="verified" />
+                      </div>
+                      <div className="mt-4 border-t border-[var(--border)] pt-3 text-sm text-[var(--muted-foreground)]">
+                        Updated {formatDate(customer.updatedAt)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         </section>
       </div>
@@ -371,21 +444,29 @@ function ProgramEditor({ trip, bookingCount }: { trip: Adventure; bookingCount: 
   return (
     <details className="rounded-md border border-[var(--border)] bg-white shadow-sm">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <TypePill label={categoryLabels[trip.category]} />
-            {trip.featured ? (
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold text-[var(--foreground)]">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Featured
+        <div className="flex min-w-0 items-center gap-4">
+          <div
+            aria-hidden="true"
+            className="hidden h-20 w-28 shrink-0 rounded-md border border-[var(--border)] bg-cover bg-center sm:block"
+            style={{ backgroundImage: `url('${trip.image}')` }}
+          />
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <TypePill label={categoryLabels[trip.category]} />
+              {trip.featured ? (
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold text-[var(--foreground)]">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Featured
+                </span>
+              ) : null}
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold text-[var(--muted-foreground)]">
+                <Users className="h-3.5 w-3.5" />
+                {bookingCount} bookings
               </span>
-            ) : null}
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold text-[var(--muted-foreground)]">
-              <Users className="h-3.5 w-3.5" />
-              {bookingCount} bookings
-            </span>
+            </div>
+            <h3 className="mt-2 truncate text-base font-semibold text-[var(--primary)]">{trip.title}</h3>
+            <p className="mt-1 line-clamp-1 text-sm text-[var(--muted-foreground)]">{trip.summary}</p>
           </div>
-          <h3 className="mt-2 truncate text-base font-semibold text-[var(--primary)]">{trip.title}</h3>
         </div>
         <span className="text-sm text-[var(--muted-foreground)]">Edit</span>
       </summary>
@@ -403,6 +484,66 @@ function ProgramEditor({ trip, bookingCount }: { trip: Adventure; bookingCount: 
         </form>
       </div>
     </details>
+  );
+}
+
+function EmailComposer() {
+  return (
+    <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
+      <form action={sendAdminEmailAction} className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
+        <div className="mb-4 flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[var(--accent)] text-[var(--accent-foreground)]">
+            <Send className="h-4 w-4" />
+          </span>
+          <div>
+            <h3 className="font-display text-2xl leading-none text-[var(--primary)]">Send customer email</h3>
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+              Uses Resend when configured, otherwise stores a local queued log.
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <TextField label="Recipient email" name="to" type="email" placeholder="customer@example.com" required />
+          <TextField label="Subject" name="subject" placeholder="Your Nomadabe trip request" required />
+          <TextareaField
+            label="Message"
+            name="body"
+            rows={6}
+            className="lg:col-span-2"
+            placeholder="Write the message that should be sent to the customer."
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
+        >
+          <Send className="h-4 w-4" />
+          Send email
+        </button>
+      </form>
+
+      <form action={emailLatestInquiryAction} className="rounded-md border border-[var(--border)] bg-[var(--primary)] p-4 text-white shadow-sm">
+        <Mail className="h-6 w-6 text-[var(--accent)]" />
+        <h3 className="mt-4 font-display text-2xl leading-none">Quick follow-up</h3>
+        <p className="mt-2 text-sm leading-6 text-white/65">
+          Sends a template to the newest registration with an email address.
+        </p>
+        <input type="hidden" name="subject" value="Nomadabe Travel request received" />
+        <input
+          type="hidden"
+          name="body"
+          value="Hello, thank you for contacting Nomadabe Travel. Our team received your request and will follow up with trip details shortly."
+        />
+        <button
+          type="submit"
+          className="mt-5 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--accent-foreground)] hover:bg-[var(--secondary)]"
+        >
+          <Send className="h-4 w-4" />
+          Email latest registration
+        </button>
+      </form>
+    </div>
   );
 }
 
@@ -585,6 +726,14 @@ function MiniStat({ label, value }: { label: string; value: number }) {
 function TypePill({ label }: { label: string }) {
   return (
     <span className="inline-flex w-fit rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
+      {label}
+    </span>
+  );
+}
+
+function StatusPill({ label }: { label: string }) {
+  return (
+    <span className="inline-flex w-fit rounded-md bg-[var(--accent)] px-2 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-[var(--accent-foreground)]">
       {label}
     </span>
   );

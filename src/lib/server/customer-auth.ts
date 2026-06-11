@@ -1,6 +1,7 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { sendEmail } from "@/lib/server/mail";
 
 export type Customer = {
   id: string;
@@ -82,12 +83,25 @@ export async function requestCustomerLoginCode(identifierValue: unknown) {
 
   await writeJsonFile(AUTH_CODES_FILE, [...codes, record].slice(-100));
 
+  if (getIdentifierType(identifier) === "email") {
+    await sendEmail({
+      to: identifier,
+      subject: "Your Nomadabe sign-in code",
+      body: `Your Nomadabe Travel sign-in code is ${code}. It expires in 10 minutes.`,
+    });
+  }
+
   return {
     identifier,
     delivery: getIdentifierType(identifier),
     expiresAt: record.expiresAt,
     devCode: process.env.NODE_ENV === "production" ? undefined : code,
   };
+}
+
+export async function getCustomers() {
+  const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
+  return customers.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
 }
 
 export async function verifyCustomerLoginCode(identifierValue: unknown, codeValue: unknown) {

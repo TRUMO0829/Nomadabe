@@ -8,7 +8,8 @@ import {
   upsertServiceFromForm,
   upsertTripFromForm,
 } from "@/lib/server/admin-store";
-import { isInquiryStatus, updateInquiryStatus } from "@/lib/server/inquiries";
+import { getInquiries, isInquiryStatus, updateInquiryStatus } from "@/lib/server/inquiries";
+import { sendEmail, sendEmailFromForm } from "@/lib/server/mail";
 
 export async function saveTripAction(formData: FormData) {
   await upsertTripFromForm(formData);
@@ -57,9 +58,45 @@ export async function updateInquiryStatusAction(formData: FormData) {
   const status = formData.get("status");
 
   if (typeof id === "string" && typeof status === "string" && isInquiryStatus(status)) {
-    await updateInquiryStatus(id, status);
+    const inquiry = await updateInquiryStatus(id, status);
+
+    if (inquiry.email) {
+      await sendEmail({
+        to: inquiry.email,
+        subject: `Nomadabe request status: ${status}`,
+        body: `Hello ${inquiry.name},\n\nYour Nomadabe Travel request status is now: ${status}.\n\nOur team will contact you with the next details.\n\nNomadabe Travel`,
+      });
+    }
   }
 
   revalidatePath("/admin");
   revalidatePath("/api/inquiries");
+}
+
+export async function sendAdminEmailAction(formData: FormData) {
+  await sendEmailFromForm(formData);
+  revalidatePath("/admin");
+}
+
+export async function emailLatestInquiryAction(formData: FormData) {
+  const subject = formData.get("subject");
+  const body = formData.get("body");
+  const inquiries = await getInquiries();
+  const latestWithEmail = inquiries.find((inquiry) => inquiry.email);
+
+  if (
+    latestWithEmail?.email &&
+    typeof subject === "string" &&
+    typeof body === "string" &&
+    subject.trim() &&
+    body.trim()
+  ) {
+    await sendEmail({
+      to: latestWithEmail.email,
+      subject,
+      body,
+    });
+  }
+
+  revalidatePath("/admin");
 }
