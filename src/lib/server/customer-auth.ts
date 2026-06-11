@@ -276,7 +276,7 @@ async function sendVerificationCodeToN8n({
   });
 
   if (!response.ok) {
-    throw new Error(`n8n verification webhook failed: ${response.status}`);
+    return false;
   }
 
   return true;
