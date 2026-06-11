@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AiChatbot } from "@/components/ai-chatbot";
 import { LanguageProvider } from "@/components/language-provider";
 import "./globals.css";
 
@@ -20,7 +21,10 @@ export default function RootLayout({
   return (
     <html lang="mn" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          {children}
+          <AiChatbot />
+        </LanguageProvider>
       </body>
     </html>
   );
