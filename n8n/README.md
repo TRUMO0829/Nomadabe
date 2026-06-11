@@ -26,3 +26,39 @@ N8N_VERIFICATION_WEBHOOK_SECRET=ижил-нууц
 ```
 
 n8n API key өгвөл энэ файлыг API-аар шууд server дээр үүсгэж болно.
+
+## DeepSeek AI чатбот gateway
+
+Website дээр DeepSeek API key хадгалахгүй. Website-ийн `/api/chat` route нь n8n webhook рүү
+аяллын context болон хэрэглэгчийн message-ийг илгээнэ. n8n workflow нь DeepSeek credential ашиглаад
+хариуг буцаана.
+
+Import хийх файл:
+
+```text
+n8n/nomadabe-ai-chat-gateway.workflow.json
+```
+
+Webhook URL:
+
+```text
+https://n8n.srv1143150.hstgr.cloud/webhook/nomadabe-ai-chat
+```
+
+Nomadabe `.env.local`:
+
+```bash
+N8N_CHAT_WEBHOOK_URL=https://n8n.srv1143150.hstgr.cloud/webhook/nomadabe-ai-chat
+N8N_CHAT_WEBHOOK_SECRET=ижил-нууц
+N8N_CHAT_MODEL=deepseek-v4-flash
+```
+
+n8n env:
+
+```bash
+NOMADABE_CHAT_WEBHOOK_SECRET=ижил-нууц
+DEEPSEEK_MODEL=deepseek-v4-flash
+```
+
+`DeepSeek chat completion` node дээр n8n дээр өмнө үүсгэсэн DeepSeek/httpHeaderAuth credential-ээ
+сонгоод workflow-г activate хийнэ.

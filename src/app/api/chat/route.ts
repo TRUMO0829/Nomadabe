@@ -12,7 +12,13 @@ type ChatMessage = {
   content: string;
 };
 
-type DeepSeekResponse = {
+type N8nChatResponse = {
+  ok?: boolean;
+  reply?: string;
+  data?: {
+    reply?: string;
+  };
+  output?: string;
   choices?: Array<{
     message?: {
       content?: string;
@@ -28,12 +34,12 @@ const MAX_MESSAGE_LENGTH = 1600;
 const KNOWLEDGE_FILE = path.join(process.cwd(), "Nomadabe_Travel_Knowledge_Base.md");
 
 export async function POST(request: Request) {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
+  const webhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
 
-  if (!apiKey) {
+  if (!webhookUrl) {
     return apiError(
       "INTERNAL_ERROR",
-      "DeepSeek API key тохируулаагүй байна. DEEPSEEK_API_KEY утгыг .env.local файлд нэмнэ үү.",
+      "AI чатботын n8n webhook тохируулаагүй байна. N8N_CHAT_WEBHOOK_URL утгыг .env.local файлд нэмнэ үү.",
       503
     );
   }
@@ -61,45 +67,44 @@ export async function POST(request: Request) {
       getServices(),
     ]);
 
-    const response = await fetch("https://api.deepseek.com/chat/completions", {
+    const response = await fetch(webhookUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
+        ...(process.env.N8N_CHAT_WEBHOOK_SECRET
+          ? { "x-nomadabe-secret": process.env.N8N_CHAT_WEBHOOK_SECRET }
+          : {}),
       },
       body: JSON.stringify({
-        model: process.env.DEEPSEEK_MODEL || "deepseek-v4-flash",
-        messages: [
-          {
-            role: "system",
-            content: buildSystemPrompt({
-              knowledge,
-              trips: trips.map(sanitizeTrip),
-              services,
-            }),
-          },
-          ...messages,
-        ],
-        stream: false,
-        temperature: 0.4,
-        max_tokens: 900,
-        thinking: { type: "disabled" },
+        source: "nomadabe-web",
+        model: process.env.N8N_CHAT_MODEL || "deepseek-v4-flash",
+        systemPrompt: buildSystemPrompt({
+          knowledge,
+          trips: trips.map(sanitizeTrip),
+          services,
+        }),
+        messages,
       }),
     });
 
-    const result = (await response.json().catch(() => ({}))) as DeepSeekResponse;
+    const result = (await response.json().catch(() => ({}))) as N8nChatResponse;
 
     if (!response.ok) {
       return apiError(
         "INTERNAL_ERROR",
-        result.error?.message || "DeepSeek API дуудлага амжилтгүй боллоо.",
+        result.error?.message || "n8n AI gateway дуудлага амжилтгүй боллоо.",
         response.status
       );
     }
 
-    const reply = result.choices?.[0]?.message?.content?.trim();
+    const reply =
+      result.data?.reply?.trim() ||
+      result.reply?.trim() ||
+      result.output?.trim() ||
+      result.choices?.[0]?.message?.content?.trim();
+
     if (!reply) {
-      return apiError("INTERNAL_ERROR", "DeepSeek хоосон хариу буцаалаа.", 502);
+      return apiError("INTERNAL_ERROR", "n8n AI gateway хоосон хариу буцаалаа.", 502);
     }
 
     return ok({ reply });

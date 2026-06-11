@@ -1,0 +1,171 @@
+{
+  "name": "Nomadabe - AI чатбот DeepSeek gateway",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nomadabe-ai-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "57c06d4f-76d8-4fdc-b82d-3e0e3b79ddf5",
+      "name": "Nomadabe AI chat webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        0
+      ],
+      "webhookId": "nomadabe-ai-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst expectedSecret = $env.NOMADABE_CHAT_WEBHOOK_SECRET;\nconst providedSecret = body.secret ?? $headers['x-nomadabe-secret'];\n\nif (expectedSecret && providedSecret !== expectedSecret) {\n  throw new Error('Unauthorized Nomadabe AI chat request');\n}\n\nconst rawMessages = Array.isArray(body.messages) ? body.messages : [];\nconst messages = rawMessages\n  .slice(-10)\n  .map((message) => ({\n    role: message.role === 'assistant' ? 'assistant' : 'user',\n    content: String(message.content ?? '').trim().slice(0, 1600),\n  }))\n  .filter((message) => message.content);\n\nif (!messages.length || messages[messages.length - 1].role !== 'user') {\n  throw new Error('At least one latest user message is required');\n}\n\nconst systemPrompt = String(body.systemPrompt ?? '').trim();\nconst model = String(body.model ?? $env.DEEPSEEK_MODEL ?? 'deepseek-v4-flash').trim();\n\nreturn [\n  {\n    json: {\n      source: String(body.source ?? 'nomadabe-web'),\n      model,\n      messages: [\n        {\n          role: 'system',\n          content: systemPrompt || 'Чи Nomadabe Travel-ийн AI туслах. Монгол хэлээр аяллын зөвлөгөө өг.',\n        },\n        ...messages,\n      ],\n    },\n  },\n];"
+      },
+      "id": "a510ff93-39e3-477a-9a35-18cd580c22de",
+      "name": "Payload шалгах",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": $json.model,\n  \"messages\": $json.messages,\n  \"stream\": false,\n  \"temperature\": 0.4,\n  \"max_tokens\": 900,\n  \"thinking\": {\n    \"type\": \"disabled\"\n  }\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "c48925d0-5d3d-4934-b8ea-552883c6aa92",
+      "name": "DeepSeek chat completion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -260,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_DEEPSEEK_CREDENTIAL_ID",
+          "name": "DeepSeek"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const reply = String(\n  $json.choices?.[0]?.message?.content ??\n  $json.data?.reply ??\n  $json.reply ??\n  $json.output ??\n  ''\n).trim();\n\nif (!reply) {\n  throw new Error('DeepSeek returned an empty reply');\n}\n\nreturn [\n  {\n    json: {\n      ok: true,\n      data: {\n        reply,\n      },\n    },\n  },\n];"
+      },
+      "id": "9a83111c-8cc3-4d4b-9a92-1472353a4e71",
+      "name": "Хариу бэлдэх",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "25db1713-db7b-4a46-b40f-7e8f9780415f",
+      "name": "Website рүү буцаах",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Nomadabe AI chat gateway\n\nWebhook URL:\nhttps://n8n.srv1143150.hstgr.cloud/webhook/nomadabe-ai-chat\n\nNomadabe env:\nN8N_CHAT_WEBHOOK_URL=https://n8n.srv1143150.hstgr.cloud/webhook/nomadabe-ai-chat\nN8N_CHAT_WEBHOOK_SECRET=ижил-нууц\nN8N_CHAT_MODEL=deepseek-v4-flash\n\nn8n env:\nNOMADABE_CHAT_WEBHOOK_SECRET=ижил-нууц\nDEEPSEEK_MODEL=deepseek-v4-flash\n\nDeepSeek chat completion node дээр өмнө үүсгэсэн DeepSeek/httpHeaderAuth credential-ээ сонгоно.",
+        "height": 360,
+        "width": 460
+      },
+      "id": "b9d62fd1-9f84-44d6-9d9d-ac95efcf9027",
+      "name": "Тохиргооны note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        -440
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Nomadabe AI chat webhook": {
+      "main": [
+        [
+          {
+            "node": "Payload шалгах",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payload шалгах": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek chat completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek chat completion": {
+      "main": [
+        [
+          {
+            "node": "Хариу бэлдэх",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Хариу бэлдэх": {
+      "main": [
+        [
+          {
+            "node": "Website рүү буцаах",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "nomadabe-ai-chat-gateway-v1",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
