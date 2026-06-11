@@ -1,6 +1,6 @@
 import { getCopyLocale, type CopyLocale, type Locale } from "@/lib/i18n";
 
-export type TravelCategory = "business" | "expo" | "leisure" | "custom";
+export type TravelCategory = string;
 
 export type Adventure = {
   id: string;
@@ -24,7 +24,6 @@ export type Adventure = {
   includes: string[];
   businessSupport: string[];
   nextDeparture?: string;
-  seatsLeft?: number;
   featured?: boolean;
 };
 
@@ -99,7 +98,6 @@ export const ADVENTURES: Adventure[] = [
       "Төлбөр тооцооны мэдээлэл",
     ],
     nextDeparture: "2026-10",
-    seatsLeft: 8,
     featured: true,
   },
   {

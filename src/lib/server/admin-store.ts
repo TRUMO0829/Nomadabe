@@ -277,13 +277,12 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
     tags: getListFromString(fields.get("tags"), existing?.tags ?? ["Захиалгат"]),
     rating: getNumberFromString(fields.get("rating"), existing?.rating ?? 4.8),
     reviews: getNumberFromString(fields.get("reviews"), existing?.reviews ?? 0),
-    category: getCategory(fields.get("category") || existing?.category || "custom"),
+    category: getCategory(fields.get("categoryCustom") || fields.get("category") || existing?.category || "custom"),
     summary: fields.get("summary") || existing?.summary || "Захиалгат аяллын хөтөлбөр.",
     idealFor: getListFromString(fields.get("idealFor"), existing?.idealFor ?? []),
     includes: getListFromString(fields.get("includes"), existing?.includes ?? []),
     businessSupport: getListFromString(fields.get("businessSupport"), existing?.businessSupport ?? []),
     nextDeparture: fields.get("nextDeparture") || undefined,
-    seatsLeft: getOptionalNumberFromString(fields.get("seatsLeft")),
     featured: fields.has?.("featured")
       ? ["true", "on", "1", "yes"].includes(fields.get("featured").toLowerCase())
       : existing?.featured ?? false,
@@ -328,15 +327,6 @@ function getNumberFromString(value: string, fallback: number) {
   return Number.isFinite(numberValue) ? numberValue : fallback;
 }
 
-function getOptionalNumberFromString(value: string) {
-  if (!value) {
-    return undefined;
-  }
-
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : undefined;
-}
-
 function getListFromString(value: string, fallback: string[]) {
   if (!value) {
     return fallback;
@@ -357,11 +347,7 @@ function getDifficulty(value: string): Adventure["difficulty"] {
 }
 
 function getCategory(value: string): Adventure["category"] {
-  if (["business", "expo", "leisure", "custom"].includes(value)) {
-    return value as Adventure["category"];
-  }
-
-  return "custom";
+  return value.trim() || "custom";
 }
 
 function slugify(value: string) {

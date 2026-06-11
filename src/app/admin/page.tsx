@@ -8,7 +8,6 @@ import {
   Inbox,
   LayoutDashboard,
   Mail,
-  Palette,
   Plane,
   Plus,
   RefreshCw,
@@ -23,7 +22,6 @@ import {
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { AdminVisualEditor } from "@/components/admin-visual-editor";
 import type { Adventure, TravelService } from "@/lib/adventures";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
@@ -45,7 +43,7 @@ import { getEmailLogs } from "@/lib/server/mail";
 
 export const dynamic = "force-dynamic";
 
-const categoryLabels = {
+const defaultCategoryLabels: Record<string, string> = {
   business: "Бизнес",
   expo: "Экспо",
   leisure: "Амралт",
@@ -58,7 +56,6 @@ const navItems = [
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
-  { label: "Дизайн засвар", href: "#visual-editor", icon: Palette },
 ];
 
 export default async function AdminDashboard() {
@@ -69,8 +66,9 @@ export default async function AdminDashboard() {
     redirect("/admin/login");
   }
 
-  const [{ trips, services, siteSettings, inquiries, bookingStats }, customers, emailLogs] =
+  const [{ trips, services, inquiries, bookingStats }, customers, emailLogs] =
     await Promise.all([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
+  const categoryOptions = getCategoryOptions(trips);
   const featuredTrips = trips.filter((trip) => trip.featured);
   const latestInquiries = inquiries.slice(0, 12);
   const latestCustomers = customers.slice(0, 12);
@@ -198,13 +196,10 @@ export default async function AdminDashboard() {
               <MetricCard icon={Mail} label="Мэйл" value={emailLogs.length} detail="Илгээсэн эсвэл дараалалд" tone="orange" />
             </section>
 
-            <section id="visual-editor" className="grid gap-6 xl:grid-cols-[1fr_380px]">
+            <section className="grid gap-6 xl:grid-cols-[1fr_380px]">
               <div className="space-y-6">
-                <SectionHeader eyebrow="Вебсайт" title="Дизайн засвар" action="Нүүр хэсгийн контент" />
-                <AdminVisualEditor settings={siteSettings} />
-
-                <SectionHeader eyebrow="Удирдлага" title="Шинэ хөтөлбөр нэмэх" action="Веб дээр харагдана" />
-                <TripForm mode="create" />
+                <SectionHeader eyebrow="Удирдлага" title="Шинэ аяллын хөтөлбөр нэмэх" action="Хэрэглэгчийн веб дээр харагдана" />
+                <TripForm mode="create" categoryOptions={categoryOptions} />
 
                 <section id="mail-sender" className="space-y-4">
                   <SectionHeader eyebrow="Автоматжуулалт" title="Мэйл илгээх" action="Гараар болон автоматаар" />
@@ -227,6 +222,7 @@ export default async function AdminDashboard() {
                         key={trip.id}
                         trip={trip}
                         bookingCount={getBookingCount(bookingStats, trip.slug)}
+                        categoryOptions={categoryOptions}
                       />
                     ))}
                   </div>
@@ -471,7 +467,15 @@ function ServiceForm({ mode, service }: { mode: "create" | "edit"; service?: Tra
   );
 }
 
-function ProgramEditor({ trip, bookingCount }: { trip: Adventure; bookingCount: number }) {
+function ProgramEditor({
+  trip,
+  bookingCount,
+  categoryOptions,
+}: {
+  trip: Adventure;
+  bookingCount: number;
+  categoryOptions: CategoryOption[];
+}) {
   return (
     <details className="rounded-md border border-[var(--border)] bg-white shadow-sm">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
@@ -483,7 +487,7 @@ function ProgramEditor({ trip, bookingCount }: { trip: Adventure; bookingCount: 
           />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-            <TypePill label={categoryLabels[trip.category]} />
+            <TypePill label={getCategoryLabel(trip.category)} />
               {trip.featured ? (
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--muted)] px-2 py-1 text-xs font-semibold text-[var(--foreground)]">
                   <CheckCircle2 className="h-3.5 w-3.5" />
@@ -502,7 +506,7 @@ function ProgramEditor({ trip, bookingCount }: { trip: Adventure; bookingCount: 
         <span className="text-sm text-[var(--muted-foreground)]">Засах</span>
       </summary>
       <div className="border-t border-[var(--border)] p-4">
-        <TripForm mode="edit" trip={trip} />
+        <TripForm mode="edit" trip={trip} categoryOptions={categoryOptions} />
         <form action={deleteTripAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={trip.id} />
           <button
@@ -578,30 +582,39 @@ function EmailComposer() {
   );
 }
 
-function TripForm({ mode, trip }: { mode: "create" | "edit"; trip?: Adventure }) {
+type CategoryOption = {
+  value: string;
+  label: string;
+};
+
+function TripForm({
+  mode,
+  trip,
+  categoryOptions,
+}: {
+  mode: "create" | "edit";
+  trip?: Adventure;
+  categoryOptions: CategoryOption[];
+}) {
   return (
     <form action={saveTripAction} className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
       {trip ? <input type="hidden" name="id" defaultValue={trip.id} /> : null}
       <div className="grid gap-4 lg:grid-cols-3">
-        <TextField label="Гарчиг" name="title" defaultValue={trip?.title} required />
-        <TextField label="Slug" name="slug" defaultValue={trip?.slug} placeholder="custom-business-trip" />
+        <TextField label="Аяллын нэр" name="title" defaultValue={trip?.title} placeholder="Говийн аялал" required />
+        <TextField label="Slug" name="slug" defaultValue={trip?.slug} placeholder="gobi-adventure" />
         <SelectField
           label="Ангилал"
           name="category"
           defaultValue={trip?.category ?? "custom"}
-          options={[
-            { value: "business", label: "Бизнес" },
-            { value: "expo", label: "Экспо" },
-            { value: "leisure", label: "Амралт" },
-            { value: "custom", label: "Захиалгат" },
-          ]}
+          options={categoryOptions}
         />
-        <TextField label="Байршил" name="location" defaultValue={trip?.location} />
-        <TextField label="Улс" name="country" defaultValue={trip?.country} />
-        <TextField label="Өдөр" name="days" type="number" defaultValue={String(trip?.days ?? 5)} />
-        <TextField label="Группийн хэмжээ" name="groupSize" defaultValue={trip?.groupSize ?? "Flexible"} />
+        <TextField label="Шинэ ангилал нэмэх" name="categoryCustom" placeholder="Жишээ: Дотоод аялал" />
+        <TextField label="Байршил / хот" name="location" defaultValue={trip?.location} placeholder="Өмнөговь" />
+        <TextField label="Улс" name="country" defaultValue={trip?.country} placeholder="Mongolia" />
+        <TextField label="Хугацаа / өдөр" name="days" type="number" defaultValue={String(trip?.days ?? 5)} />
+        <TextField label="Групп / хэнд зориулсан" name="groupSize" defaultValue={trip?.groupSize ?? "Flexible"} placeholder="Family / Group" />
         <SelectField
-          label="Түвшин"
+          label="Аяллын түвшин"
           name="difficulty"
           defaultValue={trip?.difficulty ?? "Easy"}
           options={[
@@ -612,17 +625,16 @@ function TripForm({ mode, trip }: { mode: "create" | "edit"; trip?: Adventure })
           ]}
         />
         <TextField label="Дараагийн явах огноо" name="nextDeparture" defaultValue={trip?.nextDeparture} placeholder="2026-10" />
-        <TextField label="Үнэ" name="price" type="number" defaultValue={String(trip?.price ?? 0)} />
+        <TextField label="Үнэ / 0 бол санал авах" name="price" type="number" defaultValue={String(trip?.price ?? 0)} />
         <TextField label="Валют" name="currency" defaultValue={trip?.currency ?? "MNT"} />
-        <TextField label="Үлдсэн суудал" name="seatsLeft" type="number" defaultValue={trip?.seatsLeft ? String(trip.seatsLeft) : ""} />
-        <TextField label="Зургийн URL" name="image" defaultValue={trip?.image} className="lg:col-span-3" />
-        <TextField label="Тагууд" name="tags" defaultValue={trip?.tags.join(", ")} placeholder="Expo, Import, Business" />
+        <TextField label="Зургийн URL / хэрэглэгчийн card" name="image" defaultValue={trip?.image} className="lg:col-span-3" />
+        <TextField label="Тагууд / comma-аар" name="tags" defaultValue={trip?.tags.join(", ")} placeholder="Domestic, Gobi, Nature" />
         <TextField label="Үнэлгээ" name="rating" type="number" step="0.1" defaultValue={String(trip?.rating ?? 4.8)} />
         <TextField label="Сэтгэгдлийн тоо" name="reviews" type="number" defaultValue={String(trip?.reviews ?? 0)} />
-        <TextareaField label="Товч тайлбар" name="summary" defaultValue={trip?.summary} rows={3} className="lg:col-span-3" />
-        <TextareaField label="Хэнд тохиромжтой" name="idealFor" defaultValue={trip?.idealFor.join(", ")} rows={2} />
-        <TextareaField label="Багтсан зүйлс" name="includes" defaultValue={trip?.includes.join(", ")} rows={2} />
-        <TextareaField label="Бизнес дэмжлэг" name="businessSupport" defaultValue={trip?.businessSupport.join(", ")} rows={2} />
+        <TextareaField label="Хэрэглэгчид харагдах товч тайлбар" name="summary" defaultValue={trip?.summary} rows={3} className="lg:col-span-3" />
+        <TextareaField label="Хэнд тохиромжтой / comma-аар" name="idealFor" defaultValue={trip?.idealFor.join(", ")} rows={2} />
+        <TextareaField label="Багцад багтах зүйлс / comma-аар" name="includes" defaultValue={trip?.includes.join(", ")} rows={2} />
+        <TextareaField label="Бизнес / expo нэмэлт дэмжлэг" name="businessSupport" defaultValue={trip?.businessSupport.join(", ")} rows={2} />
       </div>
       <label className="mt-4 flex w-fit items-center gap-2 text-sm font-semibold text-[var(--primary)]">
         <input type="checkbox" name="featured" defaultChecked={trip?.featured ?? false} className="h-4 w-4 accent-[var(--accent)]" />
@@ -639,6 +651,24 @@ function TripForm({ mode, trip }: { mode: "create" | "edit"; trip?: Adventure })
       </div>
     </form>
   );
+}
+
+function getCategoryOptions(trips: Adventure[]): CategoryOption[] {
+  const categories = new Map<string, string>();
+
+  for (const [value, label] of Object.entries(defaultCategoryLabels)) {
+    categories.set(value, label);
+  }
+
+  for (const trip of trips) {
+    categories.set(trip.category, getCategoryLabel(trip.category));
+  }
+
+  return Array.from(categories, ([value, label]) => ({ value, label }));
+}
+
+function getCategoryLabel(category: string) {
+  return defaultCategoryLabels[category] ?? category;
 }
 
 function TextField({
