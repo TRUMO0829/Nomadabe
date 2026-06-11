@@ -83,7 +83,15 @@ export async function requestCustomerLoginCode(identifierValue: unknown) {
 
   await writeJsonFile(AUTH_CODES_FILE, [...codes, record].slice(-100));
 
-  if (getIdentifierType(identifier) === "email") {
+  const delivery = getIdentifierType(identifier);
+  const n8nDelivered = await sendVerificationCodeToN8n({
+    identifier,
+    delivery,
+    code,
+    expiresAt: record.expiresAt,
+  });
+
+  if (!n8nDelivered && delivery === "email") {
     await sendEmail({
       to: identifier,
       subject: "Nomadabe нэвтрэх код",
@@ -91,9 +99,13 @@ export async function requestCustomerLoginCode(identifierValue: unknown) {
     });
   }
 
+  if (!n8nDelivered && delivery === "phone" && process.env.NODE_ENV === "production") {
+    throw new Error("Phone verification delivery is not configured.");
+  }
+
   return {
     identifier,
-    delivery: getIdentifierType(identifier),
+    delivery,
     expiresAt: record.expiresAt,
     devCode: process.env.NODE_ENV === "production" ? undefined : code,
   };
@@ -224,4 +236,48 @@ async function writeJsonFile<T>(filePath: string, value: T) {
 
 function isNodeFileError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error;
+}
+
+async function sendVerificationCodeToN8n({
+  identifier,
+  delivery,
+  code,
+  expiresAt,
+}: {
+  identifier: string;
+  delivery: "email" | "phone";
+  code: string;
+  expiresAt: string;
+}) {
+  const webhookUrl = process.env.N8N_VERIFICATION_WEBHOOK_URL;
+
+  if (!webhookUrl) {
+    return false;
+  }
+
+  const response = await fetch(webhookUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(process.env.N8N_VERIFICATION_WEBHOOK_SECRET
+        ? { "x-nomadabe-secret": process.env.N8N_VERIFICATION_WEBHOOK_SECRET }
+        : {}),
+    },
+    body: JSON.stringify({
+      source: "nomadabe",
+      identifier,
+      delivery,
+      email: delivery === "email" ? identifier : undefined,
+      phone: delivery === "phone" ? identifier : undefined,
+      code,
+      expiresAt,
+      message: `Таны Nomadabe Travel нэвтрэх код: ${code}. Энэ код 10 минутын дараа хүчингүй болно.`,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`n8n verification webhook failed: ${response.status}`);
+  }
+
+  return true;
 }

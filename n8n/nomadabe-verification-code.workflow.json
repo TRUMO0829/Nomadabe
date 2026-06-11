@@ -1,0 +1,263 @@
+{
+  "name": "Nomadabe - Баталгаажуулах код илгээх",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nomadabe-verification-code",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9ff83d8a-c2b1-4c5c-bca1-5bbfb408d1f4",
+      "name": "Nomadabe webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        0
+      ],
+      "webhookId": "nomadabe-verification-code"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst secret = body.secret ?? $headers['x-nomadabe-secret'];\nconst expectedSecret = $env.NOMADABE_WEBHOOK_SECRET;\n\nif (expectedSecret && secret !== expectedSecret) {\n  throw new Error('Unauthorized Nomadabe webhook request');\n}\n\nconst identifier = String(body.identifier ?? '').trim();\nconst delivery = String(body.delivery ?? (identifier.includes('@') ? 'email' : 'phone'));\nconst code = String(body.code ?? '').trim();\nconst expiresAt = String(body.expiresAt ?? '').trim();\nconst message = String(\n  body.message ?? `Таны Nomadabe Travel нэвтрэх код: ${code}. Энэ код 10 минутын дараа хүчингүй болно.`\n);\n\nif (!identifier || !code) {\n  throw new Error('identifier and code are required');\n}\n\nreturn [{\n  json: {\n    identifier,\n    delivery,\n    email: String(body.email ?? (delivery === 'email' ? identifier : '')).trim(),\n    phone: String(body.phone ?? (delivery === 'phone' ? identifier : '')).trim(),\n    code,\n    expiresAt,\n    message,\n    subject: 'Nomadabe нэвтрэх код'\n  }\n}];"
+      },
+      "id": "10501dff-c699-4c93-9e3a-51df477bd05a",
+      "name": "Payload шалгах",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "735c84f9-6f9b-44c2-8631-18b785722dc0",
+              "leftValue": "={{$json.delivery}}",
+              "rightValue": "email",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0afbd149-a9d5-4a9a-ac8c-dfe03394078a",
+      "name": "И-мэйл эсэх",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.RESEND_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": $env.MAIL_FROM || \"Nomadabe Travel <onboarding@resend.dev>\",\n  \"to\": $json.email,\n  \"subject\": $json.subject,\n  \"text\": $json.message\n}",
+        "options": {}
+      },
+      "id": "76ba8787-1313-46be-8d95-7195c77197b5",
+      "name": "И-мэйл илгээх",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        20,
+        -220
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "78a67f82-bff0-4ba8-937a-ef6e626dc998",
+              "leftValue": "={{$json.delivery}}",
+              "rightValue": "phone",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ffb46121-62ee-4536-ad44-5934f668cb5a",
+      "name": "Утас эсэх",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SMS_API_URL}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SMS_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": $json.phone,\n  \"message\": $json.message,\n  \"code\": $json.code\n}",
+        "options": {}
+      },
+      "id": "4fa0f81f-542f-4d4d-8832-041a1d80e7fd",
+      "name": "SMS илгээх",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        20,
+        120
+      ],
+      "continueOnFail": true,
+      "notes": "SMS provider-ийн endpoint, token-оо n8n environment дээр SMS_API_URL болон SMS_API_KEY гэж тохируулна."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"ok\": true,\n  \"delivery\": $json.delivery,\n  \"identifier\": $json.identifier,\n  \"expiresAt\": $json.expiresAt\n}",
+        "options": {}
+      },
+      "id": "d6257f82-3bc4-43da-ad2e-ff224fcf27d4",
+      "name": "Хариу буцаах",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Nomadabe verification workflow\n\nWebhook URL:\nhttps://n8n.srv1143150.hstgr.cloud/webhook/nomadabe-verification-code\n\nNomadabe .env дээр:\nN8N_VERIFICATION_WEBHOOK_URL=https://n8n.srv1143150.hstgr.cloud/webhook/nomadabe-verification-code\nN8N_VERIFICATION_WEBHOOK_SECRET=өөрийн-нууц\n\nn8n env дээр:\nNOMADABE_WEBHOOK_SECRET=ижил-нууц\nRESEND_API_KEY=...\nMAIL_FROM=Nomadabe Travel <hello@domain.mn>\nSMS_API_URL=...\nSMS_API_KEY=...",
+        "height": 320,
+        "width": 420
+      },
+      "id": "96525030-47b2-459c-a619-467f71ae0cda",
+      "name": "Тохиргооны note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -460
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Nomadabe webhook": {
+      "main": [
+        [
+          {
+            "node": "Payload шалгах",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payload шалгах": {
+      "main": [
+        [
+          {
+            "node": "И-мэйл эсэх",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Утас эсэх",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Хариу буцаах",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "И-мэйл эсэх": {
+      "main": [
+        [
+          {
+            "node": "И-мэйл илгээх",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Утас эсэх": {
+      "main": [
+        [
+          {
+            "node": "SMS илгээх",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f3765fc1-b647-4f55-8482-8bb9852ed08e",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "id": "nomadabe-verification-code",
+  "tags": []
+}
