@@ -37,7 +37,7 @@ const COPY = {
     body:
       "中国、日本、韩国、土耳其等热门目的地的旅行套餐。",
     priceFrom: "起价",
-    quote: "Request quote",
+    quote: "获取报价",
     details: "详情",
     day: "天",
     previous: "上一个",
@@ -49,7 +49,7 @@ const COPY = {
     body:
       "中国、日本、韓国、トルコなど人気目的地の旅行プラン。",
     priceFrom: "開始料金",
-    quote: "Request quote",
+    quote: "見積もり依頼",
     details: "詳細",
     day: "日",
     previous: "前へ",
@@ -61,7 +61,7 @@ const COPY = {
     body:
       "중국, 일본, 한국, 터키 등 인기 목적지의 여행 패키지.",
     priceFrom: "시작가",
-    quote: "Request quote",
+    quote: "견적 요청",
     details: "자세히",
     day: "일",
     previous: "이전",

@@ -11,9 +11,9 @@ export const LANGUAGES: ReadonlyArray<{
 }> = [
   { code: "mn", short: "MN", label: "Монгол" },
   { code: "en", short: "EN", label: "English" },
-  { code: "zh", short: "CN", label: "Chinese" },
-  { code: "ja", short: "JP", label: "Japanese" },
-  { code: "ko", short: "KR", label: "Korean" },
+  { code: "zh", short: "CN", label: "中文" },
+  { code: "ja", short: "JP", label: "日本語" },
+  { code: "ko", short: "KR", label: "한국어" },
 ];
 
 export const LANGUAGE_LABELS: Record<Language, string> = {

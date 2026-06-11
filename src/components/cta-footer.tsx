@@ -2,7 +2,6 @@
 
 import type { FormEvent } from "react";
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
@@ -26,8 +25,8 @@ const MINISTER_TOWER_EMBED_URL =
 
 const CONTACTS = [
   { type: "email", label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
-  { type: "phone", label: "9910 3258", href: "tel:+97699103258" },
-  { type: "phone", label: "9918 9317", href: "tel:+97699189317" },
+  { type: "phone", label: "+976 9910 3258", href: "tel:+97699103258" },
+  { type: "phone", label: "+976 9918 9317", href: "tel:+97699189317" },
   {
     type: "address",
     label: MINISTER_TOWER_ADDRESS,
@@ -83,7 +82,7 @@ const FOOTER_COPY = {
   zh: {
     tagline: "专业旅行顾问",
     description:
-      "为蒙古和全球目的地规划商务、展会、休闲和定制旅行。",
+      "我们为蒙古及全球目的地提供商务考察、展会行程、休闲度假和定制旅行规划。",
     linksTitle: "链接",
     contactTitle: "联系方式",
     mapTitle: "位置",
@@ -99,9 +98,9 @@ const FOOTER_COPY = {
     legal: ["服务条款", "隐私政策"],
   },
   ja: {
-    tagline: "プロの旅行コンサルティング",
+    tagline: "旅の専門コンサルタント",
     description:
-      "モンゴルと世界各地へのビジネス、展示会、レジャー、カスタム旅行を丁寧に計画します。",
+      "モンゴル国内外のビジネス視察、展示会、レジャー、オーダーメイド旅行を丁寧にプランニングします。",
     linksTitle: "リンク",
     contactTitle: "お問い合わせ",
     mapTitle: "所在地",
@@ -113,13 +112,13 @@ const FOOTER_COPY = {
     ],
     contacts: CONTACTS,
     mapButton: "Google Maps を開く",
-    copyright: "All rights reserved.",
+    copyright: "すべての権利を保有しています。",
     legal: ["利用規約", "プライバシーポリシー"],
   },
   ko: {
     tagline: "전문 여행 컨설팅",
     description:
-      "몽골과 전 세계 목적지의 비즈니스, 엑스포, 휴양, 맞춤 여행을 세심하게 계획합니다.",
+      "몽골 국내외 비즈니스 답사, 엑스포 일정, 휴양, 맞춤 여행을 목적에 맞게 세심하게 설계합니다.",
     linksTitle: "링크",
     contactTitle: "연락처",
     mapTitle: "위치",
@@ -131,7 +130,7 @@ const FOOTER_COPY = {
     ],
     contacts: CONTACTS,
     mapButton: "Google Maps 열기",
-    copyright: "All rights reserved.",
+    copyright: "모든 권리 보유.",
     legal: ["서비스 약관", "개인정보 처리방침"],
   },
 } as const;
@@ -247,15 +246,10 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
           <div className="grid gap-10 lg:grid-cols-[1.15fr_0.65fr_1fr_0.95fr]">
             <div>
               <Link href="/#home" className="inline-flex items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-white p-1.5">
-                  <Image
-                    src="/nomadabe-mark.png"
-                    alt=""
-                    width={48}
-                    height={48}
-                    className="h-full w-full rounded-md object-cover [object-position:center_35%]"
-                  />
-                </span>
+                <span
+                  aria-hidden="true"
+                  className="h-12 w-12 bg-[url('/nomadabe-mark-transparent.png')] bg-center bg-no-repeat [background-size:175%] [background-position:center_35%]"
+                />
                 <span>
                   <span className="block text-xl font-black uppercase tracking-wide text-accent">
                     Nomadabe

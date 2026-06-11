@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, LockKeyhole, Mail, Phone, UserRound, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -104,14 +104,42 @@ const COPY = {
   },
 } as const;
 
+let hasShownSignupPrompt = false;
+const OPEN_SIGNUP_PROMPT_EVENT = "nomadabe:open-signup-prompt";
+
 export function SignupPromptModal() {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    function handleOpenPrompt() {
+      hasShownSignupPrompt = true;
+      setOpen(true);
+    }
+
+    window.addEventListener(OPEN_SIGNUP_PROMPT_EVENT, handleOpenPrompt);
+
+    if (hasShownSignupPrompt) {
+      return () => {
+        window.removeEventListener(OPEN_SIGNUP_PROMPT_EVENT, handleOpenPrompt);
+      };
+    }
+
+    const timerId = window.setTimeout(() => {
+      hasShownSignupPrompt = true;
+      setOpen(true);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timerId);
+      window.removeEventListener(OPEN_SIGNUP_PROMPT_EVENT, handleOpenPrompt);
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -1,6 +1,13 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useMemo, useState } from "react";
+import {
+  type FormEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -33,6 +40,13 @@ const difficultyColor: Record<string, string> = {
   Tough: "bg-accent text-accent-foreground",
 };
 
+const TOURS_BACKGROUNDS = [
+  "/nomadabe-hero-panorama.png",
+  "/hero-winter.jpg",
+  "/hero-spring.jpg",
+  "/hero-autumn.jpg",
+];
+
 const SECTION_COPY = {
   mn: {
     eyebrow: "Аяллууд",
@@ -46,6 +60,8 @@ const SECTION_COPY = {
     listTitle: "Бүх аяллын жагсаалт",
     listBody: "Сонгосон аяллаа дарж дэлгэрэнгүй мэдээлэл, үнэ, багцын нөхцөлийг хараарай.",
     result: "аялал",
+    searchAction: "Хайлт цэвэрлэх эсвэл хайх талбарт очих",
+    flexible: "Тохиролцоно",
   },
   en: {
     eyebrow: "Trips",
@@ -59,6 +75,8 @@ const SECTION_COPY = {
     listTitle: "All available trips",
     listBody: "Open a trip to view details, pricing, inclusions, and planning notes.",
     result: "trips",
+    searchAction: "Clear filters or focus search",
+    flexible: "Flexible",
   },
   zh: {
     eyebrow: "旅游",
@@ -72,6 +90,8 @@ const SECTION_COPY = {
     listTitle: "全部旅行列表",
     listBody: "点击旅行查看详细信息、价格和套餐条件。",
     result: "个行程",
+    searchAction: "清除筛选或定位到搜索框",
+    flexible: "可协商",
   },
   ja: {
     eyebrow: "ツアー",
@@ -85,6 +105,8 @@ const SECTION_COPY = {
     listTitle: "すべてのツアー一覧",
     listBody: "ツアーを開くと詳細、料金、含まれる条件を確認できます。",
     result: "件",
+    searchAction: "絞り込みを解除、または検索欄へ移動",
+    flexible: "相談可能",
   },
   ko: {
     eyebrow: "여행",
@@ -98,6 +120,8 @@ const SECTION_COPY = {
     listTitle: "전체 여행 목록",
     listBody: "여행을 눌러 자세한 정보, 가격, 패키지 조건을 확인하세요.",
     result: "개 여행",
+    searchAction: "필터 초기화 또는 검색창으로 이동",
+    flexible: "협의 가능",
   },
 } as const;
 
@@ -115,6 +139,8 @@ const RATING_COPY = {
     error: "Илгээж чадсангүй. Дахин оролдоно уу.",
     score: "Үнэлгээ",
     recordLabel: "Аяллын үнэлгээ",
+    trip: "Аялал",
+    emptyNote: "Нэмэлт санал бичээгүй",
   },
   en: {
     rate: "Rate",
@@ -129,6 +155,8 @@ const RATING_COPY = {
     error: "Could not send. Please try again.",
     score: "Rating",
     recordLabel: "Trip rating",
+    trip: "Trip",
+    emptyNote: "No extra note.",
   },
   zh: {
     rate: "评分",
@@ -143,6 +171,8 @@ const RATING_COPY = {
     error: "暂时无法发送，请再试一次。",
     score: "评分",
     recordLabel: "行程评分",
+    trip: "行程",
+    emptyNote: "未填写补充意见。",
   },
   ja: {
     rate: "評価",
@@ -157,6 +187,8 @@ const RATING_COPY = {
     error: "送信できませんでした。もう一度お試しください。",
     score: "評価",
     recordLabel: "ツアー評価",
+    trip: "ツアー",
+    emptyNote: "追加コメントはありません。",
   },
   ko: {
     rate: "평가",
@@ -171,6 +203,8 @@ const RATING_COPY = {
     error: "전송할 수 없습니다. 다시 시도해주세요.",
     score: "평점",
     recordLabel: "여행 평가",
+    trip: "여행",
+    emptyNote: "추가 의견 없음.",
   },
 } as const;
 
@@ -210,8 +244,8 @@ function TripRatingWidget({
           message: [
             copy.recordLabel,
             `${copy.score}: ${rating}/5`,
-            `Trip: ${title}`,
-            form.note ? `${copy.note}: ${form.note}` : "No extra note.",
+            `${copy.trip}: ${title}`,
+            form.note ? `${copy.note}: ${form.note}` : copy.emptyNote,
           ].join("\n"),
         }),
       });
@@ -333,8 +367,34 @@ export function FeaturedAdventures({
   const [selected, setSelected] = useState<Adventure | null>(null);
   const [scope, setScope] = useState<TripScope>("all");
   const [query, setQuery] = useState("");
+  const [activeHeroImage, setActiveHeroImage] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const { contentLocale, t } = useLanguage();
   const sectionCopy = SECTION_COPY[contentLocale];
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveHeroImage((current) => (current + 1) % TOURS_BACKGROUNDS.length);
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const searchQuery = new URLSearchParams(window.location.search)
+      .get("search")
+      ?.trim();
+
+    if (!searchQuery) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setQuery(searchQuery);
+    }, 0);
+
+    return () => window.clearTimeout(timerId);
+  }, []);
 
   const outboundCount = useMemo(
     () => adventures.filter((adventure) => adventure.country !== "Mongolia").length,
@@ -395,14 +455,32 @@ export function FeaturedAdventures({
     },
   ];
 
+  function handleSearchIconClick() {
+    if (query.trim() || scope !== "all") {
+      setQuery("");
+      setScope("all");
+      return;
+    }
+
+    searchInputRef.current?.focus();
+  }
+
   return (
     <section id="adventures" className="bg-background">
       <div className="relative overflow-hidden bg-primary px-6 pb-16 pt-32 text-primary-foreground lg:px-10 lg:pb-20 lg:pt-40">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-25"
-          style={{ backgroundImage: "url('/nomadabe-hero-panorama.png')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-primary/90 to-primary" />
+        {TOURS_BACKGROUNDS.map((image, index) => (
+          <motion.div
+            key={image}
+            aria-hidden="true"
+            initial={false}
+            animate={{ opacity: activeHeroImage === index ? 1 : 0 }}
+            transition={{ duration: 1.1, ease: "easeInOut" }}
+            className="absolute inset-0 scale-105 bg-cover bg-center"
+            style={{ backgroundImage: `url('${image}')` }}
+          />
+        ))}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/35 to-primary/76" />
+        <div className="absolute inset-0 bg-primary/10" />
 
         <div className="relative mx-auto max-w-7xl">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-accent lg:text-sm">
@@ -421,12 +499,20 @@ export function FeaturedAdventures({
             <label className="flex items-center gap-4 rounded-full bg-card px-5 py-4">
               <Search className="h-6 w-6 shrink-0 text-muted-foreground" />
               <input
+                ref={searchInputRef}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={sectionCopy.search}
                 className="min-w-0 flex-1 bg-transparent text-base font-semibold text-foreground outline-none placeholder:text-muted-foreground lg:text-xl"
               />
-              <SlidersHorizontal className="h-6 w-6 shrink-0 text-muted-foreground" />
+              <button
+                type="button"
+                aria-label={sectionCopy.searchAction}
+                onClick={handleSearchIconClick}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                <SlidersHorizontal className="h-5 w-5" />
+              </button>
             </label>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -448,18 +534,6 @@ export function FeaturedAdventures({
               ))}
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-2 px-1 pb-1">
-              {t.hero.quick.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setQuery(item)}
-                  className="rounded-md border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-accent hover:text-foreground lg:text-sm"
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -590,7 +664,7 @@ export function FeaturedAdventures({
                       <span>
                         {text.nextDeparture ??
                           adventure.nextDeparture ??
-                          (contentLocale === "mn" ? "Тохиролцоно" : "Flexible")}
+                          sectionCopy.flexible}
                       </span>
                     </div>
                   </div>

@@ -5,10 +5,22 @@ import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Quote, Star } from "lucide-react";
 import { useLanguage } from "./language-provider";
 
-const AVATARS = [
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&q=80&auto=format&fit=crop&crop=faces",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&q=80&auto=format&fit=crop&crop=faces",
-  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&q=80&auto=format&fit=crop&crop=faces",
+const REVIEW_PROFILES = [
+  {
+    email: "nomin.business@gmail.com",
+    avatar:
+      "https://api.dicebear.com/9.x/adventurer/svg?seed=Nomin&backgroundColor=ffd400,ffe680",
+  },
+  {
+    email: "temuulen.import@yahoo.com",
+    avatar:
+      "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Temuulen&backgroundColor=c0aede,ffd5dc",
+  },
+  {
+    email: "saruul.family@icloud.com",
+    avatar:
+      "https://api.dicebear.com/9.x/adventurer/svg?seed=Saruul&backgroundColor=b6e3f4,ffdfbf",
+  },
 ];
 
 const REVIEW_COPY = {
@@ -105,9 +117,12 @@ export function Testimonials() {
           ref={scrollerRef}
           className="-mx-6 flex snap-x gap-5 overflow-x-auto px-6 pb-3 [scrollbar-width:none] lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden"
         >
-          {t.testimonials.quotes.map((quote, idx) => (
+          {t.testimonials.quotes.map((quote, idx) => {
+            const profile = REVIEW_PROFILES[idx % REVIEW_PROFILES.length];
+
+            return (
             <motion.figure
-              key={quote.name}
+              key={profile.email}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
@@ -126,11 +141,11 @@ export function Testimonials() {
               <figcaption className="mt-5 border-t border-border pt-4">
                 <div className="flex items-center gap-3">
                   <div
-                    className="h-11 w-11 rounded-full bg-cover bg-center"
-                    style={{ backgroundImage: `url(${AVATARS[idx]})` }}
+                    className="h-12 w-12 rounded-full border border-border bg-cover bg-center bg-white shadow-sm"
+                    style={{ backgroundImage: `url(${profile.avatar})` }}
                   />
                   <div>
-                    <div className="text-sm font-bold">{quote.name}</div>
+                    <div className="text-sm font-bold">{profile.email}</div>
                     <div className="text-xs text-muted-foreground">
                       {quote.trip}
                     </div>
@@ -138,7 +153,8 @@ export function Testimonials() {
                 </div>
               </figcaption>
             </motion.figure>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

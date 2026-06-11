@@ -37,6 +37,7 @@
 *::after {
   border-color: var(--border);
   font-family: Arial, Helvetica, sans-serif !important;
+  letter-spacing: 0 !important;
 }
 
 html {

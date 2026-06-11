@@ -10,6 +10,7 @@ import {
   Globe2,
   Menu,
   MountainSnow,
+  UserRound,
   X,
 } from "lucide-react";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
@@ -28,19 +29,19 @@ const NAV_DESTINATION_COPY = {
     viewAll: "View all trips",
   },
   zh: {
-    title: "Trips",
-    body: "Browse trips and destinations together by country and travel type.",
-    viewAll: "View all trips",
+    title: "旅行",
+    body: "按国家和旅行类型浏览行程与目的地。",
+    viewAll: "查看全部旅行",
   },
   ja: {
-    title: "Trips",
-    body: "Browse trips and destinations together by country and travel type.",
-    viewAll: "View all trips",
+    title: "ツアー",
+    body: "国や旅のタイプ別に、ツアーと目的地をまとめて探せます。",
+    viewAll: "すべてのツアーを見る",
   },
   ko: {
-    title: "Trips",
-    body: "Browse trips and destinations together by country and travel type.",
-    viewAll: "View all trips",
+    title: "여행",
+    body: "국가와 여행 유형별로 여행과 목적지를 함께 찾아보세요.",
+    viewAll: "모든 여행 보기",
   },
 } as const;
 
@@ -50,46 +51,78 @@ const NAV_DESTINATION_GROUPS = [
     title: {
       mn: "Дотоод аялал",
       en: "Domestic",
-      zh: "Domestic",
-      ja: "Domestic",
-      ko: "Domestic",
+      zh: "国内旅行",
+      ja: "国内旅行",
+      ko: "국내 여행",
     },
-    items: ["Mongolia", "Khuvsgul", "Gobi", "Terelj"],
+    items: [
+      { mn: "Монгол", en: "Mongolia", zh: "蒙古", ja: "モンゴル", ko: "몽골" },
+      { mn: "Хөвсгөл", en: "Khuvsgul", zh: "库苏古尔", ja: "フブスグル", ko: "홉스골" },
+      { mn: "Говь", en: "Gobi", zh: "戈壁", ja: "ゴビ", ko: "고비" },
+      { mn: "Тэрэлж", en: "Terelj", zh: "特勒吉", ja: "テレルジ", ko: "테렐지" },
+    ],
   },
   {
     icon: Globe2,
     title: {
       mn: "Гадаад аялал",
       en: "Outbound",
-      zh: "Outbound",
-      ja: "Outbound",
-      ko: "Outbound",
+      zh: "出境旅行",
+      ja: "海外旅行",
+      ko: "해외 여행",
     },
-    items: ["Japan", "Korea", "China", "Turkey"],
+    items: [
+      { mn: "Япон", en: "Japan", zh: "日本", ja: "日本", ko: "일본" },
+      { mn: "Солонгос", en: "Korea", zh: "韩国", ja: "韓国", ko: "한국" },
+      { mn: "Хятад", en: "China", zh: "中国", ja: "中国", ko: "중국" },
+      { mn: "Турк", en: "Turkey", zh: "土耳其", ja: "トルコ", ko: "튀르키예" },
+    ],
   },
   {
     icon: Building2,
     title: {
       mn: "Хот, expo",
       en: "Cities & expo",
-      zh: "Cities & expo",
-      ja: "Cities & expo",
-      ko: "Cities & expo",
+      zh: "城市与展会",
+      ja: "都市・展示会",
+      ko: "도시 및 엑스포",
     },
-    items: ["Tokyo", "Seoul", "Shanghai", "Guangzhou"],
+    items: [
+      { mn: "Токио", en: "Tokyo", zh: "东京", ja: "東京", ko: "도쿄" },
+      { mn: "Сөүл", en: "Seoul", zh: "首尔", ja: "ソウル", ko: "서울" },
+      { mn: "Шанхай", en: "Shanghai", zh: "上海", ja: "上海", ko: "상하이" },
+      { mn: "Гуанжоу", en: "Guangzhou", zh: "广州", ja: "広州", ko: "광저우" },
+    ],
   },
   {
     icon: Compass,
     title: {
       mn: "Амралтын хэв маяг",
       en: "Vacation style",
-      zh: "Vacation style",
-      ja: "Vacation style",
-      ko: "Vacation style",
+      zh: "旅行风格",
+      ja: "旅のスタイル",
+      ko: "여행 스타일",
     },
-    items: ["Family", "Business", "Island", "Custom"],
+    items: [
+      { mn: "Гэр бүл", en: "Family", zh: "家庭", ja: "ファミリー", ko: "가족" },
+      { mn: "Бизнес", en: "Business", zh: "商务", ja: "ビジネス", ko: "비즈니스" },
+      { mn: "Арал", en: "Island", zh: "海岛", ja: "島", ko: "섬" },
+      { mn: "Захиалгат", en: "Custom", zh: "定制", ja: "カスタム", ko: "맞춤" },
+    ],
   },
 ] as const;
+
+const AUTH_COPY = {
+  mn: "Нэвтрэх / Бүртгүүлэх",
+  en: "Sign in / Register",
+  zh: "登录 / 注册",
+  ja: "ログイン / 登録",
+  ko: "로그인 / 회원가입",
+} as const;
+
+function openSignupPrompt() {
+  window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+}
 
 function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
   const copy = NAV_DESTINATION_COPY[locale];
@@ -127,12 +160,12 @@ function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
               </div>
               <ul className="grid gap-2">
                 {group.items.map((item) => (
-                  <li key={item}>
+                  <li key={item.en}>
                     <Link
                       href="/tours"
                       className="block rounded-md px-2 py-1.5 text-sm font-semibold text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
                     >
-                      {item}
+                      {item[locale]}
                     </Link>
                   </li>
                 ))}
@@ -170,11 +203,11 @@ export function Navbar() {
           : "bg-transparent"
       )}
     >
-      <div className="mx-auto max-w-7xl px-6 lg:px-10 h-16 lg:h-20 flex items-center justify-between">
+      <div className="relative flex h-16 w-full items-center px-6 lg:h-20 lg:px-8">
         <Link
           href="/#home"
           aria-label="Nomadabe Travel"
-          className="flex shrink-0 items-center gap-3"
+          className="order-1 flex shrink-0 items-center gap-3 lg:absolute lg:left-8 lg:top-1/2 lg:-translate-y-1/2"
         >
           <span
             aria-hidden="true"
@@ -200,7 +233,7 @@ export function Navbar() {
           </span>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-8">
+        <nav className="hidden items-center gap-10 lg:absolute lg:left-1/2 lg:top-1/2 lg:flex lg:-translate-x-1/2 lg:-translate-y-1/2">
           {t.nav.items.map((n) => {
             const isTrips = n.href === "/tours";
 
@@ -248,7 +281,7 @@ export function Navbar() {
           })}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-4">
+        <div className="hidden items-center gap-3 lg:ml-auto lg:flex">
           <div
             aria-label={t.nav.language}
             className={cn(
@@ -306,13 +339,26 @@ export function Navbar() {
           >
             {t.nav.cta}
           </Link>
+          <button
+            type="button"
+            onClick={openSignupPrompt}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors",
+              scrolled
+                ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
+            )}
+          >
+            <UserRound className="h-4 w-4" />
+            {AUTH_COPY[contentLocale]}
+          </button>
         </div>
 
         <button
           aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
           onClick={() => setOpen((v) => !v)}
           className={cn(
-            "lg:hidden p-2 rounded-md",
+            "order-3 ml-auto rounded-md p-2 lg:hidden",
             scrolled ? "text-foreground" : "text-white"
           )}
         >
@@ -385,6 +431,16 @@ export function Navbar() {
             >
               {t.nav.cta}
             </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                openSignupPrompt();
+              }}
+              className="rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-semibold text-foreground"
+            >
+              {AUTH_COPY[contentLocale]}
+            </button>
           </div>
         </div>
       )}
