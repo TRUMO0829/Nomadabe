@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { LanguageProvider } from "@/components/language-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Nomadabe - Монгол болон олон улсын аялал",
+  title: "Nomadabe",
   description:
     "Бизнес, expo, амралт зугаалга болон захиалгат аяллыг Улаанбаатараас төлөвлөн зохион байгуулна.",
   icons: {
@@ -19,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="mn" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

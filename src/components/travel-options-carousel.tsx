@@ -31,6 +31,42 @@ const COPY = {
     previous: "Previous",
     next: "Next",
   },
+  zh: {
+    eyebrow: "蒙古国内旅行",
+    title: "旅行选择",
+    body:
+      "为家人、朋友和团队选择蒙古戈壁、湖泊与山地路线。",
+    priceFrom: "起价",
+    quote: "获取报价",
+    details: "详情",
+    day: "天",
+    previous: "上一个",
+    next: "下一个",
+  },
+  ja: {
+    eyebrow: "国内ツアー",
+    title: "旅行の選択肢",
+    body:
+      "家族、友人、チーム向けにモンゴルのゴビ、湖、山岳ルートを選べます。",
+    priceFrom: "開始料金",
+    quote: "見積もり依頼",
+    details: "詳細",
+    day: "日",
+    previous: "前へ",
+    next: "次へ",
+  },
+  ko: {
+    eyebrow: "몽골 국내 여행",
+    title: "여행 선택",
+    body:
+      "가족, 친구, 팀을 위한 몽골 고비, 호수, 산악 루트를 선택하세요.",
+    priceFrom: "시작가",
+    quote: "견적 요청",
+    details: "자세히",
+    day: "일",
+    previous: "이전",
+    next: "다음",
+  },
 } as const;
 
 type TravelOptionsCarouselProps = {
@@ -40,8 +76,8 @@ type TravelOptionsCarouselProps = {
 export function TravelOptionsCarousel({
   adventures = ADVENTURES,
 }: TravelOptionsCarouselProps) {
-  const { locale } = useLanguage();
-  const copy = COPY[locale];
+  const { contentLocale } = useLanguage();
+  const copy = COPY[contentLocale];
   const scrollerRef = useRef<HTMLDivElement>(null);
   const domesticOptions = adventures.filter(
     (adventure) => adventure.country === "Mongolia"
@@ -95,7 +131,7 @@ export function TravelOptionsCarousel({
           className="-mx-6 flex snap-x gap-5 overflow-x-auto px-6 pb-4 [scrollbar-width:none] lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden"
         >
           {domesticOptions.map((adventure, idx) => {
-            const text = getAdventureText(adventure, locale);
+            const text = getAdventureText(adventure, contentLocale);
             const price =
               adventure.price > 0
                 ? `${adventure.price.toLocaleString()} ${adventure.currency}`

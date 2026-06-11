@@ -2,16 +2,143 @@
 
 import type { FormEvent } from "react";
 import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
 import { useLanguage } from "./language-provider";
 
 const SOCIALS = [
-  { label: "IG", href: "#" },
   { label: "FB", href: "#" },
-  { label: "YT", href: "#" },
+  { label: "IG", href: "#" },
   { label: "TT", href: "#" },
 ];
+
+const INQUIRY_MESSAGE = {
+  mn: "Nomadabe Travel-ийн аяллын төлөвлөлтийн мэдээлэл авах хүсэлтэй байна.",
+  en: "I want to receive Nomadabe Travel trip planning information.",
+  zh: "我想获取 Nomadabe Travel 的旅行规划信息。",
+  ja: "Nomadabe Travel の旅行計画情報を受け取りたいです。",
+  ko: "Nomadabe Travel 여행 계획 정보를 받고 싶습니다.",
+} as const;
+
+const FOOTER_COPY = {
+  mn: {
+    tagline: "Аяллын мэргэжлийн зөвлөх",
+    description:
+      "Монгол болон дэлхийн чиглэлүүдэд бизнес, expo, амралт зугаалга, захиалгат аяллыг төлөвлөж зохион байгуулна.",
+    linksTitle: "Холбоосууд",
+    contactTitle: "Холбоо барих",
+    mapTitle: "Байршил",
+    links: [
+      { label: "Бидний тухай", href: "/#about" },
+      { label: "Аяллууд", href: "/tours" },
+      { label: "Сэтгэл ханамж", href: "/#journal" },
+      { label: "Холбоо барих", href: "/plan" },
+    ],
+    contacts: [
+      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
+      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
+      { type: "address", label: "Улаанбаатар, Монгол", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
+      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
+    ],
+    mapButton: "Google Maps нээх",
+    copyright: "Бүх эрх хуулиар хамгаалагдсан.",
+    legal: ["Үйлчилгээний нөхцөл", "Нууцлалын бодлого"],
+  },
+  en: {
+    tagline: "Professional travel consulting",
+    description:
+      "Business, expo, leisure, and custom travel across Mongolia and global destinations, planned with care.",
+    linksTitle: "Links",
+    contactTitle: "Contact",
+    mapTitle: "Location",
+    links: [
+      { label: "About us", href: "/#about" },
+      { label: "Trips", href: "/tours" },
+      { label: "Satisfaction", href: "/#journal" },
+      { label: "Contact", href: "/plan" },
+    ],
+    contacts: [
+      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
+      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
+      { type: "address", label: "Ulaanbaatar, Mongolia", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
+      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
+    ],
+    mapButton: "Open in Google Maps",
+    copyright: "All rights reserved.",
+    legal: ["Terms of service", "Privacy policy"],
+  },
+  zh: {
+    tagline: "专业旅行顾问",
+    description:
+      "为蒙古和全球目的地规划商务、展会、休闲和定制旅行。",
+    linksTitle: "链接",
+    contactTitle: "联系方式",
+    mapTitle: "位置",
+    links: [
+      { label: "关于我们", href: "/#about" },
+      { label: "旅行", href: "/tours" },
+      { label: "满意度", href: "/#journal" },
+      { label: "联系", href: "/plan" },
+    ],
+    contacts: [
+      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
+      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
+      { type: "address", label: "蒙古，乌兰巴托", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
+      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
+    ],
+    mapButton: "打开 Google Maps",
+    copyright: "版权所有。",
+    legal: ["服务条款", "隐私政策"],
+  },
+  ja: {
+    tagline: "プロの旅行コンサルティング",
+    description:
+      "モンゴルと世界各地へのビジネス、展示会、レジャー、カスタム旅行を丁寧に計画します。",
+    linksTitle: "リンク",
+    contactTitle: "お問い合わせ",
+    mapTitle: "所在地",
+    links: [
+      { label: "私たちについて", href: "/#about" },
+      { label: "ツアー", href: "/tours" },
+      { label: "満足度", href: "/#journal" },
+      { label: "お問い合わせ", href: "/plan" },
+    ],
+    contacts: [
+      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
+      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
+      { type: "address", label: "ウランバートル、モンゴル", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
+      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
+    ],
+    mapButton: "Google Maps を開く",
+    copyright: "All rights reserved.",
+    legal: ["利用規約", "プライバシーポリシー"],
+  },
+  ko: {
+    tagline: "전문 여행 컨설팅",
+    description:
+      "몽골과 전 세계 목적지의 비즈니스, 엑스포, 휴양, 맞춤 여행을 세심하게 계획합니다.",
+    linksTitle: "링크",
+    contactTitle: "연락처",
+    mapTitle: "위치",
+    links: [
+      { label: "회사 소개", href: "/#about" },
+      { label: "여행", href: "/tours" },
+      { label: "만족도", href: "/#journal" },
+      { label: "연락하기", href: "/plan" },
+    ],
+    contacts: [
+      { type: "email", label: "info@nomadabe.mn", href: "mailto:info@nomadabe.mn" },
+      { type: "email", label: "travel@nomadabe.mn", href: "mailto:travel@nomadabe.mn" },
+      { type: "address", label: "울란바토르, 몽골", href: "https://maps.google.com/?q=Ulaanbaatar%20Mongolia" },
+      { type: "phone", label: "7507 2233", href: "tel:+97675072233" },
+    ],
+    mapButton: "Google Maps 열기",
+    copyright: "All rights reserved.",
+    legal: ["서비스 약관", "개인정보 처리방침"],
+  },
+} as const;
 
 type CtaFooterProps = {
   showPlanningSection?: boolean;
@@ -22,7 +149,8 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
   );
-  const { locale, t } = useLanguage();
+  const { contentLocale, t } = useLanguage();
+  const footer = FOOTER_COPY[contentLocale];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,10 +166,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
           name: "Website visitor",
           email,
           inquiryType: "general",
-          message:
-            locale === "mn"
-              ? "Nomadabe Travel-ийн аяллын төлөвлөлтийн мэдээлэл авах хүсэлтэй байна."
-              : "I want to receive Nomadabe Travel trip planning information.",
+          message: INQUIRY_MESSAGE[contentLocale],
         }),
       });
 
@@ -121,20 +246,41 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
         </section>
       )}
 
-      <footer className="border-t border-white/10 bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
-          <div className="grid grid-cols-2 gap-10 lg:grid-cols-5">
-            <div className="col-span-2">
-              <div className="mb-4 font-display text-3xl">Nomadabe</div>
-              <p className="max-w-xs text-sm leading-relaxed text-primary-foreground/65">
-                {t.footer.description}
+      <footer className="bg-[#141414] text-white">
+        <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-20">
+          <div className="grid gap-10 lg:grid-cols-[1.15fr_0.65fr_1fr_0.95fr]">
+            <div>
+              <Link href="/" className="inline-flex items-center gap-3">
+                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-white p-1.5">
+                  <Image
+                    src="/nomadabe-mark.png"
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="h-full w-full rounded-md object-cover [object-position:center_35%]"
+                  />
+                </span>
+                <span>
+                  <span className="block text-xl font-black uppercase tracking-wide">
+                    Nomadabe
+                  </span>
+                  <span className="block text-xs font-bold uppercase tracking-[0.2em] text-white/55">
+                    {footer.tagline}
+                  </span>
+                </span>
+              </Link>
+
+              <p className="mt-6 max-w-sm text-sm leading-7 text-white/68">
+                {footer.description}
               </p>
-              <div className="mt-6 flex gap-3">
+
+              <div className="mt-7 flex gap-3">
                 {SOCIALS.map((social) => (
                   <a
                     key={social.label}
                     href={social.href}
-                    className="flex h-10 w-10 items-center justify-center rounded-md border border-white/20 text-xs font-bold tracking-wider transition-colors hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                    aria-label={social.label}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-xs font-black text-white transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     {social.label}
                   </a>
@@ -142,33 +288,84 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               </div>
             </div>
 
-            {t.footer.columns.map((column) => (
-              <div key={column.title}>
-                <div className="mb-4 text-sm font-semibold uppercase tracking-wider text-primary-foreground/90">
-                  {column.title}
-                </div>
-                <ul className="space-y-2.5">
-                  {column.links.map((link) => (
-                    <li key={link}>
-                      <a
-                        href="#"
-                        className="text-sm text-primary-foreground/65 transition-colors hover:text-accent"
-                      >
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+            <nav>
+              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-red-500">
+                {footer.linksTitle}
+              </h3>
+              <ul className="space-y-3">
+                {footer.links.map((link) => (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      className="text-sm text-white/72 transition-colors hover:text-accent"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div>
+              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-red-500">
+                {footer.contactTitle}
+              </h3>
+              <ul className="space-y-4">
+                {footer.contacts.map((contact) => (
+                  <li key={`${contact.type}-${contact.label}`}>
+                    <a
+                      href={contact.href}
+                      className="group flex gap-3 text-sm leading-6 text-white/72"
+                    >
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition-colors group-hover:bg-red-500 group-hover:text-white">
+                        {contact.type === "phone" ? (
+                          <Phone className="h-4 w-4" />
+                        ) : contact.type === "address" ? (
+                          <MapPin className="h-4 w-4" />
+                        ) : (
+                          <Mail className="h-4 w-4" />
+                        )}
+                      </span>
+                      <span className="transition-colors group-hover:text-accent">
+                        {contact.label}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-red-500">
+                {footer.mapTitle}
+              </h3>
+              <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                <iframe
+                  title={footer.mapTitle}
+                  src="https://maps.google.com/maps?q=Ulaanbaatar%20Mongolia&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                  className="h-52 w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
-            ))}
+              <a
+                href="https://maps.google.com/?q=Ulaanbaatar%20Mongolia"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-white/65 transition-colors hover:text-accent"
+              >
+                {footer.mapButton}
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
           </div>
 
-          <div className="mt-16 flex flex-col justify-between gap-4 border-t border-white/10 pt-8 text-xs text-primary-foreground/55 lg:flex-row">
+          <div className="mt-14 flex flex-col justify-between gap-5 border-t border-white/10 pt-8 text-xs text-white/45 lg:flex-row lg:items-center">
             <div>
-              © {new Date().getFullYear()} {t.footer.copyright}
+              © {new Date().getFullYear()} Nomadabe.mn — {footer.copyright}
             </div>
-            <div className="flex gap-6">
-              {t.footer.legal.map((link) => (
+            <div className="flex flex-wrap gap-6">
+              {footer.legal.map((link) => (
                 <a key={link} href="#" className="hover:text-accent">
                   {link}
                 </a>

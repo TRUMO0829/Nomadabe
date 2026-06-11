@@ -26,10 +26,51 @@ type Props = {
   onClose: () => void;
 };
 
+const DETAIL_COPY = {
+  mn: {
+    morePhotos: "Нэмэлт зургууд",
+    highlights: "Аяллын онцлогууд",
+    included: "Үнэд багтсан",
+    excluded: "Үнэд багтаагүй",
+    itinerary: "Аяллын хөтөлбөр",
+  },
+  en: {
+    morePhotos: "More photos",
+    highlights: "Trip highlights",
+    included: "Included",
+    excluded: "Not included",
+    itinerary: "Itinerary",
+  },
+  zh: {
+    morePhotos: "更多照片",
+    highlights: "行程亮点",
+    included: "费用包含",
+    excluded: "费用不含",
+    itinerary: "行程安排",
+  },
+  ja: {
+    morePhotos: "追加写真",
+    highlights: "ツアーの見どころ",
+    included: "料金に含まれるもの",
+    excluded: "料金に含まれないもの",
+    itinerary: "旅程",
+  },
+  ko: {
+    morePhotos: "추가 사진",
+    highlights: "여행 하이라이트",
+    included: "포함 사항",
+    excluded: "불포함 사항",
+    itinerary: "여행 일정",
+  },
+} as const;
+
 export function AdventureModal({ adventure, onClose }: Props) {
-  const { locale, t } = useLanguage();
-  const text = adventure ? getAdventureText(adventure, locale) : null;
-  const details = adventure ? getAdventureDetailInfo(adventure, locale) : null;
+  const { contentLocale, t } = useLanguage();
+  const copy = DETAIL_COPY[contentLocale];
+  const text = adventure ? getAdventureText(adventure, contentLocale) : null;
+  const details = adventure
+    ? getAdventureDetailInfo(adventure, contentLocale)
+    : null;
   const additionalImages = adventure
     ? getAdventureGalleryImages(adventure).slice(1, 5)
     : [];
@@ -123,7 +164,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                 {additionalImages.length > 0 && (
                   <div className="mt-8">
                     <h4 className="mb-3 font-display text-xl">
-                      {locale === "mn" ? "Нэмэлт зургууд" : "More photos"}
+                      {copy.morePhotos}
                     </h4>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       {additionalImages.map((image, index) => (
@@ -174,7 +215,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                 </div>
 
                 <h4 className="mb-4 mt-9 font-display text-2xl">
-                  {locale === "mn" ? "Аяллын онцлогууд" : "Trip highlights"}
+                  {copy.highlights}
                 </h4>
                 <ul className="grid gap-x-6 gap-y-3 text-sm text-foreground/80 sm:grid-cols-2 lg:grid-cols-3">
                   {details.highlights.map((item) => (
@@ -188,7 +229,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                 <div className="mt-9 grid gap-7 lg:grid-cols-2">
                   <div>
                     <h4 className="mb-4 font-display text-2xl">
-                      {locale === "mn" ? "Үнэд багтсан" : "Included"}
+                      {copy.included}
                     </h4>
                     <ul className="space-y-3 text-sm text-foreground/80">
                       {details.included.map((item) => (
@@ -202,7 +243,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
 
                   <div>
                     <h4 className="mb-4 font-display text-2xl">
-                      {locale === "mn" ? "Үнэд багтаагүй" : "Not included"}
+                      {copy.excluded}
                     </h4>
                     <ul className="space-y-3 text-sm text-foreground/80">
                       {details.excluded.map((item) => (
@@ -216,7 +257,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                 </div>
 
                 <h4 className="mb-4 mt-10 font-display text-2xl">
-                  {locale === "mn" ? "Аяллын хөтөлбөр" : "Itinerary"}
+                  {copy.itinerary}
                 </h4>
                 <div className="space-y-3">
                   {details.itinerary.map((step) => (

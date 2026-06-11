@@ -29,6 +29,39 @@ const COPY = {
     previous: "Previous",
     next: "Next",
   },
+  zh: {
+    eyebrow: "出境旅行",
+    title: "出境旅行路线",
+    body:
+      "中国、日本、韩国、土耳其等热门目的地的旅行套餐。",
+    priceFrom: "起价",
+    details: "详情",
+    day: "天",
+    previous: "上一个",
+    next: "下一个",
+  },
+  ja: {
+    eyebrow: "海外ツアー",
+    title: "海外旅行ルート",
+    body:
+      "中国、日本、韓国、トルコなど人気目的地の旅行プラン。",
+    priceFrom: "開始料金",
+    details: "詳細",
+    day: "日",
+    previous: "前へ",
+    next: "次へ",
+  },
+  ko: {
+    eyebrow: "해외 여행",
+    title: "해외 여행 루트",
+    body:
+      "중국, 일본, 한국, 터키 등 인기 목적지의 여행 패키지.",
+    priceFrom: "시작가",
+    details: "자세히",
+    day: "일",
+    previous: "이전",
+    next: "다음",
+  },
 } as const;
 
 const OUTBOUND_OPTIONS = [
@@ -36,8 +69,14 @@ const OUTBOUND_OPTIONS = [
     id: "zhangjiajie",
     countryMn: "Хятад",
     countryEn: "China",
+    countryZh: "中国",
+    countryJa: "中国",
+    countryKo: "중국",
     titleMn: "Жанжиажэ аялал /Аватар/",
     titleEn: "Zhangjiajie Avatar trip",
+    titleZh: "张家界阿凡达之旅",
+    titleJa: "張家界アバター旅行",
+    titleKo: "장자제 아바타 여행",
     days: 8,
     price: "2,990,000₮",
     image:
@@ -47,8 +86,14 @@ const OUTBOUND_OPTIONS = [
     id: "shanghai",
     countryMn: "Хятад",
     countryEn: "China",
+    countryZh: "中国",
+    countryJa: "中国",
+    countryKo: "중국",
     titleMn: "Шанхай хотын аяллын хөтөлбөр",
     titleEn: "Shanghai city travel program",
+    titleZh: "上海城市旅行项目",
+    titleJa: "上海シティ旅行プログラム",
+    titleKo: "상하이 도시 여행 프로그램",
     days: 6,
     price: "3,390,000₮",
     image:
@@ -58,8 +103,14 @@ const OUTBOUND_OPTIONS = [
     id: "japan",
     countryMn: "Япон",
     countryEn: "Japan",
+    countryZh: "日本",
+    countryJa: "日本",
+    countryKo: "일본",
     titleMn: "Япон 4 хотын аялал",
     titleEn: "Japan four-city trip",
+    titleZh: "日本四城之旅",
+    titleJa: "日本4都市旅行",
+    titleKo: "일본 4개 도시 여행",
     days: 5,
     price: "4,990,000₮",
     image:
@@ -69,8 +120,14 @@ const OUTBOUND_OPTIONS = [
     id: "jeju",
     countryMn: "БНСУ",
     countryEn: "South Korea",
+    countryZh: "韩国",
+    countryJa: "韓国",
+    countryKo: "대한민국",
     titleMn: "Жэжү арлын аялал",
     titleEn: "Jeju island trip",
+    titleZh: "济州岛之旅",
+    titleJa: "済州島旅行",
+    titleKo: "제주도 여행",
     days: 5,
     price: "4,290,000₮",
     image:
@@ -80,8 +137,14 @@ const OUTBOUND_OPTIONS = [
     id: "turkey",
     countryMn: "Турк",
     countryEn: "Turkey",
+    countryZh: "土耳其",
+    countryJa: "トルコ",
+    countryKo: "튀르키예",
     titleMn: "Анталья, Памуккале, Истанбул",
     titleEn: "Antalya, Pamukkale, Istanbul",
+    titleZh: "安塔利亚、棉花堡、伊斯坦布尔",
+    titleJa: "アンタルヤ、パムッカレ、イスタンブール",
+    titleKo: "안탈리아, 파묵칼레, 이스탄불",
     days: 8,
     price: "4,690,000₮",
     image:
@@ -91,8 +154,14 @@ const OUTBOUND_OPTIONS = [
     id: "taiwan",
     countryMn: "Тайвань",
     countryEn: "Taiwan",
+    countryZh: "台湾",
+    countryJa: "台湾",
+    countryKo: "대만",
     titleMn: "Тайвань Тайбэй аялал",
     titleEn: "Taiwan Taipei trip",
+    titleZh: "台湾台北之旅",
+    titleJa: "台湾・台北旅行",
+    titleKo: "대만 타이베이 여행",
     days: 7,
     price: "6,790,000₮",
     image:
@@ -107,8 +176,8 @@ type OutboundTripsCarouselProps = {
 export function OutboundTripsCarousel({
   adventures = [],
 }: OutboundTripsCarouselProps) {
-  const { locale } = useLanguage();
-  const copy = COPY[locale];
+  const { contentLocale } = useLanguage();
+  const copy = COPY[contentLocale];
   const scrollerRef = useRef<HTMLDivElement>(null);
   const backendOptions = adventures
     .filter((adventure) => adventure.country !== "Mongolia")
@@ -116,8 +185,14 @@ export function OutboundTripsCarousel({
       id: adventure.id,
       countryMn: adventure.country,
       countryEn: adventure.country,
+      countryZh: adventure.country,
+      countryJa: adventure.country,
+      countryKo: adventure.country,
       titleMn: adventure.title,
       titleEn: adventure.title,
+      titleZh: adventure.title,
+      titleJa: adventure.title,
+      titleKo: adventure.title,
       days: adventure.days,
       price:
         adventure.price > 0
@@ -175,9 +250,20 @@ export function OutboundTripsCarousel({
           className="-mx-6 flex snap-x gap-5 overflow-x-auto px-6 pb-4 [scrollbar-width:none] lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden"
         >
           {options.map((option, idx) => {
-            const title = locale === "mn" ? option.titleMn : option.titleEn;
-            const country =
-              locale === "mn" ? option.countryMn : option.countryEn;
+            const title = {
+              mn: option.titleMn,
+              en: option.titleEn,
+              zh: option.titleZh,
+              ja: option.titleJa,
+              ko: option.titleKo,
+            }[contentLocale];
+            const country = {
+              mn: option.countryMn,
+              en: option.countryEn,
+              zh: option.countryZh,
+              ja: option.countryJa,
+              ko: option.countryKo,
+            }[contentLocale];
 
             return (
               <motion.article

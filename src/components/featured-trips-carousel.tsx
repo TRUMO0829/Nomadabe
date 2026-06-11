@@ -26,6 +26,36 @@ const COPY = {
     details: "Details",
     day: "days",
   },
+  zh: {
+    eyebrow: "精选旅行",
+    title: "精选旅行",
+    body:
+      "Nomadabe 最受欢迎的4个商务、展会、休闲和定制旅行套餐。",
+    priceFrom: "起价",
+    quote: "获取报价",
+    details: "详情",
+    day: "天",
+  },
+  ja: {
+    eyebrow: "注目ツアー",
+    title: "注目ツアー",
+    body:
+      "Nomadabe の人気ビジネス、展示会、レジャー、カスタム旅行4プラン。",
+    priceFrom: "開始料金",
+    quote: "見積もり依頼",
+    details: "詳細",
+    day: "日",
+  },
+  ko: {
+    eyebrow: "추천 여행",
+    title: "추천 여행",
+    body:
+      "Nomadabe의 인기 비즈니스, 엑스포, 휴양, 맞춤 여행 4가지 패키지.",
+    priceFrom: "시작가",
+    quote: "견적 요청",
+    details: "자세히",
+    day: "일",
+  },
 } as const;
 
 type FeaturedTripsCarouselProps = {
@@ -35,8 +65,8 @@ type FeaturedTripsCarouselProps = {
 export function FeaturedTripsCarousel({
   adventures = ADVENTURES,
 }: FeaturedTripsCarouselProps) {
-  const { locale } = useLanguage();
-  const copy = COPY[locale];
+  const { contentLocale } = useLanguage();
+  const copy = COPY[contentLocale];
   const featuredTrips = adventures
     .filter((adventure) => adventure.featured && adventure.country !== "Mongolia")
     .slice(0, 4);
@@ -59,7 +89,7 @@ export function FeaturedTripsCarousel({
 
         <div className="grid gap-5 md:grid-cols-2 lg:gap-6">
           {featuredTrips.map((adventure, idx) => {
-            const text = getAdventureText(adventure, locale);
+            const text = getAdventureText(adventure, contentLocale);
             const price =
               adventure.price > 0
                 ? `${adventure.price.toLocaleString()} ${adventure.currency}`

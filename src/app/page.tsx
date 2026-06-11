@@ -4,7 +4,6 @@ import { TravelStyles } from "@/components/travel-styles";
 import { WhyUs } from "@/components/why-us";
 import { Testimonials } from "@/components/testimonials";
 import { CtaFooter } from "@/components/cta-footer";
-import { LanguageProvider } from "@/components/language-provider";
 import { SignupPromptModal } from "@/components/signup-prompt-modal";
 import { TravelOptionsCarousel } from "@/components/travel-options-carousel";
 import { FeaturedTripsCarousel } from "@/components/featured-trips-carousel";
@@ -17,7 +16,7 @@ export default async function Home() {
   const adventures = await getTrips();
 
   return (
-    <LanguageProvider>
+    <>
       <SignupPromptModal />
       <Navbar />
       <main className="flex-1">
@@ -30,6 +29,6 @@ export default async function Home() {
         <Testimonials />
         <CtaFooter />
       </main>
-    </LanguageProvider>
+    </>
   );
 }
