@@ -63,8 +63,8 @@ export async function updateInquiryStatusAction(formData: FormData) {
     if (inquiry.email) {
       await sendEmail({
         to: inquiry.email,
-        subject: `Nomadabe request status: ${status}`,
-        body: `Hello ${inquiry.name},\n\nYour Nomadabe Travel request status is now: ${status}.\n\nOur team will contact you with the next details.\n\nNomadabe Travel`,
+        subject: `Nomadabe хүсэлтийн төлөв: ${status}`,
+        body: `Сайн байна уу ${inquiry.name},\n\nТаны Nomadabe Travel-д илгээсэн хүсэлтийн төлөв шинэчлэгдлээ: ${status}.\n\nМанай баг аяллын дараагийн мэдээллээр тантай холбогдоно.\n\nNomadabe Travel`,
       });
     }
   }

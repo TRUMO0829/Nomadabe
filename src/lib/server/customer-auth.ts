@@ -86,8 +86,8 @@ export async function requestCustomerLoginCode(identifierValue: unknown) {
   if (getIdentifierType(identifier) === "email") {
     await sendEmail({
       to: identifier,
-      subject: "Your Nomadabe sign-in code",
-      body: `Your Nomadabe Travel sign-in code is ${code}. It expires in 10 minutes.`,
+      subject: "Nomadabe нэвтрэх код",
+      body: `Таны Nomadabe Travel нэвтрэх код: ${code}. Энэ код 10 минутын дараа хүчингүй болно.`,
     });
   }
 

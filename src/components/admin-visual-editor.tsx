@@ -41,8 +41,8 @@ export function AdminVisualEditor({ settings }: Props) {
             <Palette className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Visual editor</p>
-            <h3 className="font-display text-xl leading-none">Homepage hero canvas</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Дизайн засвар</p>
+            <h3 className="font-display text-xl leading-none">Нүүр хэсгийн preview</h3>
           </div>
         </div>
         <button
@@ -51,14 +51,14 @@ export function AdminVisualEditor({ settings }: Props) {
           disabled={isPending}
         >
           <Save className="h-4 w-4" />
-          {isPending ? "Saving..." : "Save design"}
+          {isPending ? "Хадгалж байна..." : "Дизайн хадгалах"}
         </button>
       </div>
 
       <div className="grid gap-0 xl:grid-cols-[340px_1fr]">
         <div className="border-b border-white/10 bg-black/25 p-4 text-white xl:border-b-0 xl:border-r">
           <div className="space-y-4">
-            <EditorField icon={Type} label="Badge">
+            <EditorField icon={Type} label="Тэмдэглэгээ">
               <input
                 name="heroBadge"
                 value={draft.heroBadge}
@@ -67,7 +67,7 @@ export function AdminVisualEditor({ settings }: Props) {
               />
             </EditorField>
 
-            <EditorField icon={Type} label="Hero title">
+            <EditorField icon={Type} label="Нүүр гарчиг">
               <textarea
                 name="heroTitle"
                 value={draft.heroTitle}
@@ -77,7 +77,7 @@ export function AdminVisualEditor({ settings }: Props) {
               />
             </EditorField>
 
-            <EditorField icon={Type} label="Subtitle">
+            <EditorField icon={Type} label="Дэд тайлбар">
               <textarea
                 name="heroSubtitle"
                 value={draft.heroSubtitle}
@@ -87,7 +87,7 @@ export function AdminVisualEditor({ settings }: Props) {
               />
             </EditorField>
 
-            <EditorField icon={ImageIcon} label="Background image URL">
+            <EditorField icon={ImageIcon} label="Арын зургийн URL">
               <input
                 name="heroImage"
                 value={draft.heroImage}
@@ -97,7 +97,7 @@ export function AdminVisualEditor({ settings }: Props) {
             </EditorField>
 
             <div className="grid grid-cols-2 gap-3">
-              <EditorField icon={Palette} label="Accent">
+              <EditorField icon={Palette} label="Онцлох өнгө">
                 <input
                   name="accentColor"
                   type="color"
@@ -106,7 +106,7 @@ export function AdminVisualEditor({ settings }: Props) {
                   className="h-10 w-full cursor-pointer rounded-md border border-white/10 bg-white/10 p-1"
                 />
               </EditorField>
-              <EditorField icon={Palette} label="Text">
+              <EditorField icon={Palette} label="Текст">
                 <input
                   name="heroTextColor"
                   type="color"
@@ -117,7 +117,7 @@ export function AdminVisualEditor({ settings }: Props) {
               </EditorField>
             </div>
 
-            <EditorField icon={SlidersHorizontal} label={`Overlay ${Math.round(draft.heroOverlayOpacity * 100)}%`}>
+            <EditorField icon={SlidersHorizontal} label={`Давхар өнгө ${Math.round(draft.heroOverlayOpacity * 100)}%`}>
               <input
                 name="heroOverlayOpacity"
                 type="range"
@@ -136,7 +136,7 @@ export function AdminVisualEditor({ settings }: Props) {
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-white">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <Layers className="h-4 w-4 text-[var(--accent)]" />
-              Live preview
+              Шууд харагдац
             </div>
             <div className="flex items-center gap-2 text-xs text-white/60">
               <span className="h-2.5 w-2.5 rounded-full bg-white/30" />
@@ -157,7 +157,7 @@ export function AdminVisualEditor({ settings }: Props) {
                   {draft.heroBadge}
                 </span>
                 <span className="hidden text-[11px] uppercase tracking-[0.18em] opacity-80 sm:block">
-                  Est. 2025 · Ulaanbaatar
+                  2025 оноос · Улаанбаатар
                 </span>
               </div>
 
@@ -174,13 +174,13 @@ export function AdminVisualEditor({ settings }: Props) {
 
                 <div className="mt-8 max-w-3xl rounded-full bg-[var(--background)] p-2 shadow-xl">
                   <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1 text-[var(--foreground)]">
-                    <PreviewSearchItem label="Where" value="Mongolia, Asia, Europe" accent={draft.accentColor} />
-                    <PreviewSearchItem label="When" value="Any month" accent={draft.accentColor} />
+                    <PreviewSearchItem label="Хаашаа" value="Монгол, Ази, Европ" accent={draft.accentColor} />
+                    <PreviewSearchItem label="Хэзээ" value="Аль ч сар" accent={draft.accentColor} />
                     <span
                       className="inline-flex h-14 items-center justify-center rounded-full px-5 text-sm font-semibold text-[var(--accent-foreground)]"
                       style={{ backgroundColor: draft.accentColor }}
                     >
-                      Search
+                      Хайх
                     </span>
                   </div>
                 </div>
