@@ -2,15 +2,157 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, X, Globe } from "lucide-react";
-import { LANGUAGES } from "@/lib/i18n";
+import {
+  Building2,
+  ChevronDown,
+  Compass,
+  Globe,
+  Globe2,
+  Menu,
+  MountainSnow,
+  X,
+} from "lucide-react";
+import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
+
+const NAV_DESTINATION_COPY = {
+  mn: {
+    title: "Чиглэлүүд",
+    body: "Гадаад, дотоод аяллыг улс болон аяллын төрлөөр шууд сонго.",
+    viewAll: "Бүх чиглэлийг харах",
+  },
+  en: {
+    title: "Destinations",
+    body: "Browse outbound and domestic routes by country and travel type.",
+    viewAll: "View all destinations",
+  },
+  zh: {
+    title: "Destinations",
+    body: "Browse outbound and domestic routes by country and travel type.",
+    viewAll: "View all destinations",
+  },
+  ja: {
+    title: "Destinations",
+    body: "Browse outbound and domestic routes by country and travel type.",
+    viewAll: "View all destinations",
+  },
+  ko: {
+    title: "Destinations",
+    body: "Browse outbound and domestic routes by country and travel type.",
+    viewAll: "View all destinations",
+  },
+} as const;
+
+const NAV_DESTINATION_GROUPS = [
+  {
+    icon: MountainSnow,
+    title: {
+      mn: "Дотоод аялал",
+      en: "Domestic",
+      zh: "Domestic",
+      ja: "Domestic",
+      ko: "Domestic",
+    },
+    items: ["Mongolia", "Khuvsgul", "Gobi", "Terelj"],
+  },
+  {
+    icon: Globe2,
+    title: {
+      mn: "Гадаад аялал",
+      en: "Outbound",
+      zh: "Outbound",
+      ja: "Outbound",
+      ko: "Outbound",
+    },
+    items: ["Japan", "Korea", "China", "Turkey"],
+  },
+  {
+    icon: Building2,
+    title: {
+      mn: "Хот, expo",
+      en: "Cities & expo",
+      zh: "Cities & expo",
+      ja: "Cities & expo",
+      ko: "Cities & expo",
+    },
+    items: ["Tokyo", "Seoul", "Shanghai", "Guangzhou"],
+  },
+  {
+    icon: Compass,
+    title: {
+      mn: "Амралтын хэв маяг",
+      en: "Vacation style",
+      zh: "Vacation style",
+      ja: "Vacation style",
+      ko: "Vacation style",
+    },
+    items: ["Family", "Business", "Island", "Custom"],
+  },
+] as const;
+
+function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
+  const copy = NAV_DESTINATION_COPY[locale];
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-2xl">
+      <div className="grid gap-5 border-b border-border bg-background p-5 lg:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">
+            {copy.title}
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {copy.body}
+          </p>
+        </div>
+        <Link
+          href="/#destinations"
+          className="inline-flex items-center justify-center rounded-md bg-accent px-4 py-3 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary lg:justify-self-end"
+        >
+          {copy.viewAll}
+        </Link>
+      </div>
+
+      <div className="grid gap-0 md:grid-cols-4">
+        {NAV_DESTINATION_GROUPS.map((group) => {
+          const Icon = group.icon;
+
+          return (
+            <div key={group.title.en} className="border-border p-5 md:border-r md:last:border-r-0">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-foreground">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <h3 className="text-sm font-black">{group.title[locale]}</h3>
+              </div>
+              <ul className="grid gap-2">
+                {group.items.map((item) => (
+                  <li key={item}>
+                    <Link
+                      href="/#destinations"
+                      className="block rounded-md px-2 py-1.5 text-sm font-semibold text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const { locale, setLocale, t } = useLanguage();
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [destinationOpen, setDestinationOpen] = useState(false);
+  const { contentLocale, locale, setLocale, t } = useLanguage();
+  const currentLanguage =
+    LANGUAGES.find((language) => language.code === locale) ?? LANGUAGES[0];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -54,48 +196,104 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">
-          {t.nav.items.map((n) => (
-            <a
-              key={n.href}
-              href={n.href}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-accent",
-                scrolled ? "text-foreground/80" : "text-white/90"
-              )}
-            >
-              {n.label}
-            </a>
-          ))}
+          {t.nav.items.map((n) => {
+            const isDestination = n.href === "/#destinations";
+
+            if (!isDestination) {
+              return (
+                <a
+                  key={n.href}
+                  href={n.href}
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-accent",
+                    scrolled ? "text-foreground/80" : "text-white/90"
+                  )}
+                >
+                  {n.label}
+                </a>
+              );
+            }
+
+            return (
+              <div
+                key={n.href}
+                className="relative"
+                onMouseEnter={() => setDestinationOpen(true)}
+                onMouseLeave={() => setDestinationOpen(false)}
+              >
+                <a
+                  href={n.href}
+                  onClick={() => setDestinationOpen(false)}
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-accent",
+                    destinationOpen && "text-accent",
+                    scrolled ? "text-foreground/80" : "text-white/90"
+                  )}
+                >
+                  {n.label}
+                </a>
+
+                {destinationOpen && (
+                  <div className="absolute left-1/2 top-full z-50 w-[760px] -translate-x-1/2 pt-5">
+                    <DestinationMegaMenu locale={contentLocale} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="hidden lg:flex items-center gap-4">
           <div
             aria-label={t.nav.language}
             className={cn(
-              "flex items-center gap-1 rounded-lg border p-1",
+              "relative rounded-lg border",
               scrolled
                 ? "border-border bg-card/90 text-foreground"
                 : "border-white/30 bg-black/25 text-white"
             )}
           >
-            <Globe className="ml-2 w-4 h-4" />
-            {LANGUAGES.map((language) => (
-              <button
-                key={language.code}
-                type="button"
-                aria-pressed={locale === language.code}
-                title={language.label}
-                onClick={() => setLocale(language.code)}
+            <button
+              type="button"
+              aria-expanded={languageOpen}
+              onClick={() => setLanguageOpen((value) => !value)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-colors hover:bg-white/15"
+            >
+              <Globe className="h-4 w-4" />
+              {currentLanguage.short}
+              <ChevronDown
                 className={cn(
-                  "rounded-md px-2.5 py-1 text-xs font-bold transition-colors",
-                  locale === language.code
-                    ? "bg-accent text-accent-foreground"
-                    : "hover:bg-white/15"
+                  "h-3.5 w-3.5 transition-transform",
+                  languageOpen && "rotate-180"
                 )}
-              >
-                {language.short}
-              </button>
-            ))}
+              />
+            </button>
+
+            {languageOpen && (
+              <div className="absolute right-0 top-[calc(100%+0.5rem)] min-w-36 overflow-hidden rounded-lg border border-border bg-card p-1 text-foreground shadow-xl">
+                {LANGUAGES.map((language) => (
+                  <button
+                    key={language.code}
+                    type="button"
+                    aria-pressed={locale === language.code}
+                    title={language.label}
+                    onClick={() => {
+                      setLocale(language.code);
+                      setLanguageOpen(false);
+                    }}
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs font-bold transition-colors",
+                      locale === language.code
+                        ? "bg-accent text-accent-foreground"
+                        : "hover:bg-muted"
+                    )}
+                  >
+                    <span>{language.label}</span>
+                    <span>{language.short}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <Link
             href="/plan"
@@ -122,25 +320,48 @@ export function Navbar() {
           <div className="px-6 py-4 flex flex-col gap-3">
             <div
               aria-label={t.nav.language}
-              className="mb-2 flex w-fit items-center gap-1 rounded-lg border border-border bg-card p-1 text-foreground"
+              className="relative mb-2 w-fit rounded-lg border border-border bg-card text-foreground"
             >
-              <Globe className="ml-2 w-4 h-4 text-muted-foreground" />
-              {LANGUAGES.map((language) => (
-                <button
-                  key={language.code}
-                  type="button"
-                  aria-pressed={locale === language.code}
-                  onClick={() => setLocale(language.code)}
+              <button
+                type="button"
+                aria-expanded={languageOpen}
+                onClick={() => setLanguageOpen((value) => !value)}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold"
+              >
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                {currentLanguage.short}
+                <ChevronDown
                   className={cn(
-                    "rounded-md px-3 py-1.5 text-xs font-bold transition-colors",
-                    locale === language.code
-                      ? "bg-accent text-accent-foreground"
-                      : "hover:bg-muted"
+                    "h-3.5 w-3.5 transition-transform",
+                    languageOpen && "rotate-180"
                   )}
-                >
-                  {language.short}
-                </button>
-              ))}
+                />
+              </button>
+
+              {languageOpen && (
+                <div className="absolute left-0 top-[calc(100%+0.5rem)] z-10 min-w-36 overflow-hidden rounded-lg border border-border bg-card p-1 text-foreground shadow-xl">
+                  {LANGUAGES.map((language) => (
+                    <button
+                      key={language.code}
+                      type="button"
+                      aria-pressed={locale === language.code}
+                      onClick={() => {
+                        setLocale(language.code);
+                        setLanguageOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs font-bold transition-colors",
+                        locale === language.code
+                          ? "bg-accent text-accent-foreground"
+                          : "hover:bg-muted"
+                      )}
+                    >
+                      <span>{language.label}</span>
+                      <span>{language.short}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {t.nav.items.map((n) => (
               <a

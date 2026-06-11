@@ -45,11 +45,68 @@ const COPY = {
     codeSent: "A sign-in code has been sent.",
     error: "Could not send. Please check your details and try again.",
   },
+  zh: {
+    title: "欢迎来到 Nomadabe Travel",
+    body:
+      "如果想优先获取旅行优惠、出发日期和更新，可以登录或创建账户。",
+    login: "登录",
+    register: "注册",
+    name: "您的姓名",
+    email: "邮箱",
+    phone: "电话",
+    password: "密码",
+    submitLogin: "登录",
+    submitRegister: "注册",
+    guest: "以访客身份继续",
+    close: "关闭",
+    optional: "注册不是必需的。",
+    success: "谢谢。您可以继续浏览旅行。",
+    codeSent: "登录验证码已发送。",
+    error: "无法发送。请检查您的信息后重试。",
+  },
+  ja: {
+    title: "Nomadabe Travel へようこそ",
+    body:
+      "旅行オファー、日程、最新情報を早めに受け取りたい場合は、ログインまたは登録できます。",
+    login: "ログイン",
+    register: "登録",
+    name: "お名前",
+    email: "メール",
+    phone: "電話番号",
+    password: "パスワード",
+    submitLogin: "ログイン",
+    submitRegister: "登録",
+    guest: "ゲストとして続ける",
+    close: "閉じる",
+    optional: "登録は必須ではありません。",
+    success: "ありがとうございます。引き続きツアーをご覧いただけます。",
+    codeSent: "ログインコードを送信しました。",
+    error: "送信できませんでした。入力内容を確認してもう一度お試しください。",
+  },
+  ko: {
+    title: "Nomadabe Travel에 오신 것을 환영합니다",
+    body:
+      "여행 혜택, 일정, 업데이트를 먼저 받고 싶다면 로그인하거나 계정을 만들 수 있습니다.",
+    login: "로그인",
+    register: "회원가입",
+    name: "이름",
+    email: "이메일",
+    phone: "전화번호",
+    password: "비밀번호",
+    submitLogin: "로그인",
+    submitRegister: "회원가입",
+    guest: "게스트로 계속하기",
+    close: "닫기",
+    optional: "가입은 필수가 아닙니다.",
+    success: "감사합니다. 계속 여행을 둘러보실 수 있습니다.",
+    codeSent: "로그인 코드가 전송되었습니다.",
+    error: "전송할 수 없습니다. 정보를 확인한 뒤 다시 시도해 주세요.",
+  },
 } as const;
 
 export function SignupPromptModal() {
-  const { locale } = useLanguage();
-  const copy = COPY[locale];
+  const { contentLocale } = useLanguage();
+  const copy = COPY[contentLocale];
   const [open, setOpen] = useState(true);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [submitted, setSubmitted] = useState(false);
