@@ -1,6 +1,5 @@
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
-import { TravelStyles } from "@/components/travel-styles";
 import { WhyUs } from "@/components/why-us";
 import { Testimonials } from "@/components/testimonials";
 import { CtaFooter } from "@/components/cta-footer";
@@ -24,7 +23,6 @@ export default async function Home() {
         <TravelOptionsCarousel adventures={adventures} />
         <OutboundTripsCarousel adventures={adventures} />
         <FeaturedTripsCarousel adventures={adventures} />
-        <TravelStyles />
         <WhyUs />
         <Testimonials />
         <CtaFooter />

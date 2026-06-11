@@ -19,7 +19,7 @@ import { useLanguage } from "./language-provider";
 const NAV_DESTINATION_COPY = {
   mn: {
     title: "Чиглэлүүд",
-    body: "Гадаад, дотоод аяллыг улс болон аяллын төрлөөр шууд сонго.",
+    body: "Улс, хот, сонирхол болон аяллын хэв маягаар чиглэлүүдийг үзээрэй.",
     viewAll: "Бүх чиглэлийг харах",
   },
   en: {
@@ -106,7 +106,7 @@ function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
           </p>
         </div>
         <Link
-          href="/#destinations"
+          href="/destinations"
           className="inline-flex items-center justify-center rounded-md bg-accent px-4 py-3 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary lg:justify-self-end"
         >
           {copy.viewAll}
@@ -129,7 +129,7 @@ function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
                 {group.items.map((item) => (
                   <li key={item}>
                     <Link
-                      href="/#destinations"
+                      href="/destinations"
                       className="block rounded-md px-2 py-1.5 text-sm font-semibold text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
                     >
                       {item}
@@ -197,7 +197,7 @@ export function Navbar() {
 
         <nav className="hidden lg:flex items-center gap-8">
           {t.nav.items.map((n) => {
-            const isDestination = n.href === "/#destinations";
+            const isDestination = n.href === "/destinations";
 
             if (!isDestination) {
               return (
