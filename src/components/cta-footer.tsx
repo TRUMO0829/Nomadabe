@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent } from "react";
+import type { FormEvent, InputHTMLAttributes } from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -40,6 +40,69 @@ const INQUIRY_MESSAGE = {
   zh: "我想获取 Nomadabe Travel 的旅行规划信息。",
   ja: "Nomadabe Travel の旅行計画情報を受け取りたいです。",
   ko: "Nomadabe Travel 여행 계획 정보를 받고 싶습니다.",
+} as const;
+
+const PLAN_COPY = {
+  mn: {
+    eyebrow: "Аялал төлөвлөх",
+    name: "Нэр",
+    phone: "Утас",
+    email: "И-мэйл",
+    destination: "Чиглэл",
+    month: "Явах сар",
+    travelers: "Хүний тоо",
+    budget: "Төсөв",
+    type: "Аяллын төрөл",
+    note: "Нэмэлт хүсэлт",
+    submit: "Хүсэлт илгээх",
+    loading: "Илгээж байна...",
+    success: "Хүсэлт хадгалагдлаа. Манай баг тантай холбогдоно.",
+    error: "Илгээхэд алдаа гарлаа. Дахин оролдоно уу.",
+    placeholders: {
+      name: "Таны нэр",
+      phone: "+976 9910 3258",
+      email: "name@example.com",
+      destination: "Жишээ: Говь, Япон, Canton Fair",
+      budget: "Жишээ: 3,000,000 MNT",
+      note: "Аяллын зорилго, хүүхэдтэй эсэх, буудлын түвшин гэх мэт",
+    },
+    types: [
+      { value: "custom", label: "Захиалгат аялал" },
+      { value: "business", label: "Бизнес аялал" },
+      { value: "expo", label: "Expo / үзэсгэлэн" },
+      { value: "general", label: "Ерөнхий зөвлөгөө" },
+    ],
+  },
+  en: {
+    eyebrow: "Plan a trip",
+    name: "Name",
+    phone: "Phone",
+    email: "Email",
+    destination: "Destination",
+    month: "Travel month",
+    travelers: "Travelers",
+    budget: "Budget",
+    type: "Trip type",
+    note: "Notes",
+    submit: "Send request",
+    loading: "Sending...",
+    success: "Request saved. Our team will contact you.",
+    error: "Could not send. Please try again.",
+    placeholders: {
+      name: "Your name",
+      phone: "+976 9910 3258",
+      email: "name@example.com",
+      destination: "Example: Gobi, Japan, Canton Fair",
+      budget: "Example: 3,000,000 MNT",
+      note: "Purpose, hotel level, children, timing, or other preferences",
+    },
+    types: [
+      { value: "custom", label: "Custom trip" },
+      { value: "business", label: "Business trip" },
+      { value: "expo", label: "Expo / fair" },
+      { value: "general", label: "General advice" },
+    ],
+  },
 } as const;
 
 const FOOTER_COPY = {
@@ -140,16 +203,34 @@ type CtaFooterProps = {
 };
 
 export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
-  const [email, setEmail] = useState("");
+  const [planningForm, setPlanningForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    destination: "",
+    preferredDate: "",
+    travelers: "2",
+    budget: "",
+    inquiryType: "custom",
+    note: "",
+  });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
   );
   const { contentLocale, t } = useLanguage();
   const footer = FOOTER_COPY[contentLocale];
+  const planCopy = contentLocale === "mn" ? PLAN_COPY.mn : PLAN_COPY.en;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("loading");
+
+    const message = [
+      INQUIRY_MESSAGE[contentLocale],
+      `Чиглэл: ${planningForm.destination || "Тодорхойгүй"}`,
+      `Төсөв: ${planningForm.budget || "Тодорхойгүй"}`,
+      `Тайлбар: ${planningForm.note || "Нэмэлт тайлбаргүй"}`,
+    ].join("\n");
 
     try {
       const response = await fetch("/api/inquiries", {
@@ -158,15 +239,28 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: "Website visitor",
-          email,
-          inquiryType: "general",
-          message: INQUIRY_MESSAGE[contentLocale],
+          name: planningForm.name,
+          email: planningForm.email,
+          phone: planningForm.phone,
+          inquiryType: planningForm.inquiryType,
+          travelers: Number(planningForm.travelers),
+          preferredDate: planningForm.preferredDate,
+          message,
         }),
       });
 
       if (response.ok) {
-        setEmail("");
+        setPlanningForm({
+          name: "",
+          phone: "",
+          email: "",
+          destination: "",
+          preferredDate: "",
+          travelers: "2",
+          budget: "",
+          inquiryType: "custom",
+          note: "",
+        });
         setStatus("success");
         return;
       }
@@ -210,31 +304,117 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </p>
 
             <form
-              className="mx-auto mt-10 flex max-w-xl flex-col gap-3 sm:flex-row"
+              className="mx-auto mt-10 grid max-w-4xl gap-4 rounded-md border border-white/15 bg-white/10 p-4 text-left backdrop-blur sm:grid-cols-2 lg:p-6"
               onSubmit={handleSubmit}
             >
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
+              <div className="sm:col-span-2">
+                <span className="text-xs font-black uppercase tracking-[0.18em] text-accent">
+                  {planCopy.eyebrow}
+                </span>
+              </div>
+              <PlanInput
+                label={planCopy.name}
+                value={planningForm.name}
+                placeholder={planCopy.placeholders.name}
                 required
-                placeholder={t.cta.placeholder}
-                className="flex-1 rounded-lg border border-white/20 bg-white/10 px-6 py-4 text-white placeholder:text-white/50 backdrop-blur focus:outline-none focus:ring-2 focus:ring-accent"
+                onChange={(value) => setPlanningForm((form) => ({ ...form, name: value }))}
               />
+              <PlanInput
+                label={planCopy.phone}
+                value={planningForm.phone}
+                placeholder={planCopy.placeholders.phone}
+                required
+                onChange={(value) => setPlanningForm((form) => ({ ...form, phone: value }))}
+              />
+              <PlanInput
+                label={planCopy.email}
+                type="email"
+                value={planningForm.email}
+                placeholder={planCopy.placeholders.email}
+                onChange={(value) => setPlanningForm((form) => ({ ...form, email: value }))}
+              />
+              <PlanInput
+                label={planCopy.destination}
+                value={planningForm.destination}
+                placeholder={planCopy.placeholders.destination}
+                required
+                onChange={(value) =>
+                  setPlanningForm((form) => ({ ...form, destination: value }))
+                }
+              />
+              <PlanInput
+                label={planCopy.month}
+                type="month"
+                value={planningForm.preferredDate}
+                onChange={(value) =>
+                  setPlanningForm((form) => ({ ...form, preferredDate: value }))
+                }
+              />
+              <PlanInput
+                label={planCopy.travelers}
+                type="number"
+                min="1"
+                value={planningForm.travelers}
+                required
+                onChange={(value) =>
+                  setPlanningForm((form) => ({ ...form, travelers: value }))
+                }
+              />
+              <PlanInput
+                label={planCopy.budget}
+                value={planningForm.budget}
+                placeholder={planCopy.placeholders.budget}
+                onChange={(value) => setPlanningForm((form) => ({ ...form, budget: value }))}
+              />
+              <label className="block">
+                <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/65">
+                  {planCopy.type}
+                </span>
+                <select
+                  value={planningForm.inquiryType}
+                  onChange={(event) =>
+                    setPlanningForm((form) => ({
+                      ...form,
+                      inquiryType: event.target.value,
+                    }))
+                  }
+                  className="mt-2 h-12 w-full rounded-md border border-white/20 bg-white px-4 text-sm font-semibold text-primary outline-none focus:ring-2 focus:ring-accent"
+                >
+                  {planCopy.types.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/65">
+                  {planCopy.note}
+                </span>
+                <textarea
+                  value={planningForm.note}
+                  onChange={(event) =>
+                    setPlanningForm((form) => ({ ...form, note: event.target.value }))
+                  }
+                  placeholder={planCopy.placeholders.note}
+                  rows={4}
+                  className="mt-2 w-full rounded-md border border-white/20 bg-white px-4 py-3 text-sm text-primary outline-none placeholder:text-primary/45 focus:ring-2 focus:ring-accent"
+                />
+              </label>
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-accent px-7 py-4 font-semibold text-accent-foreground transition-colors hover:bg-secondary disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-md bg-accent px-7 font-semibold text-accent-foreground transition-colors hover:bg-secondary disabled:cursor-wait disabled:opacity-70 sm:col-span-2"
               >
-                {status === "loading" ? t.cta.loading : t.cta.button}
+                {status === "loading" ? planCopy.loading : planCopy.submit}
                 <ArrowRight className="h-4 w-4" />
               </button>
             </form>
             <p className="mt-4 text-xs text-primary-foreground/60">
               {status === "success"
-                ? t.cta.success
+                ? planCopy.success
                 : status === "error"
-                  ? t.cta.error
+                  ? planCopy.error
                   : t.cta.idle}
             </p>
           </div>
@@ -367,5 +547,33 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
         </div>
       </footer>
     </>
+  );
+}
+
+function PlanInput({
+  label,
+  value,
+  onChange,
+  type = "text",
+  ...props
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+} & Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type">) {
+  return (
+    <label className="block">
+      <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/65">
+        {label}
+      </span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 h-12 w-full rounded-md border border-white/20 bg-white px-4 text-sm text-primary outline-none placeholder:text-primary/45 focus:ring-2 focus:ring-accent"
+        {...props}
+      />
+    </label>
   );
 }
