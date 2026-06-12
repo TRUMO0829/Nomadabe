@@ -207,30 +207,17 @@ export function Navbar() {
         <Link
           href="/#home"
           aria-label="Nomadabe Travel"
-          className="order-1 flex shrink-0 items-center gap-3 lg:absolute lg:left-8 lg:top-1/2 lg:-translate-y-1/2"
+          className="order-1 flex shrink-0 items-center lg:absolute lg:left-8 lg:top-1/2 lg:-translate-y-1/2"
         >
           <span
             aria-hidden="true"
             className={cn(
-              "h-10 w-10 bg-[url('/nomadabe-mark-transparent.png')] bg-center bg-no-repeat [background-size:175%] [background-position:center_35%] lg:h-12 lg:w-12",
+              "h-16 w-16 bg-[url('/nomadabe-mark-transparent.png')] bg-center bg-no-repeat [background-size:175%] [background-position:center_35%] lg:h-20 lg:w-20",
               scrolled
                 ? "invert"
                 : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
             )}
           />
-          <span className="flex flex-col leading-none">
-            <span className="font-sans text-xl font-black text-accent lg:text-2xl">
-              Nomadabe
-            </span>
-            <span
-              className={cn(
-                "mt-1 text-[10px] font-bold uppercase lg:text-xs",
-                scrolled ? "text-foreground/75" : "text-white/85"
-              )}
-            >
-              Travel
-            </span>
-          </span>
         </Link>
 
         <nav className="hidden items-center gap-10 lg:absolute lg:left-1/2 lg:top-1/2 lg:flex lg:-translate-x-1/2 lg:-translate-y-1/2">

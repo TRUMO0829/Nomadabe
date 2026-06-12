@@ -658,7 +658,7 @@ export function FeaturedAdventures({
 
   return (
     <section id="adventures" className="bg-background">
-      <div className="relative min-h-[500px] overflow-hidden bg-primary text-primary-foreground lg:min-h-[620px]">
+      <div className="relative min-h-[560px] overflow-hidden bg-primary text-primary-foreground lg:min-h-[660px]">
         {TOURS_BACKGROUNDS.map((image, index) => (
           <motion.div
             key={image}
@@ -672,6 +672,17 @@ export function FeaturedAdventures({
         ))}
         <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/38 to-primary/82" />
         <div className="absolute inset-0 bg-primary/10" />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-6 pt-36 lg:px-10 lg:pt-48">
+          <div className="max-w-2xl">
+            <p className="mb-4 inline-block bg-accent px-3 py-1 font-sans text-sm font-black uppercase tracking-[0.16em] text-accent-foreground">
+              {sectionCopy.eyebrow}
+            </p>
+            <h1 className="max-w-3xl text-balance font-sans text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
+              {sectionCopy.title}
+            </h1>
+          </div>
+        </div>
 
         <div className="absolute inset-x-0 bottom-4 z-10 px-6 lg:bottom-6 lg:px-10">
           <div className="mx-auto max-w-4xl rounded-lg border border-white/35 bg-background/36 p-3 text-foreground shadow-[0_12px_34px_rgba(0,0,0,0.28)]">

@@ -142,7 +142,7 @@ export function WhyUs() {
             </p>
             <h2 className="max-w-3xl text-balance font-display text-4xl leading-tight sm:text-5xl lg:text-6xl">
               {t.why.titleStart}{" "}
-              <span className="rounded-md bg-accent px-2 italic text-accent-foreground">
+              <span className="rounded-md bg-accent px-2 text-white">
                 {t.why.titleEmphasis}
               </span>{" "}
               {t.why.titleEnd}

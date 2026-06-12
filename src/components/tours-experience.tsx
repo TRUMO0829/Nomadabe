@@ -16,7 +16,7 @@ export function ToursExperience({ adventures }: ToursExperienceProps) {
       adventures={adventures}
       beforeList={(
         <>
-          <FeaturedTripsCarousel adventures={adventures} />
+          <FeaturedTripsCarousel adventures={adventures} variant="compact" />
           <OutboundTripsCarousel adventures={adventures} />
           <TravelOptionsCarousel adventures={adventures} />
         </>

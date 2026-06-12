@@ -80,13 +80,10 @@ export function Testimonials() {
   return (
     <section id="journal" className="bg-background px-6 py-16 lg:px-10 lg:py-24">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+        <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-2xl">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground">
+            <h2 className="text-balance text-5xl font-black leading-tight text-foreground sm:text-6xl lg:text-7xl">
               {copy.eyebrow}
-            </p>
-            <h2 className="text-balance text-4xl font-black leading-tight text-foreground sm:text-5xl">
-              {copy.title}
             </h2>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground lg:text-lg">
               {copy.body}
@@ -127,21 +124,21 @@ export function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.5, delay: idx * 0.08 }}
-              className="flex min-h-[280px] min-w-[82vw] snap-start flex-col rounded-lg border border-border bg-card p-7 shadow-sm sm:min-w-[440px] lg:min-w-[440px]"
+              className="flex min-h-[230px] min-w-[78vw] snap-start flex-col rounded-lg border border-border bg-card p-5 shadow-sm sm:min-w-[360px] lg:min-w-[360px]"
             >
-              <Quote className="h-8 w-8 text-accent" />
-              <blockquote className="mt-5 flex-1 text-sm leading-relaxed text-foreground/80 lg:text-base">
+              <Quote className="h-6 w-6 text-accent" />
+              <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-foreground/80">
                 {quote.body}
               </blockquote>
-              <div className="mt-6 flex gap-1 text-accent">
+              <div className="mt-5 flex gap-1 text-accent">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-current" />
+                  <Star key={i} className="h-3.5 w-3.5 fill-current" />
                 ))}
               </div>
-              <figcaption className="mt-5 border-t border-border pt-4">
+              <figcaption className="mt-4 border-t border-border pt-4">
                 <div className="flex items-center gap-3">
                   <div
-                    className="h-12 w-12 rounded-full border border-border bg-cover bg-center bg-white shadow-sm"
+                    className="h-10 w-10 rounded-full border border-border bg-cover bg-center bg-white shadow-sm"
                     style={{ backgroundImage: `url(${profile.avatar})` }}
                   />
                   <div>

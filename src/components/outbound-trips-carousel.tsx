@@ -8,7 +8,7 @@ import { useLanguage } from "./language-provider";
 
 const COPY = {
   mn: {
-    eyebrow: "Гадаад аяллууд",
+    eyebrow: "Гадаад чиглэлийн аяллууд",
     title: "Гадаад аяллын чиглэлүүд",
     body:
       "Хятад, Япон, Солонгос, Турк зэрэг эрэлттэй чиглэлүүдийн аяллын багцууд.",
