@@ -37,9 +37,7 @@ export async function getAdminStore() {
     return normalizeStore(JSON.parse(raw) as Partial<AdminStore>);
   } catch (error) {
     if (isNodeFileError(error) && error.code === "ENOENT") {
-      const store = normalizeStore({});
-      await saveAdminStore(store);
-      return store;
+      return normalizeStore({});
     }
 
     throw error;
