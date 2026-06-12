@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { isSupabaseConfigured, supabaseRest } from "@/lib/server/supabase-rest";
 
 export type InquiryType = "trip" | "business" | "expo" | "custom" | "general";
 export type InquiryStatus = "new" | "contacted" | "confirmed" | "closed";
@@ -8,7 +9,6 @@ export type InquiryStatus = "new" | "contacted" | "confirmed" | "closed";
 export type InquiryInput = {
   name: string;
   email?: string;
-  phone?: string;
   customerId?: string;
   tripSlug?: string;
   inquiryType: InquiryType;
@@ -39,7 +39,6 @@ export function validateInquiry(payload: unknown) {
 
   const name = asTrimmedString(payload.name);
   const email = asTrimmedString(payload.email);
-  const phone = asTrimmedString(payload.phone);
   const customerId = asTrimmedString(payload.customerId);
   const tripSlug = asTrimmedString(payload.tripSlug);
   const message = asTrimmedString(payload.message);
@@ -55,8 +54,8 @@ export function validateInquiry(payload: unknown) {
     errors.email = "Email address is invalid.";
   }
 
-  if (!email && !phone) {
-    errors.contact = "Email or phone number is required.";
+  if (!email) {
+    errors.email = "Email address is required.";
   }
 
   if (!isInquiryType(inquiryType)) {
@@ -88,7 +87,6 @@ export function validateInquiry(payload: unknown) {
     value: {
       name,
       email: email || undefined,
-      phone: phone || undefined,
       customerId: customerId || undefined,
       tripSlug: tripSlug || undefined,
       inquiryType: inquiryType as InquiryType,
@@ -100,7 +98,6 @@ export function validateInquiry(payload: unknown) {
 }
 
 export async function saveInquiry(input: InquiryInput) {
-  await mkdir(DATA_DIR, { recursive: true });
   const record: InquiryRecord = {
     ...input,
     id: randomUUID(),
@@ -108,6 +105,16 @@ export async function saveInquiry(input: InquiryInput) {
     createdAt: new Date().toISOString(),
   };
 
+  if (isSupabaseConfigured()) {
+    const [saved] = await supabaseRest<SupabaseInquiry[]>("/inquiries", {
+      method: "POST",
+      prefer: "return=representation",
+      body: JSON.stringify(toSupabaseInquiry(record)),
+    });
+    return fromSupabaseInquiry(saved);
+  }
+
+  await mkdir(DATA_DIR, { recursive: true });
   await appendFile(INQUIRIES_FILE, `${JSON.stringify(record)}\n`, "utf8");
   return record;
 }
@@ -122,6 +129,11 @@ export async function getInquiryStats() {
 }
 
 export async function getInquiries() {
+  if (isSupabaseConfigured()) {
+    const records = await supabaseRest<SupabaseInquiry[]>("/inquiries?select=*&order=created_at.desc");
+    return records.map(fromSupabaseInquiry);
+  }
+
   try {
     const file = await readFile(INQUIRIES_FILE, "utf8");
     const records = file
@@ -142,6 +154,26 @@ export async function getInquiries() {
 export async function updateInquiryStatus(id: string, status: InquiryStatus) {
   if (!isInquiryStatus(status)) {
     throw new Error("Invalid inquiry status.");
+  }
+
+  if (isSupabaseConfigured()) {
+    const [updated] = await supabaseRest<SupabaseInquiry[]>(
+      `/inquiries?id=eq.${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        prefer: "return=representation",
+        body: JSON.stringify({
+          status,
+          updated_at: new Date().toISOString(),
+        }),
+      }
+    );
+
+    if (!updated) {
+      throw new Error("Inquiry was not found.");
+    }
+
+    return fromSupabaseInquiry(updated);
   }
 
   const inquiries = await getInquiries();
@@ -202,4 +234,53 @@ function isInquiryType(value: string): value is InquiryType {
 
 function isNodeFileError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error;
+}
+
+type SupabaseInquiry = {
+  id: string;
+  name: string;
+  email: string | null;
+  customer_id: string | null;
+  trip_slug: string | null;
+  inquiry_type: InquiryType;
+  travelers: number | null;
+  preferred_date: string | null;
+  message: string;
+  status: InquiryStatus;
+  created_at: string;
+  updated_at: string | null;
+};
+
+function toSupabaseInquiry(record: InquiryRecord) {
+  return {
+    id: record.id,
+    name: record.name,
+    email: record.email ?? null,
+    customer_id: record.customerId ?? null,
+    trip_slug: record.tripSlug ?? null,
+    inquiry_type: record.inquiryType,
+    travelers: record.travelers ?? null,
+    preferred_date: record.preferredDate ?? null,
+    message: record.message,
+    status: record.status,
+    created_at: record.createdAt,
+    updated_at: record.updatedAt ?? null,
+  };
+}
+
+function fromSupabaseInquiry(record: SupabaseInquiry): InquiryRecord {
+  return {
+    id: record.id,
+    name: record.name,
+    email: record.email ?? undefined,
+    customerId: record.customer_id ?? undefined,
+    tripSlug: record.trip_slug ?? undefined,
+    inquiryType: record.inquiry_type,
+    travelers: record.travelers ?? undefined,
+    preferredDate: record.preferred_date ?? undefined,
+    message: record.message,
+    status: record.status,
+    createdAt: record.created_at,
+    updatedAt: record.updated_at ?? undefined,
+  };
 }

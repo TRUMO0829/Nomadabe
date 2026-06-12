@@ -2,7 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, LockKeyhole, Mail, Phone, UserRound, X } from "lucide-react";
+import { ArrowRight, LockKeyhole, Mail, UserRound, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
 
@@ -15,7 +15,6 @@ const COPY = {
     register: "Бүртгүүлэх",
     name: "Таны нэр",
     email: "И-мэйл",
-    phone: "Утас",
     password: "Нууц үг",
     submitLogin: "Нэвтрэх",
     submitRegister: "Бүртгүүлэх",
@@ -23,7 +22,7 @@ const COPY = {
     close: "Хаах",
     optional: "Заавал бүртгүүлэх шаардлагагүй.",
     success: "Баярлалаа. Та аяллаа үргэлжлүүлэн үзэж болно.",
-    codeSent: "Нэвтрэх код илгээгдлээ.",
+    codeSent: "Амжилттай нэвтэрлээ.",
     error: "Илгээж чадсангүй. Мэдээллээ шалгаад дахин оролдоно уу.",
   },
   en: {
@@ -34,7 +33,6 @@ const COPY = {
     register: "Register",
     name: "Your name",
     email: "Email",
-    phone: "Phone",
     password: "Password",
     submitLogin: "Sign in",
     submitRegister: "Register",
@@ -42,7 +40,7 @@ const COPY = {
     close: "Close",
     optional: "Registration is optional.",
     success: "Thanks. You can continue browsing trips.",
-    codeSent: "A sign-in code has been sent.",
+    codeSent: "Signed in successfully.",
     error: "Could not send. Please check your details and try again.",
   },
   zh: {
@@ -53,7 +51,6 @@ const COPY = {
     register: "注册",
     name: "您的姓名",
     email: "邮箱",
-    phone: "电话",
     password: "密码",
     submitLogin: "登录",
     submitRegister: "注册",
@@ -61,7 +58,7 @@ const COPY = {
     close: "关闭",
     optional: "注册不是必需的。",
     success: "谢谢。您可以继续浏览旅行。",
-    codeSent: "登录验证码已发送。",
+    codeSent: "登录成功。",
     error: "无法发送。请检查您的信息后重试。",
   },
   ja: {
@@ -72,7 +69,6 @@ const COPY = {
     register: "登録",
     name: "お名前",
     email: "メール",
-    phone: "電話番号",
     password: "パスワード",
     submitLogin: "ログイン",
     submitRegister: "登録",
@@ -80,7 +76,7 @@ const COPY = {
     close: "閉じる",
     optional: "登録は必須ではありません。",
     success: "ありがとうございます。引き続きツアーをご覧いただけます。",
-    codeSent: "ログインコードを送信しました。",
+    codeSent: "ログインしました。",
     error: "送信できませんでした。入力内容を確認してもう一度お試しください。",
   },
   ko: {
@@ -91,7 +87,6 @@ const COPY = {
     register: "회원가입",
     name: "이름",
     email: "이메일",
-    phone: "전화번호",
     password: "비밀번호",
     submitLogin: "로그인",
     submitRegister: "회원가입",
@@ -99,7 +94,7 @@ const COPY = {
     close: "닫기",
     optional: "가입은 필수가 아닙니다.",
     success: "감사합니다. 계속 여행을 둘러보실 수 있습니다.",
-    codeSent: "로그인 코드가 전송되었습니다.",
+    codeSent: "로그인되었습니다.",
     error: "전송할 수 없습니다. 정보를 확인한 뒤 다시 시도해 주세요.",
   },
 } as const;
@@ -147,18 +142,18 @@ export function SignupPromptModal() {
     setMessage("");
 
     const formData = new FormData(event.currentTarget);
+    const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
-    const phone = String(formData.get("phone") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
 
     try {
-      const response = await fetch("/api/auth/request-code", {
+      const response = await fetch(mode === "register" ? "/api/auth/register" : "/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier: email || phone }),
+        body: JSON.stringify({ name, email, password }),
       });
       const result = (await response.json()) as {
         ok?: boolean;
-        data?: { devCode?: string };
         error?: { message?: string };
       };
 
@@ -167,11 +162,7 @@ export function SignupPromptModal() {
       }
 
       setSubmitted(true);
-      setMessage(
-        result.data?.devCode
-          ? `${copy.codeSent} Code: ${result.data.devCode}`
-          : copy.codeSent
-      );
+      setMessage(copy.codeSent);
     } catch (error) {
       setSubmitted(false);
       setMessage(error instanceof Error ? error.message : copy.error);
@@ -264,16 +255,6 @@ export function SignupPromptModal() {
                     className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                   />
                 </label>
-                {mode === "register" && (
-                  <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
-                    <Phone className="h-4 w-4 text-accent" />
-                    <input
-                      name="phone"
-                      placeholder={copy.phone}
-                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                    />
-                  </label>
-                )}
                 <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
                   <LockKeyhole className="h-4 w-4 text-accent" />
                   <input

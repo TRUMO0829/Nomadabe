@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const customer = await getCustomerFromRequest(request);
 
     if (!customer) {
-      return apiError("UNAUTHORIZED", "Please sign in with email or phone before booking.", 401);
+      return apiError("UNAUTHORIZED", "Please sign in with email before booking.", 401);
     }
 
     const tripSlug = getTripSlug(payload);
@@ -29,7 +29,6 @@ export async function POST(request: Request) {
     const validation = validateInquiry({
       ...asRecord(payload),
       email: getString(asRecord(payload).email) || customer.email || "",
-      phone: getString(asRecord(payload).phone) || customer.phone || "",
       customerId: customer.id,
       tripSlug,
       inquiryType: "trip",

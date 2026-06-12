@@ -329,7 +329,6 @@ export default async function AdminDashboard() {
                             <td className="px-5 py-4">
                               <div className="font-semibold text-[var(--primary)]">{inquiry.name}</div>
                               <div className="mt-1 text-[var(--muted-foreground)]">{inquiry.email}</div>
-                              {inquiry.phone ? <div className="mt-1 text-[var(--muted-foreground)]">{inquiry.phone}</div> : null}
                             </td>
                             <td className="px-5 py-4">
                               <div className="flex items-center gap-2">
@@ -387,7 +386,7 @@ export default async function AdminDashboard() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <h3 className="truncate text-sm font-semibold text-[var(--primary)]">
-                            {customer.email ?? customer.phone ?? "Хэрэглэгч"}
+                            {customer.email || "Хэрэглэгч"}
                           </h3>
                           <p className="mt-1 text-xs text-[var(--muted-foreground)]">ID: {customer.id.slice(0, 8)}</p>
                         </div>

@@ -46,7 +46,6 @@ const PLAN_COPY = {
   mn: {
     eyebrow: "Аялал төлөвлөх",
     name: "Нэр",
-    phone: "Утас",
     email: "И-мэйл",
     destination: "Чиглэл",
     month: "Явах сар",
@@ -60,7 +59,6 @@ const PLAN_COPY = {
     error: "Илгээхэд алдаа гарлаа. Дахин оролдоно уу.",
     placeholders: {
       name: "Таны нэр",
-      phone: "+976 9910 3258",
       email: "name@example.com",
       destination: "Жишээ: Говь, Япон, Canton Fair",
       budget: "Жишээ: 3,000,000 MNT",
@@ -76,7 +74,6 @@ const PLAN_COPY = {
   en: {
     eyebrow: "Plan a trip",
     name: "Name",
-    phone: "Phone",
     email: "Email",
     destination: "Destination",
     month: "Travel month",
@@ -90,7 +87,6 @@ const PLAN_COPY = {
     error: "Could not send. Please try again.",
     placeholders: {
       name: "Your name",
-      phone: "+976 9910 3258",
       email: "name@example.com",
       destination: "Example: Gobi, Japan, Canton Fair",
       budget: "Example: 3,000,000 MNT",
@@ -205,7 +201,6 @@ type CtaFooterProps = {
 export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
   const [planningForm, setPlanningForm] = useState({
     name: "",
-    phone: "",
     email: "",
     destination: "",
     preferredDate: "",
@@ -241,7 +236,6 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
         body: JSON.stringify({
           name: planningForm.name,
           email: planningForm.email,
-          phone: planningForm.phone,
           inquiryType: planningForm.inquiryType,
           travelers: Number(planningForm.travelers),
           preferredDate: planningForm.preferredDate,
@@ -252,7 +246,6 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
       if (response.ok) {
         setPlanningForm({
           name: "",
-          phone: "",
           email: "",
           destination: "",
           preferredDate: "",
@@ -320,17 +313,11 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                 onChange={(value) => setPlanningForm((form) => ({ ...form, name: value }))}
               />
               <PlanInput
-                label={planCopy.phone}
-                value={planningForm.phone}
-                placeholder={planCopy.placeholders.phone}
-                required
-                onChange={(value) => setPlanningForm((form) => ({ ...form, phone: value }))}
-              />
-              <PlanInput
                 label={planCopy.email}
                 type="email"
                 value={planningForm.email}
                 placeholder={planCopy.placeholders.email}
+                required
                 onChange={(value) => setPlanningForm((form) => ({ ...form, email: value }))}
               />
               <PlanInput
