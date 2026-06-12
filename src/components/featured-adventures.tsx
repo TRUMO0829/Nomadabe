@@ -14,30 +14,28 @@ import {
   CalendarDays,
   Globe2,
   MapPinned,
-  Mountain,
   Search,
   SlidersHorizontal,
   Star,
   Send,
-  Users,
 } from "lucide-react";
 import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
 import { cn } from "@/lib/utils";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
+import { OUTBOUND_OPTIONS } from "./outbound-trips-carousel";
 
 type TripScope = "all" | "outbound" | "domestic";
+type SortMode =
+  | "recommended"
+  | "price-low"
+  | "price-high"
+  | "days-low"
+  | "days-high";
 
 type FeaturedAdventuresProps = {
   adventures?: Adventure[];
   beforeList?: ReactNode;
-};
-
-const difficultyColor: Record<string, string> = {
-  Easy: "bg-accent text-accent-foreground",
-  Moderate: "bg-secondary text-foreground",
-  Challenging: "bg-primary text-primary-foreground",
-  Tough: "bg-accent text-accent-foreground",
 };
 
 const TOURS_BACKGROUNDS = [
@@ -46,6 +44,80 @@ const TOURS_BACKGROUNDS = [
   "/hero-spring.jpg",
   "/hero-autumn.jpg",
 ];
+
+function compareTripPrice(
+  left: Adventure,
+  right: Adventure,
+  direction: "asc" | "desc"
+) {
+  const leftHasPrice = left.price > 0;
+  const rightHasPrice = right.price > 0;
+
+  if (leftHasPrice !== rightHasPrice) {
+    return leftHasPrice ? -1 : 1;
+  }
+
+  if (!leftHasPrice && !rightHasPrice) {
+    return 0;
+  }
+
+  return direction === "asc"
+    ? left.price - right.price
+    : right.price - left.price;
+}
+
+function compareTripDays(
+  left: Adventure,
+  right: Adventure,
+  direction: "asc" | "desc"
+) {
+  return direction === "asc"
+    ? left.days - right.days
+    : right.days - left.days;
+}
+
+function getOutboundOptionTitle(
+  option: (typeof OUTBOUND_OPTIONS)[number],
+  locale: keyof typeof SECTION_COPY
+) {
+  switch (locale) {
+    case "mn":
+      return option.titleMn;
+    case "zh":
+      return option.titleZh;
+    case "ja":
+      return option.titleJa;
+    case "ko":
+      return option.titleKo;
+    case "en":
+    default:
+      return option.titleEn;
+  }
+}
+
+function getOutboundOptionCountry(
+  option: (typeof OUTBOUND_OPTIONS)[number],
+  locale: keyof typeof SECTION_COPY
+) {
+  switch (locale) {
+    case "mn":
+      return option.countryMn;
+    case "zh":
+      return option.countryZh;
+    case "ja":
+      return option.countryJa;
+    case "ko":
+      return option.countryKo;
+    case "en":
+    default:
+      return option.countryEn;
+  }
+}
+
+function parseMntPrice(price: string) {
+  const numericPrice = Number(price.replace(/[^\d]/g, ""));
+  return Number.isFinite(numericPrice) ? numericPrice : 0;
+}
 
 const SECTION_COPY = {
   mn: {
@@ -122,6 +194,49 @@ const SECTION_COPY = {
     result: "개 여행",
     searchAction: "필터 초기화 또는 검색창으로 이동",
     flexible: "협의 가능",
+  },
+} as const;
+
+const SORT_COPY = {
+  mn: {
+    filterToggle: "Шүүлтүүр нээх",
+    recommended: "Санал болгосноор",
+    priceLow: "Үнэ багаас их",
+    priceHigh: "Үнэ ихээс бага",
+    daysLow: "Хугацаа богиноос урт",
+    daysHigh: "Хугацаа уртаас богино",
+  },
+  en: {
+    filterToggle: "Open trip filters",
+    recommended: "Recommended",
+    priceLow: "Price low to high",
+    priceHigh: "Price high to low",
+    daysLow: "Duration short to long",
+    daysHigh: "Duration long to short",
+  },
+  zh: {
+    filterToggle: "打开行程筛选",
+    recommended: "推荐排序",
+    priceLow: "价格从低到高",
+    priceHigh: "价格从高到低",
+    daysLow: "行程从短到长",
+    daysHigh: "行程从长到短",
+  },
+  ja: {
+    filterToggle: "ツアーフィルターを開く",
+    recommended: "おすすめ順",
+    priceLow: "料金が低い順",
+    priceHigh: "料金が高い順",
+    daysLow: "短い日程順",
+    daysHigh: "長い日程順",
+  },
+  ko: {
+    filterToggle: "여행 필터 열기",
+    recommended: "추천순",
+    priceLow: "낮은 가격순",
+    priceHigh: "높은 가격순",
+    daysLow: "짧은 일정순",
+    daysHigh: "긴 일정순",
   },
 } as const;
 
@@ -210,7 +325,7 @@ const RATING_COPY = {
 
 type RatingStatus = "idle" | "loading" | "success" | "error";
 
-function TripRatingWidget({
+export function TripRatingWidget({
   adventure,
   title,
   locale,
@@ -366,11 +481,54 @@ export function FeaturedAdventures({
 }: FeaturedAdventuresProps) {
   const [selected, setSelected] = useState<Adventure | null>(null);
   const [scope, setScope] = useState<TripScope>("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>("recommended");
   const [query, setQuery] = useState("");
   const [activeHeroImage, setActiveHeroImage] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { contentLocale, t } = useLanguage();
   const sectionCopy = SECTION_COPY[contentLocale];
+  const sortCopy = SORT_COPY[contentLocale];
+
+  const staticOutboundAdventures = useMemo<Adventure[]>(
+    () =>
+      OUTBOUND_OPTIONS.map((option, index) => {
+        const title = getOutboundOptionTitle(option, contentLocale);
+        const country = getOutboundOptionCountry(option, contentLocale);
+
+        return {
+          id: `static-outbound-${option.id}`,
+          slug: `static-outbound-${option.id}`,
+          title,
+          location: country,
+          country,
+          days: option.days,
+          groupSize: "Жижиг групп",
+          difficulty: "Easy",
+          price: parseMntPrice(option.price),
+          currency: "MNT",
+          image: option.image,
+          tags: ["Гадаад", country],
+          rating: 4.8,
+          reviews: 18 + index * 4,
+          category: "outbound",
+          summary:
+            contentLocale === "mn"
+              ? `${country} чиглэлийн ${option.days} хоногийн гадаад аяллын багц.`
+              : `${option.days}-day outbound travel package for ${country}.`,
+          idealFor: ["Гэр бүл", "Жижиг групп", "Амралт"],
+          includes: ["Маршрут төлөвлөлт", "Аяллын зөвлөгөө", "Зохион байгуулалт"],
+          businessSupport: [],
+          nextDeparture: sectionCopy.flexible,
+        };
+      }),
+    [contentLocale, sectionCopy.flexible]
+  );
+
+  const allAdventures = useMemo(
+    () => [...staticOutboundAdventures, ...adventures],
+    [adventures, staticOutboundAdventures]
+  );
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -397,18 +555,20 @@ export function FeaturedAdventures({
   }, []);
 
   const outboundCount = useMemo(
-    () => adventures.filter((adventure) => adventure.country !== "Mongolia").length,
-    [adventures]
+    () =>
+      allAdventures.filter((adventure) => adventure.country !== "Mongolia").length,
+    [allAdventures]
   );
   const domesticCount = useMemo(
-    () => adventures.filter((adventure) => adventure.country === "Mongolia").length,
-    [adventures]
+    () =>
+      allAdventures.filter((adventure) => adventure.country === "Mongolia").length,
+    [allAdventures]
   );
 
   const filteredAdventures = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return adventures.filter((adventure) => {
+    const matches = allAdventures.filter((adventure) => {
       const text = getAdventureText(adventure, contentLocale);
       const isDomestic = adventure.country === "Mongolia";
       const searchText = [
@@ -432,13 +592,43 @@ export function FeaturedAdventures({
 
       return matchesScope && matchesQuery;
     });
-  }, [adventures, contentLocale, query, scope]);
+
+    const sortedMatches = [...matches];
+
+    switch (sortMode) {
+      case "price-low":
+        sortedMatches.sort((left, right) =>
+          compareTripPrice(left, right, "asc")
+        );
+        break;
+      case "price-high":
+        sortedMatches.sort((left, right) =>
+          compareTripPrice(left, right, "desc")
+        );
+        break;
+      case "days-low":
+        sortedMatches.sort((left, right) =>
+          compareTripDays(left, right, "asc")
+        );
+        break;
+      case "days-high":
+        sortedMatches.sort((left, right) =>
+          compareTripDays(left, right, "desc")
+        );
+        break;
+      case "recommended":
+      default:
+        break;
+    }
+
+    return sortedMatches;
+  }, [allAdventures, contentLocale, query, scope, sortMode]);
 
   const scopeOptions = [
     {
       key: "all" as const,
       label: sectionCopy.all,
-      count: adventures.length,
+      count: allAdventures.length,
       icon: SlidersHorizontal,
     },
     {
@@ -455,19 +645,20 @@ export function FeaturedAdventures({
     },
   ];
 
-  function handleSearchIconClick() {
-    if (query.trim() || scope !== "all") {
-      setQuery("");
-      setScope("all");
-      return;
-    }
+  const sortOptions = [
+    { key: "price-low" as const, label: sortCopy.priceLow },
+    { key: "price-high" as const, label: sortCopy.priceHigh },
+    { key: "days-low" as const, label: sortCopy.daysLow },
+    { key: "days-high" as const, label: sortCopy.daysHigh },
+  ];
 
-    searchInputRef.current?.focus();
+  function handleFilterToggle() {
+    setFiltersOpen((value) => !value);
   }
 
   return (
     <section id="adventures" className="bg-background">
-      <div className="relative overflow-hidden bg-primary px-6 pb-16 pt-32 text-primary-foreground lg:px-10 lg:pb-20 lg:pt-40">
+      <div className="relative min-h-[500px] overflow-hidden bg-primary text-primary-foreground lg:min-h-[620px]">
         {TOURS_BACKGROUNDS.map((image, index) => (
           <motion.div
             key={image}
@@ -479,88 +670,105 @@ export function FeaturedAdventures({
             style={{ backgroundImage: `url('${image}')` }}
           />
         ))}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/35 to-primary/76" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/38 to-primary/82" />
         <div className="absolute inset-0 bg-primary/10" />
 
-        <div className="relative mx-auto max-w-7xl">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-accent lg:text-sm">
-            {sectionCopy.eyebrow}
-          </p>
-          <div>
-            <h1 className="max-w-4xl text-balance font-display text-5xl leading-none sm:text-6xl lg:text-7xl">
-              {sectionCopy.title}
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-primary-foreground/75 lg:text-xl">
-              {sectionCopy.body}
-            </p>
-          </div>
-
-          <div className="mt-10 rounded-[2rem] border border-white/15 bg-background p-3 text-foreground shadow-2xl">
-            <label className="flex items-center gap-4 rounded-full bg-card px-5 py-4">
-              <Search className="h-6 w-6 shrink-0 text-muted-foreground" />
-              <input
-                ref={searchInputRef}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={sectionCopy.search}
-                className="min-w-0 flex-1 bg-transparent text-base font-semibold text-foreground outline-none placeholder:text-muted-foreground lg:text-xl"
-              />
-              <button
-                type="button"
-                aria-label={sectionCopy.searchAction}
-                onClick={handleSearchIconClick}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              >
-                <SlidersHorizontal className="h-5 w-5" />
-              </button>
-            </label>
-
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              {scopeOptions.map((item) => (
+        <div className="absolute inset-x-0 bottom-4 z-10 px-6 lg:bottom-6 lg:px-10">
+          <div className="mx-auto max-w-4xl rounded-lg border border-white/35 bg-background/36 p-3 text-foreground shadow-[0_12px_34px_rgba(0,0,0,0.28)]">
+              <label className="flex items-center gap-4 rounded-full border border-white/35 bg-[#fff8e4]/38 px-5 py-4">
+                <Search className="h-6 w-6 shrink-0 text-muted-foreground" />
+                <input
+                  ref={searchInputRef}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={sectionCopy.search}
+                  className="min-w-0 flex-1 bg-transparent text-base font-semibold text-foreground outline-none placeholder:text-muted-foreground lg:text-xl"
+                />
                 <button
-                  key={item.key}
                   type="button"
-                  onClick={() => setScope(item.key)}
+                  aria-expanded={filtersOpen}
+                  aria-label={sortCopy.filterToggle}
+                  onClick={handleFilterToggle}
                   className={cn(
-                    "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-bold transition-colors",
-                    scope === item.key
-                      ? "border-accent bg-accent text-accent-foreground"
-                      : "border-border bg-card text-foreground hover:border-accent"
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                    filtersOpen || sortMode !== "recommended"
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
-                  <item.icon className="h-4 w-4" />
-                  {item.count} {item.label}
+                  <SlidersHorizontal className="h-5 w-5" />
                 </button>
-              ))}
-            </div>
+              </label>
 
+              {filtersOpen && (
+                <div className="mt-3 rounded-lg border border-white/35 bg-[#fff8e4]/44 p-3">
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {scopeOptions.map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => setScope(item.key)}
+                        className={cn(
+                          "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-bold transition-colors",
+                          scope === item.key
+                            ? "border-accent bg-accent text-accent-foreground"
+                            : "border-white/35 bg-[#fff8e4]/44 text-foreground hover:border-accent"
+                        )}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.count} {item.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => setSortMode(option.key)}
+                        className={cn(
+                          "rounded-md border px-3 py-2 text-xs font-black transition-colors",
+                          sortMode === option.key
+                            ? "border-accent bg-accent text-accent-foreground"
+                            : "border-border bg-background text-foreground hover:border-accent"
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
           </div>
         </div>
       </div>
 
-      {beforeList}
-
-      <div id="all" className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-20">
+      <div id="all" className="mx-auto max-w-7xl px-6 py-10 lg:px-10 lg:py-12">
         <div className="mb-8 flex flex-col justify-between gap-4 lg:mb-10 lg:flex-row lg:items-end">
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-foreground lg:text-sm">
+            <p className="mb-3 font-sans text-xs font-black uppercase tracking-[0.18em] text-foreground lg:text-sm">
               {sectionCopy.eyebrow}
             </p>
-            <h2 className="font-display text-3xl text-balance sm:text-4xl lg:text-5xl">
+            <h1 className="max-w-4xl text-balance font-sans text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
               {sectionCopy.listTitle}
-            </h2>
-            <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground lg:text-lg">
+            </h1>
+            <p className="mt-3 max-w-2xl font-sans text-sm font-medium leading-7 text-muted-foreground lg:text-base">
               {sectionCopy.listBody}
             </p>
           </div>
-          <div className="rounded-full border border-border bg-card px-5 py-2 text-sm font-bold text-foreground">
+          <div className="rounded-full border border-border bg-card px-5 py-2 font-sans text-sm font-bold text-foreground">
             {filteredAdventures.length} {sectionCopy.result}
           </div>
         </div>
 
-        <div className="space-y-5">
+        <div className="-mx-6 flex snap-x gap-6 overflow-x-auto px-6 pb-5 [scrollbar-width:none] lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden">
           {filteredAdventures.map((adventure, idx) => {
             const text = getAdventureText(adventure, contentLocale);
+            const price =
+              adventure.price > 0
+                ? `${adventure.price.toLocaleString()} ${adventure.currency}`
+                : t.featured.quote;
 
             return (
               <motion.article
@@ -570,104 +778,50 @@ export function FeaturedAdventures({
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.5, delay: Math.min(idx * 0.04, 0.24) }}
                 onClick={() => setSelected(adventure)}
-                className="group cursor-pointer overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all hover:border-accent hover:shadow-xl lg:grid lg:grid-cols-[340px_1fr]"
+                className="group w-[min(86vw,360px)] shrink-0 snap-start cursor-pointer overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all hover:border-accent hover:shadow-xl"
               >
-                <div className="relative min-h-[260px] overflow-hidden lg:min-h-full">
+                <div className="relative aspect-[4/3] overflow-hidden">
                   <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
                     style={{ backgroundImage: `url(${adventure.image})` }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                    <span
-                      className={cn(
-                        "rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider",
-                        difficultyColor[adventure.difficulty]
-                      )}
-                    >
-                      {text.difficulty}
-                    </span>
-                    {text.tags.slice(0, 1).map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-md bg-white/95 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-foreground"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/18 to-transparent" />
+                  <div className="absolute left-5 top-5 rounded-md bg-accent px-3 py-2 text-xs font-black text-accent-foreground">
+                    {price}
                   </div>
-                  <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2 text-sm font-semibold text-white">
-                    <Star className="h-4 w-4 fill-current" />
-                    <span>{adventure.rating}</span>
-                    <span className="text-white/65">({adventure.reviews})</span>
+                  <div className="absolute bottom-5 left-5 right-5 flex flex-wrap gap-2 text-xs font-bold text-white">
+                    <span className="flex items-center gap-1 rounded-md bg-black/45 px-2.5 py-1.5">
+                      <MapPinned className="h-3.5 w-3.5" />
+                      {text.location}
+                    </span>
+                    <span className="flex items-center gap-1 rounded-md bg-black/45 px-2.5 py-1.5">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {adventure.days} {t.featured.days}
+                    </span>
                   </div>
                 </div>
 
-                <div className="flex min-w-0 flex-col gap-5 p-5 lg:p-7">
-                  <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    <span>{text.location}</span>
-                    <span>/</span>
-                    <span>{text.country}</span>
+                <div className="flex min-h-[250px] flex-col p-5">
+                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    {t.featured.price}
                   </div>
-
-                  <div className="grid gap-5 lg:grid-cols-[1fr_220px]">
-                    <div className="min-w-0">
-                      <h3 className="font-display text-3xl leading-tight text-balance lg:text-4xl">
-                        {text.title}
-                      </h3>
-                      <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground lg:text-base">
-                        {text.summary}
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg border border-border bg-background p-4">
-                      <div className="text-xs text-muted-foreground">
-                        {t.featured.price}
-                      </div>
-                      <div className="mt-1 font-display text-2xl">
-                        {adventure.price > 0
-                          ? `${adventure.price.toLocaleString()} ${adventure.currency}`
-                          : t.featured.quote}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setSelected(adventure);
-                        }}
-                        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors group-hover:bg-accent group-hover:text-accent-foreground"
-                      >
-                        {t.featured.details}
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
-                      <TripRatingWidget
-                        adventure={adventure}
-                        title={text.title}
-                        locale={contentLocale}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-3 border-t border-border pt-5 sm:grid-cols-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Mountain className="h-4 w-4 text-accent" />
-                      <span>
-                        {adventure.days} {t.featured.days}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Users className="h-4 w-4 text-accent" />
-                      <span>{text.groupSize}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CalendarDays className="h-4 w-4 text-accent" />
-                      <span>
-                        {text.nextDeparture ??
-                          adventure.nextDeparture ??
-                          sectionCopy.flexible}
-                      </span>
-                    </div>
-                  </div>
+                  <h3 className="mt-3 font-sans text-2xl font-medium leading-tight text-balance">
+                    {text.title}
+                  </h3>
+                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                    {text.summary}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setSelected(adventure);
+                    }}
+                    className="mt-auto inline-flex w-fit items-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-black text-primary-foreground transition-colors group-hover:bg-accent group-hover:text-accent-foreground"
+                  >
+                    {t.featured.details}
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
                 </div>
               </motion.article>
             );
@@ -680,6 +834,8 @@ export function FeaturedAdventures({
           </div>
         )}
       </div>
+
+      {beforeList}
 
       <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
     </section>

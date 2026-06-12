@@ -128,19 +128,19 @@ function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
   const copy = NAV_DESTINATION_COPY[locale];
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-2xl">
-      <div className="grid gap-5 border-b border-border bg-background p-5 lg:grid-cols-[0.9fr_1.1fr]">
+    <div className="overflow-hidden rounded-md border border-border bg-card font-sans text-foreground shadow-2xl">
+      <div className="grid gap-4 border-b border-border bg-background p-5 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">
+          <p className="text-lg font-black leading-none text-foreground">
             {copy.title}
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 max-w-sm text-sm font-medium leading-6 text-muted-foreground">
             {copy.body}
           </p>
         </div>
         <Link
           href="/tours"
-          className="inline-flex items-center justify-center rounded-md bg-accent px-4 py-3 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary lg:justify-self-end"
+          className="inline-flex items-center justify-center rounded-md bg-accent px-4 py-2.5 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary lg:justify-self-end"
         >
           {copy.viewAll}
         </Link>
@@ -151,19 +151,19 @@ function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
           const Icon = group.icon;
 
           return (
-            <div key={group.title.en} className="border-border p-5 md:border-r md:last:border-r-0">
-              <div className="mb-4 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-foreground">
+              <div key={group.title.en} className="border-border p-4 md:border-r md:last:border-r-0">
+              <div className="mb-3 flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-foreground">
                   <Icon className="h-5 w-5" />
                 </span>
-                <h3 className="text-sm font-black">{group.title[locale]}</h3>
+                <h3 className="text-sm font-black leading-tight">{group.title[locale]}</h3>
               </div>
               <ul className="grid gap-2">
                 {group.items.map((item) => (
                   <li key={item.en}>
                     <Link
                       href="/tours"
-                      className="block rounded-md px-2 py-1.5 text-sm font-semibold text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
+                      className="block rounded-md px-2 py-1 text-sm font-medium leading-5 text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
                     >
                       {item[locale]}
                     </Link>

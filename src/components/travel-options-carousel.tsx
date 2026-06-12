@@ -95,11 +95,8 @@ export function TravelOptionsCarousel({
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="mb-10 flex flex-col gap-6 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-foreground lg:text-sm">
+            <h2 className="font-sans text-3xl font-black text-balance sm:text-4xl lg:text-5xl">
               {copy.eyebrow}
-            </p>
-            <h2 className="font-display text-4xl text-balance sm:text-5xl lg:text-6xl">
-              {copy.title}
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
               {copy.body}

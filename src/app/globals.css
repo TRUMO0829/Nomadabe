@@ -28,21 +28,21 @@
   --color-secondary: var(--secondary);
   --color-border: var(--border);
   --color-ring: var(--ring);
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-display: Arial, Helvetica, sans-serif;
+  --font-sans: "Segoe UI", Arial, Helvetica, sans-serif;
+  --font-display: "Segoe UI", Arial, Helvetica, sans-serif;
 }
 
 *,
 *::before,
 *::after {
   border-color: var(--border);
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
   letter-spacing: 0 !important;
 }
 
 html {
   scroll-behavior: smooth;
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
 }
 
 body {
@@ -52,7 +52,7 @@ body {
     var(--background);
   background-size: 42px 42px;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -60,18 +60,25 @@ body {
 .font-sans,
 .font-serif,
 .font-mono {
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
 }
 
 button,
 input,
 select,
 textarea {
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
 }
 
 .text-balance {
   text-wrap: balance;
+}
+
+.hero-title-mark {
+  text-shadow:
+    0 2px 0 rgba(17, 16, 11, 0.78),
+    0 7px 18px rgba(0, 0, 0, 0.58);
+  -webkit-text-stroke: 1px rgba(255, 253, 243, 0.55);
 }
 
 ::selection {
