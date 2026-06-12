@@ -140,9 +140,9 @@ export function WhyUs() {
             <p className="mb-4 inline-flex rounded-full border border-border bg-card px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-foreground">
               {t.why.eyebrow}
             </p>
-            <h2 className="max-w-3xl text-balance font-display text-4xl leading-tight sm:text-5xl lg:text-6xl">
+            <h2 className="max-w-3xl text-balance font-display text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl">
               {t.why.titleStart}{" "}
-              <span className="rounded-md bg-accent px-2 text-white">
+              <span className="text-foreground">
                 {t.why.titleEmphasis}
               </span>{" "}
               {t.why.titleEnd}

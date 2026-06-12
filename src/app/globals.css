@@ -1,6 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&subset=cyrillic,cyrillic-ext,latin&display=swap");
 @import "tailwindcss" source("../");
 
 :root {
+  --site-scale: 0.81;
   --background: #FFFDF3;
   --foreground: #11100B;
   --card: #FFFFFF;
@@ -13,6 +15,7 @@
   --secondary: #FFC400;
   --border: #E8DDAE;
   --ring: #FFD400;
+  --site-font: var(--font-montserrat, "Montserrat"), Arial, Helvetica, sans-serif;
 }
 
 @theme inline {
@@ -28,21 +31,23 @@
   --color-secondary: var(--secondary);
   --color-border: var(--border);
   --color-ring: var(--ring);
-  --font-sans: "Segoe UI", Arial, Helvetica, sans-serif;
-  --font-display: "Segoe UI", Arial, Helvetica, sans-serif;
+  --font-sans: var(--site-font);
+  --font-display: var(--site-font);
 }
 
 *,
 *::before,
 *::after {
   border-color: var(--border);
-  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
+  font-family: var(--site-font) !important;
   letter-spacing: 0 !important;
 }
 
 html {
   scroll-behavior: smooth;
-  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
+  font-family: var(--site-font) !important;
+  overflow-x: hidden;
+  text-rendering: geometricPrecision;
 }
 
 body {
@@ -52,22 +57,64 @@ body {
     var(--background);
   background-size: 42px 42px;
   color: var(--foreground);
-  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
+  font-family: var(--site-font) !important;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@supports (zoom: 1) {
+  html {
+    zoom: var(--site-scale);
+  }
+
+  body {
+    width: auto;
+  }
 }
 
 .font-display,
 .font-sans,
 .font-serif,
 .font-mono {
-  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
+  font-family: var(--site-font) !important;
+}
+
+.hero-heading,
+.hero-heading * {
+  font-family: var(--site-font) !important;
+}
+
+.home-hero-screen {
+  min-height: 100svh;
+}
+
+@supports (zoom: 1) {
+  .home-hero-screen {
+    min-height: calc(100svh / var(--site-scale));
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.site-heading {
+  text-transform: uppercase;
 }
 
 button,
 input,
 select,
 textarea {
-  font-family: "Segoe UI", Arial, Helvetica, sans-serif !important;
+  font-family: var(--site-font) !important;
+}
+
+body *,
+body *::before,
+body *::after {
+  font-family: var(--site-font) !important;
 }
 
 .text-balance {

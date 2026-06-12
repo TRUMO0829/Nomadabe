@@ -82,7 +82,7 @@ export function Testimonials() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-2xl">
-            <h2 className="text-balance text-5xl font-black leading-tight text-foreground sm:text-6xl lg:text-7xl">
+            <h2 className="text-balance text-3xl font-black leading-tight text-foreground sm:text-4xl lg:text-5xl">
               {copy.eyebrow}
             </h2>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground lg:text-lg">

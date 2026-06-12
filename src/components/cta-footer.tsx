@@ -199,15 +199,36 @@ type CtaFooterProps = {
 };
 
 export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
-  const [planningForm, setPlanningForm] = useState({
-    name: "",
-    email: "",
-    destination: "",
-    preferredDate: "",
-    travelers: "2",
-    budget: "",
-    inquiryType: "custom",
-    note: "",
+  const [planningForm, setPlanningForm] = useState(() => {
+    const baseForm = {
+      name: "",
+      email: "",
+      destination: "",
+      preferredDate: "",
+      travelers: "2",
+      budget: "",
+      inquiryType: "custom",
+      note: "",
+    };
+
+    if (typeof window === "undefined") {
+      return baseForm;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const tripTitle = params.get("title")?.trim();
+    const tripSlug = params.get("trip")?.trim();
+    const destination = tripTitle || tripSlug;
+
+    if (!destination) {
+      return baseForm;
+    }
+
+    return {
+      ...baseForm,
+      destination,
+      note: `Сонирхож буй аялал: ${destination}`,
+    };
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
@@ -286,7 +307,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
-              className="font-display text-4xl text-balance sm:text-5xl lg:text-7xl"
+              className="font-display text-3xl text-balance sm:text-4xl lg:text-5xl"
             >
               {t.cta.headingLine1}
               <br />

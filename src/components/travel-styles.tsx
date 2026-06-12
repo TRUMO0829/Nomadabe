@@ -711,7 +711,7 @@ export function TravelStyles({
             <p className="mb-4 text-xs font-black uppercase tracking-[0.24em] text-accent lg:text-sm">
               {copy.eyebrow}
             </p>
-            <h1 className="max-w-4xl text-balance text-5xl font-black leading-none sm:text-6xl lg:text-7xl">
+            <h1 className="max-w-4xl text-balance text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
               {copy.title}
             </h1>
             <p className="mt-5 max-w-2xl text-base font-semibold leading-relaxed text-white/78 lg:text-xl">
@@ -888,7 +888,7 @@ export function TravelStyles({
                     x={region.text.x}
                     y={region.text.y}
                     fill={mapRegionText(region.id)}
-                    fontFamily="Arial, Helvetica, sans-serif"
+                    fontFamily="Montserrat, Arial, Helvetica, sans-serif"
                     fontSize="26"
                     fontWeight="800"
                     fontStyle="italic"
@@ -902,7 +902,7 @@ export function TravelStyles({
                 stroke="#B8B8B8"
                 strokeWidth="2"
                 strokeLinecap="round"
-                fontFamily="Arial, Helvetica, sans-serif"
+                fontFamily="Montserrat, Arial, Helvetica, sans-serif"
                 fontWeight="800"
               >
                 <path d="M162 243h111v34" />
@@ -914,7 +914,7 @@ export function TravelStyles({
               </g>
               <g
                 fill="#8C8C8C"
-                fontFamily="Arial, Helvetica, sans-serif"
+                fontFamily="Montserrat, Arial, Helvetica, sans-serif"
                 fontSize="19"
                 fontWeight="900"
               >

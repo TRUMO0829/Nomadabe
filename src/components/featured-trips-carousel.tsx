@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Star } from "lucide-react";
 import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
+import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 
 const COPY = {
@@ -12,7 +15,7 @@ const COPY = {
     body:
       "Хамгийн их сонирхол татдаг бизнес, expo, амралт болон захиалгат аяллын 4 багц.",
     priceFrom: "Эхлэх үнэ",
-    quote: "Санал авах",
+    quote: "Сонирхох",
     details: "Дэлгэрэнгүй",
     day: "хоног",
   },
@@ -83,6 +86,7 @@ export function FeaturedTripsCarousel({
     ...adventures.filter((adventure) => adventure.featured),
     ...ADVENTURES.filter((adventure) => adventure.featured),
   ]).slice(0, 4);
+  const [selected, setSelected] = useState<Adventure | null>(null);
 
   if (variant === "compact") {
     return (
@@ -93,7 +97,7 @@ export function FeaturedTripsCarousel({
               <Star className="h-4 w-4 fill-accent text-accent" />
               {copy.eyebrow}
             </p>
-            <h2 className="font-display text-4xl text-balance sm:text-5xl lg:text-6xl">
+            <h2 className="font-display text-3xl text-balance sm:text-4xl lg:text-5xl">
               {copy.title}
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
@@ -107,7 +111,7 @@ export function FeaturedTripsCarousel({
               const price =
                 adventure.price > 0
                   ? `${adventure.price.toLocaleString()} ${adventure.currency}`
-                  : copy.quote;
+                  : null;
 
               return (
                 <motion.article
@@ -124,9 +128,11 @@ export function FeaturedTripsCarousel({
                       style={{ backgroundImage: `url(${adventure.image})` }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                    <div className="absolute left-4 top-4 rounded-md bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">
-                      {price}
-                    </div>
+                    {price ? (
+                      <div className="absolute left-4 top-4 rounded-md bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">
+                        {price}
+                      </div>
+                    ) : null}
                     <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2 text-xs font-semibold text-white">
                       <span className="flex items-center gap-1 rounded-md bg-black/35 px-2.5 py-1 backdrop-blur">
                         <MapPin className="h-3.5 w-3.5" />
@@ -150,18 +156,28 @@ export function FeaturedTripsCarousel({
                     <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
                       {text.summary}
                     </p>
-                    <a
-                      href="/tours"
-                      className="mt-auto inline-flex w-fit rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                    >
-                      {copy.details}
-                    </a>
+                    <div className="mt-auto flex flex-wrap gap-2">
+                      <Link
+                        href={`/plan?trip=${encodeURIComponent(adventure.slug)}&title=${encodeURIComponent(text.title)}`}
+                        className="inline-flex w-fit rounded-md bg-accent px-4 py-2 text-sm font-bold text-accent-foreground transition-colors hover:bg-secondary"
+                      >
+                        {copy.quote}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setSelected(adventure)}
+                        className="inline-flex w-fit rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                      >
+                        {copy.details}
+                      </button>
+                    </div>
                   </div>
                 </motion.article>
               );
             })}
           </div>
         </div>
+        <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
       </section>
     );
   }
@@ -182,7 +198,7 @@ export function FeaturedTripsCarousel({
               <Star className="h-4 w-4 fill-current" />
               {copy.eyebrow}
             </p>
-            <h2 className="font-sans text-4xl font-black leading-[0.95] text-balance sm:text-5xl lg:text-7xl">
+            <h2 className="font-sans text-3xl font-black leading-tight text-balance sm:text-4xl lg:text-5xl">
               {copy.title}
             </h2>
             <p className="mt-6 max-w-2xl text-base font-semibold leading-8 text-white/84 lg:text-xl">
@@ -199,7 +215,7 @@ export function FeaturedTripsCarousel({
             const price =
               adventure.price > 0
                 ? `${adventure.price.toLocaleString()} ${adventure.currency}`
-                : copy.quote;
+                : null;
             const reverse = idx % 2 === 1;
 
             return (
@@ -221,7 +237,7 @@ export function FeaturedTripsCarousel({
                     <Star className="h-3.5 w-3.5 fill-accent text-accent" />
                     {adventure.rating} ({adventure.reviews})
                   </div>
-                  <h3 className="mt-4 font-sans text-3xl font-black leading-tight text-balance lg:text-5xl">
+                  <h3 className="mt-4 font-sans text-2xl font-black leading-tight text-balance lg:text-4xl">
                     {text.title}
                   </h3>
                   <p className="mt-5 max-w-xl text-base leading-8 text-muted-foreground lg:text-lg">
@@ -236,16 +252,27 @@ export function FeaturedTripsCarousel({
                       <CalendarDays className="h-4 w-4 text-accent" />
                       {adventure.days} {copy.day}
                     </span>
-                    <span className="rounded-md bg-accent px-3 py-2 text-accent-foreground">
-                      {price}
-                    </span>
+                    {price ? (
+                      <span className="rounded-md bg-accent px-3 py-2 text-accent-foreground">
+                        {price}
+                      </span>
+                    ) : null}
                   </div>
-                  <a
-                    href="/tours"
-                    className="mt-7 inline-flex w-fit rounded-md bg-primary px-5 py-3 text-sm font-black text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    {copy.details}
-                  </a>
+                  <div className="mt-7 flex flex-wrap gap-3">
+                    <Link
+                      href={`/plan?trip=${encodeURIComponent(adventure.slug)}&title=${encodeURIComponent(text.title)}`}
+                      className="inline-flex w-fit rounded-md bg-accent px-5 py-3 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary"
+                    >
+                      {copy.quote}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setSelected(adventure)}
+                      className="inline-flex w-fit rounded-md bg-primary px-5 py-3 text-sm font-black text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {copy.details}
+                    </button>
+                  </div>
                   </div>
                 </div>
 
@@ -257,9 +284,11 @@ export function FeaturedTripsCarousel({
                     style={{ backgroundImage: `url(${adventure.image})` }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <div className="absolute left-5 top-5 rounded-md bg-accent px-3 py-2 text-xs font-black text-accent-foreground">
-                    {price}
-                  </div>
+                  {price ? (
+                    <div className="absolute left-5 top-5 rounded-md bg-accent px-3 py-2 text-xs font-black text-accent-foreground">
+                      {price}
+                    </div>
+                  ) : null}
                   <div className="absolute bottom-5 left-5 right-5 flex flex-wrap gap-2 text-xs font-bold text-white">
                     <span className="flex items-center gap-1 rounded-md bg-black/40 px-2.5 py-1.5">
                       <MapPin className="h-3.5 w-3.5" />
@@ -276,6 +305,7 @@ export function FeaturedTripsCarousel({
           })}
         </div>
       </div>
+      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
     </section>
   );
 }

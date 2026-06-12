@@ -163,7 +163,7 @@ export function AdminVisualEditor({ settings }: Props) {
 
               <div>
                 <h4
-                  className="max-w-3xl whitespace-pre-line font-display text-5xl leading-[0.95] tracking-normal sm:text-7xl"
+                  className="max-w-3xl whitespace-pre-line font-display text-3xl leading-tight tracking-normal sm:text-5xl"
                   style={{ color: draft.heroTextColor }}
                 >
                   {draft.heroTitle}

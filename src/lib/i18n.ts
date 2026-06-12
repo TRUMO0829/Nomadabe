@@ -90,7 +90,7 @@ export const UI_COPY = {
       ],
     },
     why: {
-      eyebrow: "Яагаад Nomadabe",
+      eyebrow: "Яагаад Nomadabe вэ?",
       titleStart: "Бид аяллыг",
       titleEmphasis: "бодитоор",
       titleEnd: "зохион байгуулдаг.",

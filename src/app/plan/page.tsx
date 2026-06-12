@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/navbar";
+import { SignupPromptModal } from "@/components/signup-prompt-modal";
 import { CtaFooter } from "@/components/cta-footer";
 
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default function PlanPage() {
   return (
     <>
+      <SignupPromptModal autoOpen={false} />
       <Navbar />
       <main className="flex-1">
         <CtaFooter showPlanningSection />

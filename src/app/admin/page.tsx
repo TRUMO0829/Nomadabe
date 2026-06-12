@@ -150,7 +150,7 @@ export default async function AdminDashboard() {
                   <span className="h-1 w-1 rounded-full bg-[var(--accent)]" />
                   <span>Сүүлийн бүртгэл: {lastInquiry}</span>
                 </div>
-                <h1 className="mt-2 max-w-3xl font-display text-4xl leading-none text-balance sm:text-5xl lg:text-6xl">
+                <h1 className="mt-2 max-w-3xl font-display text-3xl leading-tight text-balance sm:text-4xl lg:text-5xl">
                   Веб удирдлагын төв
                 </h1>
                 <p className="mt-4 max-w-2xl text-sm leading-6 text-white/70 sm:text-base">

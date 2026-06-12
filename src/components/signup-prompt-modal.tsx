@@ -107,7 +107,11 @@ const COPY = {
 let hasShownSignupPrompt = false;
 const OPEN_SIGNUP_PROMPT_EVENT = "nomadabe:open-signup-prompt";
 
-export function SignupPromptModal() {
+type SignupPromptModalProps = {
+  autoOpen?: boolean;
+};
+
+export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
   const [open, setOpen] = useState(false);
@@ -124,7 +128,7 @@ export function SignupPromptModal() {
 
     window.addEventListener(OPEN_SIGNUP_PROMPT_EVENT, handleOpenPrompt);
 
-    if (hasShownSignupPrompt) {
+    if (hasShownSignupPrompt || !autoOpen) {
       return () => {
         window.removeEventListener(OPEN_SIGNUP_PROMPT_EVENT, handleOpenPrompt);
       };
@@ -139,7 +143,7 @@ export function SignupPromptModal() {
       window.clearTimeout(timerId);
       window.removeEventListener(OPEN_SIGNUP_PROMPT_EVENT, handleOpenPrompt);
     };
-  }, []);
+  }, [autoOpen]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

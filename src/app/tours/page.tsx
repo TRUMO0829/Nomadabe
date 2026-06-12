@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/navbar";
+import { SignupPromptModal } from "@/components/signup-prompt-modal";
 import { ToursExperience } from "@/components/tours-experience";
 import { CtaFooter } from "@/components/cta-footer";
 import { getTrips } from "@/lib/server/admin-store";
@@ -17,6 +18,7 @@ export default async function ToursPage() {
 
   return (
     <>
+      <SignupPromptModal autoOpen={false} />
       <Navbar />
       <main className="flex-1">
         <ToursExperience adventures={adventures} />

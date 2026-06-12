@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { getAdventureText, type Adventure } from "@/lib/adventures";
+import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 
 const COPY = {
@@ -178,12 +179,18 @@ type OutboundTripsCarouselProps = {
   adventures?: Adventure[];
 };
 
+function parseMntPrice(price: string) {
+  const numericPrice = Number(price.replace(/[^\d]/g, ""));
+  return Number.isFinite(numericPrice) ? numericPrice : 0;
+}
+
 export function OutboundTripsCarousel({
   adventures = [],
 }: OutboundTripsCarouselProps) {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const [selected, setSelected] = useState<Adventure | null>(null);
   const backendOptions = adventures
     .filter((adventure) => adventure.country !== "Mongolia")
     .map((adventure) => {
@@ -207,6 +214,7 @@ export function OutboundTripsCarousel({
             ? `${adventure.price.toLocaleString()} ${adventure.currency}`
             : copy.quote,
         image: adventure.image,
+        adventure,
       };
     });
   const options = [...OUTBOUND_OPTIONS, ...backendOptions];
@@ -270,6 +278,40 @@ export function OutboundTripsCarousel({
               ja: option.countryJa,
               ko: option.countryKo,
             }[contentLocale];
+            const backendAdventure = (option as { adventure?: Adventure })
+              .adventure;
+            const adventureForModal: Adventure =
+              backendAdventure
+                ? backendAdventure
+                : {
+                    id: `static-outbound-${option.id}`,
+                    slug: `static-outbound-${option.id}`,
+                    title,
+                    location: country,
+                    country,
+                    days: option.days,
+                    groupSize: "Жижиг групп",
+                    difficulty: "Easy",
+                    price: parseMntPrice(option.price),
+                    currency: "MNT",
+                    image: option.image,
+                    tags: ["Гадаад", country],
+                    rating: 4.8,
+                    reviews: 18 + idx * 4,
+                    category: "outbound",
+                    summary:
+                      contentLocale === "mn"
+                        ? `${country} чиглэлийн ${option.days} хоногийн гадаад аяллын багц.`
+                        : `${option.days}-day outbound travel package for ${country}.`,
+                    idealFor: ["Гэр бүл", "Жижиг групп", "Амралт"],
+                    includes: [
+                      "Маршрут төлөвлөлт",
+                      "Аяллын зөвлөгөө",
+                      "Зохион байгуулалт",
+                    ],
+                    businessSupport: [],
+                    nextDeparture: copy.quote,
+                  };
 
             return (
               <motion.article
@@ -308,18 +350,20 @@ export function OutboundTripsCarousel({
                   <h3 className="mt-2 font-display text-2xl leading-tight text-balance">
                     {title}
                   </h3>
-                  <a
-                    href="/tours"
+                  <button
+                    type="button"
+                    onClick={() => setSelected(adventureForModal)}
                     className="mt-5 inline-flex w-fit items-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     {copy.details}
-                  </a>
+                  </button>
                 </div>
               </motion.article>
             );
           })}
         </div>
       </div>
+      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
     </section>
   );
 }

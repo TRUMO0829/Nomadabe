@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
+import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 
 const COPY = {
@@ -79,6 +80,7 @@ export function TravelOptionsCarousel({
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const [selected, setSelected] = useState<Adventure | null>(null);
   const domesticOptions = adventures.filter(
     (adventure) => adventure.country === "Mongolia"
   );
@@ -132,7 +134,7 @@ export function TravelOptionsCarousel({
             const price =
               adventure.price > 0
                 ? `${adventure.price.toLocaleString()} ${adventure.currency}`
-                : copy.quote;
+                : null;
 
             return (
               <motion.article
@@ -149,9 +151,11 @@ export function TravelOptionsCarousel({
                     style={{ backgroundImage: `url(${adventure.image})` }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-                  <div className="absolute left-4 top-4 rounded-md bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">
-                    {price}
-                  </div>
+                  {price ? (
+                    <div className="absolute left-4 top-4 rounded-md bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">
+                      {price}
+                    </div>
+                  ) : null}
                   <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2 text-xs font-semibold text-white">
                     <span className="flex items-center gap-1 rounded-md bg-black/35 px-2.5 py-1 backdrop-blur">
                       <MapPin className="h-3.5 w-3.5" />
@@ -165,24 +169,28 @@ export function TravelOptionsCarousel({
                 </div>
 
                 <div className="flex flex-1 flex-col p-5">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {copy.priceFrom}
-                  </div>
+                  {price ? (
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {copy.priceFrom}
+                    </div>
+                  ) : null}
                   <h3 className="mt-2 font-display text-2xl leading-tight text-balance">
                     {text.title}
                   </h3>
-                  <a
-                    href="/tours"
+                  <button
+                    type="button"
+                    onClick={() => setSelected(adventure)}
                     className="mt-5 inline-flex w-fit items-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     {copy.details}
-                  </a>
+                  </button>
                 </div>
               </motion.article>
             );
           })}
         </div>
       </div>
+      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
     </section>
   );
 }

@@ -147,31 +147,31 @@ export const ADVENTURES: Adventure[] = [
     idealFor: ["Гэр бүл", "Найз нөхөд", "Гадаад аялагч"],
     includes: ["Унаа", "Жолооч", "Буудал/гэр", "Маршрут төлөвлөлт"],
     businessSupport: [],
-    featured: true,
+    featured: false,
   },
   {
     id: "7",
-    slug: "gobi-domestic-adventure",
-    title: "Говийн аялал",
-    location: "Өмнөговь",
+    slug: "mongolia-festival-experience",
+    title: "Монгол фестивалийн аялал",
+    location: "Улаанбаатар",
     country: "Mongolia",
     days: 5,
     groupSize: "Family / Group",
     difficulty: "Easy",
-    price: 1490000,
+    price: 0,
     currency: "MNT",
     image:
-      "https://images.unsplash.com/photo-1547234935-80c7145ec969?w=1200&q=80&auto=format&fit=crop",
-    tags: ["Domestic", "Gobi", "Nature"],
+      "https://images.unsplash.com/photo-1542662565-7e4b66bae529?w=1200&q=80&auto=format&fit=crop",
+    tags: ["Domestic", "Festival", "Culture"],
     rating: 4.9,
     reviews: 44,
-    category: "leisure",
+    category: "custom",
     summary:
-      "Gobi desert highlights with dunes, canyons, ger stays, and local guide support.",
-    idealFor: ["Families", "Friend groups", "First-time domestic travellers"],
-    includes: ["Route planning", "Transport coordination", "Guide support"],
+      "Festival-focused Mongolia experience with cultural events, city highlights, local food, and flexible day programs.",
+    idealFor: ["Culture lovers", "Families", "Friend groups"],
+    includes: ["Festival program planning", "Transport coordination", "Guide support"],
     businessSupport: [],
-    nextDeparture: "2026-07",
+    nextDeparture: "Flexible",
     featured: true,
   },
   {
@@ -183,7 +183,7 @@ export const ADVENTURES: Adventure[] = [
     days: 6,
     groupSize: "Small group",
     difficulty: "Easy",
-    price: 1690000,
+    price: 0,
     currency: "MNT",
     image:
       "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80&auto=format&fit=crop",
@@ -403,26 +403,26 @@ const ADVENTURE_TEXT: Record<CopyLocale, Record<string, AdventureText>> = {
       businessSupport: [],
     },
     "7": {
-      title: "Говийн аялал",
-      location: "Өмнөговь",
+      title: "Монгол фестивалийн аялал",
+      location: "Улаанбаатар",
       country: "Монгол",
       groupSize: "Гэр бүл / групп",
       difficulty: "Хялбар",
-      tags: ["Дотоод", "Говь", "Байгаль"],
+      tags: ["Дотоод", "Фестиваль", "Соёл"],
       summary:
-        "Элсэн манхан, хавцал, гэр буудал, нутгийн хөтөчтэй Говийн гол үзмэрүүдийг багтаасан аялал.",
+        "Наадам, хотын соёлын арга хэмжээ, үндэсний хоол, музей болон өдөр бүрийн уян хатан хөтөлбөртэй festival аялал.",
       idealFor: [
         "Гэр бүлээрээ аялах хүмүүс",
         "Найз нөхдийн групп",
-        "Дотоод аяллаа эхлүүлэх аялагч",
+        "Монгол соёл, festival уур амьсгал сонирхдог аялагч",
       ],
       includes: [
-        "Маршрут төлөвлөлт",
-        "Тээврийн зохион байгуулалт",
-        "Хөтөчийн дэмжлэг",
+        "Festival өдрийн хөтөлбөр",
+        "Хот доторх тээврийн зохион байгуулалт",
+        "Хөтөчийн дэмжлэг, соёлын тайлбар",
       ],
       businessSupport: [],
-      nextDeparture: "2026.07",
+      nextDeparture: "Тохиролцоно",
     },
     "8": {
       title: "Хөвсгөл нуурын аялал",
@@ -620,26 +620,26 @@ const ADVENTURE_TEXT: Record<CopyLocale, Record<string, AdventureText>> = {
       businessSupport: [],
     },
     "7": {
-      title: "Gobi domestic adventure",
-      location: "Umnugovi",
+      title: "Mongolia festival experience",
+      location: "Ulaanbaatar",
       country: "Mongolia",
       groupSize: "Family / Group",
       difficulty: "Easy",
-      tags: ["Domestic", "Gobi", "Nature"],
+      tags: ["Domestic", "Festival", "Culture"],
       summary:
-        "Gobi desert highlights with dunes, canyons, ger stays, and local guide support.",
+        "A festival-focused Mongolia trip with cultural events, city highlights, local food, and flexible daily programs.",
       idealFor: [
+        "Culture lovers",
         "Families",
         "Friend groups",
-        "First-time domestic travellers",
       ],
       includes: [
-        "Route planning",
-        "Transport coordination",
-        "Guide support",
+        "Festival day planning",
+        "City transport coordination",
+        "Guide support and cultural context",
       ],
       businessSupport: [],
-      nextDeparture: "July 2026",
+      nextDeparture: "Flexible",
     },
     "8": {
       title: "Khuvsgul lake domestic trip",
@@ -829,26 +829,26 @@ const ADVENTURE_TEXT: Record<CopyLocale, Record<string, AdventureText>> = {
       businessSupport: [],
     },
     "7": {
-      title: "戈壁国内探险",
-      location: "南戈壁",
+      title: "蒙古节庆体验",
+      location: "乌兰巴托",
       country: "蒙古",
       groupSize: "家庭 / 团体",
       difficulty: "轻松",
-      tags: ["国内", "戈壁", "自然"],
+      tags: ["国内", "节庆", "文化"],
       summary:
-        "包含沙丘、峡谷、蒙古包住宿和当地导游支持的戈壁沙漠亮点之旅。",
+        "以蒙古节庆、城市文化活动、本地美食和灵活每日安排为核心的旅行体验。",
       idealFor: [
+        "文化爱好者",
         "家庭",
         "朋友团",
-        "第一次体验蒙古国内旅行的人",
       ],
       includes: [
-        "路线规划",
-        "交通协调",
-        "导游支持",
+        "节庆日程规划",
+        "市内交通协调",
+        "导游支持和文化介绍",
       ],
       businessSupport: [],
-      nextDeparture: "2026年7月",
+      nextDeparture: "可协商",
     },
     "8": {
       title: "库苏古尔湖国内旅行",
@@ -1038,26 +1038,26 @@ const ADVENTURE_TEXT: Record<CopyLocale, Record<string, AdventureText>> = {
       businessSupport: [],
     },
     "7": {
-      title: "ゴビ国内アドベンチャー",
-      location: "ウムヌゴビ",
+      title: "モンゴル祭り体験",
+      location: "ウランバートル",
       country: "モンゴル",
       groupSize: "家族 / グループ",
       difficulty: "簡単",
-      tags: ["国内", "ゴビ", "自然"],
+      tags: ["国内", "祭り", "文化"],
       summary:
-        "砂丘、渓谷、ゲル宿泊、現地ガイドのサポートを含むゴビ砂漠の見どころ旅行です。",
+        "モンゴルの祭り、都市文化イベント、ローカルフード、柔軟な日別プログラムを楽しむ旅行です。",
       idealFor: [
+        "文化が好きな方",
         "家族",
         "友人グループ",
-        "初めて国内旅行をする方",
       ],
       includes: [
-        "ルート計画",
-        "交通の調整",
-        "ガイドサポート",
+        "祭りの日程計画",
+        "市内交通の調整",
+        "ガイドサポートと文化解説",
       ],
       businessSupport: [],
-      nextDeparture: "2026年7月",
+      nextDeparture: "応相談",
     },
     "8": {
       title: "フブスグル湖国内旅行",
@@ -1247,26 +1247,26 @@ const ADVENTURE_TEXT: Record<CopyLocale, Record<string, AdventureText>> = {
       businessSupport: [],
     },
     "7": {
-      title: "고비 국내 어드벤처",
-      location: "우므느고비",
+      title: "몽골 축제 체험",
+      location: "울란바토르",
       country: "몽골",
       groupSize: "가족 / 그룹",
       difficulty: "쉬움",
-      tags: ["국내", "고비", "자연"],
+      tags: ["국내", "축제", "문화"],
       summary:
-        "사구, 협곡, 게르 숙박, 현지 가이드 지원이 포함된 고비 사막 핵심 여행입니다.",
+        "몽골 축제, 도시 문화 행사, 현지 음식, 유연한 일일 프로그램을 중심으로 한 여행입니다.",
       idealFor: [
+        "문화 애호가",
         "가족",
         "친구 그룹",
-        "첫 몽골 국내 여행자",
       ],
       includes: [
-        "루트 계획",
-        "교통 조율",
-        "가이드 지원",
+        "축제 일정 계획",
+        "도시 내 교통 조율",
+        "가이드 지원 및 문화 해설",
       ],
       businessSupport: [],
-      nextDeparture: "2026년 7월",
+      nextDeparture: "협의 가능",
     },
     "8": {
       title: "홉스굴 호수 국내 여행",
@@ -1339,9 +1339,9 @@ const ADVENTURE_GALLERIES: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1200&q=80&auto=format&fit=crop",
   ],
   "7": [
-    "https://images.unsplash.com/photo-1547234935-80c7145ec969?w=1200&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1200&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1542662565-7e4b66bae529?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&q=80&auto=format&fit=crop",
   ],
   "8": [
     "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80&auto=format&fit=crop",
@@ -1396,8 +1396,6 @@ export function getAdventureDetailInfo(
   const isDomestic = adventure.country === "Mongolia";
   const isExpo = adventure.category === "expo";
   const isBusiness = adventure.category === "business" || isExpo;
-  const middleDay =
-    adventure.days > 4 ? `3-${adventure.days - 1}` : "3";
   const detailCopy = {
     mn: {
       keyStops: `${text.location} чиглэлийн гол үзмэрүүд`,
@@ -1626,7 +1624,7 @@ export function getAdventureDetailInfo(
     detailCopy.excludedSingle,
   ];
 
-  const itinerary = [
+  const itinerary: AdventureItineraryStep[] = [
     {
       day: "1",
       title: detailCopy.day1Title,
@@ -1637,21 +1635,27 @@ export function getAdventureDetailInfo(
       title: isExpo ? detailCopy.day2ExpoTitle : detailCopy.day2StopsTitle,
       body: isExpo ? detailCopy.day2ExpoBody : detailCopy.day2StopsBody,
     },
-    {
-      day: middleDay,
+  ];
+
+  for (let day = 3; day < adventure.days; day += 1) {
+    itinerary.push({
+      day: `${day}`,
       title: isBusiness
         ? detailCopy.middleBusinessTitle
         : detailCopy.middleLeisureTitle,
       body: isBusiness
         ? detailCopy.middleBusinessBody
         : detailCopy.middleLeisureBody,
-    },
-    {
+    });
+  }
+
+  if (adventure.days >= 3) {
+    itinerary.push({
       day: `${adventure.days}`,
       title: detailCopy.returnTitle,
       body: detailCopy.returnBody,
-    },
-  ];
+    });
+  }
 
   return { highlights, included, excluded, itinerary };
 }

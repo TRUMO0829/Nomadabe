@@ -135,7 +135,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                     </span>
                   ))}
                 </div>
-                <h3 className="max-w-3xl text-balance font-display text-3xl leading-tight lg:text-5xl">
+                <h3 className="max-w-3xl text-balance font-display text-2xl leading-tight lg:text-4xl">
                   {text.title}
                 </h3>
                 <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
@@ -283,25 +283,27 @@ export function AdventureModal({ adventure, onClose }: Props) {
               </div>
 
               <aside className="h-fit rounded-lg border border-border bg-card p-6 lg:sticky lg:top-6">
-                <div className="flex items-baseline justify-between">
-                  <div>
-                    <div className="text-xs text-muted-foreground">
-                      {t.modal.price}
-                    </div>
-                    <div className="font-display text-4xl">
-                      {adventure.price > 0
-                        ? `${adventure.price.toLocaleString()}`
-                        : t.modal.quote}
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {adventure.price > 0
-                        ? adventure.currency
-                        : t.modal.quoteDetails}
+                {adventure.price > 0 ? (
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        {t.modal.price}
+                      </div>
+                      <div className="font-display text-4xl">
+                        {adventure.price.toLocaleString()}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {adventure.currency}
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : null}
 
-                <div className="mt-6 space-y-3">
+                <div
+                  className={
+                    adventure.price > 0 ? "mt-6 space-y-3" : "space-y-3"
+                  }
+                >
                   <a
                     href={`#book-${adventure.slug}`}
                     className="block w-full rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-accent-foreground transition-colors hover:bg-secondary"

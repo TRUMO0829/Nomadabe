@@ -16,6 +16,7 @@ import {
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
+import { SiteSearch } from "./site-search";
 
 const NAV_DESTINATION_COPY = {
   mn: {
@@ -178,7 +179,7 @@ function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
   );
 }
 
-export function Navbar() {
+export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -230,7 +231,7 @@ export function Navbar() {
                   key={n.href}
                   href={n.href}
                   className={cn(
-                    "text-sm font-medium transition-colors hover:text-accent",
+                    "text-sm font-black uppercase transition-colors hover:text-accent",
                     scrolled ? "text-foreground/80" : "text-white/90"
                   )}
                 >
@@ -250,7 +251,7 @@ export function Navbar() {
                   href={n.href}
                   onClick={() => setDestinationOpen(false)}
                   className={cn(
-                    "text-sm font-medium transition-colors hover:text-accent",
+                    "text-sm font-black uppercase transition-colors hover:text-accent",
                     destinationOpen && "text-accent",
                     scrolled ? "text-foreground/80" : "text-white/90"
                   )}
@@ -322,7 +323,7 @@ export function Navbar() {
           </div>
           <Link
             href="/plan"
-            className="rounded-lg bg-accent hover:bg-secondary text-accent-foreground px-5 py-2.5 text-sm font-semibold transition-colors"
+              className="rounded-lg bg-accent px-5 py-2.5 text-sm font-black uppercase text-accent-foreground transition-colors hover:bg-secondary"
           >
             {t.nav.cta}
           </Link>
@@ -330,7 +331,7 @@ export function Navbar() {
             type="button"
             onClick={openSignupPrompt}
             className={cn(
-              "inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors",
+              "inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-black uppercase transition-colors",
               scrolled
                 ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
                 : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
@@ -352,6 +353,14 @@ export function Navbar() {
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
+
+      {showHomeSearch && !scrolled ? (
+        <div className="pointer-events-none absolute inset-x-0 top-full z-40 flex justify-center px-5 pt-3 sm:px-8 lg:pt-5">
+          <div className="pointer-events-auto w-full max-w-[min(92vw,620px)]">
+            <SiteSearch compact />
+          </div>
+        </div>
+      ) : null}
 
       {open && (
         <div className="lg:hidden bg-background border-t border-border">
@@ -406,7 +415,7 @@ export function Navbar() {
                 key={n.href}
                 href={n.href}
                 onClick={() => setOpen(false)}
-                className="py-2 text-base font-medium text-foreground/80 hover:text-accent"
+                className="py-2 text-base font-black uppercase text-foreground/80 hover:text-accent"
               >
                 {n.label}
               </a>
@@ -414,7 +423,7 @@ export function Navbar() {
             <Link
               href="/plan"
               onClick={() => setOpen(false)}
-              className="mt-2 rounded-lg bg-accent text-accent-foreground px-5 py-3 text-sm font-semibold text-center"
+              className="mt-2 rounded-lg bg-accent px-5 py-3 text-center text-sm font-black uppercase text-accent-foreground"
             >
               {t.nav.cta}
             </Link>
@@ -424,7 +433,7 @@ export function Navbar() {
                 setOpen(false);
                 openSignupPrompt();
               }}
-              className="rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-semibold text-foreground"
+              className="rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-black uppercase text-foreground"
             >
               {AUTH_COPY[contentLocale]}
             </button>

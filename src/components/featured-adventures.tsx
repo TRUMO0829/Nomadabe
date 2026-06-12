@@ -673,18 +673,18 @@ export function FeaturedAdventures({
         <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/38 to-primary/82" />
         <div className="absolute inset-0 bg-primary/10" />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 pt-36 lg:px-10 lg:pt-48">
-          <div className="max-w-2xl">
+        <div className="relative z-10 mx-auto max-w-7xl px-6 pt-24 lg:px-10 lg:pt-32">
+          <div className="max-w-xl">
             <p className="mb-4 inline-block bg-accent px-3 py-1 font-sans text-sm font-black uppercase tracking-[0.16em] text-accent-foreground">
               {sectionCopy.eyebrow}
             </p>
-            <h1 className="max-w-3xl text-balance font-sans text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="max-w-xl text-balance font-sans text-3xl font-black leading-[1.03] text-white sm:text-4xl lg:text-5xl">
               {sectionCopy.title}
             </h1>
           </div>
         </div>
 
-        <div className="absolute inset-x-0 bottom-4 z-10 px-6 lg:bottom-6 lg:px-10">
+        <div className="absolute inset-x-0 top-[300px] z-10 px-6 sm:top-[330px] lg:top-[390px] lg:px-10">
           <div className="mx-auto max-w-4xl rounded-lg border border-white/35 bg-background/36 p-3 text-foreground shadow-[0_12px_34px_rgba(0,0,0,0.28)]">
               <label className="flex items-center gap-4 rounded-full border border-white/35 bg-[#fff8e4]/38 px-5 py-4">
                 <Search className="h-6 w-6 shrink-0 text-muted-foreground" />
@@ -773,13 +773,13 @@ export function FeaturedAdventures({
           </div>
         </div>
 
-        <div className="-mx-6 flex snap-x gap-6 overflow-x-auto px-6 pb-5 [scrollbar-width:none] lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden">
+        <div className="grid gap-6 md:grid-cols-2">
           {filteredAdventures.map((adventure, idx) => {
             const text = getAdventureText(adventure, contentLocale);
             const price =
               adventure.price > 0
                 ? `${adventure.price.toLocaleString()} ${adventure.currency}`
-                : t.featured.quote;
+                : null;
 
             return (
               <motion.article
@@ -789,7 +789,7 @@ export function FeaturedAdventures({
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.5, delay: Math.min(idx * 0.04, 0.24) }}
                 onClick={() => setSelected(adventure)}
-                className="group w-[min(86vw,360px)] shrink-0 snap-start cursor-pointer overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all hover:border-accent hover:shadow-xl"
+                className="group cursor-pointer overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all hover:border-accent hover:shadow-xl"
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <div
@@ -797,9 +797,11 @@ export function FeaturedAdventures({
                     style={{ backgroundImage: `url(${adventure.image})` }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/18 to-transparent" />
-                  <div className="absolute left-5 top-5 rounded-md bg-accent px-3 py-2 text-xs font-black text-accent-foreground">
-                    {price}
-                  </div>
+                  {price ? (
+                    <div className="absolute left-5 top-5 rounded-md bg-accent px-3 py-2 text-xs font-black text-accent-foreground">
+                      {price}
+                    </div>
+                  ) : null}
                   <div className="absolute bottom-5 left-5 right-5 flex flex-wrap gap-2 text-xs font-bold text-white">
                     <span className="flex items-center gap-1 rounded-md bg-black/45 px-2.5 py-1.5">
                       <MapPinned className="h-3.5 w-3.5" />
@@ -813,9 +815,11 @@ export function FeaturedAdventures({
                 </div>
 
                 <div className="flex min-h-[250px] flex-col p-5">
-                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    {t.featured.price}
-                  </div>
+                  {price ? (
+                    <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {t.featured.price}
+                    </div>
+                  ) : null}
                   <h3 className="mt-3 font-sans text-2xl font-medium leading-tight text-balance">
                     {text.title}
                   </h3>

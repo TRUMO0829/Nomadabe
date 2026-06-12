@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
+import { Montserrat } from "next/font/google";
 import { AiChatbot } from "@/components/ai-chatbot";
 import { LanguageProvider } from "@/components/language-provider";
 import "./globals.css";
+
+const montserrat = Montserrat({
+  subsets: ["cyrillic", "latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Nomadabe",
@@ -19,8 +27,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="mn" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html lang="mn-MN" className={`${montserrat.variable} h-full antialiased`}>
+      <body
+        className={`${montserrat.className} min-h-full flex flex-col bg-background text-foreground`}
+      >
         <LanguageProvider>
           {children}
           <AiChatbot />

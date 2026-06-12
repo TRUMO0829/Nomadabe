@@ -17,7 +17,7 @@ export default async function Home() {
   return (
     <>
       <SignupPromptModal />
-      <Navbar />
+      <Navbar showHomeSearch />
       <main className="flex-1">
         <Hero />
         <TravelOptionsCarousel adventures={adventures} />

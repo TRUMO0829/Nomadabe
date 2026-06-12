@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--accent)]">
               Удирдлагын төв
             </p>
-            <h2 className="mt-4 font-display text-5xl leading-none text-balance sm:text-6xl">
+            <h2 className="mt-4 font-display text-3xl leading-tight text-balance sm:text-5xl">
               Бүртгэлтэй админ и-мэйлээр нэвтэрнэ.
             </h2>
             <p className="mt-5 max-w-xl text-base leading-7 text-white/72">
