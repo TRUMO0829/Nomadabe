@@ -126,14 +126,29 @@ export async function registerCustomerWithPassword(payload: {
   }
 
   if (isSupabaseConfigured()) {
-    const authUser = await createSupabaseAuthUser({ email, password, name });
-    const customer = await upsertSupabaseProfile({
-      id: authUser.id,
-      email,
-      name,
-    });
-    const session = await loginCustomerWithPassword({ email, password });
-    return { customer, session: session.session };
+    const signUpResult = await signUpSupabaseWithPassword({ email, password, name });
+    const customer = signUpResult.user
+      ? await upsertSupabaseProfile({
+          id: signUpResult.user.id,
+          email: signUpResult.user.email ?? email,
+          name,
+        })
+      : null;
+
+    return {
+      customer,
+      session: signUpResult.session
+        ? {
+            token: signUpResult.session.access_token,
+            customerId: signUpResult.user?.id ?? "",
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(
+              Date.now() + signUpResult.session.expires_in * 1000
+            ).toISOString(),
+          }
+        : null,
+      emailVerificationRequired: !signUpResult.session,
+    };
   }
 
   const now = new Date().toISOString();
@@ -151,7 +166,7 @@ export async function registerCustomerWithPassword(payload: {
   );
 
   const session = await createLocalSession(customer.id);
-  return { customer, session };
+  return { customer, session, emailVerificationRequired: false };
 }
 
 export async function loginCustomerWithPassword(payload: {
@@ -403,7 +418,12 @@ type SupabasePasswordSession = {
   user: SupabaseAuthUser;
 };
 
-async function createSupabaseAuthUser({
+type SupabaseSignUpResponse = {
+  user: SupabaseAuthUser | null;
+  session: SupabasePasswordSession | null;
+};
+
+async function signUpSupabaseWithPassword({
   email,
   password,
   name,
@@ -413,32 +433,35 @@ async function createSupabaseAuthUser({
   name?: string;
 }) {
   const supabaseUrl = getSupabaseUrl();
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const anonKey = getSupabaseAnonKey();
 
-  if (!supabaseUrl || !serviceKey) {
+  if (!supabaseUrl || !anonKey) {
     throw new Error("Supabase Auth is not configured.");
   }
 
-  const response = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
+  const redirectTo =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://www.nomadabe.mn";
+  const response = await fetch(
+    `${supabaseUrl}/auth/v1/signup?redirect_to=${encodeURIComponent(redirectTo)}`,
+    {
     method: "POST",
     headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
+      apikey: anonKey,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       email,
       password,
-      email_confirm: true,
-      user_metadata: name ? { name } : {},
+      data: name ? { name } : {},
     }),
-  });
+    }
+  );
 
   if (!response.ok) {
     throw new Error(await getSupabaseError(response));
   }
 
-  return (await response.json()) as SupabaseAuthUser;
+  return (await response.json()) as SupabaseSignUpResponse;
 }
 
 async function signInSupabaseWithPassword({

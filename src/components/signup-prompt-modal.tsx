@@ -23,6 +23,7 @@ const COPY = {
     optional: "Заавал бүртгүүлэх шаардлагагүй.",
     success: "Баярлалаа. Та аяллаа үргэлжлүүлэн үзэж болно.",
     codeSent: "Амжилттай нэвтэрлээ.",
+    verificationSent: "Баталгаажуулах холбоос таны и-мэйл рүү илгээгдлээ.",
     error: "Илгээж чадсангүй. Мэдээллээ шалгаад дахин оролдоно уу.",
   },
   en: {
@@ -41,6 +42,7 @@ const COPY = {
     optional: "Registration is optional.",
     success: "Thanks. You can continue browsing trips.",
     codeSent: "Signed in successfully.",
+    verificationSent: "A verification link has been sent to your email.",
     error: "Could not send. Please check your details and try again.",
   },
   zh: {
@@ -59,6 +61,7 @@ const COPY = {
     optional: "注册不是必需的。",
     success: "谢谢。您可以继续浏览旅行。",
     codeSent: "登录成功。",
+    verificationSent: "验证链接已发送到您的邮箱。",
     error: "无法发送。请检查您的信息后重试。",
   },
   ja: {
@@ -77,6 +80,7 @@ const COPY = {
     optional: "登録は必須ではありません。",
     success: "ありがとうございます。引き続きツアーをご覧いただけます。",
     codeSent: "ログインしました。",
+    verificationSent: "確認リンクをメールに送信しました。",
     error: "送信できませんでした。入力内容を確認してもう一度お試しください。",
   },
   ko: {
@@ -95,6 +99,7 @@ const COPY = {
     optional: "가입은 필수가 아닙니다.",
     success: "감사합니다. 계속 여행을 둘러보실 수 있습니다.",
     codeSent: "로그인되었습니다.",
+    verificationSent: "인증 링크를 이메일로 보냈습니다.",
     error: "전송할 수 없습니다. 정보를 확인한 뒤 다시 시도해 주세요.",
   },
 } as const;
@@ -154,6 +159,7 @@ export function SignupPromptModal() {
       });
       const result = (await response.json()) as {
         ok?: boolean;
+        data?: { emailVerificationRequired?: boolean };
         error?: { message?: string };
       };
 
@@ -162,7 +168,11 @@ export function SignupPromptModal() {
       }
 
       setSubmitted(true);
-      setMessage(copy.codeSent);
+      setMessage(
+        mode === "register" && result.data?.emailVerificationRequired
+          ? copy.verificationSent
+          : copy.codeSent
+      );
     } catch (error) {
       setSubmitted(false);
       setMessage(error instanceof Error ? error.message : copy.error);

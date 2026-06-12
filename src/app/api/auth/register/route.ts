@@ -14,16 +14,22 @@ export async function POST(request: Request) {
       email?: unknown;
       password?: unknown;
     };
-    const { customer, session } = await registerCustomerWithPassword(payload);
-    const response = NextResponse.json({ ok: true, data: { customer } });
-
-    response.cookies.set(CUSTOMER_SESSION_COOKIE, session.token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      expires: new Date(session.expiresAt),
+    const { customer, session, emailVerificationRequired } =
+      await registerCustomerWithPassword(payload);
+    const response = NextResponse.json({
+      ok: true,
+      data: { customer, emailVerificationRequired },
     });
+
+    if (session) {
+      response.cookies.set(CUSTOMER_SESSION_COOKIE, session.token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        expires: new Date(session.expiresAt),
+      });
+    }
 
     return response;
   } catch (error) {
