@@ -15,7 +15,7 @@ const SOCIALS = [
   { label: "IG", href: "https://www.instagram.com/nomadabe.travel/" },
 ];
 
-const CONTACT_EMAIL = "ariunbold.nar@gmail.com";
+const CONTACT_EMAIL = "Dawkaa01@gmail.com";
 const MINISTER_TOWER_ADDRESS =
   "Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia, Ulaanbaatar, Mongolia, 976";
 const MINISTER_TOWER_MAP_URL =
@@ -436,10 +436,10 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               <Link href="/#home" className="inline-flex items-center gap-3">
                 <span
                   aria-hidden="true"
-                  className="h-12 w-12 bg-[url('/nomadabe-mark-transparent.png')] bg-center bg-no-repeat [background-size:175%] [background-position:center_35%]"
+                  className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-accent/30 bg-accent/5 bg-[url('/nomadabe-mark-transparent.png')] bg-center bg-no-repeat [background-size:175%] [background-position:center_35%]"
                 />
                 <span>
-                  <span className="block text-xl font-black uppercase tracking-wide text-accent">
+                  <span className="block text-2xl font-black uppercase tracking-wide text-accent">
                     Nomadabe
                   </span>
                   <span className="block text-xs font-bold uppercase tracking-[0.2em] text-white">
@@ -486,7 +486,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               </ul>
             </nav>
 
-            <div>
+            <div className="pt-4 lg:pt-0">
               <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-accent">
                 {footer.contactTitle}
               </h3>
@@ -515,7 +515,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               </ul>
             </div>
 
-            <div>
+            <div className="pt-4 lg:pt-0">
               <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-accent">
                 {footer.mapTitle}
               </h3>
@@ -537,6 +537,13 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                 {footer.mapButton}
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
+              <div className="mt-8">
+                <img
+                  src="/oyu-intelligence-logo.png"
+                  alt="OYU Intelligence"
+                  className="h-24 w-auto"
+                />
+              </div>
             </div>
           </div>
 
