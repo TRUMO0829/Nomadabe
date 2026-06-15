@@ -1,7 +1,7 @@
 const SUPABASE_REST_SUFFIX = "/rest/v1";
 
 export function getSupabaseUrl() {
-  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const rawUrl = firstEnvValue("NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_URL");
 
   if (!rawUrl) {
     return "";
@@ -16,15 +16,33 @@ export function getSupabaseRestUrl() {
 }
 
 export function getSupabaseAnonKey() {
-  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
+  return firstEnvValue("NEXT_PUBLIC_SUPABASE_ANON_KEY", "SUPABASE_ANON_KEY");
 }
 
 export function getSupabaseServiceKey() {
-  return process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? "";
+  return firstEnvValue("SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SERVICE_KEY");
 }
 
 export function isSupabaseConfigured() {
-  return Boolean(getSupabaseUrl() && getSupabaseServiceKey());
+  return Boolean(getSupabaseUrl() && getSupabaseAnonKey() && getSupabaseServiceKey());
+}
+
+export function getMissingSupabaseEnvNames() {
+  const missing: string[] = [];
+
+  if (!getSupabaseUrl()) {
+    missing.push("NEXT_PUBLIC_SUPABASE_URL");
+  }
+
+  if (!getSupabaseAnonKey()) {
+    missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  }
+
+  if (!getSupabaseServiceKey()) {
+    missing.push("SUPABASE_SERVICE_ROLE_KEY");
+  }
+
+  return missing;
 }
 
 export async function supabaseRest<T>(
@@ -35,7 +53,7 @@ export async function supabaseRest<T>(
   const serviceKey = getSupabaseServiceKey();
 
   if (!restUrl || !serviceKey) {
-    throw new Error("Supabase URL or service role key is not configured.");
+    throw new Error(getSupabaseConfigurationErrorMessage());
   }
 
   const response = await fetch(`${restUrl}${path}`, {
@@ -58,6 +76,28 @@ export async function supabaseRest<T>(
   }
 
   return (await response.json()) as T;
+}
+
+export function getSupabaseConfigurationErrorMessage() {
+  const missing = getMissingSupabaseEnvNames();
+
+  if (missing.length === 0) {
+    return "Supabase is not configured correctly.";
+  }
+
+  return `Supabase is missing required environment variables: ${missing.join(", ")}. Add them in Vercel Project Settings > Environment Variables, then redeploy.`;
+}
+
+function firstEnvValue(...names: string[]) {
+  for (const name of names) {
+    const value = process.env[name]?.trim();
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
 }
 
 export async function getSupabaseError(response: Response) {

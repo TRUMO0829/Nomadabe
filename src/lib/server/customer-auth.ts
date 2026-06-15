@@ -4,6 +4,7 @@ import path from "node:path";
 import { sendEmail } from "@/lib/server/mail";
 import {
   getSupabaseAnonKey,
+  getSupabaseConfigurationErrorMessage,
   getSupabaseError,
   getSupabaseUrl,
   isSupabaseConfigured,
@@ -357,9 +358,7 @@ function canUseLocalJsonStore() {
 
 function assertLocalJsonStoreAllowed() {
   if (!canUseLocalJsonStore()) {
-    throw new Error(
-      "Customer auth storage is not configured. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY for production."
-    );
+    throw new Error(getSupabaseConfigurationErrorMessage());
   }
 }
 
