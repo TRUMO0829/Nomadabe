@@ -59,6 +59,7 @@ export async function requestCustomerLoginCode(identifierValue: unknown) {
     throw new Error("Valid email address is required.");
   }
 
+  assertLocalJsonStoreAllowed();
   const codes = await readJsonFile<AuthCode[]>(AUTH_CODES_FILE, []);
   const code = String(randomInt(100000, 1000000));
   const now = new Date();
@@ -104,6 +105,7 @@ export async function getCustomers() {
     return customers.map(fromSupabaseProfile);
   }
 
+  assertLocalJsonStoreAllowed();
   const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
   return customers.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
 }
@@ -151,6 +153,7 @@ export async function registerCustomerWithPassword(payload: {
     };
   }
 
+  assertLocalJsonStoreAllowed();
   const now = new Date().toISOString();
   const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
   const existing = customers.find((customer) => customer.email === email);
@@ -200,6 +203,7 @@ export async function loginCustomerWithPassword(payload: {
     };
   }
 
+  assertLocalJsonStoreAllowed();
   const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
   const customer = customers.find((item) => item.email === email);
 
@@ -218,6 +222,7 @@ export async function verifyCustomerLoginCode(identifierValue: unknown, codeValu
     throw new Error("Valid identifier and 6-digit code are required.");
   }
 
+  assertLocalJsonStoreAllowed();
   const codes = await readJsonFile<AuthCode[]>(AUTH_CODES_FILE, []);
   const now = new Date();
   const match = [...codes]
@@ -285,6 +290,10 @@ export async function getCustomerFromRequest(request: Request) {
     });
   }
 
+  if (!canUseLocalJsonStore()) {
+    return null;
+  }
+
   const [sessions, customers] = await Promise.all([
     readJsonFile<CustomerSession[]>(SESSIONS_FILE, []),
     readJsonFile<Customer[]>(CUSTOMERS_FILE, []),
@@ -302,6 +311,10 @@ export async function getCustomerFromRequest(request: Request) {
 
 export async function revokeCustomerSession(token: string) {
   if (isSupabaseConfigured()) {
+    return;
+  }
+
+  if (!canUseLocalJsonStore()) {
     return;
   }
 
@@ -333,8 +346,21 @@ async function readJsonFile<T>(filePath: string, fallback: T) {
 }
 
 async function writeJsonFile<T>(filePath: string, value: T) {
+  assertLocalJsonStoreAllowed();
   await mkdir(DATA_DIR, { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function canUseLocalJsonStore() {
+  return process.env.NODE_ENV !== "production" || process.env.NOMADABE_ALLOW_FILE_AUTH === "1";
+}
+
+function assertLocalJsonStoreAllowed() {
+  if (!canUseLocalJsonStore()) {
+    throw new Error(
+      "Customer auth storage is not configured. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY for production."
+    );
+  }
 }
 
 function isNodeFileError(error: unknown): error is NodeJS.ErrnoException {
@@ -386,6 +412,7 @@ async function sendVerificationCodeToN8n({
 }
 
 async function createLocalSession(customerId: string) {
+  assertLocalJsonStoreAllowed();
   const now = new Date();
   const session: CustomerSession = {
     token: `${randomUUID()}${randomUUID()}`,
