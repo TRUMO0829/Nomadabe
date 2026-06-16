@@ -151,6 +151,34 @@ export async function getInquiries() {
   }
 }
 
+export async function getCustomerInquiries({
+  customerId,
+  email,
+}: {
+  customerId: string;
+  email: string;
+}) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (isSupabaseConfigured()) {
+    const filters = [
+      `customer_id.eq.${encodeURIComponent(customerId)}`,
+      `email.eq.${encodeURIComponent(normalizedEmail)}`,
+    ].join(",");
+    const records = await supabaseRest<SupabaseInquiry[]>(
+      `/inquiries?select=*&or=(${filters})&order=created_at.desc`
+    );
+    return records.map(fromSupabaseInquiry);
+  }
+
+  const inquiries = await getInquiries();
+  return inquiries.filter(
+    (inquiry) =>
+      inquiry.customerId === customerId ||
+      inquiry.email?.trim().toLowerCase() === normalizedEmail
+  );
+}
+
 export async function updateInquiryStatus(id: string, status: InquiryStatus) {
   if (!isInquiryStatus(status)) {
     throw new Error("Invalid inquiry status.");

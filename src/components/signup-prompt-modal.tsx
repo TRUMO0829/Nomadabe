@@ -171,6 +171,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
         throw new Error(result.error?.message ?? copy.error);
       }
 
+      window.dispatchEvent(new Event("nomadabe:auth-changed"));
       setSubmitted(true);
       setMessage(
         mode === "register" && result.data?.emailVerificationRequired

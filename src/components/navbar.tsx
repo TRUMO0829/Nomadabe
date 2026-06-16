@@ -121,6 +121,19 @@ const AUTH_COPY = {
   ko: "로그인 / 회원가입",
 } as const;
 
+const PROFILE_COPY = {
+  mn: "Миний профайл",
+  en: "My profile",
+  zh: "我的资料",
+  ja: "プロフィール",
+  ko: "내 프로필",
+} as const;
+
+type AuthCustomer = {
+  email: string;
+  name?: string;
+};
+
 function openSignupPrompt() {
   window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
 }
@@ -184,6 +197,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [destinationOpen, setDestinationOpen] = useState(false);
+  const [customer, setCustomer] = useState<AuthCustomer | null>(null);
   const { contentLocale, locale, setLocale, t } = useLanguage();
   const currentLanguage =
     LANGUAGES.find((language) => language.code === locale) ?? LANGUAGES[0];
@@ -193,6 +207,36 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCustomer() {
+      try {
+        const response = await fetch("/api/auth/me", { cache: "no-store" });
+        const result = (await response.json()) as {
+          ok?: boolean;
+          data?: { customer?: AuthCustomer | null };
+        };
+
+        if (!cancelled) {
+          setCustomer(response.ok && result.ok ? (result.data?.customer ?? null) : null);
+        }
+      } catch {
+        if (!cancelled) {
+          setCustomer(null);
+        }
+      }
+    }
+
+    void loadCustomer();
+    window.addEventListener("nomadabe:auth-changed", loadCustomer);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("nomadabe:auth-changed", loadCustomer);
+    };
   }, []);
 
   return (
@@ -327,19 +371,35 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
           >
             {t.nav.cta}
           </Link>
-          <button
-            type="button"
-            onClick={openSignupPrompt}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-black uppercase transition-colors",
-              scrolled
-                ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
-                : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
-            )}
-          >
-            <UserRound className="h-4 w-4" />
-            {AUTH_COPY[contentLocale]}
-          </button>
+          {customer ? (
+            <Link
+              href="/profile"
+              className={cn(
+                "inline-flex max-w-56 items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-black uppercase transition-colors",
+                scrolled
+                  ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                  : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
+              )}
+              title={customer.email}
+            >
+              <UserRound className="h-4 w-4 shrink-0" />
+              <span className="truncate">{PROFILE_COPY[contentLocale]}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={openSignupPrompt}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-black uppercase transition-colors",
+                scrolled
+                  ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                  : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
+              )}
+            >
+              <UserRound className="h-4 w-4" />
+              {AUTH_COPY[contentLocale]}
+            </button>
+          )}
         </div>
 
         <button
@@ -427,16 +487,26 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             >
               {t.nav.cta}
             </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                openSignupPrompt();
-              }}
-              className="rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-black uppercase text-foreground"
-            >
-              {AUTH_COPY[contentLocale]}
-            </button>
+            {customer ? (
+              <Link
+                href="/profile"
+                onClick={() => setOpen(false)}
+                className="rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-black uppercase text-foreground"
+              >
+                {PROFILE_COPY[contentLocale]}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  openSignupPrompt();
+                }}
+                className="rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-black uppercase text-foreground"
+              >
+                {AUTH_COPY[contentLocale]}
+              </button>
+            )}
           </div>
         </div>
       )}
