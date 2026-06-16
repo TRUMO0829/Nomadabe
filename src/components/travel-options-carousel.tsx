@@ -156,12 +156,12 @@ export function TravelOptionsCarousel({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
+  const maxDesktopShiftVw =
+    Math.max(0, domesticOptions.length - 1) * (100 + PANEL_GAP_VW) +
+    PANEL_GAP_VW;
   const desktopTrackX = useTransform(
     scrollYProgress,
-    (value) =>
-      `calc(${
-        -value * Math.max(0, domesticOptions.length - 1) * (100 + PANEL_GAP_VW)
-      }vw / var(--site-scale))`,
+    (value) => `calc(${-value * maxDesktopShiftVw}vw / var(--site-scale))`,
   );
 
   if (domesticOptions.length === 0) {
@@ -176,7 +176,7 @@ export function TravelOptionsCarousel({
         ref={sectionRef}
         className="relative overflow-clip bg-[#050505] text-[#11100b] max-lg:!h-auto"
         style={{
-          height: `calc(${domesticOptions.length * 112 + PANEL_END_BUFFER_VH}svh / var(--site-scale))`,
+          height: `calc(${domesticOptions.length * 116 + PANEL_END_BUFFER_VH}svh / var(--site-scale))`,
         }}
       >
         <div className="hidden h-[calc(100svh/var(--site-scale))] overflow-hidden lg:sticky lg:top-0 lg:flex">
