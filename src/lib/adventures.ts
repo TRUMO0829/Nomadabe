@@ -2,6 +2,21 @@ import { getCopyLocale, type CopyLocale, type Locale } from "@/lib/i18n";
 
 export type TravelCategory = string;
 
+export type AdventureTranslation = {
+  title?: string;
+  location?: string;
+  country?: string;
+  groupSize?: string;
+  difficulty?: string;
+  tags?: string[];
+  summary?: string;
+  idealFor?: string[];
+  includes?: string[];
+  businessSupport?: string[];
+};
+
+export type AdventureTranslations = Partial<Record<CopyLocale, AdventureTranslation>>;
+
 export type Adventure = {
   id: string;
   slug: string;
@@ -25,6 +40,7 @@ export type Adventure = {
   businessSupport: string[];
   nextDeparture?: string;
   featured?: boolean;
+  translations?: AdventureTranslations;
 };
 
 export type AdventureText = {
@@ -1366,13 +1382,10 @@ export function getAdventureGalleryImages(adventure: Adventure): string[] {
 
 export function getAdventureText(adventure: Adventure, locale: Locale): AdventureText {
   const copyLocale = getCopyLocale(locale);
+  const autoTranslatedText = adventure.translations?.[copyLocale];
   const localizedText = ADVENTURE_TEXT[copyLocale][adventure.id];
 
-  if (localizedText && adventure.slug !== "gobi-seven-day-private-trip") {
-    return localizedText;
-  }
-
-  return {
+  const fallbackText = {
     title: adventure.title,
     location: adventure.location,
     country: adventure.country,
@@ -1385,6 +1398,29 @@ export function getAdventureText(adventure: Adventure, locale: Locale): Adventur
     businessSupport: adventure.businessSupport,
     nextDeparture: adventure.nextDeparture,
   };
+
+  if (copyLocale !== "mn" && autoTranslatedText) {
+    return {
+      ...fallbackText,
+      ...autoTranslatedText,
+      tags: autoTranslatedText.tags?.length ? autoTranslatedText.tags : fallbackText.tags,
+      idealFor: autoTranslatedText.idealFor?.length
+        ? autoTranslatedText.idealFor
+        : fallbackText.idealFor,
+      includes: autoTranslatedText.includes?.length
+        ? autoTranslatedText.includes
+        : fallbackText.includes,
+      businessSupport: autoTranslatedText.businessSupport?.length
+        ? autoTranslatedText.businessSupport
+        : fallbackText.businessSupport,
+    };
+  }
+
+  if (localizedText && adventure.slug !== "gobi-seven-day-private-trip") {
+    return localizedText;
+  }
+
+  return fallbackText;
 }
 
 export function getAdventureDetailInfo(

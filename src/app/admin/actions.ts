@@ -14,6 +14,7 @@ import {
 import { getInquiries, isInquiryStatus, updateInquiryStatus } from "@/lib/server/inquiries";
 import { sendEmail, sendEmailFromForm } from "@/lib/server/mail";
 import { getErrorMessage } from "@/lib/server/supabase-rest";
+import { isTripTranslationConfigured } from "@/lib/server/translate-trip";
 
 export async function saveTripAction(formData: FormData) {
   await assertAdminAction();
@@ -25,7 +26,11 @@ export async function saveTripAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin");
-  redirectWithStatus("Хөтөлбөр хадгалагдлаа.");
+  redirectWithStatus(
+    isTripTranslationConfigured()
+      ? "Хөтөлбөр хадгалагдаж, орчуулгууд шинэчлэгдлээ."
+      : "Хөтөлбөр хадгалагдлаа. LibreTranslate URL тохируулбал дараагийн хадгалалтаар орчуулга автоматаар үүснэ."
+  );
 }
 
 export async function deleteTripAction(formData: FormData) {

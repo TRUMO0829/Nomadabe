@@ -11,6 +11,7 @@ import {
   isSupabaseConfigured,
   supabaseRest,
 } from "@/lib/server/supabase-rest";
+import { translateAdventure } from "@/lib/server/translate-trip";
 
 export type AdminStore = {
   trips: Adventure[];
@@ -27,6 +28,7 @@ type AdminTripRow = {
   id: string;
   slug: string;
   payload: Adventure;
+  translations?: Adventure["translations"];
   sort_order: number;
 };
 
@@ -138,16 +140,17 @@ export async function upsertTripFromJson(payload: unknown) {
 
 export async function upsertTrip(input: Adventure) {
   const store = await getAdminStore();
+  const translatedInput = await translateAdventure(input);
   const existing = store.trips.some((trip) => trip.id === input.id);
 
   await saveAdminStore({
     ...store,
     trips: existing
-      ? store.trips.map((trip) => (trip.id === input.id ? input : trip))
-      : [input, ...store.trips],
+      ? store.trips.map((trip) => (trip.id === input.id ? translatedInput : trip))
+      : [translatedInput, ...store.trips],
   });
 
-  return input;
+  return translatedInput;
 }
 
 export async function deleteTripById(id: string) {
@@ -225,7 +228,10 @@ async function getSupabaseAdminStore() {
   ]);
 
   return normalizeStore({
-    trips: tripRows.map((row) => row.payload),
+    trips: tripRows.map((row) => ({
+      ...row.payload,
+      translations: row.payload.translations ?? row.translations,
+    })),
     services: serviceRows.map((row) => row.payload),
     siteSettings: settingsRows[0]?.settings,
   });
@@ -272,6 +278,7 @@ function toSupabaseTripRow(trip: Adventure, index: number) {
     id: trip.id,
     slug: trip.slug,
     payload: trip,
+    translations: trip.translations ?? {},
     sort_order: index,
   };
 }
@@ -406,6 +413,7 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
     featured: fields.has?.("featured")
       ? ["true", "on", "1", "yes"].includes(fields.get("featured").toLowerCase())
       : existing?.featured ?? false,
+    translations: existing?.translations,
   } satisfies Adventure;
 }
 

@@ -81,10 +81,14 @@ create table if not exists public.admin_trips (
   id text primary key,
   slug text not null unique,
   payload jsonb not null,
+  translations jsonb not null default '{}'::jsonb,
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table if exists public.admin_trips
+  add column if not exists translations jsonb not null default '{}'::jsonb;
 
 create index if not exists admin_trips_sort_order_idx
   on public.admin_trips (sort_order);

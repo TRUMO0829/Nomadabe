@@ -677,6 +677,9 @@ function TripForm({
         Веб дээр онцлох
       </label>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="max-w-xl text-sm font-medium text-[var(--muted-foreground)]">
+          Хадгалах үед English, 中文, 日本語, 한국어 орчуулга автоматаар үүсэж Supabase-д хадгалагдана.
+        </p>
         <button
           type="submit"
           className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
