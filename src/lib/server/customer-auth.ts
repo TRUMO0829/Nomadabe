@@ -129,28 +129,23 @@ export async function registerCustomerWithPassword(payload: {
   }
 
   if (isSupabaseConfigured()) {
-    const signUpResult = await signUpSupabaseWithPassword({ email, password, name });
-    const customer = signUpResult.user
-      ? await upsertSupabaseProfile({
-          id: signUpResult.user.id,
-          email: signUpResult.user.email ?? email,
-          name,
-        })
-      : null;
+    const signUpResult = await createConfirmedSupabaseUser({ email, password, name });
+    const customer = await upsertSupabaseProfile({
+      id: signUpResult.user.id,
+      email: signUpResult.user.email ?? email,
+      name,
+    });
+    const authSession = await signInSupabaseWithPassword({ email, password });
 
     return {
       customer,
-      session: signUpResult.session
-        ? {
-            token: signUpResult.session.access_token,
-            customerId: signUpResult.user?.id ?? "",
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(
-              Date.now() + signUpResult.session.expires_in * 1000
-            ).toISOString(),
-          }
-        : null,
-      emailVerificationRequired: !signUpResult.session,
+      session: {
+        token: authSession.access_token,
+        customerId: customer.id,
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + authSession.expires_in * 1000).toISOString(),
+      },
+      emailVerificationRequired: false,
     };
   }
 
@@ -449,7 +444,13 @@ type SupabaseSignUpResponse = {
   session: SupabasePasswordSession | null;
 };
 
-async function signUpSupabaseWithPassword({
+type SupabaseAdminCreateUserResponse = {
+  id: string;
+  email?: string;
+  user_metadata?: Record<string, unknown>;
+};
+
+async function createConfirmedSupabaseUser({
   email,
   password,
   name,
@@ -459,35 +460,41 @@ async function signUpSupabaseWithPassword({
   name?: string;
 }) {
   const supabaseUrl = getSupabaseUrl();
-  const anonKey = getSupabaseAnonKey();
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? process.env.SUPABASE_SERVICE_KEY?.trim() ?? "";
 
-  if (!supabaseUrl || !anonKey) {
-    throw new Error("Supabase Auth is not configured.");
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error("Supabase Auth admin API is not configured.");
   }
 
-  const redirectTo =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://www.nomadabe.mn";
-  const response = await fetch(
-    `${supabaseUrl}/auth/v1/signup?redirect_to=${encodeURIComponent(redirectTo)}`,
-    {
+  const response = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
     method: "POST",
     headers: {
-      apikey: anonKey,
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       email,
       password,
-      data: name ? { name } : {},
+      email_confirm: true,
+      user_metadata: name ? { name } : {},
     }),
-    }
-  );
+  });
 
   if (!response.ok) {
     throw new Error(await getSupabaseError(response));
   }
 
-  return (await response.json()) as SupabaseSignUpResponse;
+  const user = (await response.json()) as SupabaseAdminCreateUserResponse;
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email ?? email,
+      user_metadata: user.user_metadata,
+    },
+    session: null,
+  } satisfies SupabaseSignUpResponse;
 }
 
 async function signInSupabaseWithPassword({
