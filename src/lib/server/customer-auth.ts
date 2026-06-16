@@ -57,7 +57,7 @@ export async function requestCustomerLoginCode(identifierValue: unknown) {
   const identifier = normalizeIdentifier(identifierValue);
 
   if (!isValidIdentifier(identifier)) {
-    throw new Error("Valid email address is required.");
+    throw new Error("Зөв и-мэйл хаяг оруулна уу.");
   }
 
   assertLocalJsonStoreAllowed();
@@ -121,11 +121,11 @@ export async function registerCustomerWithPassword(payload: {
   const password = typeof payload.password === "string" ? payload.password : "";
 
   if (!isValidIdentifier(email)) {
-    throw new Error("Valid email address is required.");
+    throw new Error("Зөв и-мэйл хаяг оруулна уу.");
   }
 
   if (password.length < 8) {
-    throw new Error("Password must be at least 8 characters.");
+    throw new Error("Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой.");
   }
 
   if (isSupabaseConfigured()) {
@@ -176,7 +176,7 @@ export async function loginCustomerWithPassword(payload: {
   const password = typeof payload.password === "string" ? payload.password : "";
 
   if (!isValidIdentifier(email) || !password) {
-    throw new Error("Valid email and password are required.");
+    throw new Error("И-мэйл болон нууц үгээ зөв оруулна уу.");
   }
 
   if (isSupabaseConfigured()) {
@@ -204,7 +204,7 @@ export async function loginCustomerWithPassword(payload: {
   const customer = customers.find((item) => item.email === email);
 
   if (!customer) {
-    throw new Error("Account was not found.");
+    throw new Error("Энэ и-мэйлээр бүртгэл олдсонгүй.");
   }
 
   return { customer, session: await createLocalSession(customer.id) };
@@ -215,7 +215,7 @@ export async function verifyCustomerLoginCode(identifierValue: unknown, codeValu
   const code = typeof codeValue === "string" ? codeValue.trim() : "";
 
   if (!isValidIdentifier(identifier) || !/^\d{6}$/.test(code)) {
-    throw new Error("Valid identifier and 6-digit code are required.");
+    throw new Error("И-мэйл болон 6 оронтой кодоо зөв оруулна уу.");
   }
 
   assertLocalJsonStoreAllowed();
@@ -232,7 +232,7 @@ export async function verifyCustomerLoginCode(identifierValue: unknown, codeValu
     );
 
   if (!match) {
-    throw new Error("Code is invalid or expired.");
+    throw new Error("Код буруу эсвэл хугацаа дууссан байна.");
   }
 
   const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
@@ -463,7 +463,7 @@ async function createConfirmedSupabaseUser({
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? process.env.SUPABASE_SERVICE_KEY?.trim() ?? "";
 
   if (!supabaseUrl || !serviceKey) {
-    throw new Error("Supabase Auth admin API is not configured.");
+    throw new Error("Бүртгэлийн үйлчилгээ тохируулагдаагүй байна.");
   }
 
   const response = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
@@ -508,7 +508,7 @@ async function signInSupabaseWithPassword({
   const anonKey = getSupabaseAnonKey();
 
   if (!supabaseUrl || !anonKey) {
-    throw new Error("Supabase password login is not configured.");
+    throw new Error("Нэвтрэх үйлчилгээ тохируулагдаагүй байна.");
   }
 
   const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {

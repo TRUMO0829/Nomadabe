@@ -163,7 +163,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
       });
       const result = (await response.json()) as {
         ok?: boolean;
-        data?: { emailVerificationRequired?: boolean };
+        data?: { emailVerificationRequired?: boolean; adminRedirect?: boolean };
         error?: { message?: string };
       };
 
@@ -172,6 +172,12 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
       }
 
       window.dispatchEvent(new Event("nomadabe:auth-changed"));
+
+      if (result.data?.adminRedirect) {
+        window.location.href = "/admin";
+        return;
+      }
+
       setSubmitted(true);
       setMessage(
         mode === "register" && result.data?.emailVerificationRequired
