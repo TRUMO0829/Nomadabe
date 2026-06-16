@@ -22,9 +22,6 @@ export default function RootLayout({
           {children}
         </LanguageProvider>
       </body>
-      </body>
     </html>
   );
 }
-
-
