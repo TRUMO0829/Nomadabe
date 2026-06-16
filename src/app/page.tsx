@@ -7,7 +7,6 @@ import { SignupPromptModal } from "@/components/signup-prompt-modal";
 import { TravelOptionsCarousel } from "@/components/travel-options-carousel";
 import { FeaturedTripsCarousel } from "@/components/featured-trips-carousel";
 import { OutboundTripsCarousel } from "@/components/outbound-trips-carousel";
-import { AirplaneScrollAnimation } from "@/components/airplane-scroll-animation";
 import { getTrips } from "@/lib/server/admin-store";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +18,6 @@ export default async function Home() {
     <>
       <SignupPromptModal />
       <Navbar showHomeSearch />
-      <AirplaneScrollAnimation />
       <main className="flex-1">
         <Hero />
         <TravelOptionsCarousel adventures={adventures} />

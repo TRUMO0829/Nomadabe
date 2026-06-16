@@ -150,7 +150,7 @@ export function TravelOptionsCarousel({
   const [selected, setSelected] = useState<Adventure | null>(null);
   const domesticOptions = adventures.filter(
     (adventure) => adventure.country === "Mongolia",
-  );
+  ).slice(0, 3);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,

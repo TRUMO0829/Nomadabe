@@ -198,7 +198,7 @@ export function OutboundTripsCarousel({
         adventure,
       };
     });
-  const options = [...OUTBOUND_OPTIONS, ...backendOptions];
+  const options = [...OUTBOUND_OPTIONS, ...backendOptions].slice(0, 3);
   const cardRows = options.map((option, idx) => {
     const title = {
       mn: option.titleMn,
