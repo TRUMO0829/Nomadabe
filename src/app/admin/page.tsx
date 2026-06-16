@@ -34,7 +34,6 @@ import {
   emailLatestInquiryAction,
   logoutAdminAction,
   refreshAdminAction,
-  saveSiteSettingsAction,
   saveServiceAction,
   saveTripAction,
   sendAdminEmailAction,
@@ -42,7 +41,6 @@ import {
 } from "./actions";
 import { getCustomers } from "@/lib/server/customer-auth";
 import { getEmailLogs } from "@/lib/server/mail";
-import type { SiteSettings } from "@/lib/site-settings";
 import { getErrorMessage } from "@/lib/server/supabase-rest";
 
 export const dynamic = "force-dynamic";
@@ -54,25 +52,12 @@ const defaultCategoryLabels: Record<string, string> = {
   custom: "Захиалгат",
 };
 
-const fallbackSiteSettings: SiteSettings = {
-  heroBadge: "★★★★★ 1,200+ аялагчийн үнэлгээ",
-  heroTitle: "Аяллаа\nнүүдэлчин хэмнэлээр.",
-  heroSubtitle:
-    "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг төлөвлөн зохион байгуулна.",
-  heroImage:
-    "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=80&auto=format&fit=crop",
-  accentColor: "#e85d2c",
-  heroTextColor: "#ffffff",
-  heroOverlayOpacity: 0.72,
-};
-
 const navItems = [
   { label: "Ерөнхий", href: "#overview", icon: LayoutDashboard },
   { label: "Бүртгэлүүд", href: "#registrations", icon: Users },
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
-  { label: "Нүүр хуудас", href: "#site-settings", icon: Gauge },
 ];
 
 export default async function AdminDashboard({
@@ -89,7 +74,7 @@ export default async function AdminDashboard({
 
   const [dashboardData, customersResult, emailLogsResult] =
     await Promise.allSettled([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
-  const { trips, services, inquiries, bookingStats, siteSettings } =
+  const { trips, services, inquiries, bookingStats } =
     dashboardData.status === "fulfilled"
       ? dashboardData.value
       : {
@@ -97,7 +82,6 @@ export default async function AdminDashboard({
           services: [],
           inquiries: [],
           bookingStats: [],
-          siteSettings: fallbackSiteSettings,
         };
   const customers = customersResult.status === "fulfilled" ? customersResult.value : [];
   const emailLogs = emailLogsResult.status === "fulfilled" ? emailLogsResult.value : [];
@@ -257,11 +241,6 @@ export default async function AdminDashboard({
                 <section id="mail-sender" className="scroll-mt-6 space-y-4">
                   <SectionHeader eyebrow="Автоматжуулалт" title="Мэйл илгээх" action="Гараар болон автоматаар" />
                   <EmailComposer />
-                </section>
-
-                <section id="site-settings" className="scroll-mt-6 space-y-4">
-                  <SectionHeader eyebrow="Нүүр хуудас" title="Hero тохиргоо" action="Веб дээр шууд ашиглагдана" />
-                  <SiteSettingsForm settings={siteSettings} />
                 </section>
 
                 <SectionHeader eyebrow="Үйлчилгээ" title="Үйлчилгээ удирдах" action={`Нийт ${services.length}`} />
@@ -636,54 +615,6 @@ function EmailComposer() {
         </button>
       </form>
     </div>
-  );
-}
-
-function SiteSettingsForm({ settings }: { settings: SiteSettings }) {
-  return (
-    <form action={saveSiteSettingsAction} className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <TextField label="Hero badge" name="heroBadge" defaultValue={settings.heroBadge} />
-        <TextField label="Accent өнгө" name="accentColor" type="color" defaultValue={settings.accentColor} />
-        <TextareaField
-          label="Hero гарчиг"
-          name="heroTitle"
-          defaultValue={settings.heroTitle}
-          rows={2}
-          className="lg:col-span-2"
-        />
-        <TextareaField
-          label="Hero тайлбар"
-          name="heroSubtitle"
-          defaultValue={settings.heroSubtitle}
-          rows={3}
-          className="lg:col-span-2"
-        />
-        <TextField
-          label="Hero зураг URL"
-          name="heroImage"
-          defaultValue={settings.heroImage}
-          className="lg:col-span-2"
-        />
-        <TextField label="Hero текстийн өнгө" name="heroTextColor" type="color" defaultValue={settings.heroTextColor} />
-        <TextField
-          label="Overlay opacity"
-          name="heroOverlayOpacity"
-          type="number"
-          min="0.2"
-          max="0.9"
-          step="0.05"
-          defaultValue={String(settings.heroOverlayOpacity)}
-        />
-      </div>
-      <button
-        type="submit"
-        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
-      >
-        <Save className="h-4 w-4" />
-        Нүүр хуудас хадгалах
-      </button>
-    </form>
   );
 }
 
