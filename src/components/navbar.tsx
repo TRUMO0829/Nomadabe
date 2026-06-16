@@ -122,16 +122,17 @@ const AUTH_COPY = {
 } as const;
 
 const PROFILE_COPY = {
-  mn: "Миний профайл",
-  en: "My profile",
-  zh: "我的资料",
+  mn: "Профайл",
+  en: "Profile",
+  zh: "资料",
   ja: "プロフィール",
-  ko: "내 프로필",
+  ko: "프로필",
 } as const;
 
 type AuthCustomer = {
   email: string;
   name?: string;
+  isAdmin?: boolean;
 };
 
 function openSignupPrompt() {
@@ -217,11 +218,16 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
         const response = await fetch("/api/auth/me", { cache: "no-store" });
         const result = (await response.json()) as {
           ok?: boolean;
-          data?: { customer?: AuthCustomer | null };
+          data?: { customer?: AuthCustomer | null; isAdmin?: boolean };
         };
 
         if (!cancelled) {
-          setCustomer(response.ok && result.ok ? (result.data?.customer ?? null) : null);
+          const loadedCustomer = response.ok && result.ok ? (result.data?.customer ?? null) : null;
+          setCustomer(
+            loadedCustomer
+              ? { ...loadedCustomer, isAdmin: Boolean(result.data?.isAdmin) }
+              : null
+          );
         }
       } catch {
         if (!cancelled) {
@@ -373,7 +379,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
           </Link>
           {customer ? (
             <Link
-              href="/profile"
+              href={customer.isAdmin ? "/admin" : "/profile"}
               className={cn(
                 "inline-flex max-w-56 items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-black uppercase transition-colors",
                 scrolled
@@ -489,7 +495,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             </Link>
             {customer ? (
               <Link
-                href="/profile"
+                href={customer.isAdmin ? "/admin" : "/profile"}
                 onClick={() => setOpen(false)}
                 className="rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-black uppercase text-foreground"
               >
