@@ -88,6 +88,25 @@ export function getSupabaseConfigurationErrorMessage() {
   return `Supabase is missing required environment variables: ${missing.join(", ")}. Add them in Vercel Project Settings > Environment Variables, then redeploy.`;
 }
 
+export function isMissingSupabaseTableError(error: unknown) {
+  const message = getErrorMessage(error);
+
+  return (
+    /\b42P01\b/i.test(message) ||
+    /relation .+ does not exist/i.test(message) ||
+    /could not find the table/i.test(message) ||
+    /schema cache/i.test(message)
+  );
+}
+
+export function getMissingSupabaseSchemaMessage() {
+  return "Supabase admin/storage хүснэгтүүд дутуу байна. Supabase SQL Editor дээр supabase/schema.sql файлын хамгийн сүүлийн хувилбарыг ажиллуулаад Vercel-ээ redeploy хийнэ үү.";
+}
+
+export function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error ?? "");
+}
+
 function firstEnvValue(...names: string[]) {
   for (const name of names) {
     const value = process.env[name]?.trim();

@@ -43,6 +43,7 @@ import {
 import { getCustomers } from "@/lib/server/customer-auth";
 import { getEmailLogs } from "@/lib/server/mail";
 import type { SiteSettings } from "@/lib/site-settings";
+import { getErrorMessage } from "@/lib/server/supabase-rest";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,18 @@ const defaultCategoryLabels: Record<string, string> = {
   expo: "Экспо",
   leisure: "Амралт",
   custom: "Захиалгат",
+};
+
+const fallbackSiteSettings: SiteSettings = {
+  heroBadge: "★★★★★ 1,200+ аялагчийн үнэлгээ",
+  heroTitle: "Аяллаа\nнүүдэлчин хэмнэлээр.",
+  heroSubtitle:
+    "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг төлөвлөн зохион байгуулна.",
+  heroImage:
+    "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=80&auto=format&fit=crop",
+  accentColor: "#e85d2c",
+  heroTextColor: "#ffffff",
+  heroOverlayOpacity: 0.72,
 };
 
 const navItems = [
@@ -74,8 +87,23 @@ export default async function AdminDashboard({
     redirect("/admin/login");
   }
 
-  const [{ trips, services, inquiries, bookingStats, siteSettings }, customers, emailLogs] =
-    await Promise.all([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
+  const [dashboardData, customersResult, emailLogsResult] =
+    await Promise.allSettled([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
+  const { trips, services, inquiries, bookingStats, siteSettings } =
+    dashboardData.status === "fulfilled"
+      ? dashboardData.value
+      : {
+          trips: [],
+          services: [],
+          inquiries: [],
+          bookingStats: [],
+          siteSettings: fallbackSiteSettings,
+        };
+  const customers = customersResult.status === "fulfilled" ? customersResult.value : [];
+  const emailLogs = emailLogsResult.status === "fulfilled" ? emailLogsResult.value : [];
+  const loadErrors = [dashboardData, customersResult, emailLogsResult]
+    .filter((result): result is PromiseRejectedResult => result.status === "rejected")
+    .map((result) => getErrorMessage(result.reason));
   const categoryOptions = getCategoryOptions(trips);
   const featuredTrips = trips.filter((trip) => trip.featured);
   const latestInquiries = inquiries.slice(0, 12);
@@ -203,6 +231,12 @@ export default async function AdminDashboard({
             {statusMessage ? (
               <div className="rounded-md border border-[var(--border)] bg-[var(--accent)] px-4 py-3 text-sm font-black text-[var(--accent-foreground)] shadow-sm">
                 {statusMessage}
+              </div>
+            ) : null}
+
+            {loadErrors.length > 0 ? (
+              <div className="rounded-md border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--muted)] shadow-sm">
+                Зарим админ дата уншигдсангүй: {loadErrors[0]}
               </div>
             ) : null}
 

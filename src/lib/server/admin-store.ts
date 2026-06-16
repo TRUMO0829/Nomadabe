@@ -6,6 +6,8 @@ import type { SiteSettings } from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
 import {
   getSupabaseConfigurationErrorMessage,
+  getMissingSupabaseSchemaMessage,
+  isMissingSupabaseTableError,
   isSupabaseConfigured,
   supabaseRest,
 } from "@/lib/server/supabase-rest";
@@ -56,7 +58,15 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
 
 export async function getAdminStore() {
   if (isSupabaseConfigured()) {
-    return getSupabaseAdminStore();
+    try {
+      return await getSupabaseAdminStore();
+    } catch (error) {
+      if (isMissingSupabaseTableError(error)) {
+        return normalizeStore({});
+      }
+
+      throw error;
+    }
   }
 
   if (!canUseLocalJsonStore()) {
@@ -77,7 +87,15 @@ export async function getAdminStore() {
 
 export async function saveAdminStore(store: AdminStore) {
   if (isSupabaseConfigured()) {
-    await saveSupabaseAdminStore(normalizeStore(store));
+    try {
+      await saveSupabaseAdminStore(normalizeStore(store));
+    } catch (error) {
+      if (isMissingSupabaseTableError(error)) {
+        throw new Error(getMissingSupabaseSchemaMessage());
+      }
+
+      throw error;
+    }
     return;
   }
 

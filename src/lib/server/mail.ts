@@ -3,6 +3,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   getSupabaseConfigurationErrorMessage,
+  getMissingSupabaseSchemaMessage,
+  isMissingSupabaseTableError,
   isSupabaseConfigured,
   supabaseRest,
 } from "@/lib/server/supabase-rest";
@@ -108,8 +110,16 @@ export async function sendEmailFromForm(formData: FormData) {
 
 export async function getEmailLogs() {
   if (isSupabaseConfigured()) {
-    const logs = await supabaseRest<EmailLogRow[]>("/email_logs?select=*&order=created_at.desc&limit=200");
-    return logs.map(fromSupabaseEmailLog);
+    try {
+      const logs = await supabaseRest<EmailLogRow[]>("/email_logs?select=*&order=created_at.desc&limit=200");
+      return logs.map(fromSupabaseEmailLog);
+    } catch (error) {
+      if (isMissingSupabaseTableError(error)) {
+        return [];
+      }
+
+      throw error;
+    }
   }
 
   if (!canUseLocalJsonStore()) {
@@ -121,12 +131,24 @@ export async function getEmailLogs() {
 
 async function appendEmailLog(log: EmailLog) {
   if (isSupabaseConfigured()) {
-    const [saved] = await supabaseRest<EmailLogRow[]>("/email_logs", {
-      method: "POST",
-      prefer: "return=representation",
-      body: JSON.stringify(toSupabaseEmailLog(log)),
-    });
-    return fromSupabaseEmailLog(saved);
+    try {
+      const [saved] = await supabaseRest<EmailLogRow[]>("/email_logs", {
+        method: "POST",
+        prefer: "return=representation",
+        body: JSON.stringify(toSupabaseEmailLog(log)),
+      });
+      return fromSupabaseEmailLog(saved);
+    } catch (error) {
+      if (isMissingSupabaseTableError(error)) {
+        return {
+          ...log,
+          status: "failed",
+          error: log.error ?? getMissingSupabaseSchemaMessage(),
+        } satisfies EmailLog;
+      }
+
+      throw error;
+    }
   }
 
   assertLocalJsonStoreAllowed();

@@ -13,10 +13,16 @@ import {
 } from "@/lib/server/admin-store";
 import { getInquiries, isInquiryStatus, updateInquiryStatus } from "@/lib/server/inquiries";
 import { sendEmail, sendEmailFromForm } from "@/lib/server/mail";
+import { getErrorMessage } from "@/lib/server/supabase-rest";
 
 export async function saveTripAction(formData: FormData) {
   await assertAdminAction();
-  await upsertTripFromForm(formData);
+  const error = await getActionError(() => upsertTripFromForm(formData));
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
   revalidatePath("/");
   revalidatePath("/admin");
   redirectWithStatus("Хөтөлбөр хадгалагдлаа.");
@@ -24,10 +30,16 @@ export async function saveTripAction(formData: FormData) {
 
 export async function deleteTripAction(formData: FormData) {
   await assertAdminAction();
-  const id = formData.get("id");
+  const error = await getActionError(async () => {
+    const id = formData.get("id");
 
-  if (typeof id === "string" && id) {
-    await deleteTripById(id);
+    if (typeof id === "string" && id) {
+      await deleteTripById(id);
+    }
+  });
+
+  if (error) {
+    redirectWithStatus(error);
   }
 
   revalidatePath("/");
@@ -37,7 +49,12 @@ export async function deleteTripAction(formData: FormData) {
 
 export async function saveSiteSettingsAction(formData: FormData) {
   await assertAdminAction();
-  await updateSiteSettingsFromForm(formData);
+  const error = await getActionError(() => updateSiteSettingsFromForm(formData));
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
   revalidatePath("/");
   revalidatePath("/admin");
   redirectWithStatus("Нүүр хуудасны тохиргоо хадгалагдлаа.");
@@ -45,7 +62,12 @@ export async function saveSiteSettingsAction(formData: FormData) {
 
 export async function saveServiceAction(formData: FormData) {
   await assertAdminAction();
-  await upsertServiceFromForm(formData);
+  const error = await getActionError(() => upsertServiceFromForm(formData));
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/api/services");
@@ -54,10 +76,16 @@ export async function saveServiceAction(formData: FormData) {
 
 export async function deleteServiceAction(formData: FormData) {
   await assertAdminAction();
-  const id = formData.get("id");
+  const error = await getActionError(async () => {
+    const id = formData.get("id");
 
-  if (typeof id === "string" && id) {
-    await deleteServiceById(id);
+    if (typeof id === "string" && id) {
+      await deleteServiceById(id);
+    }
+  });
+
+  if (error) {
+    redirectWithStatus(error);
   }
 
   revalidatePath("/");
@@ -68,19 +96,25 @@ export async function deleteServiceAction(formData: FormData) {
 
 export async function updateInquiryStatusAction(formData: FormData) {
   await assertAdminAction();
-  const id = formData.get("id");
-  const status = formData.get("status");
+  const error = await getActionError(async () => {
+    const id = formData.get("id");
+    const status = formData.get("status");
 
-  if (typeof id === "string" && typeof status === "string" && isInquiryStatus(status)) {
-    const inquiry = await updateInquiryStatus(id, status);
+    if (typeof id === "string" && typeof status === "string" && isInquiryStatus(status)) {
+      const inquiry = await updateInquiryStatus(id, status);
 
-    if (inquiry.email) {
-      await sendEmail({
-        to: inquiry.email,
-        subject: `Nomadabe хүсэлтийн төлөв: ${status}`,
-        body: `Сайн байна уу ${inquiry.name},\n\nТаны Nomadabe Travel-д илгээсэн хүсэлтийн төлөв шинэчлэгдлээ: ${status}.\n\nМанай баг аяллын дараагийн мэдээллээр тантай холбогдоно.\n\nNomadabe Travel`,
-      });
+      if (inquiry.email) {
+        await sendEmail({
+          to: inquiry.email,
+          subject: `Nomadabe хүсэлтийн төлөв: ${status}`,
+          body: `Сайн байна уу ${inquiry.name},\n\nТаны Nomadabe Travel-д илгээсэн хүсэлтийн төлөв шинэчлэгдлээ: ${status}.\n\nМанай баг аяллын дараагийн мэдээллээр тантай холбогдоно.\n\nNomadabe Travel`,
+        });
+      }
     }
+  });
+
+  if (error) {
+    redirectWithStatus(error);
   }
 
   revalidatePath("/admin");
@@ -90,30 +124,41 @@ export async function updateInquiryStatusAction(formData: FormData) {
 
 export async function sendAdminEmailAction(formData: FormData) {
   await assertAdminAction();
-  await sendEmailFromForm(formData);
+  const error = await getActionError(() => sendEmailFromForm(formData));
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
   revalidatePath("/admin");
   redirectWithStatus("Мэйл илгээх хүсэлт боловсруулагдлаа.");
 }
 
 export async function emailLatestInquiryAction(formData: FormData) {
   await assertAdminAction();
-  const subject = formData.get("subject");
-  const body = formData.get("body");
-  const inquiries = await getInquiries();
-  const latestWithEmail = inquiries.find((inquiry) => inquiry.email);
+  const error = await getActionError(async () => {
+    const subject = formData.get("subject");
+    const body = formData.get("body");
+    const inquiries = await getInquiries();
+    const latestWithEmail = inquiries.find((inquiry) => inquiry.email);
 
-  if (
-    latestWithEmail?.email &&
-    typeof subject === "string" &&
-    typeof body === "string" &&
-    subject.trim() &&
-    body.trim()
-  ) {
-    await sendEmail({
-      to: latestWithEmail.email,
-      subject,
-      body,
-    });
+    if (
+      latestWithEmail?.email &&
+      typeof subject === "string" &&
+      typeof body === "string" &&
+      subject.trim() &&
+      body.trim()
+    ) {
+      await sendEmail({
+        to: latestWithEmail.email,
+        subject,
+        body,
+      });
+    }
+  });
+
+  if (error) {
+    redirectWithStatus(error);
   }
 
   revalidatePath("/admin");
@@ -150,4 +195,13 @@ async function assertAdminAction() {
 
 function redirectWithStatus(message: string) {
   redirect(`/admin?status=${encodeURIComponent(message)}`);
+}
+
+async function getActionError(work: () => Promise<unknown>) {
+  try {
+    await work();
+    return "";
+  } catch (error) {
+    return `Алдаа: ${getErrorMessage(error)}`;
+  }
 }

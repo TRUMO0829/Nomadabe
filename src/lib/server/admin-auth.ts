@@ -4,6 +4,8 @@ import path from "node:path";
 import { sendEmail } from "@/lib/server/mail";
 import {
   getSupabaseConfigurationErrorMessage,
+  getMissingSupabaseSchemaMessage,
+  isMissingSupabaseTableError,
   isSupabaseConfigured,
   supabaseRest,
 } from "@/lib/server/supabase-rest";
@@ -76,7 +78,15 @@ export async function requestAdminLoginCode(emailValue: unknown) {
   };
 
   if (isSupabaseConfigured()) {
-    await createSupabaseAdminCode(record);
+    try {
+      await createSupabaseAdminCode(record);
+    } catch (error) {
+      if (isMissingSupabaseTableError(error)) {
+        throw new Error(getMissingSupabaseSchemaMessage());
+      }
+
+      throw error;
+    }
   } else {
     assertLocalJsonStoreAllowed();
     const codes = await readJsonFile<AdminCode[]>(ADMIN_CODES_FILE, []);
@@ -105,16 +115,36 @@ export async function verifyAdminLoginCode(emailValue: unknown, codeValue: unkno
   }
 
   const now = Date.now();
-  const match = isSupabaseConfigured()
-    ? await findSupabaseAdminCode(email, code, new Date(now).toISOString())
-    : await findLocalAdminCode(email, code, now);
+  let match: AdminCode | null;
+
+  if (isSupabaseConfigured()) {
+    try {
+      match = await findSupabaseAdminCode(email, code, new Date(now).toISOString());
+    } catch (error) {
+      if (isMissingSupabaseTableError(error)) {
+        throw new Error(getMissingSupabaseSchemaMessage());
+      }
+
+      throw error;
+    }
+  } else {
+    match = await findLocalAdminCode(email, code, now);
+  }
 
   if (!match) {
     throw new Error("Код буруу эсвэл хугацаа дууссан байна.");
   }
 
   if (isSupabaseConfigured()) {
-    await markSupabaseAdminCodeUsed(match.id, new Date(now).toISOString());
+    try {
+      await markSupabaseAdminCodeUsed(match.id, new Date(now).toISOString());
+    } catch (error) {
+      if (isMissingSupabaseTableError(error)) {
+        throw new Error(getMissingSupabaseSchemaMessage());
+      }
+
+      throw error;
+    }
   } else {
     assertLocalJsonStoreAllowed();
     const codes = await readJsonFile<AdminCode[]>(ADMIN_CODES_FILE, []);
