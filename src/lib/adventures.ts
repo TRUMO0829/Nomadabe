@@ -1371,11 +1371,123 @@ const ADVENTURE_GALLERIES: Record<string, string[]> = {
   ],
 };
 
+const FALLBACK_GALLERIES: Record<string, string[]> = {
+  china: [
+    "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1548919973-5cef591cdbc9?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=1200&q=80&auto=format&fit=crop",
+  ],
+  japan: [
+    "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1200&q=80&auto=format&fit=crop",
+  ],
+  korea: [
+    "https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1538485399081-7c8edb81cdb4?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=1200&q=80&auto=format&fit=crop",
+  ],
+  turkey: [
+    "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=1200&q=80&auto=format&fit=crop",
+  ],
+  taiwan: [
+    "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&q=80&auto=format&fit=crop",
+  ],
+  mongolia: [
+    "https://images.unsplash.com/photo-1547234935-80c7145ec969?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80&auto=format&fit=crop",
+  ],
+  expo: [
+    "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1511578314322-379afb476865?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&q=80&auto=format&fit=crop",
+  ],
+  leisure: [
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80&auto=format&fit=crop",
+  ],
+  default: [
+    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1200&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80&auto=format&fit=crop",
+  ],
+};
+
+function getFallbackGalleryImages(adventure: Adventure): string[] {
+  const haystack = [
+    adventure.slug,
+    adventure.title,
+    adventure.location,
+    adventure.country,
+    adventure.category,
+    ...adventure.tags,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  if (haystack.includes("japan") || haystack.includes("япон")) {
+    return FALLBACK_GALLERIES.japan;
+  }
+
+  if (
+    haystack.includes("korea") ||
+    haystack.includes("jeju") ||
+    haystack.includes("солонгос") ||
+    haystack.includes("бнсу")
+  ) {
+    return FALLBACK_GALLERIES.korea;
+  }
+
+  if (haystack.includes("turkey") || haystack.includes("турк")) {
+    return FALLBACK_GALLERIES.turkey;
+  }
+
+  if (haystack.includes("taiwan") || haystack.includes("тайван")) {
+    return FALLBACK_GALLERIES.taiwan;
+  }
+
+  if (haystack.includes("china") || haystack.includes("хятад")) {
+    return FALLBACK_GALLERIES.china;
+  }
+
+  if (haystack.includes("expo") || haystack.includes("fair")) {
+    return FALLBACK_GALLERIES.expo;
+  }
+
+  if (
+    haystack.includes("mongolia") ||
+    haystack.includes("gobi") ||
+    haystack.includes("altai") ||
+    haystack.includes("khuvsgul")
+  ) {
+    return FALLBACK_GALLERIES.mongolia;
+  }
+
+  if (haystack.includes("leisure") || haystack.includes("beach")) {
+    return FALLBACK_GALLERIES.leisure;
+  }
+
+  return FALLBACK_GALLERIES.default;
+}
+
 export function getAdventureGalleryImages(adventure: Adventure): string[] {
   return Array.from(
     new Set([
       adventure.image,
       ...(adventure.galleryImages ?? ADVENTURE_GALLERIES[adventure.id] ?? []),
+      ...getFallbackGalleryImages(adventure),
     ])
   );
 }

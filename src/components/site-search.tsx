@@ -51,16 +51,16 @@ export function SiteSearch({ compact = false }: { compact?: boolean }) {
       onSubmit={handleSearch}
       aria-label={copy.label}
       className={[
-        "flex w-full items-center gap-2 rounded-full border border-white/70 bg-[#fff8e4]/72 p-1.5 text-left shadow-[0_8px_22px_rgba(0,0,0,0.24)] backdrop-blur-md",
+        "flex w-full items-center gap-2 rounded-full border border-white/45 bg-white/18 p-1.5 text-left shadow-[0_8px_22px_rgba(0,0,0,0.18)] backdrop-blur-[2px]",
         compact ? "max-w-[min(92vw,560px)]" : "max-w-[min(92vw,620px)]",
       ].join(" ")}
     >
-      <Search className="ml-3 h-4 w-4 shrink-0 text-foreground/70 sm:ml-4" />
+      <Search className="ml-3 h-4 w-4 shrink-0 text-white/86 drop-shadow sm:ml-4" />
       <input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={copy.placeholder}
-        className="min-w-0 flex-1 bg-transparent text-sm font-bold text-foreground outline-none placeholder:text-foreground/60"
+        className="min-w-0 flex-1 bg-transparent text-sm font-bold text-white outline-none drop-shadow placeholder:text-white/78"
       />
       <button
         type="submit"

@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { useState } from "react";
+import { CardsParallax, type iCardItem } from "@/components/ui/scroll-cards";
 import { getAdventureText, type Adventure } from "@/lib/adventures";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
+import { TravelSectionIntro } from "./travel-section-intro";
 
 const COPY = {
   mn: {
@@ -13,60 +13,42 @@ const COPY = {
     title: "Гадаад аяллын чиглэлүүд",
     body:
       "Хятад, Япон, Солонгос, Турк зэрэг эрэлттэй чиглэлүүдийн аяллын багцууд.",
-    priceFrom: "Эхлэх үнэ",
     quote: "Санал авах",
     details: "Дэлгэрэнгүй",
     day: "хоног",
-    previous: "Өмнөх",
-    next: "Дараах",
   },
   en: {
     eyebrow: "Outbound trips",
     title: "Outbound travel routes",
     body:
       "Popular travel packages across China, Japan, South Korea, Turkey, and more.",
-    priceFrom: "From",
     quote: "Request quote",
     details: "Details",
     day: "days",
-    previous: "Previous",
-    next: "Next",
   },
   zh: {
     eyebrow: "出境旅行",
     title: "出境旅行路线",
-    body:
-      "中国、日本、韩国、土耳其等热门目的地的旅行套餐。",
-    priceFrom: "起价",
+    body: "中国、日本、韩国、土耳其等热门目的地的旅行套餐。",
     quote: "获取报价",
     details: "详情",
     day: "天",
-    previous: "上一个",
-    next: "下一个",
   },
   ja: {
     eyebrow: "海外ツアー",
     title: "海外旅行ルート",
-    body:
-      "中国、日本、韓国、トルコなど人気目的地の旅行プラン。",
-    priceFrom: "開始料金",
+    body: "中国、日本、韓国、トルコなど人気目的地の旅行プラン。",
     quote: "見積もり依頼",
     details: "詳細",
     day: "日",
-    previous: "前へ",
-    next: "次へ",
   },
   ko: {
     eyebrow: "해외 여행",
     title: "해외 여행 루트",
-    body:
-      "중국, 일본, 한국, 터키 등 인기 목적지의 여행 패키지.",
-    priceFrom: "시작가",
+    body: "중국, 일본, 한국, 튀르키예 등 인기 목적지의 여행 패키지.",
     quote: "견적 요청",
     details: "자세히",
     day: "일",
-    previous: "이전",
-    next: "다음",
   },
 } as const;
 
@@ -189,7 +171,6 @@ export function OutboundTripsCarousel({
 }: OutboundTripsCarouselProps) {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
-  const scrollerRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<Adventure | null>(null);
   const backendOptions = adventures
     .filter((adventure) => adventure.country !== "Mongolia")
@@ -212,158 +193,86 @@ export function OutboundTripsCarousel({
         price:
           adventure.price > 0
             ? `${adventure.price.toLocaleString()} ${adventure.currency}`
-            : copy.quote,
+            : "",
         image: adventure.image,
         adventure,
       };
     });
   const options = [...OUTBOUND_OPTIONS, ...backendOptions];
+  const cardRows = options.map((option, idx) => {
+    const title = {
+      mn: option.titleMn,
+      en: option.titleEn,
+      zh: option.titleZh,
+      ja: option.titleJa,
+      ko: option.titleKo,
+    }[contentLocale];
+    const country = {
+      mn: option.countryMn,
+      en: option.countryEn,
+      zh: option.countryZh,
+      ja: option.countryJa,
+      ko: option.countryKo,
+    }[contentLocale];
+    const backendAdventure = (option as { adventure?: Adventure }).adventure;
+    const adventureForModal: Adventure = backendAdventure
+      ? backendAdventure
+      : {
+          id: `static-outbound-${option.id}`,
+          slug: `static-outbound-${option.id}`,
+          title,
+          location: country,
+          country,
+          days: option.days,
+          groupSize: "Жижиг групп",
+          difficulty: "Easy",
+          price: parseMntPrice(option.price),
+          currency: "MNT",
+          image: option.image,
+          tags: ["Гадаад", country],
+          rating: 4.8,
+          reviews: 18 + idx * 4,
+          category: "outbound",
+          summary:
+            contentLocale === "mn"
+              ? `${country} чиглэлийн ${option.days} хоногийн гадаад аяллын багц.`
+              : `${option.days}-day outbound travel package for ${country}.`,
+          idealFor: ["Гэр бүл", "Жижиг групп", "Амралт"],
+          includes: [
+            "Маршрут төлөвлөлт",
+            "Аяллын зөвлөгөө",
+            "Зохион байгуулалт",
+          ],
+          businessSupport: [],
+          nextDeparture: "",
+        };
+    const card: iCardItem = {
+      title,
+      description: `${country} - ${option.days} ${copy.day}`,
+      tag: option.price,
+      src: option.image,
+      link: "#",
+      color: "#11100B",
+      textColor: "#FFFDF3",
+      actionLabel: copy.details,
+    };
 
-  function scrollByCard(direction: "prev" | "next") {
-    scrollerRef.current?.scrollBy({
-      left: direction === "next" ? 360 : -360,
-      behavior: "smooth",
-    });
-  }
+    return { adventure: adventureForModal, card };
+  });
 
   return (
-    <section className="bg-card py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-6 lg:px-10">
-        <div className="mb-10 flex flex-col gap-6 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <h2 className="font-sans text-3xl font-black text-balance sm:text-4xl lg:text-5xl">
-              {copy.eyebrow}
-            </h2>
-            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-              {copy.body}
-            </p>
-          </div>
+    <>
+      <TravelSectionIntro title={copy.eyebrow} />
 
-          <div className="flex gap-2">
-            <button
-              type="button"
-              aria-label={copy.previous}
-              onClick={() => scrollByCard("prev")}
-              className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:border-accent hover:bg-accent"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              aria-label={copy.next}
-              onClick={() => scrollByCard("next")}
-              className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:border-accent hover:bg-accent"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        <div
-          ref={scrollerRef}
-          className="-mx-6 flex snap-x gap-5 overflow-x-auto px-6 pb-4 [scrollbar-width:none] lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden"
-        >
-          {options.map((option, idx) => {
-            const title = {
-              mn: option.titleMn,
-              en: option.titleEn,
-              zh: option.titleZh,
-              ja: option.titleJa,
-              ko: option.titleKo,
-            }[contentLocale];
-            const country = {
-              mn: option.countryMn,
-              en: option.countryEn,
-              zh: option.countryZh,
-              ja: option.countryJa,
-              ko: option.countryKo,
-            }[contentLocale];
-            const backendAdventure = (option as { adventure?: Adventure })
-              .adventure;
-            const adventureForModal: Adventure =
-              backendAdventure
-                ? backendAdventure
-                : {
-                    id: `static-outbound-${option.id}`,
-                    slug: `static-outbound-${option.id}`,
-                    title,
-                    location: country,
-                    country,
-                    days: option.days,
-                    groupSize: "Жижиг групп",
-                    difficulty: "Easy",
-                    price: parseMntPrice(option.price),
-                    currency: "MNT",
-                    image: option.image,
-                    tags: ["Гадаад", country],
-                    rating: 4.8,
-                    reviews: 18 + idx * 4,
-                    category: "outbound",
-                    summary:
-                      contentLocale === "mn"
-                        ? `${country} чиглэлийн ${option.days} хоногийн гадаад аяллын багц.`
-                        : `${option.days}-day outbound travel package for ${country}.`,
-                    idealFor: ["Гэр бүл", "Жижиг групп", "Амралт"],
-                    includes: [
-                      "Маршрут төлөвлөлт",
-                      "Аяллын зөвлөгөө",
-                      "Зохион байгуулалт",
-                    ],
-                    businessSupport: [],
-                    nextDeparture: copy.quote,
-                  };
-
-            return (
-              <motion.article
-                key={option.id}
-                initial={{ opacity: 0, x: 28 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, delay: idx * 0.05 }}
-                className="group relative flex min-w-[78vw] snap-start flex-col overflow-hidden rounded-lg border border-border bg-background shadow-sm transition-all hover:border-accent hover:shadow-xl sm:min-w-[420px] lg:min-w-[360px]"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                    style={{ backgroundImage: `url(${option.image})` }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-                  <div className="absolute left-4 top-4 rounded-md bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">
-                    {option.price}
-                  </div>
-                  <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2 text-xs font-semibold text-white">
-                    <span className="flex items-center gap-1 rounded-md bg-black/35 px-2.5 py-1 backdrop-blur">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {country}
-                    </span>
-                    <span className="flex items-center gap-1 rounded-md bg-black/35 px-2.5 py-1 backdrop-blur">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      {option.days} {copy.day}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {copy.priceFrom}
-                  </div>
-                  <h3 className="mt-2 font-display text-2xl leading-tight text-balance">
-                    {title}
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setSelected(adventureForModal)}
-                    className="mt-5 inline-flex w-fit items-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    {copy.details}
-                  </button>
-                </div>
-              </motion.article>
-            );
-          })}
-        </div>
-      </div>
-      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
-    </section>
+      <section className="bg-card">
+        <CardsParallax
+          items={cardRows.map((row) => row.card)}
+          onItemSelect={(_, index) => {
+            setSelected(cardRows[index]?.adventure ?? null);
+          }}
+        />
+        <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
+      </section>
+    </>
   );
 }

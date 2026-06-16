@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&subset=cyrillic,cyrillic-ext,latin&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&subset=cyrillic,cyrillic-ext,latin&display=swap");
 @import "tailwindcss" source("../");
 
 :root {
@@ -15,7 +15,7 @@
   --secondary: #FFC400;
   --border: #E8DDAE;
   --ring: #FFD400;
-  --site-font: var(--font-montserrat, "Montserrat"), Arial, Helvetica, sans-serif;
+  --site-font: "Noto Sans", Arial, Helvetica, sans-serif;
 }
 
 @theme inline {
@@ -101,7 +101,12 @@ h4,
 h5,
 h6,
 .site-heading {
+  font-weight: 700;
   text-transform: uppercase;
+}
+
+.font-black {
+  font-weight: 800 !important;
 }
 
 button,
@@ -131,4 +136,11 @@ body *::after {
 ::selection {
   background: var(--accent);
   color: var(--accent-foreground);
+}
+
+@media (pointer: fine) {
+  body.plane-cursor-enabled,
+  body.plane-cursor-enabled * {
+    cursor: none !important;
+  }
 }

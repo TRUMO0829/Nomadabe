@@ -25,9 +25,10 @@ export function Hero() {
 
   return (
     <section
-      id="home"
+      id="hero"
       className="home-hero-screen relative flex items-center justify-center overflow-hidden bg-primary px-5 py-24 sm:px-8 lg:px-12"
     >
+      <span id="home" className="absolute left-0 top-0" aria-hidden="true" />
       {HERO_BACKGROUNDS.map((image, index) => (
         <motion.div
           key={image}

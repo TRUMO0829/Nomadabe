@@ -10,6 +10,7 @@ import {
   Globe2,
   Menu,
   MountainSnow,
+  Search,
   UserRound,
   X,
 } from "lucide-react";
@@ -134,6 +135,8 @@ type AuthCustomer = {
   name?: string;
   isAdmin?: boolean;
 };
+const DESKTOP_ACTION_CLASS =
+  "inline-flex h-10 items-center justify-center rounded-lg px-3 text-xs font-black uppercase leading-none";
 
 function openSignupPrompt() {
   window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
@@ -199,6 +202,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
   const [languageOpen, setLanguageOpen] = useState(false);
   const [destinationOpen, setDestinationOpen] = useState(false);
   const [customer, setCustomer] = useState<AuthCustomer | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { contentLocale, locale, setLocale, t } = useLanguage();
   const currentLanguage =
     LANGUAGES.find((language) => language.code === locale) ?? LANGUAGES[0];
@@ -320,10 +324,33 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
         </nav>
 
         <div className="hidden items-center gap-3 lg:ml-auto lg:flex">
+          {showHomeSearch ? (
+            <button
+              type="button"
+              aria-label="Аялал хайх"
+              aria-expanded={searchOpen}
+              onClick={() => setSearchOpen((value) => !value)}
+              className={cn(
+                "inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-colors",
+                searchOpen
+                  ? "border-accent bg-accent text-accent-foreground"
+                  : scrolled
+                    ? "border-border bg-card/90 text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                    : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
+              )}
+            >
+              {searchOpen ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Search className="h-4 w-4" />
+              )}
+            </button>
+          ) : null}
+
           <div
             aria-label={t.nav.language}
             className={cn(
-              "relative rounded-lg border",
+              "relative h-10 rounded-lg border",
               scrolled
                 ? "border-border bg-card/90 text-foreground"
                 : "border-white/30 bg-black/25 text-white"
@@ -333,7 +360,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
               type="button"
               aria-expanded={languageOpen}
               onClick={() => setLanguageOpen((value) => !value)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-colors hover:bg-white/15"
+              className="flex h-full items-center gap-2 rounded-lg px-3 text-xs font-black uppercase leading-none transition-colors hover:bg-white/15"
             >
               <Globe className="h-4 w-4" />
               {currentLanguage.short}
@@ -373,7 +400,10 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
           </div>
           <Link
             href="/plan"
-              className="rounded-lg bg-accent px-5 py-2.5 text-sm font-black uppercase text-accent-foreground transition-colors hover:bg-secondary"
+            className={cn(
+              DESKTOP_ACTION_CLASS,
+              "border border-accent bg-accent text-accent-foreground transition-colors hover:bg-secondary"
+            )}
           >
             {t.nav.cta}
           </Link>
@@ -381,7 +411,8 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             <Link
               href={customer.isAdmin ? "/admin" : "/profile"}
               className={cn(
-                "inline-flex max-w-56 items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-black uppercase transition-colors",
+                DESKTOP_ACTION_CLASS,
+                "max-w-56 gap-2 border px-4 normal-case transition-colors",
                 scrolled
                   ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
                   : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
@@ -396,7 +427,8 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
               type="button"
               onClick={openSignupPrompt}
               className={cn(
-                "inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-black uppercase transition-colors",
+                DESKTOP_ACTION_CLASS,
+                "gap-2 border transition-colors",
                 scrolled
                   ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
                   : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
@@ -420,8 +452,8 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
         </button>
       </div>
 
-      {showHomeSearch && !scrolled ? (
-        <div className="pointer-events-none absolute inset-x-0 top-full z-40 flex justify-center px-5 pt-3 sm:px-8 lg:pt-5">
+      {showHomeSearch && searchOpen ? (
+        <div className="pointer-events-none absolute inset-x-0 top-full z-40 flex justify-center px-5 pt-3 sm:px-8 lg:pt-4">
           <div className="pointer-events-auto w-full max-w-[min(92vw,620px)]">
             <SiteSearch compact />
           </div>

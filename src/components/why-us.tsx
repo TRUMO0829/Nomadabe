@@ -133,25 +133,40 @@ export function WhyUs() {
   ];
 
   return (
-    <section id="about" className="border-y border-border bg-background py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-6 lg:px-10">
-        <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
+    <section
+      id="about"
+      className="relative overflow-hidden border-y border-[#d8bb72]/25 bg-[#fffdf3] py-20 text-[#11100b] lg:py-28"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_52%_10%,rgba(216,187,114,0.18),transparent_30%),linear-gradient(180deg,rgba(255,248,234,0.96),rgba(255,253,243,0.88)_55%,rgba(255,248,234,0.98))]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.18] [background-image:radial-gradient(circle_at_1px_1px,rgba(17,16,11,0.16)_1px,transparent_0)] [background-size:20px_20px]" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-24 w-px bg-gradient-to-b from-[#d8bb72]/70 to-transparent" />
+      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end"
+        >
           <div>
-            <p className="mb-4 inline-flex rounded-full border border-border bg-card px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-foreground">
+            <p className="mb-4 inline-flex rounded-full border border-[#d8bb72]/45 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#8f7020] shadow-sm">
               {t.why.eyebrow}
             </p>
-            <h2 className="max-w-3xl text-balance font-display text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl">
+            <h2
+              data-plane-landing
+              className="max-w-3xl text-balance font-display text-4xl font-semibold leading-tight text-[#11100b] sm:text-5xl lg:text-6xl"
+            >
               {t.why.titleStart}{" "}
-              <span className="text-foreground">
+              <span className="text-[#d8bb72]">
                 {t.why.titleEmphasis}
               </span>{" "}
               {t.why.titleEnd}
             </h2>
           </div>
-          <p className="max-w-2xl text-base leading-relaxed text-muted-foreground lg:text-lg">
+          <p className="max-w-2xl text-base font-medium leading-relaxed text-[#11100b]/68 lg:text-lg">
             {copy.headline}
           </p>
-        </div>
+        </motion.div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
           <motion.div
@@ -159,9 +174,9 @@ export function WhyUs() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.5 }}
-            className="rounded-lg border border-border bg-accent p-6 text-accent-foreground shadow-sm lg:p-8"
+            className="rounded-lg border border-accent bg-accent p-6 text-accent-foreground shadow-[0_22px_56px_rgba(17,16,11,0.14)] lg:p-8"
           >
-            <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-md bg-card text-foreground shadow-sm">
+            <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-md bg-[#fff8ea] text-[#11100b] shadow-sm">
               <PlaneTakeoff className="h-7 w-7" />
             </div>
             <p className="text-xs font-black uppercase tracking-[0.24em]">
@@ -170,14 +185,14 @@ export function WhyUs() {
             <h3 className="mt-4 text-balance font-display text-3xl leading-tight lg:text-4xl">
               {copy.proofTitle}
             </h3>
-            <p className="mt-5 text-sm leading-relaxed text-foreground/75 lg:text-base">
+            <p className="mt-5 text-sm leading-relaxed text-[#11100b]/76 lg:text-base">
               {copy.body}
             </p>
             <div className="mt-7 flex flex-wrap gap-2">
               {copy.chips.map((chip) => (
                 <span
                   key={chip}
-                  className="rounded-full border border-foreground/15 bg-card px-3 py-1.5 text-xs font-bold text-foreground"
+                  className="rounded-full border border-[#11100b]/15 bg-[#fff8ea] px-3 py-1.5 text-xs font-bold text-[#11100b]"
                 >
                   {chip}
                 </span>
@@ -196,15 +211,15 @@ export function WhyUs() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
                   transition={{ duration: 0.5, delay: idx * 0.06 }}
-                  className="rounded-lg border border-border bg-card p-5 shadow-sm transition-all hover:border-accent hover:shadow-lg lg:p-6"
+                  className="rounded-lg border border-[#d8bb72]/28 bg-white p-5 shadow-[0_16px_40px_rgba(17,16,11,0.06)] transition-all hover:border-[#d8bb72]/65 hover:bg-[#fff9df] lg:p-6"
                 >
-                  <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-md bg-muted text-foreground">
+                  <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-md bg-[#d8bb72]/16 text-[#8f7020]">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="font-display text-xl leading-snug lg:text-2xl">
+                  <h3 className="font-display text-xl font-semibold leading-snug text-[#11100b] lg:text-2xl">
                     {fact.title}
                   </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-3 text-sm leading-relaxed text-[#11100b]/62">
                     {fact.body}
                   </p>
                 </motion.article>
@@ -213,20 +228,26 @@ export function WhyUs() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-3 rounded-lg border border-border bg-card p-4 shadow-sm sm:grid-cols-3">
-          <div className="flex items-center gap-3 rounded-md bg-background p-4">
-            <MapPinned className="h-5 w-5 text-foreground" />
-            <span className="text-sm font-bold">{copy.summary[0]}</span>
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.55 }}
+          className="mt-6 grid gap-3 rounded-lg border border-[#d8bb72]/28 bg-white p-4 shadow-[0_16px_40px_rgba(17,16,11,0.06)] sm:grid-cols-3"
+        >
+          <div className="flex items-center gap-3 rounded-md bg-[#fff9df] p-4">
+            <MapPinned className="h-5 w-5 text-[#8f7020]" />
+            <span className="text-sm font-bold text-[#11100b]">{copy.summary[0]}</span>
           </div>
-          <div className="flex items-center gap-3 rounded-md bg-background p-4">
-            <Globe2 className="h-5 w-5 text-foreground" />
-            <span className="text-sm font-bold">{copy.summary[1]}</span>
+          <div className="flex items-center gap-3 rounded-md bg-[#fff9df] p-4">
+            <Globe2 className="h-5 w-5 text-[#8f7020]" />
+            <span className="text-sm font-bold text-[#11100b]">{copy.summary[1]}</span>
           </div>
-          <div className="flex items-center gap-3 rounded-md bg-background p-4">
-            <Handshake className="h-5 w-5 text-foreground" />
-            <span className="text-sm font-bold">{copy.summary[2]}</span>
+          <div className="flex items-center gap-3 rounded-md bg-[#fff9df] p-4">
+            <Handshake className="h-5 w-5 text-[#8f7020]" />
+            <span className="text-sm font-bold text-[#11100b]">{copy.summary[2]}</span>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -9,13 +9,18 @@ import { useLanguage } from "./language-provider";
 
 const SOCIALS = [
   {
-    label: "FB",
+    label: "Facebook",
+    icon: "facebook",
     href: "https://www.facebook.com/p/Nomadabe-Travel-61564497080885/",
   },
-  { label: "IG", href: "https://www.instagram.com/nomadabe.travel/" },
-];
+  {
+    label: "Instagram",
+    icon: "instagram",
+    href: "https://www.instagram.com/nomadabe.travel/",
+  },
+] as const;
 
-const CONTACT_EMAIL = "Dawkaa01@gmail.com";
+const CONTACT_EMAIL = "info@nomadabe.mn";
 const MINISTER_TOWER_ADDRESS =
   "Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia, Ulaanbaatar, Mongolia, 976";
 const MINISTER_TOWER_MAP_URL =
@@ -460,9 +465,9 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={social.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-xs font-black text-white transition-colors hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white text-xs font-black shadow-sm transition-transform hover:scale-105"
                   >
-                    {social.label}
+                    <SocialIcon icon={social.icon} />
                   </a>
                 ))}
               </div>
@@ -537,31 +542,85 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                 {footer.mapButton}
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
-              <div className="mt-8">
-                <img
-                  src="/oyu-intelligence-logo.png"
-                  alt="OYU Intelligence"
-                  className="h-24 w-auto"
-                />
-              </div>
             </div>
           </div>
 
-          <div className="mt-14 flex flex-col justify-between gap-5 border-t border-white/10 pt-8 text-xs text-white/45 lg:flex-row lg:items-center">
-            <div>
-              © {new Date().getFullYear()} Nomadabe.mn — {footer.copyright}
+          <div className="relative mt-14 border-t border-white/10 pt-16 text-xs text-white/45">
+            <div className="pointer-events-none absolute left-1/2 top-12 -translate-x-1/2 -translate-y-1/2 opacity-90">
+              <div className="relative h-20 w-20 sm:h-24 sm:w-24">
+                <img
+                  src="/oyu-intelligence-logo.png"
+                  alt="OYU Intelligence"
+                  className="absolute inset-0 h-full w-full object-contain"
+                />
+                <img
+                  src="/oyu-intelligence-logo.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-contain brightness-0 invert [clip-path:inset(32%_9%_38%_38%)]"
+                />
+                <img
+                  src="/oyu-intelligence-logo.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-contain brightness-0 invert [clip-path:inset(62%_12%_25%_14%)]"
+                />
+              </div>
             </div>
-            <div className="flex flex-wrap gap-6">
-              {footer.legal.map((link) => (
-                <a key={link} href="#" className="hover:text-accent">
-                  {link}
-                </a>
-              ))}
+
+            <div className="relative z-10 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+              <div>
+                © {new Date().getFullYear()} Nomadabe.mn — {footer.copyright}
+              </div>
+              <div className="flex flex-wrap gap-6">
+                {footer.legal.map((link) => (
+                  <a key={link} href="#" className="hover:text-accent">
+                    {link}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </footer>
     </>
+  );
+}
+
+function SocialIcon({ icon }: { icon: (typeof SOCIALS)[number]["icon"] }) {
+  if (icon === "facebook") {
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+      >
+        <path
+          fill="#1877F2"
+          d="M14 8.1h2.4V4.2c-.4-.1-1.8-.2-3.4-.2-3.4 0-5.7 2.1-5.7 6v3.3H3.5v4.4h3.8V24h4.7v-6.3h3.7l.6-4.4H12v-2.9c0-1.3.3-2.3 2-2.3Z"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-5 w-5 fill-none stroke-[2]"
+    >
+      <defs>
+        <linearGradient id="instagram-logo-gradient" x1="3" y1="21" x2="21" y2="3">
+          <stop offset="0%" stopColor="#F58529" />
+          <stop offset="35%" stopColor="#DD2A7B" />
+          <stop offset="70%" stopColor="#8134AF" />
+          <stop offset="100%" stopColor="#515BD4" />
+        </linearGradient>
+      </defs>
+      <rect x="3" y="3" width="18" height="18" rx="5" stroke="url(#instagram-logo-gradient)" />
+      <circle cx="12" cy="12" r="4" stroke="url(#instagram-logo-gradient)" />
+      <circle cx="17.5" cy="6.5" r="1.1" fill="#DD2A7B" className="stroke-none" />
+    </svg>
   );
 }
 

@@ -1,157 +1,83 @@
 "use client";
 
-import { useRef } from "react";
-import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Quote, Star } from "lucide-react";
+import { motion } from "motion/react";
+import {
+  TestimonialsColumn,
+  type TestimonialColumnItem,
+} from "@/components/ui/testimonials-columns-1";
 import { useLanguage } from "./language-provider";
 
-const REVIEW_PROFILES = [
-  {
-    email: "nomin.business@gmail.com",
-    avatar:
-      "https://api.dicebear.com/9.x/adventurer/svg?seed=Nomin&backgroundColor=ffd400,ffe680",
-  },
-  {
-    email: "temuulen.import@yahoo.com",
-    avatar:
-      "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Temuulen&backgroundColor=c0aede,ffd5dc",
-  },
-  {
-    email: "saruul.family@icloud.com",
-    avatar:
-      "https://api.dicebear.com/9.x/adventurer/svg?seed=Saruul&backgroundColor=b6e3f4,ffdfbf",
-  },
+const REVIEW_IMAGES = [
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=96&q=80",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&q=80",
+  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=96&q=80",
+  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=96&q=80",
+  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=96&q=80",
+  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=96&q=80",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=96&q=80",
+  "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=96&q=80",
+  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=96&q=80",
 ];
 
-const REVIEW_COPY = {
-  mn: {
-    eyebrow: "Сэтгэгдэл",
-    title: "Аялагчдын үнэлгээ",
-    body:
-      "Манайхаар аяллаа төлөвлөсөн хүмүүсийн бодит туршлага, үйлчилгээний мэдрэмжийг эндээс уншаарай.",
-    previous: "Өмнөх сэтгэгдэл",
-    next: "Дараах сэтгэгдэл",
-  },
-  en: {
-    eyebrow: "Reviews",
-    title: "Traveller reviews",
-    body:
-      "Read real experiences from travellers who planned business, expo, leisure, and custom trips with us.",
-    previous: "Previous review",
-    next: "Next review",
-  },
-  zh: {
-    eyebrow: "评价",
-    title: "旅行者评价",
-    body: "查看通过 Nomadabe 规划商务、展会、休闲和定制旅行的真实体验。",
-    previous: "上一条评价",
-    next: "下一条评价",
-  },
-  ja: {
-    eyebrow: "レビュー",
-    title: "旅行者レビュー",
-    body:
-      "ビジネス、展示会、レジャー、カスタム旅行を計画したお客様の実体験をご覧ください。",
-    previous: "前のレビュー",
-    next: "次のレビュー",
-  },
-  ko: {
-    eyebrow: "후기",
-    title: "여행자 후기",
-    body:
-      "비즈니스, 엑스포, 휴양, 맞춤 여행을 함께 계획한 고객들의 실제 경험을 확인하세요.",
-    previous: "이전 후기",
-    next: "다음 후기",
-  },
-} as const;
-
 export function Testimonials() {
-  const { contentLocale, t } = useLanguage();
-  const copy = REVIEW_COPY[contentLocale];
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
+  const copy = t.testimonials;
 
-  function scrollByCard(direction: "prev" | "next") {
-    scrollerRef.current?.scrollBy({
-      left: direction === "next" ? 460 : -460,
-      behavior: "smooth",
-    });
-  }
+  const testimonials: TestimonialColumnItem[] = Array.from({ length: 9 }, (_, index) => {
+    const quote = copy.quotes[index % copy.quotes.length];
+
+    return {
+      text: quote.body,
+      image: REVIEW_IMAGES[index],
+      name: quote.name,
+      role: quote.trip,
+    };
+  });
+
+  const firstColumn = testimonials.slice(0, 3);
+  const secondColumn = testimonials.slice(3, 6);
+  const thirdColumn = testimonials.slice(6, 9);
 
   return (
-    <section id="journal" className="bg-background px-6 py-16 lg:px-10 lg:py-24">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div className="max-w-2xl">
-            <h2 className="text-balance text-3xl font-black leading-tight text-foreground sm:text-4xl lg:text-5xl">
-              {copy.eyebrow}
-            </h2>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground lg:text-lg">
-              {copy.body}
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              aria-label={copy.previous}
-              onClick={() => scrollByCard("prev")}
-              className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-card text-foreground transition-colors hover:border-accent hover:bg-accent"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              aria-label={copy.next}
-              onClick={() => scrollByCard("next")}
-              className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-card text-foreground transition-colors hover:border-accent hover:bg-accent"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        <div
-          ref={scrollerRef}
-          className="-mx-6 flex snap-x gap-5 overflow-x-auto px-6 pb-3 [scrollbar-width:none] lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden"
+    <section id="journal" className="relative bg-background px-6 py-12 lg:px-10 lg:py-16">
+      <div className="container z-10 mx-auto max-w-7xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true }}
+          className="mx-auto flex max-w-[520px] flex-col items-center justify-center text-center"
         >
-          {t.testimonials.quotes.map((quote, idx) => {
-            const profile = REVIEW_PROFILES[idx % REVIEW_PROFILES.length];
+          <div className="flex justify-center">
+            <div className="rounded-lg border bg-card px-3 py-1 text-xs font-bold text-foreground">
+              {copy.eyebrow}
+            </div>
+          </div>
 
-            return (
-            <motion.figure
-              key={profile.email}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: idx * 0.08 }}
-              className="flex min-h-[230px] min-w-[78vw] snap-start flex-col rounded-lg border border-border bg-card p-5 shadow-sm sm:min-w-[360px] lg:min-w-[360px]"
-            >
-              <Quote className="h-6 w-6 text-accent" />
-              <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-foreground/80">
-                {quote.body}
-              </blockquote>
-              <div className="mt-5 flex gap-1 text-accent">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                ))}
-              </div>
-              <figcaption className="mt-4 border-t border-border pt-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="h-10 w-10 rounded-full border border-border bg-cover bg-center bg-white shadow-sm"
-                    style={{ backgroundImage: `url(${profile.avatar})` }}
-                  />
-                  <div>
-                    <div className="text-sm font-bold">{profile.email}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {quote.trip}
-                    </div>
-                  </div>
-                </div>
-              </figcaption>
-            </motion.figure>
-            );
-          })}
+          <h2 className="mt-4 text-lg font-black tracking-tighter text-foreground sm:text-xl md:text-2xl lg:text-3xl">
+            {copy.titleStart}{" "}
+            <span className="text-accent-foreground [text-shadow:0_1px_0_var(--accent)]">
+              {copy.titleEmphasis}
+            </span>{" "}
+            {copy.titleEnd}
+          </h2>
+          <p className="mt-3 text-center text-xs font-semibold text-muted-foreground opacity-90 sm:text-sm">
+            {copy.rating}
+          </p>
+        </motion.div>
+
+        <div className="mt-8 flex max-h-[520px] justify-center gap-4 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]">
+          <TestimonialsColumn testimonials={firstColumn} duration={15} />
+          <TestimonialsColumn
+            testimonials={secondColumn}
+            className="hidden md:block"
+            duration={19}
+          />
+          <TestimonialsColumn
+            testimonials={thirdColumn}
+            className="hidden lg:block"
+            duration={17}
+          />
         </div>
       </div>
     </section>

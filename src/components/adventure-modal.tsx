@@ -19,12 +19,17 @@ import {
   getAdventureText,
   type Adventure,
 } from "@/lib/adventures";
+import InteractiveBentoGallery, {
+  type MediaItemType,
+} from "@/components/ui/interactive-bento-gallery";
 import { useLanguage } from "./language-provider";
 
 type Props = {
   adventure: Adventure | null;
   onClose: () => void;
 };
+
+const GALLERY_ITEM_COUNT = 7;
 
 const DETAIL_COPY = {
   mn: {
@@ -71,9 +76,36 @@ export function AdventureModal({ adventure, onClose }: Props) {
   const details = adventure
     ? getAdventureDetailInfo(adventure, contentLocale)
     : null;
-  const additionalImages = adventure
-    ? getAdventureGalleryImages(adventure).slice(1, 5)
+  const gallerySourceImages = adventure
+    ? getAdventureGalleryImages(adventure).filter((image) => image.length > 0)
     : [];
+  const additionalImages =
+    gallerySourceImages.length > 0
+      ? Array.from(
+          { length: GALLERY_ITEM_COUNT },
+          (_, index) => gallerySourceImages[index % gallerySourceImages.length]
+        )
+      : [];
+  const gallerySpans = [
+    "row-span-2 sm:col-span-1 sm:row-span-2 md:col-span-1 md:row-span-3",
+    "row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-2 md:row-span-2",
+    "row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-1 md:row-span-3",
+    "row-span-2 sm:col-span-1 sm:row-span-2 md:col-span-2 md:row-span-2",
+    "row-span-2 sm:col-span-1 sm:row-span-2 md:col-span-1 md:row-span-2",
+    "row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-2 md:row-span-2",
+    "row-span-2 sm:col-span-1 sm:row-span-2 md:col-span-1 md:row-span-2",
+  ];
+  const galleryMediaItems: MediaItemType[] =
+    adventure && text
+      ? additionalImages.map((image, index) => ({
+          id: index + 1,
+          type: "image",
+          title: `${text.title} ${index + 1}`,
+          desc: `${text.location}, ${text.country}`,
+          url: image,
+          span: gallerySpans[index % gallerySpans.length],
+        }))
+      : [];
 
   useEffect(() => {
     if (!adventure) return;
@@ -154,36 +186,23 @@ export function AdventureModal({ adventure, onClose }: Props) {
               </div>
             </div>
 
+            {galleryMediaItems.length > 0 && (
+              <div className="px-6 pt-8 lg:px-10 lg:pt-10">
+                <InteractiveBentoGallery
+                  key={adventure.id}
+                  mediaItems={galleryMediaItems}
+                  title={copy.morePhotos}
+                  description={text.title}
+                />
+              </div>
+            )}
+
             <div className="grid gap-8 p-6 lg:grid-cols-[1.5fr_1fr] lg:gap-12 lg:p-10">
               <div>
                 <h4 className="mb-3 font-display text-xl">{t.modal.about}</h4>
                 <p className="leading-relaxed text-muted-foreground">
                   {text.summary}
                 </p>
-
-                {additionalImages.length > 0 && (
-                  <div className="mt-8">
-                    <h4 className="mb-3 font-display text-xl">
-                      {copy.morePhotos}
-                    </h4>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      {additionalImages.map((image, index) => (
-                        <div
-                          key={image}
-                          className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-card"
-                        >
-                          <div
-                            className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                            style={{ backgroundImage: `url(${image})` }}
-                          />
-                          <div className="absolute left-3 top-3 rounded-md bg-black/45 px-2 py-1 text-[11px] font-bold text-white backdrop-blur">
-                            {index + 1}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {[
