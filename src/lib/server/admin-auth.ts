@@ -1,14 +1,29 @@
-import { createHmac, randomInt } from "node:crypto";
+import { createHmac, randomInt, randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { sendEmail } from "@/lib/server/mail";
+import {
+  getSupabaseConfigurationErrorMessage,
+  isSupabaseConfigured,
+  supabaseRest,
+} from "@/lib/server/supabase-rest";
 
 type AdminCode = {
+  id: string;
   email: string;
   code: string;
   createdAt: string;
   expiresAt: string;
   usedAt?: string;
+};
+
+type AdminCodeRow = {
+  id: string;
+  email: string;
+  code: string;
+  created_at: string;
+  expires_at: string;
+  used_at: string | null;
 };
 
 export type AdminSessionPayload = {
@@ -53,14 +68,21 @@ export async function requestAdminLoginCode(emailValue: unknown) {
   const now = new Date();
   const code = String(randomInt(100000, 1000000));
   const record: AdminCode = {
+    id: randomUUID(),
     email,
     code,
     createdAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + CODE_TTL_MS).toISOString(),
   };
-  const codes = await readJsonFile<AdminCode[]>(ADMIN_CODES_FILE, []);
 
-  await writeJsonFile(ADMIN_CODES_FILE, [...codes, record].slice(-100));
+  if (isSupabaseConfigured()) {
+    await createSupabaseAdminCode(record);
+  } else {
+    assertLocalJsonStoreAllowed();
+    const codes = await readJsonFile<AdminCode[]>(ADMIN_CODES_FILE, []);
+    await writeJsonFile(ADMIN_CODES_FILE, [...codes, record].slice(-100));
+  }
+
   await sendEmail({
     to: email,
     subject: "Nomadabe админ нэвтрэх код",
@@ -82,32 +104,91 @@ export async function verifyAdminLoginCode(emailValue: unknown, codeValue: unkno
     throw new Error("И-мэйл эсвэл код буруу байна.");
   }
 
-  const codes = await readJsonFile<AdminCode[]>(ADMIN_CODES_FILE, []);
   const now = Date.now();
-  const match = [...codes]
-    .reverse()
-    .find(
-      (item) =>
-        item.email === email &&
-        item.code === code &&
-        !item.usedAt &&
-        new Date(item.expiresAt).getTime() > now
-    );
+  const match = isSupabaseConfigured()
+    ? await findSupabaseAdminCode(email, code, new Date(now).toISOString())
+    : await findLocalAdminCode(email, code, now);
 
   if (!match) {
     throw new Error("Код буруу эсвэл хугацаа дууссан байна.");
   }
 
-  await writeJsonFile(
-    ADMIN_CODES_FILE,
-    codes.map((item) =>
-      item.email === match.email && item.code === match.code && item.createdAt === match.createdAt
-        ? { ...item, usedAt: new Date(now).toISOString() }
-        : item
-    )
-  );
+  if (isSupabaseConfigured()) {
+    await markSupabaseAdminCodeUsed(match.id, new Date(now).toISOString());
+  } else {
+    assertLocalJsonStoreAllowed();
+    const codes = await readJsonFile<AdminCode[]>(ADMIN_CODES_FILE, []);
+    await writeJsonFile(
+      ADMIN_CODES_FILE,
+      codes.map((item) =>
+        item.email === match.email && item.code === match.code && item.createdAt === match.createdAt
+          ? { ...item, usedAt: new Date(now).toISOString() }
+          : item
+      )
+    );
+  }
 
   return createAdminSession(email);
+}
+
+async function createSupabaseAdminCode(record: AdminCode) {
+  await supabaseRest<AdminCodeRow[]>("/admin_auth_codes", {
+    method: "POST",
+    prefer: "return=representation",
+    body: JSON.stringify({
+      id: record.id,
+      email: record.email,
+      code: record.code,
+      created_at: record.createdAt,
+      expires_at: record.expiresAt,
+      used_at: record.usedAt ?? null,
+    }),
+  });
+}
+
+async function findSupabaseAdminCode(email: string, code: string, now: string) {
+  const [row] = await supabaseRest<AdminCodeRow[]>(
+    `/admin_auth_codes?select=*&email=eq.${encodeURIComponent(email)}&code=eq.${encodeURIComponent(
+      code
+    )}&used_at=is.null&expires_at=gt.${encodeURIComponent(now)}&order=created_at.desc&limit=1`
+  );
+
+  return row ? fromSupabaseAdminCode(row) : null;
+}
+
+async function markSupabaseAdminCodeUsed(id: string, usedAt: string) {
+  await supabaseRest<AdminCodeRow[]>(`/admin_auth_codes?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    prefer: "return=representation",
+    body: JSON.stringify({ used_at: usedAt }),
+  });
+}
+
+async function findLocalAdminCode(email: string, code: string, now: number) {
+  assertLocalJsonStoreAllowed();
+  const codes = await readJsonFile<AdminCode[]>(ADMIN_CODES_FILE, []);
+  return (
+    [...codes]
+      .reverse()
+      .find(
+        (item) =>
+          item.email === email &&
+          item.code === code &&
+          !item.usedAt &&
+          new Date(item.expiresAt).getTime() > now
+      ) ?? null
+  );
+}
+
+function fromSupabaseAdminCode(row: AdminCodeRow): AdminCode {
+  return {
+    id: row.id,
+    email: row.email,
+    code: row.code,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    usedAt: row.used_at ?? undefined,
+  };
 }
 
 export function createAdminSession(email: string) {
@@ -206,8 +287,19 @@ async function readJsonFile<T>(filePath: string, fallback: T) {
 }
 
 async function writeJsonFile<T>(filePath: string, value: T) {
+  assertLocalJsonStoreAllowed();
   await mkdir(DATA_DIR, { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function canUseLocalJsonStore() {
+  return process.env.NODE_ENV !== "production" || process.env.NOMADABE_ALLOW_FILE_STORAGE === "1";
+}
+
+function assertLocalJsonStoreAllowed() {
+  if (!canUseLocalJsonStore()) {
+    throw new Error(getSupabaseConfigurationErrorMessage());
+  }
 }
 
 function isNodeFileError(error: unknown): error is NodeJS.ErrnoException {

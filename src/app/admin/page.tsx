@@ -33,6 +33,8 @@ import {
   deleteTripAction,
   emailLatestInquiryAction,
   logoutAdminAction,
+  refreshAdminAction,
+  saveSiteSettingsAction,
   saveServiceAction,
   saveTripAction,
   sendAdminEmailAction,
@@ -40,6 +42,7 @@ import {
 } from "./actions";
 import { getCustomers } from "@/lib/server/customer-auth";
 import { getEmailLogs } from "@/lib/server/mail";
+import type { SiteSettings } from "@/lib/site-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -56,9 +59,14 @@ const navItems = [
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
+  { label: "Нүүр хуудас", href: "#site-settings", icon: Gauge },
 ];
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({
+  searchParams,
+}: {
+  searchParams?: Promise<{ status?: string }>;
+}) {
   const cookieStore = await cookies();
   const admin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 
@@ -66,7 +74,7 @@ export default async function AdminDashboard() {
     redirect("/admin/login");
   }
 
-  const [{ trips, services, inquiries, bookingStats }, customers, emailLogs] =
+  const [{ trips, services, inquiries, bookingStats, siteSettings }, customers, emailLogs] =
     await Promise.all([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
   const categoryOptions = getCategoryOptions(trips);
   const featuredTrips = trips.filter((trip) => trip.featured);
@@ -78,6 +86,7 @@ export default async function AdminDashboard() {
     .sort((left, right) => String(left.nextDeparture).localeCompare(String(right.nextDeparture)));
   const lastInquiry = inquiries[0]?.createdAt ? formatRelativeDate(inquiries[0].createdAt) : "Идэвх байхгүй";
   const bookedPeople = inquiries.filter((inquiry) => inquiry.tripSlug).length;
+  const statusMessage = (await searchParams)?.status;
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -168,15 +177,19 @@ export default async function AdminDashboard() {
                     Гарах
                   </button>
                 </form>
-                <Link
-                  href="/admin"
-                  className="inline-flex h-10 items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/15"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Шинэчлэх
-                </Link>
+                <form action={refreshAdminAction}>
+                  <button
+                    type="submit"
+                    className="inline-flex h-10 items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/15"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Шинэчлэх
+                  </button>
+                </form>
                 <Link
                   href="/"
+                  target="_blank"
+                  rel="noreferrer"
                   className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--accent)] px-3 text-sm font-semibold text-[var(--accent-foreground)] transition-colors hover:bg-[var(--secondary)]"
                 >
                   Веб харах
@@ -187,13 +200,19 @@ export default async function AdminDashboard() {
           </header>
 
           <div className="space-y-8 px-5 py-6 sm:px-8 lg:px-10">
+            {statusMessage ? (
+              <div className="rounded-md border border-[var(--border)] bg-[var(--accent)] px-4 py-3 text-sm font-black text-[var(--accent-foreground)] shadow-sm">
+                {statusMessage}
+              </div>
+            ) : null}
+
             <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-              <MetricCard icon={Inbox} label="Нийт бүртгэл" value={inquiries.length} detail={lastInquiry} tone="orange" />
-              <MetricCard icon={Users} label="Аяллын хүсэлт" value={bookedPeople} detail="Хөтөлбөртэй холбоотой хүсэлт" tone="green" />
-              <MetricCard icon={UserCheck} label="Хэрэглэгчид" value={customers.length} detail="Баталгаажсан нэвтрэлт" tone="slate" />
-              <MetricCard icon={Plane} label="Хөтөлбөрүүд" value={trips.length} detail={`${featuredTrips.length} онцолсон`} tone="blue" />
-              <MetricCard icon={CalendarDays} label="Явах огноо" value={upcomingDepartures.length} detail="Товлогдсон аяллууд" tone="slate" />
-              <MetricCard icon={Mail} label="Мэйл" value={emailLogs.length} detail="Илгээсэн эсвэл дараалалд" tone="orange" />
+              <MetricCard href="#registrations" icon={Inbox} label="Нийт бүртгэл" value={inquiries.length} detail={lastInquiry} tone="orange" />
+              <MetricCard href="#registrations" icon={Users} label="Аяллын хүсэлт" value={bookedPeople} detail="Хөтөлбөртэй холбоотой хүсэлт" tone="green" />
+              <MetricCard href="#customers" icon={UserCheck} label="Хэрэглэгчид" value={customers.length} detail="Баталгаажсан нэвтрэлт" tone="slate" />
+              <MetricCard href="#programs" icon={Plane} label="Хөтөлбөрүүд" value={trips.length} detail={`${featuredTrips.length} онцолсон`} tone="blue" />
+              <MetricCard href="#programs" icon={CalendarDays} label="Явах огноо" value={upcomingDepartures.length} detail="Товлогдсон аяллууд" tone="slate" />
+              <MetricCard href="#mail-sender" icon={Mail} label="Мэйл" value={emailLogs.length} detail="Илгээсэн эсвэл дараалалд" tone="orange" />
             </section>
 
             <section className="grid gap-6 xl:grid-cols-[1fr_380px]">
@@ -201,9 +220,14 @@ export default async function AdminDashboard() {
                 <SectionHeader eyebrow="Удирдлага" title="Шинэ аяллын хөтөлбөр нэмэх" action="Хэрэглэгчийн веб дээр харагдана" />
                 <TripForm mode="create" categoryOptions={categoryOptions} />
 
-                <section id="mail-sender" className="space-y-4">
+                <section id="mail-sender" className="scroll-mt-6 space-y-4">
                   <SectionHeader eyebrow="Автоматжуулалт" title="Мэйл илгээх" action="Гараар болон автоматаар" />
                   <EmailComposer />
+                </section>
+
+                <section id="site-settings" className="scroll-mt-6 space-y-4">
+                  <SectionHeader eyebrow="Нүүр хуудас" title="Hero тохиргоо" action="Веб дээр шууд ашиглагдана" />
+                  <SiteSettingsForm settings={siteSettings} />
                 </section>
 
                 <SectionHeader eyebrow="Үйлчилгээ" title="Үйлчилгээ удирдах" action={`Нийт ${services.length}`} />
@@ -214,7 +238,7 @@ export default async function AdminDashboard() {
                   ))}
                 </div>
 
-                <section id="programs" className="space-y-4">
+                <section id="programs" className="scroll-mt-6 space-y-4">
                   <SectionHeader eyebrow="Хөтөлбөрүүд" title="Хөтөлбөр засварлах" action={`Нийт ${trips.length}`} />
                   <div className="space-y-4">
                     {trips.map((trip) => (
@@ -306,7 +330,7 @@ export default async function AdminDashboard() {
               </aside>
             </section>
 
-            <section id="registrations" className="space-y-4">
+            <section id="registrations" className="scroll-mt-6 space-y-4">
               <SectionHeader eyebrow="CRM" title="Бүртгүүлсэн хүмүүс" action={`${latestInquiries.length} харагдана`} />
               {latestInquiries.length === 0 ? (
                 <EmptyState />
@@ -369,7 +393,7 @@ export default async function AdminDashboard() {
               )}
             </section>
 
-            <section id="customers" className="space-y-4">
+            <section id="customers" className="scroll-mt-6 space-y-4">
               <SectionHeader eyebrow="Аккаунт" title="Хэрэглэгчийн бүртгэл" action={`${latestCustomers.length} харагдана`} />
               {latestCustomers.length === 0 ? (
                 <div className="rounded-md border border-dashed border-[var(--border)] bg-white p-8 text-center shadow-sm">
@@ -581,6 +605,54 @@ function EmailComposer() {
   );
 }
 
+function SiteSettingsForm({ settings }: { settings: SiteSettings }) {
+  return (
+    <form action={saveSiteSettingsAction} className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TextField label="Hero badge" name="heroBadge" defaultValue={settings.heroBadge} />
+        <TextField label="Accent өнгө" name="accentColor" type="color" defaultValue={settings.accentColor} />
+        <TextareaField
+          label="Hero гарчиг"
+          name="heroTitle"
+          defaultValue={settings.heroTitle}
+          rows={2}
+          className="lg:col-span-2"
+        />
+        <TextareaField
+          label="Hero тайлбар"
+          name="heroSubtitle"
+          defaultValue={settings.heroSubtitle}
+          rows={3}
+          className="lg:col-span-2"
+        />
+        <TextField
+          label="Hero зураг URL"
+          name="heroImage"
+          defaultValue={settings.heroImage}
+          className="lg:col-span-2"
+        />
+        <TextField label="Hero текстийн өнгө" name="heroTextColor" type="color" defaultValue={settings.heroTextColor} />
+        <TextField
+          label="Overlay opacity"
+          name="heroOverlayOpacity"
+          type="number"
+          min="0.2"
+          max="0.9"
+          step="0.05"
+          defaultValue={String(settings.heroOverlayOpacity)}
+        />
+      </div>
+      <button
+        type="submit"
+        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
+      >
+        <Save className="h-4 w-4" />
+        Нүүр хуудас хадгалах
+      </button>
+    </form>
+  );
+}
+
 type CategoryOption = {
   value: string;
   label: string;
@@ -736,11 +808,13 @@ function SelectField({
 }
 
 function MetricCard({
+  href,
   icon: Icon,
   label,
   value,
   detail,
 }: {
+  href: string;
   icon: LucideIcon;
   label: string;
   value: number;
@@ -748,7 +822,11 @@ function MetricCard({
   tone: "orange" | "green" | "blue" | "slate";
 }) {
   return (
-    <div className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm transition-colors hover:border-[var(--accent)]">
+    <a
+      href={href}
+      aria-label={`${label} хэсэг рүү очих`}
+      className="block rounded-md border border-[var(--border)] bg-white p-4 shadow-sm transition-colors hover:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/35"
+    >
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-medium text-[var(--muted-foreground)]">{label}</div>
@@ -759,7 +837,7 @@ function MetricCard({
         </div>
       </div>
       <div className="mt-4 border-t border-[var(--border)] pt-3 text-sm text-[var(--muted-foreground)]">{detail}</div>
-    </div>
+    </a>
   );
 }
 

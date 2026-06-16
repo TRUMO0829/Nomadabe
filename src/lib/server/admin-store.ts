@@ -4,6 +4,11 @@ import path from "node:path";
 import { ADVENTURES, TRAVEL_SERVICES, type Adventure, type TravelService } from "@/lib/adventures";
 import type { SiteSettings } from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
+import {
+  getSupabaseConfigurationErrorMessage,
+  isSupabaseConfigured,
+  supabaseRest,
+} from "@/lib/server/supabase-rest";
 
 export type AdminStore = {
   trips: Adventure[];
@@ -14,6 +19,24 @@ export type AdminStore = {
 export type TripBookingStat = {
   tripSlug: string;
   count: number;
+};
+
+type AdminTripRow = {
+  id: string;
+  slug: string;
+  payload: Adventure;
+  sort_order: number;
+};
+
+type AdminServiceRow = {
+  id: string;
+  payload: TravelService;
+  sort_order: number;
+};
+
+type SiteSettingsRow = {
+  id: string;
+  settings: SiteSettings;
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -32,6 +55,14 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
 };
 
 export async function getAdminStore() {
+  if (isSupabaseConfigured()) {
+    return getSupabaseAdminStore();
+  }
+
+  if (!canUseLocalJsonStore()) {
+    throw new Error(getSupabaseConfigurationErrorMessage());
+  }
+
   try {
     const raw = await readFile(STORE_FILE, "utf8");
     return normalizeStore(JSON.parse(raw) as Partial<AdminStore>);
@@ -45,6 +76,12 @@ export async function getAdminStore() {
 }
 
 export async function saveAdminStore(store: AdminStore) {
+  if (isSupabaseConfigured()) {
+    await saveSupabaseAdminStore(normalizeStore(store));
+    return;
+  }
+
+  assertLocalJsonStoreAllowed();
   await mkdir(DATA_DIR, { recursive: true });
   await writeFile(STORE_FILE, `${JSON.stringify(normalizeStore(store), null, 2)}\n`, "utf8");
 }
@@ -160,6 +197,73 @@ export async function updateSiteSettings(siteSettings: SiteSettings) {
     siteSettings: normalized,
   });
   return normalized;
+}
+
+async function getSupabaseAdminStore() {
+  const [tripRows, serviceRows, settingsRows] = await Promise.all([
+    supabaseRest<AdminTripRow[]>("/admin_trips?select=*&order=sort_order.asc"),
+    supabaseRest<AdminServiceRow[]>("/admin_services?select=*&order=sort_order.asc"),
+    supabaseRest<SiteSettingsRow[]>("/site_settings?select=*&id=eq.default&limit=1"),
+  ]);
+
+  return normalizeStore({
+    trips: tripRows.map((row) => row.payload),
+    services: serviceRows.map((row) => row.payload),
+    siteSettings: settingsRows[0]?.settings,
+  });
+}
+
+async function saveSupabaseAdminStore(store: AdminStore) {
+  await Promise.all([
+    supabaseRest<null>("/admin_trips?id=not.is.null", { method: "DELETE" }),
+    supabaseRest<null>("/admin_services?id=not.is.null", { method: "DELETE" }),
+    upsertSupabaseSiteSettings(store.siteSettings),
+  ]);
+
+  await Promise.all([
+    store.trips.length > 0
+      ? supabaseRest<AdminTripRow[]>("/admin_trips", {
+          method: "POST",
+          prefer: "return=representation",
+          body: JSON.stringify(store.trips.map(toSupabaseTripRow)),
+        })
+      : Promise.resolve([]),
+    store.services.length > 0
+      ? supabaseRest<AdminServiceRow[]>("/admin_services", {
+          method: "POST",
+          prefer: "return=representation",
+          body: JSON.stringify(store.services.map(toSupabaseServiceRow)),
+        })
+      : Promise.resolve([]),
+  ]);
+}
+
+async function upsertSupabaseSiteSettings(siteSettings: SiteSettings) {
+  await supabaseRest<SiteSettingsRow[]>("/site_settings", {
+    method: "POST",
+    prefer: "resolution=merge-duplicates,return=representation",
+    body: JSON.stringify({
+      id: "default",
+      settings: siteSettings,
+    }),
+  });
+}
+
+function toSupabaseTripRow(trip: Adventure, index: number) {
+  return {
+    id: trip.id,
+    slug: trip.slug,
+    payload: trip,
+    sort_order: index,
+  };
+}
+
+function toSupabaseServiceRow(service: TravelService, index: number) {
+  return {
+    id: service.id,
+    payload: service,
+    sort_order: index,
+  };
 }
 
 export function getBookingCount(bookingStats: TripBookingStat[], slug: string) {
@@ -374,6 +478,16 @@ function stringifyPayloadValue(value: unknown) {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function canUseLocalJsonStore() {
+  return process.env.NODE_ENV !== "production" || process.env.NOMADABE_ALLOW_FILE_STORAGE === "1";
+}
+
+function assertLocalJsonStoreAllowed() {
+  if (!canUseLocalJsonStore()) {
+    throw new Error(getSupabaseConfigurationErrorMessage());
+  }
 }
 
 function isNodeFileError(error: unknown): error is NodeJS.ErrnoException {

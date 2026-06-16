@@ -19,6 +19,7 @@ export async function saveTripAction(formData: FormData) {
   await upsertTripFromForm(formData);
   revalidatePath("/");
   revalidatePath("/admin");
+  redirectWithStatus("Хөтөлбөр хадгалагдлаа.");
 }
 
 export async function deleteTripAction(formData: FormData) {
@@ -31,6 +32,7 @@ export async function deleteTripAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin");
+  redirectWithStatus("Хөтөлбөр устгагдлаа.");
 }
 
 export async function saveSiteSettingsAction(formData: FormData) {
@@ -38,6 +40,7 @@ export async function saveSiteSettingsAction(formData: FormData) {
   await updateSiteSettingsFromForm(formData);
   revalidatePath("/");
   revalidatePath("/admin");
+  redirectWithStatus("Нүүр хуудасны тохиргоо хадгалагдлаа.");
 }
 
 export async function saveServiceAction(formData: FormData) {
@@ -46,6 +49,7 @@ export async function saveServiceAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/api/services");
+  redirectWithStatus("Үйлчилгээ хадгалагдлаа.");
 }
 
 export async function deleteServiceAction(formData: FormData) {
@@ -59,6 +63,7 @@ export async function deleteServiceAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/api/services");
+  redirectWithStatus("Үйлчилгээ устгагдлаа.");
 }
 
 export async function updateInquiryStatusAction(formData: FormData) {
@@ -80,12 +85,14 @@ export async function updateInquiryStatusAction(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/api/inquiries");
+  redirectWithStatus("Бүртгэлийн төлөв шинэчлэгдлээ.");
 }
 
 export async function sendAdminEmailAction(formData: FormData) {
   await assertAdminAction();
   await sendEmailFromForm(formData);
   revalidatePath("/admin");
+  redirectWithStatus("Мэйл илгээх хүсэлт боловсруулагдлаа.");
 }
 
 export async function emailLatestInquiryAction(formData: FormData) {
@@ -110,6 +117,7 @@ export async function emailLatestInquiryAction(formData: FormData) {
   }
 
   revalidatePath("/admin");
+  redirectWithStatus("Сүүлийн бүртгэл рүү хурдан хариу илгээгдлээ.");
 }
 
 export async function logoutAdminAction() {
@@ -123,6 +131,14 @@ export async function logoutAdminAction() {
   redirect("/admin/login");
 }
 
+export async function refreshAdminAction() {
+  await assertAdminAction();
+  revalidatePath("/admin");
+  revalidatePath("/api/admin/dashboard");
+  revalidatePath("/api/admin/inquiries");
+  redirectWithStatus("Админ самбар шинэчлэгдлээ.");
+}
+
 async function assertAdminAction() {
   const cookieStore = await cookies();
   const admin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
@@ -130,4 +146,8 @@ async function assertAdminAction() {
   if (!admin) {
     redirect("/admin/login");
   }
+}
+
+function redirectWithStatus(message: string) {
+  redirect(`/admin?status=${encodeURIComponent(message)}`);
 }
