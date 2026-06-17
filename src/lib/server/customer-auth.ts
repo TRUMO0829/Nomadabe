@@ -28,6 +28,15 @@ type AuthCode = {
   usedAt?: string;
 };
 
+type PasswordResetCode = {
+  id: string;
+  email: string;
+  code: string;
+  expiresAt: string;
+  createdAt: string;
+  usedAt?: string;
+};
+
 type CustomerSession = {
   token: string;
   customerId: string;
@@ -40,6 +49,7 @@ export const CUSTOMER_SESSION_COOKIE = "nomadabe_customer_session";
 const DATA_DIR = path.join(process.cwd(), "data");
 const CUSTOMERS_FILE = path.join(DATA_DIR, "customers.json");
 const AUTH_CODES_FILE = path.join(DATA_DIR, "auth-codes.json");
+const PASSWORD_RESET_CODES_FILE = path.join(DATA_DIR, "password-reset-codes.json");
 const SESSIONS_FILE = path.join(DATA_DIR, "customer-sessions.json");
 const CODE_TTL_MS = 10 * 60 * 1000;
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -200,6 +210,122 @@ export async function loginCustomerWithPassword(payload: {
   }
 
   assertLocalJsonStoreAllowed();
+  const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
+  const customer = customers.find((item) => item.email === email);
+
+  if (!customer) {
+    throw new Error("Энэ и-мэйлээр бүртгэл олдсонгүй.");
+  }
+
+  return { customer, session: await createLocalSession(customer.id) };
+}
+
+export async function requestCustomerPasswordReset(emailValue: unknown) {
+  const email = normalizeIdentifier(emailValue);
+
+  if (!isValidIdentifier(email)) {
+    throw new Error("Зөв и-мэйл хаяг оруулна уу.");
+  }
+
+  const now = new Date();
+  const record: PasswordResetCode = {
+    id: randomUUID(),
+    email,
+    code: String(randomInt(100000, 1000000)),
+    createdAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + CODE_TTL_MS).toISOString(),
+  };
+
+  if (isSupabaseConfigured()) {
+    const profile = await findSupabaseProfileByEmail(email);
+
+    if (!profile) {
+      return {
+        email,
+        expiresAt: record.expiresAt,
+        devCode: undefined,
+      };
+    }
+
+    await createSupabasePasswordResetCode(record);
+  } else {
+    assertLocalJsonStoreAllowed();
+    const codes = await readJsonFile<PasswordResetCode[]>(PASSWORD_RESET_CODES_FILE, []);
+    await writeJsonFile(PASSWORD_RESET_CODES_FILE, [...codes, record].slice(-100));
+  }
+
+  await sendEmail({
+    to: email,
+    subject: "Nomadabe нууц үг сэргээх код",
+    body: `Таны Nomadabe Travel нууц үг сэргээх код: ${record.code}. Энэ код 10 минутын дараа хүчингүй болно.`,
+  });
+
+  return {
+    email,
+    expiresAt: record.expiresAt,
+    devCode: process.env.NODE_ENV === "production" ? undefined : record.code,
+  };
+}
+
+export async function resetCustomerPassword(payload: {
+  email?: unknown;
+  code?: unknown;
+  password?: unknown;
+}) {
+  const email = normalizeIdentifier(payload.email);
+  const code = typeof payload.code === "string" ? payload.code.trim() : "";
+  const password = typeof payload.password === "string" ? payload.password : "";
+
+  if (!isValidIdentifier(email) || !/^\d{6}$/.test(code)) {
+    throw new Error("И-мэйл болон 6 оронтой кодоо зөв оруулна уу.");
+  }
+
+  if (password.length < 8) {
+    throw new Error("Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой.");
+  }
+
+  const now = new Date().toISOString();
+  const match = isSupabaseConfigured()
+    ? await findSupabasePasswordResetCode(email, code, now)
+    : await findLocalPasswordResetCode(email, code, Date.now());
+
+  if (!match) {
+    throw new Error("Код буруу эсвэл хугацаа дууссан байна.");
+  }
+
+  if (isSupabaseConfigured()) {
+    const profile = await findSupabaseProfileByEmail(email);
+
+    if (!profile) {
+      throw new Error("Энэ и-мэйлээр бүртгэл олдсонгүй.");
+    }
+
+    await updateSupabaseUserPassword(profile.id, password);
+    await markSupabasePasswordResetCodeUsed(match.id, now);
+    const authSession = await signInSupabaseWithPassword({ email, password });
+
+    return {
+      customer: fromSupabaseProfile(profile),
+      session: {
+        token: authSession.access_token,
+        customerId: profile.id,
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + authSession.expires_in * 1000).toISOString(),
+      },
+    };
+  }
+
+  assertLocalJsonStoreAllowed();
+  const codes = await readJsonFile<PasswordResetCode[]>(PASSWORD_RESET_CODES_FILE, []);
+  await writeJsonFile(
+    PASSWORD_RESET_CODES_FILE,
+    codes.map((item) =>
+      item.email === match.email && item.code === match.code && item.createdAt === match.createdAt
+        ? { ...item, usedAt: now }
+        : item
+    )
+  );
+
   const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
   const customer = customers.find((item) => item.email === email);
 
@@ -450,6 +576,15 @@ type SupabaseAdminCreateUserResponse = {
   user_metadata?: Record<string, unknown>;
 };
 
+type PasswordResetCodeRow = {
+  id: string;
+  email: string;
+  code: string;
+  created_at: string;
+  expires_at: string;
+  used_at: string | null;
+};
+
 async function createConfirmedSupabaseUser({
   email,
   password,
@@ -547,6 +682,100 @@ async function getSupabaseUser(token: string) {
   }
 
   return (await response.json()) as SupabaseAuthUser;
+}
+
+async function findSupabaseProfileByEmail(email: string) {
+  const [profile] = await supabaseRest<SupabaseProfile[]>(
+    `/profiles?select=*&email=eq.${encodeURIComponent(email)}&limit=1`
+  );
+
+  return profile ? profile : null;
+}
+
+async function createSupabasePasswordResetCode(record: PasswordResetCode) {
+  await supabaseRest<PasswordResetCodeRow[]>("/password_reset_codes", {
+    method: "POST",
+    prefer: "return=representation",
+    body: JSON.stringify({
+      id: record.id,
+      email: record.email,
+      code: record.code,
+      created_at: record.createdAt,
+      expires_at: record.expiresAt,
+      used_at: record.usedAt ?? null,
+    }),
+  });
+}
+
+async function findSupabasePasswordResetCode(email: string, code: string, now: string) {
+  const [row] = await supabaseRest<PasswordResetCodeRow[]>(
+    `/password_reset_codes?select=*&email=eq.${encodeURIComponent(email)}&code=eq.${encodeURIComponent(
+      code
+    )}&used_at=is.null&expires_at=gt.${encodeURIComponent(now)}&order=created_at.desc&limit=1`
+  );
+
+  return row ? fromSupabasePasswordResetCode(row) : null;
+}
+
+async function markSupabasePasswordResetCodeUsed(id: string, usedAt: string) {
+  await supabaseRest<PasswordResetCodeRow[]>(
+    `/password_reset_codes?id=eq.${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: JSON.stringify({ used_at: usedAt }),
+    }
+  );
+}
+
+async function updateSupabaseUserPassword(userId: string, password: string) {
+  const supabaseUrl = getSupabaseUrl();
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? process.env.SUPABASE_SERVICE_KEY?.trim() ?? "";
+
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error("Нууц үг сэргээх үйлчилгээ тохируулагдаагүй байна.");
+  }
+
+  const response = await fetch(`${supabaseUrl}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
+    method: "PUT",
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await getSupabaseError(response));
+  }
+}
+
+async function findLocalPasswordResetCode(email: string, code: string, now: number) {
+  assertLocalJsonStoreAllowed();
+  const codes = await readJsonFile<PasswordResetCode[]>(PASSWORD_RESET_CODES_FILE, []);
+  return (
+    [...codes]
+      .reverse()
+      .find(
+        (item) =>
+          item.email === email &&
+          item.code === code &&
+          !item.usedAt &&
+          new Date(item.expiresAt).getTime() > now
+      ) ?? null
+  );
+}
+
+function fromSupabasePasswordResetCode(row: PasswordResetCodeRow): PasswordResetCode {
+  return {
+    id: row.id,
+    email: row.email,
+    code: row.code,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    usedAt: row.used_at ?? undefined,
+  };
 }
 
 async function upsertSupabaseProfile({
