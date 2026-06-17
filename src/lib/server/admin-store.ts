@@ -1,7 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { ADVENTURES, TRAVEL_SERVICES, type Adventure, type TravelService } from "@/lib/adventures";
+import {
+  ADVENTURES,
+  TRAVEL_SERVICES,
+  type Adventure,
+  type AdventureTranslation,
+  type AdventureTranslations,
+  type TravelService,
+} from "@/lib/adventures";
+import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import type { SiteSettings } from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
 import {
@@ -413,8 +421,55 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
     featured: fields.has?.("featured")
       ? ["true", "on", "1", "yes"].includes(fields.get("featured").toLowerCase())
       : existing?.featured ?? false,
-    translations: existing?.translations,
+    translations: parseTranslationsFromFields(fields, existing?.translations),
   } satisfies Adventure;
+}
+
+function parseTranslationsFromFields(
+  fields: FieldReader,
+  existing?: AdventureTranslations
+): AdventureTranslations | undefined {
+  const translations: AdventureTranslations = { ...(existing ?? {}) };
+
+  for (const language of LANGUAGES) {
+    const locale = language.code;
+
+    if (locale === "mn") {
+      continue;
+    }
+
+    const translation: AdventureTranslation = {
+      ...translations[locale],
+      title: fields.get(translationFieldName(locale, "title")) || undefined,
+      location: fields.get(translationFieldName(locale, "location")) || undefined,
+      country: fields.get(translationFieldName(locale, "country")) || undefined,
+      groupSize: fields.get(translationFieldName(locale, "groupSize")) || undefined,
+      difficulty: fields.get(translationFieldName(locale, "difficulty")) || undefined,
+      tags: getOptionalListFromString(fields.get(translationFieldName(locale, "tags"))),
+      summary: fields.get(translationFieldName(locale, "summary")) || undefined,
+      idealFor: getOptionalListFromString(fields.get(translationFieldName(locale, "idealFor"))),
+      includes: getOptionalListFromString(fields.get(translationFieldName(locale, "includes"))),
+      businessSupport: getOptionalListFromString(
+        fields.get(translationFieldName(locale, "businessSupport"))
+      ),
+    };
+
+    translations[locale] = cleanTranslation(translation);
+  }
+
+  return Object.keys(translations).length > 0 ? translations : undefined;
+}
+
+function cleanTranslation(translation: AdventureTranslation) {
+  return Object.fromEntries(
+    Object.entries(translation).filter(([, value]) =>
+      Array.isArray(value) ? value.length > 0 : Boolean(value)
+    )
+  ) as AdventureTranslation;
+}
+
+function translationFieldName(locale: CopyLocale, key: keyof AdventureTranslation) {
+  return `translation_${locale}_${key}`;
 }
 
 function parseServiceFromFields(fields: FieldReader) {
@@ -464,6 +519,10 @@ function getListFromString(value: string, fallback: string[]) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function getOptionalListFromString(value: string) {
+  return value ? getListFromString(value, []) : undefined;
 }
 
 function getDifficulty(value: string): Adventure["difficulty"] {
