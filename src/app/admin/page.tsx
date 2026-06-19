@@ -22,7 +22,8 @@ import {
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { Adventure, TravelService } from "@/lib/adventures";
+import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adventures";
+import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
   getAdminDashboardData,
@@ -59,6 +60,11 @@ const navItems = [
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
 ];
+
+const translationLanguages = LANGUAGES.filter(
+  (language): language is typeof language & { code: Exclude<CopyLocale, "mn"> } =>
+    language.code !== "mn"
+);
 
 export default async function AdminDashboard({
   searchParams,
@@ -672,6 +678,26 @@ function TripForm({
         <TextareaField label="Багцад багтах зүйлс / comma-аар" name="includes" defaultValue={trip?.includes.join(", ")} rows={2} />
         <TextareaField label="Бизнес / expo нэмэлт дэмжлэг" name="businessSupport" defaultValue={trip?.businessSupport.join(", ")} rows={2} />
       </div>
+
+      <div className="mt-5 space-y-3">
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-[0.12em] text-[var(--primary)]">
+            Орчуулга хянах
+          </h3>
+          <p className="mt-1 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+            Автомат орчуулга энд харагдана. Та засаж хадгалбал дараагийн автомат орчуулга тухайн засварыг дарж бичихгүй.
+          </p>
+        </div>
+        {translationLanguages.map((language) => (
+          <TranslationEditor
+            key={language.code}
+            locale={language.code}
+            label={language.label}
+            translation={trip?.translations?.[language.code]}
+          />
+        ))}
+      </div>
+
       <label className="mt-4 flex w-fit items-center gap-2 text-sm font-semibold text-[var(--primary)]">
         <input type="checkbox" name="featured" defaultChecked={trip?.featured ?? false} className="h-4 w-4 accent-[var(--accent)]" />
         Веб дээр онцлох
@@ -690,6 +716,90 @@ function TripForm({
       </div>
     </form>
   );
+}
+
+function TranslationEditor({
+  locale,
+  label,
+  translation,
+}: {
+  locale: Exclude<CopyLocale, "mn">;
+  label: string;
+  translation?: AdventureTranslation;
+}) {
+  return (
+    <details className="rounded-md border border-[var(--border)] bg-white shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
+        <span className="text-sm font-black text-[var(--primary)]">
+          {label} ({locale.toUpperCase()})
+        </span>
+        <span className="text-xs font-semibold text-[var(--muted-foreground)]">
+          Засах
+        </span>
+      </summary>
+      <div className="grid gap-4 border-t border-[var(--border)] p-4 lg:grid-cols-3">
+        <TextField
+          label="Гарчиг"
+          name={translationFieldName(locale, "title")}
+          defaultValue={translation?.title}
+        />
+        <TextField
+          label="Байршил / хот"
+          name={translationFieldName(locale, "location")}
+          defaultValue={translation?.location}
+        />
+        <TextField
+          label="Улс"
+          name={translationFieldName(locale, "country")}
+          defaultValue={translation?.country}
+        />
+        <TextField
+          label="Групп"
+          name={translationFieldName(locale, "groupSize")}
+          defaultValue={translation?.groupSize}
+        />
+        <TextField
+          label="Түвшин"
+          name={translationFieldName(locale, "difficulty")}
+          defaultValue={translation?.difficulty}
+        />
+        <TextField
+          label="Тагууд / comma-аар"
+          name={translationFieldName(locale, "tags")}
+          defaultValue={translation?.tags?.join(", ")}
+        />
+        <TextareaField
+          label="Товч тайлбар"
+          name={translationFieldName(locale, "summary")}
+          defaultValue={translation?.summary}
+          rows={3}
+          className="lg:col-span-3"
+        />
+        <TextareaField
+          label="Хэнд тохиромжтой / comma-аар"
+          name={translationFieldName(locale, "idealFor")}
+          defaultValue={translation?.idealFor?.join(", ")}
+          rows={2}
+        />
+        <TextareaField
+          label="Багцад багтах зүйлс / comma-аар"
+          name={translationFieldName(locale, "includes")}
+          defaultValue={translation?.includes?.join(", ")}
+          rows={2}
+        />
+        <TextareaField
+          label="Бизнес / expo дэмжлэг"
+          name={translationFieldName(locale, "businessSupport")}
+          defaultValue={translation?.businessSupport?.join(", ")}
+          rows={2}
+        />
+      </div>
+    </details>
+  );
+}
+
+function translationFieldName(locale: Exclude<CopyLocale, "mn">, key: keyof AdventureTranslation) {
+  return `translation_${locale}_${key}`;
 }
 
 function getCategoryOptions(trips: Adventure[]): CategoryOption[] {

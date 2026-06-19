@@ -18,6 +18,14 @@ const COPY = {
     password: "Нууц үг",
     submitLogin: "Нэвтрэх",
     submitRegister: "Бүртгүүлэх",
+    forgotPassword: "Нууц үгээ мартсан уу?",
+    backToLogin: "Нэвтрэх хэсэг рүү буцах",
+    resetCode: "6 оронтой код",
+    newPassword: "Шинэ нууц үг",
+    sendResetCode: "Сэргээх код илгээх",
+    submitReset: "Нууц үг шинэчлэх",
+    resetSent: "Сэргээх код таны и-мэйл рүү илгээгдлээ.",
+    resetDone: "Нууц үг шинэчлэгдлээ. Та нэвтэрсэн байна.",
     guest: "Зочиноор үргэлжлүүлэх",
     close: "Хаах",
     optional: "Заавал бүртгүүлэх шаардлагагүй.",
@@ -37,6 +45,14 @@ const COPY = {
     password: "Password",
     submitLogin: "Sign in",
     submitRegister: "Register",
+    forgotPassword: "Forgot password?",
+    backToLogin: "Back to sign in",
+    resetCode: "6-digit code",
+    newPassword: "New password",
+    sendResetCode: "Send reset code",
+    submitReset: "Reset password",
+    resetSent: "A reset code has been sent to your email.",
+    resetDone: "Your password has been updated. You are signed in.",
     guest: "Continue as guest",
     close: "Close",
     optional: "Registration is optional.",
@@ -56,6 +72,14 @@ const COPY = {
     password: "密码",
     submitLogin: "登录",
     submitRegister: "注册",
+    forgotPassword: "忘记密码？",
+    backToLogin: "返回登录",
+    resetCode: "6位验证码",
+    newPassword: "新密码",
+    sendResetCode: "发送重置验证码",
+    submitReset: "重置密码",
+    resetSent: "重置验证码已发送到您的邮箱。",
+    resetDone: "密码已更新，您已登录。",
     guest: "以访客身份继续",
     close: "关闭",
     optional: "注册不是必需的。",
@@ -75,6 +99,14 @@ const COPY = {
     password: "パスワード",
     submitLogin: "ログイン",
     submitRegister: "登録",
+    forgotPassword: "パスワードをお忘れですか？",
+    backToLogin: "ログインに戻る",
+    resetCode: "6桁コード",
+    newPassword: "新しいパスワード",
+    sendResetCode: "再設定コードを送信",
+    submitReset: "パスワードを再設定",
+    resetSent: "再設定コードをメールに送信しました。",
+    resetDone: "パスワードを更新しました。ログイン済みです。",
     guest: "ゲストとして続ける",
     close: "閉じる",
     optional: "登録は必須ではありません。",
@@ -94,6 +126,14 @@ const COPY = {
     password: "비밀번호",
     submitLogin: "로그인",
     submitRegister: "회원가입",
+    forgotPassword: "비밀번호를 잊으셨나요?",
+    backToLogin: "로그인으로 돌아가기",
+    resetCode: "6자리 코드",
+    newPassword: "새 비밀번호",
+    sendResetCode: "재설정 코드 보내기",
+    submitReset: "비밀번호 재설정",
+    resetSent: "재설정 코드를 이메일로 보냈습니다.",
+    resetDone: "비밀번호가 변경되었습니다. 로그인되었습니다.",
     guest: "게스트로 계속하기",
     close: "닫기",
     optional: "가입은 필수가 아닙니다.",
@@ -115,7 +155,9 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "reset">("login");
+  const [resetStep, setResetStep] = useState<"request" | "confirm">("request");
+  const [resetEmail, setResetEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -154,8 +196,52 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
+    const code = String(formData.get("code") ?? "").trim();
 
     try {
+      if (mode === "reset") {
+        if (resetStep === "request") {
+          const response = await fetch("/api/auth/password-reset/request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          const result = (await response.json()) as {
+            ok?: boolean;
+            error?: { message?: string };
+          };
+
+          if (!response.ok || !result.ok) {
+            throw new Error(result.error?.message ?? copy.error);
+          }
+
+          setResetEmail(email);
+          setResetStep("confirm");
+          setSubmitted(false);
+          setMessage(copy.resetSent);
+          return;
+        }
+
+        const response = await fetch("/api/auth/password-reset/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: resetEmail || email, code, password }),
+        });
+        const result = (await response.json()) as {
+          ok?: boolean;
+          error?: { message?: string };
+        };
+
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error?.message ?? copy.error);
+        }
+
+        window.dispatchEvent(new Event("nomadabe:auth-changed"));
+        setSubmitted(true);
+        setMessage(copy.resetDone);
+        return;
+      }
+
       const response = await fetch(mode === "register" ? "/api/auth/register" : "/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -241,6 +327,8 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                     type="button"
                     onClick={() => {
                       setMode(item.key as "login" | "register");
+                      setResetStep("request");
+                      setResetEmail("");
                       setSubmitted(false);
                       setMessage("");
                     }}
@@ -270,30 +358,72 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                 <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
                   <Mail className="h-4 w-4 text-accent" />
                   <input
+                    key={`${mode}-${resetStep}-${resetEmail}`}
                     name="email"
                     type="email"
+                    defaultValue={mode === "reset" && resetStep === "confirm" ? resetEmail : undefined}
+                    readOnly={mode === "reset" && resetStep === "confirm"}
+                    required
                     placeholder={copy.email}
                     className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                   />
                 </label>
-                <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
-                  <LockKeyhole className="h-4 w-4 text-accent" />
-                  <input
-                    name="password"
-                    type="password"
-                    placeholder={copy.password}
-                    className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                  />
-                </label>
+                {mode === "reset" && resetStep === "confirm" && (
+                  <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
+                    <Mail className="h-4 w-4 text-accent" />
+                    <input
+                      name="code"
+                      inputMode="numeric"
+                      pattern="[0-9]{6}"
+                      required
+                      placeholder={copy.resetCode}
+                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    />
+                  </label>
+                )}
+                {(mode !== "reset" || resetStep === "confirm") && (
+                  <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
+                    <LockKeyhole className="h-4 w-4 text-accent" />
+                    <input
+                      name="password"
+                      type="password"
+                      required
+                      placeholder={mode === "reset" ? copy.newPassword : copy.password}
+                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    />
+                  </label>
+                )}
 
                 <button
                   disabled={loading}
                   className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-5 py-3.5 text-sm font-bold text-accent-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {loading ? "..." : mode === "login" ? copy.submitLogin : copy.submitRegister}
+                  {loading
+                    ? "..."
+                    : mode === "reset"
+                      ? resetStep === "request"
+                        ? copy.sendResetCode
+                        : copy.submitReset
+                      : mode === "login"
+                        ? copy.submitLogin
+                        : copy.submitRegister}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </form>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMode(mode === "reset" ? "login" : "reset");
+                  setResetStep("request");
+                  setResetEmail("");
+                  setSubmitted(false);
+                  setMessage("");
+                }}
+                className="mt-3 w-full text-center text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {mode === "reset" ? copy.backToLogin : copy.forgotPassword}
+              </button>
 
               <button
                 type="button"

@@ -32,7 +32,11 @@ export async function translateAdventure(input: Adventure): Promise<Adventure> {
   };
 
   for (const locale of TARGET_LOCALES) {
-    translations[locale] = await translateAdventureToLocale(input, locale);
+    translations[locale] = await translateAdventureToLocale(
+      input,
+      locale,
+      existingTranslations[locale]
+    );
   }
 
   return {
@@ -47,19 +51,26 @@ export function isTripTranslationConfigured() {
 
 async function translateAdventureToLocale(
   adventure: Adventure,
-  locale: Exclude<CopyLocale, "mn">
+  locale: Exclude<CopyLocale, "mn">,
+  existing?: AdventureTranslation
 ): Promise<AdventureTranslation> {
   return {
-    title: await translateText(adventure.title, locale),
-    location: await translateText(adventure.location, locale),
-    country: await translateText(adventure.country, locale),
-    groupSize: await translateText(adventure.groupSize, locale),
-    difficulty: await translateText(adventure.difficulty, locale),
-    tags: await translateList(adventure.tags, locale),
-    summary: await translateText(adventure.summary, locale),
-    idealFor: await translateList(adventure.idealFor, locale),
-    includes: await translateList(adventure.includes, locale),
-    businessSupport: await translateList(adventure.businessSupport, locale),
+    title: existing?.title || (await translateText(adventure.title, locale)),
+    location: existing?.location || (await translateText(adventure.location, locale)),
+    country: existing?.country || (await translateText(adventure.country, locale)),
+    groupSize: existing?.groupSize || (await translateText(adventure.groupSize, locale)),
+    difficulty: existing?.difficulty || (await translateText(adventure.difficulty, locale)),
+    tags: existing?.tags?.length ? existing.tags : await translateList(adventure.tags, locale),
+    summary: existing?.summary || (await translateText(adventure.summary, locale)),
+    idealFor: existing?.idealFor?.length
+      ? existing.idealFor
+      : await translateList(adventure.idealFor, locale),
+    includes: existing?.includes?.length
+      ? existing.includes
+      : await translateList(adventure.includes, locale),
+    businessSupport: existing?.businessSupport?.length
+      ? existing.businessSupport
+      : await translateList(adventure.businessSupport, locale),
   };
 }
 
