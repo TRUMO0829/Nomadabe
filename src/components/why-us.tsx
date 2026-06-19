@@ -135,11 +135,9 @@ export function WhyUs() {
   return (
     <section
       id="about"
-      className="relative overflow-hidden border-y border-[#d8bb72]/25 bg-[#fffdf3] py-20 text-[#11100b] lg:py-28"
+      className="relative overflow-hidden bg-white py-20 text-[#11100b] lg:py-28"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_52%_10%,rgba(216,187,114,0.18),transparent_30%),linear-gradient(180deg,rgba(255,248,234,0.96),rgba(255,253,243,0.88)_55%,rgba(255,248,234,0.98))]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.18] [background-image:radial-gradient(circle_at_1px_1px,rgba(17,16,11,0.16)_1px,transparent_0)] [background-size:20px_20px]" />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-24 w-px bg-gradient-to-b from-[#d8bb72]/70 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(circle_at_1px_1px,rgba(17,16,11,0.16)_1px,transparent_0)] [background-size:22px_22px]" />
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
         <motion.div
           initial={{ opacity: 0, y: 28 }}
@@ -154,10 +152,10 @@ export function WhyUs() {
             </p>
             <h2
               data-plane-landing
-              className="max-w-3xl text-balance font-display text-4xl font-semibold leading-tight text-[#11100b] sm:text-5xl lg:text-6xl"
+              className="max-w-3xl text-balance font-display text-3xl font-semibold leading-tight text-[#11100b] sm:text-4xl lg:text-5xl"
             >
               {t.why.titleStart}{" "}
-              <span className="text-[#d8bb72]">
+              <span className="inline-block text-[#11100b]">
                 {t.why.titleEmphasis}
               </span>{" "}
               {t.why.titleEnd}
@@ -174,12 +172,12 @@ export function WhyUs() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.5 }}
-            className="rounded-lg border border-accent bg-accent p-6 text-accent-foreground shadow-[0_22px_56px_rgba(17,16,11,0.14)] lg:p-8"
+            className="rounded-lg border border-[#eadfac] bg-white p-6 text-[#11100b] shadow-[0_18px_46px_rgba(17,16,11,0.08)] lg:p-8"
           >
-            <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-md bg-[#fff8ea] text-[#11100b] shadow-sm">
+            <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-md bg-[#ffd400] text-[#11100b] shadow-sm">
               <PlaneTakeoff className="h-7 w-7" />
             </div>
-            <p className="text-xs font-black uppercase tracking-[0.24em]">
+            <p className="text-xs font-black uppercase text-[#8f7020]">
               {copy.label}
             </p>
             <h3 className="mt-4 text-balance font-display text-3xl leading-tight lg:text-4xl">

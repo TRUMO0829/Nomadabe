@@ -239,7 +239,7 @@ export function JourneyPlaneController() {
         <span className="absolute left-9 top-[47%] h-1 w-40 -translate-x-full rounded-full bg-gradient-to-l from-white/54 via-white/20 to-transparent blur-[1px]" />
         <span className="absolute left-9 top-[59%] h-0.5 w-28 -translate-x-full rounded-full bg-gradient-to-l from-white/40 via-white/16 to-transparent blur-[1px]" />
         <Image
-          src="/featured-plane-real.png"
+          src="/featured-plane-real.webp"
           alt=""
           fill
           sizes="340px"

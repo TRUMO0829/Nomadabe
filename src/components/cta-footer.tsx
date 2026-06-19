@@ -3,6 +3,7 @@
 import type { FormEvent, InputHTMLAttributes } from "react";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
 import { useLanguage } from "./language-provider";
@@ -302,7 +303,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             className="absolute inset-0 bg-cover bg-center opacity-30"
             style={{
               backgroundImage:
-                "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2000&q=80&auto=format&fit=crop')",
+                "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2000&q=80&fit=crop&fm=webp')",
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/85 to-primary/60" />
@@ -441,8 +442,17 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               <Link href="/#home" className="inline-flex items-center gap-3">
                 <span
                   aria-hidden="true"
-                  className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-accent/30 bg-accent/5 bg-[url('/nomadabe-mark-transparent.png')] bg-center bg-no-repeat [background-size:175%] [background-position:center_35%]"
-                />
+                  className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-accent/30 bg-accent/5 p-2"
+                >
+                  <Image
+                    src="/nomadabe-logo-cropped.webp"
+                    alt=""
+                    width={574}
+                    height={615}
+                    sizes="64px"
+                    className="h-full w-auto object-contain"
+                  />
+                </span>
                 <span>
                   <span className="block text-2xl font-black uppercase tracking-wide text-accent">
                     Nomadabe
@@ -549,18 +559,18 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             <div className="pointer-events-none absolute left-1/2 top-12 -translate-x-1/2 -translate-y-1/2 opacity-90">
               <div className="relative h-20 w-20 sm:h-24 sm:w-24">
                 <img
-                  src="/oyu-intelligence-logo.png"
+                  src="/oyu-intelligence-logo.webp"
                   alt="OYU Intelligence"
                   className="absolute inset-0 h-full w-full object-contain"
                 />
                 <img
-                  src="/oyu-intelligence-logo.png"
+                  src="/oyu-intelligence-logo.webp"
                   alt=""
                   aria-hidden="true"
                   className="absolute inset-0 h-full w-full object-contain brightness-0 invert [clip-path:inset(32%_9%_38%_38%)]"
                 />
                 <img
-                  src="/oyu-intelligence-logo.png"
+                  src="/oyu-intelligence-logo.webp"
                   alt=""
                   aria-hidden="true"
                   className="absolute inset-0 h-full w-full object-contain brightness-0 invert [clip-path:inset(62%_12%_25%_14%)]"

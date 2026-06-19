@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type CSSProperties,
   type FormEvent,
   type ReactNode,
   useEffect,
@@ -8,7 +9,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { motion } from "framer-motion";
+import {
+  motion,
+  type MotionValue,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import {
   ArrowRight,
   CalendarDays,
@@ -39,10 +45,10 @@ type FeaturedAdventuresProps = {
 };
 
 const TOURS_BACKGROUNDS = [
-  "/nomadabe-hero-panorama.png",
-  "/hero-winter.jpg",
-  "/hero-spring.jpg",
-  "/hero-autumn.jpg",
+  "/nomadabe-hero-panorama.webp",
+  "/hero-winter.webp",
+  "/hero-spring.webp",
+  "/hero-autumn.webp",
 ];
 
 function compareTripPrice(
@@ -117,6 +123,98 @@ function getOutboundOptionCountry(
 function parseMntPrice(price: string) {
   const numericPrice = Number(price.replace(/[^\d]/g, ""));
   return Number.isFinite(numericPrice) ? numericPrice : 0;
+}
+
+type SteppedGallerySlot = {
+  offset: number;
+  left: number;
+  top: number;
+  width: number;
+  opacity: number;
+  zIndex: number;
+};
+
+const STEPPED_GALLERY_SLOTS = [
+  { offset: -5, left: -7, top: 30, width: 7, opacity: 0, zIndex: 0 },
+  { offset: -4, left: 0, top: 30, width: 7, opacity: 1, zIndex: 10 },
+  { offset: -3, left: 7, top: 22.5, width: 13, opacity: 1, zIndex: 20 },
+  { offset: -2, left: 20, top: 13.125, width: 20.5, opacity: 1, zIndex: 30 },
+  { offset: -1, left: 40.5, top: 3.125, width: 28.5, opacity: 1, zIndex: 40 },
+  { offset: 0, left: 69, top: 0, width: 31, opacity: 1, zIndex: 50 },
+  { offset: 1, left: 101, top: 0, width: 31, opacity: 0, zIndex: 60 },
+] satisfies readonly SteppedGallerySlot[];
+
+const STEPPED_GALLERY_UNIT = "calc(1vw / var(--site-scale))";
+const STEPPED_GALLERY_GROUP_WIDTH = 100;
+const STEPPED_GALLERY_HEIGHT = 38.75;
+const STEPPED_GALLERY_VISIBLE_COUNT = 5;
+
+function positiveModulo(value: number, divisor: number) {
+  return ((value % divisor) + divisor) % divisor;
+}
+
+function getLoopOffset(value: number, count: number) {
+  if (count <= 0) {
+    return 99;
+  }
+
+  if (count === 1) {
+    return 0;
+  }
+
+  return positiveModulo(value + count / 2, count) - count / 2;
+}
+
+function interpolateNumber(
+  input: number,
+  inputStart: number,
+  inputEnd: number,
+  outputStart: number,
+  outputEnd: number
+) {
+  if (inputEnd === inputStart) {
+    return outputEnd;
+  }
+
+  const progress = (input - inputStart) / (inputEnd - inputStart);
+  return outputStart + (outputEnd - outputStart) * progress;
+}
+
+function interpolateSteppedSlot(
+  relativeOffset: number,
+  key: keyof Omit<SteppedGallerySlot, "offset">
+) {
+  const firstSlot = STEPPED_GALLERY_SLOTS[0];
+  const lastSlot = STEPPED_GALLERY_SLOTS[STEPPED_GALLERY_SLOTS.length - 1];
+
+  if (relativeOffset <= firstSlot.offset) {
+    return firstSlot[key];
+  }
+
+  if (relativeOffset >= lastSlot.offset) {
+    return lastSlot[key];
+  }
+
+  for (let index = 0; index < STEPPED_GALLERY_SLOTS.length - 1; index += 1) {
+    const current = STEPPED_GALLERY_SLOTS[index];
+    const next = STEPPED_GALLERY_SLOTS[index + 1];
+
+    if (relativeOffset >= current.offset && relativeOffset <= next.offset) {
+      return interpolateNumber(
+        relativeOffset,
+        current.offset,
+        next.offset,
+        current[key],
+        next[key]
+      );
+    }
+  }
+
+  return lastSlot[key];
+}
+
+function getActiveWeight(relativeOffset: number) {
+  return Math.max(0, 1 - Math.abs(relativeOffset) / 0.72);
 }
 
 const SECTION_COPY = {
@@ -393,7 +491,7 @@ export function TripRatingWidget({
             setStatus("idle");
             setOpen(true);
           }}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs font-black text-foreground transition-colors hover:border-accent hover:bg-accent"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs text-foreground transition-colors hover:border-accent hover:bg-accent"
         >
           <Star className="h-4 w-4 fill-accent text-accent" />
           {status === "success" ? copy.done : copy.rate}
@@ -403,7 +501,7 @@ export function TripRatingWidget({
           className="grid gap-2 rounded-md border border-border bg-background p-3"
           onSubmit={handleSubmit}
         >
-          <div className="text-xs font-black uppercase tracking-wider text-foreground">
+          <div className="trip-meta-text text-xs uppercase tracking-wider text-foreground">
             {copy.title}
           </div>
           <div className="flex gap-1">
@@ -475,6 +573,156 @@ export function TripRatingWidget({
   );
 }
 
+function SteppedTripTile({
+  adventure,
+  index,
+  startIndex,
+  adventureCount,
+  loopProgress,
+  locale,
+  dayLabel,
+  detailsLabel,
+  onSelect,
+}: {
+  adventure: Adventure;
+  index: number;
+  startIndex: number;
+  adventureCount: number;
+  loopProgress: MotionValue<number>;
+  locale: keyof typeof SECTION_COPY;
+  dayLabel: string;
+  detailsLabel: string;
+  onSelect: (adventure: Adventure) => void;
+}) {
+  const text = getAdventureText(adventure, locale);
+  const price =
+    adventure.price > 0
+      ? `${adventure.price.toLocaleString()} ${adventure.currency}`
+      : null;
+  const routeLabel = {
+    mn: "чиглэл",
+    en: "route",
+    zh: "路线",
+    ja: "ルート",
+    ko: "루트",
+  }[locale];
+  const getRelativeOffset = (progress: number) =>
+    getLoopOffset(index - startIndex + progress, adventureCount);
+  const left = useTransform(
+    loopProgress,
+    (progress) =>
+      `calc(var(--gallery-unit) * ${interpolateSteppedSlot(
+        getRelativeOffset(progress),
+        "left"
+      ).toFixed(4)})`
+  );
+  const top = useTransform(
+    loopProgress,
+    (progress) =>
+      `calc(var(--gallery-unit) * ${interpolateSteppedSlot(
+        getRelativeOffset(progress),
+        "top"
+      ).toFixed(4)})`
+  );
+  const width = useTransform(
+    loopProgress,
+    (progress) =>
+      `calc(var(--gallery-unit) * ${interpolateSteppedSlot(
+        getRelativeOffset(progress),
+        "width"
+      ).toFixed(4)})`
+  );
+  const opacity = useTransform(loopProgress, (progress) =>
+    interpolateSteppedSlot(getRelativeOffset(progress), "opacity")
+  );
+  const zIndex = useTransform(loopProgress, (progress) =>
+    Math.round(interpolateSteppedSlot(getRelativeOffset(progress), "zIndex"))
+  );
+  const detailsOpacity = useTransform(loopProgress, (progress) =>
+    getActiveWeight(getRelativeOffset(progress))
+  );
+  const detailsY = useTransform(
+    detailsOpacity,
+    (value) => `${(1 - value) * 18}px`
+  );
+  const activeShadeOpacity = useTransform(
+    detailsOpacity,
+    (value) => 0.18 + value * 0.82
+  );
+  const imageScale = useTransform(
+    detailsOpacity,
+    (value) => 1.01 + value * 0.03
+  );
+
+  return (
+    <motion.figure
+      className="group absolute m-0 cursor-pointer overflow-hidden bg-[#e8e8e8]"
+      style={{
+        left,
+        top,
+        width,
+        aspectRatio: "4 / 5",
+        opacity,
+        zIndex,
+      }}
+      onClick={() => onSelect(adventure)}
+    >
+      <motion.div
+        className="h-full w-full bg-cover bg-center transition-transform duration-[900ms] ease-out group-hover:scale-[1.035]"
+        style={{
+          backgroundImage: `url(${adventure.image})`,
+          scale: imageScale,
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-white/6" />
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-t from-black/76 via-black/12 to-white/6"
+        style={{ opacity: activeShadeOpacity }}
+      />
+      <motion.div
+        className="absolute inset-x-0 bottom-0 z-30 p-4 text-white sm:p-5 lg:p-6"
+        style={{ opacity: detailsOpacity, y: detailsY }}
+      >
+        <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase text-white/70">
+          <span>{routeLabel}</span>
+          <span className="inline-flex items-center gap-1">
+            <MapPinned className="h-3.5 w-3.5 text-white" />
+            {text.location}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <CalendarDays className="h-3.5 w-3.5 text-white" />
+            {adventure.days} {dayLabel}
+          </span>
+        </p>
+        <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[14ch] text-balance text-white">
+          {text.title}
+        </h3>
+        <p className="trip-copy-text mt-3 line-clamp-2 max-w-sm text-xs leading-5 text-white/75 sm:text-sm">
+          {text.summary}
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          {price ? (
+            <div className="trip-meta-text bg-white px-3 py-2 text-[10px] uppercase text-black">
+              {price}
+            </div>
+          ) : null}
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelect(adventure);
+            }}
+            className="inline-flex min-h-10 items-center justify-center gap-2 bg-accent px-4 text-[10px] uppercase text-accent-foreground transition-colors hover:bg-white hover:text-black"
+          >
+            {detailsLabel}
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </motion.div>
+    </motion.figure>
+  );
+}
+
 export function FeaturedAdventures({
   adventures = ADVENTURES,
   beforeList,
@@ -486,9 +734,14 @@ export function FeaturedAdventures({
   const [query, setQuery] = useState("");
   const [activeHeroImage, setActiveHeroImage] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const gallerySectionRef = useRef<HTMLDivElement>(null);
   const { contentLocale, t } = useLanguage();
   const sectionCopy = SECTION_COPY[contentLocale];
   const sortCopy = SORT_COPY[contentLocale];
+  const { scrollYProgress: galleryScrollYProgress } = useScroll({
+    target: gallerySectionRef,
+    offset: ["start start", "end end"],
+  });
 
   const staticOutboundAdventures = useMemo<Adventure[]>(
     () =>
@@ -539,16 +792,28 @@ export function FeaturedAdventures({
   }, []);
 
   useEffect(() => {
-    const searchQuery = new URLSearchParams(window.location.search)
-      .get("search")
-      ?.trim();
+    const params = new URLSearchParams(window.location.search);
+    const searchQuery = params.get("search")?.trim();
+    const scopeQuery = params.get("scope");
+    const nextScope =
+      scopeQuery === "all" ||
+      scopeQuery === "domestic" ||
+      scopeQuery === "outbound"
+        ? scopeQuery
+        : null;
 
-    if (!searchQuery) {
+    if (!searchQuery && !nextScope) {
       return;
     }
 
     const timerId = window.setTimeout(() => {
-      setQuery(searchQuery);
+      if (nextScope) {
+        setScope(nextScope);
+      }
+
+      if (searchQuery) {
+        setQuery(searchQuery);
+      }
     }, 0);
 
     return () => window.clearTimeout(timerId);
@@ -624,6 +889,19 @@ export function FeaturedAdventures({
     return sortedMatches;
   }, [allAdventures, contentLocale, query, scope, sortMode]);
 
+  const galleryAdventureCount = filteredAdventures.length;
+  const galleryStartIndex = Math.min(
+    STEPPED_GALLERY_VISIBLE_COUNT - 1,
+    Math.max(0, galleryAdventureCount - 1)
+  );
+  const galleryLoopProgress = useTransform(
+    galleryScrollYProgress,
+    [0, 0.9, 1],
+    [0, galleryAdventureCount, galleryAdventureCount]
+  );
+  const galleryScrollHeight =
+    Math.max(1, galleryAdventureCount) * 72 + 34;
+
   const scopeOptions = [
     {
       key: "all" as const,
@@ -675,17 +953,17 @@ export function FeaturedAdventures({
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 pt-24 lg:px-10 lg:pt-32">
           <div className="max-w-xl">
-            <p className="mb-4 inline-block bg-accent px-3 py-1 font-sans text-sm font-black uppercase tracking-[0.16em] text-accent-foreground">
+            <p className="trip-meta-text mb-4 inline-block bg-accent px-3 py-1 font-sans text-sm uppercase tracking-[0.16em] text-accent-foreground">
               {sectionCopy.eyebrow}
             </p>
-            <h1 className="max-w-xl text-balance font-sans text-3xl font-black leading-[1.03] text-white sm:text-4xl lg:text-5xl">
+            <h1 className="trip-header-title max-w-xl text-balance font-sans text-white">
               {sectionCopy.title}
             </h1>
           </div>
         </div>
 
         <div className="absolute inset-x-0 top-[300px] z-10 px-6 sm:top-[330px] lg:top-[390px] lg:px-10">
-          <div className="mx-auto max-w-4xl rounded-lg border border-white/35 bg-background/36 p-3 text-foreground shadow-[0_12px_34px_rgba(0,0,0,0.28)]">
+          <div className="mx-auto max-w-4xl text-foreground">
               <label className="flex items-center gap-4 rounded-full border border-white/35 bg-[#fff8e4]/38 px-5 py-4">
                 <Search className="h-6 w-6 shrink-0 text-muted-foreground" />
                 <input
@@ -693,7 +971,7 @@ export function FeaturedAdventures({
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder={sectionCopy.search}
-                  className="min-w-0 flex-1 bg-transparent text-base font-semibold text-foreground outline-none placeholder:text-muted-foreground lg:text-xl"
+                  className="trip-copy-text min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground lg:text-xl"
                 />
                 <button
                   type="button"
@@ -720,7 +998,7 @@ export function FeaturedAdventures({
                         type="button"
                         onClick={() => setScope(item.key)}
                         className={cn(
-                          "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-bold transition-colors",
+                          "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm transition-colors",
                           scope === item.key
                             ? "border-accent bg-accent text-accent-foreground"
                             : "border-white/35 bg-[#fff8e4]/44 text-foreground hover:border-accent"
@@ -739,7 +1017,7 @@ export function FeaturedAdventures({
                         type="button"
                         onClick={() => setSortMode(option.key)}
                         className={cn(
-                          "rounded-md border px-3 py-2 text-xs font-black transition-colors",
+                          "rounded-md border px-3 py-2 text-xs transition-colors",
                           sortMode === option.key
                             ? "border-accent bg-accent text-accent-foreground"
                             : "border-border bg-background text-foreground hover:border-accent"
@@ -755,97 +1033,65 @@ export function FeaturedAdventures({
         </div>
       </div>
 
-      <div id="all" className="mx-auto max-w-7xl px-6 py-10 lg:px-10 lg:py-12">
-        <div className="mb-8 flex flex-col justify-between gap-4 lg:mb-10 lg:flex-row lg:items-end">
-          <div>
-            <p className="mb-3 font-sans text-xs font-black uppercase tracking-[0.18em] text-foreground lg:text-sm">
-              {sectionCopy.eyebrow}
-            </p>
-            <h1 className="max-w-4xl text-balance font-sans text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
-              {sectionCopy.listTitle}
-            </h1>
-            <p className="mt-3 max-w-2xl font-sans text-sm font-medium leading-7 text-muted-foreground lg:text-base">
-              {sectionCopy.listBody}
-            </p>
-          </div>
-          <div className="rounded-full border border-border bg-card px-5 py-2 font-sans text-sm font-bold text-foreground">
-            {filteredAdventures.length} {sectionCopy.result}
-          </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {filteredAdventures.map((adventure, idx) => {
-            const text = getAdventureText(adventure, contentLocale);
-            const price =
-              adventure.price > 0
-                ? `${adventure.price.toLocaleString()} ${adventure.currency}`
-                : null;
-
-            return (
-              <motion.article
-                key={adventure.id}
-                initial={{ opacity: 0, y: 22 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.5, delay: Math.min(idx * 0.04, 0.24) }}
-                onClick={() => setSelected(adventure)}
-                className="group cursor-pointer overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all hover:border-accent hover:shadow-xl"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                    style={{ backgroundImage: `url(${adventure.image})` }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/18 to-transparent" />
-                  {price ? (
-                    <div className="absolute left-5 top-5 rounded-md bg-accent px-3 py-2 text-xs font-black text-accent-foreground">
-                      {price}
-                    </div>
-                  ) : null}
-                  <div className="absolute bottom-5 left-5 right-5 flex flex-wrap gap-2 text-xs font-bold text-white">
-                    <span className="flex items-center gap-1 rounded-md bg-black/45 px-2.5 py-1.5">
-                      <MapPinned className="h-3.5 w-3.5" />
-                      {text.location}
-                    </span>
-                    <span className="flex items-center gap-1 rounded-md bg-black/45 px-2.5 py-1.5">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      {adventure.days} {t.featured.days}
-                    </span>
-                  </div>
+      <div
+        ref={gallerySectionRef}
+        id="all"
+        className="overflow-clip bg-white"
+        style={
+          filteredAdventures.length > 0
+            ? ({
+                height: `calc(${galleryScrollHeight}svh / var(--site-scale))`,
+              } satisfies CSSProperties)
+            : undefined
+        }
+      >
+        {filteredAdventures.length > 0 ? (
+          <div className="flow-frame sticky top-0 bg-white text-[#050505]">
+            <div className="tours-list-copy absolute left-0 top-[8vh] z-20 w-[min(620px,88vw)] px-6 sm:px-8 lg:top-[10vh] lg:px-10">
+              <h2 className="tours-list-title max-w-[13ch] text-balance text-[clamp(1.55rem,3.6vw,3.35rem)] uppercase leading-[0.96] text-black">
+                {sectionCopy.listTitle}
+              </h2>
+              <div className="mt-4 max-w-xs">
+                <p className="tours-list-body max-w-xs text-sm uppercase leading-[1.34] text-black/78 sm:text-[15px]">
+                  {sectionCopy.listBody}
+                </p>
+                <div className="tours-list-count mt-4 inline-flex border border-black bg-white px-3 py-2 text-xs uppercase text-black shadow-[6px_6px_0_#000]">
+                  {filteredAdventures.length} {sectionCopy.result}
                 </div>
+              </div>
+            </div>
 
-                <div className="flex min-h-[250px] flex-col p-5">
-                  {price ? (
-                    <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      {t.featured.price}
-                    </div>
-                  ) : null}
-                  <h3 className="mt-3 font-sans text-2xl font-medium leading-tight text-balance">
-                    {text.title}
-                  </h3>
-                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
-                    {text.summary}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setSelected(adventure);
-                    }}
-                    className="mt-auto inline-flex w-fit items-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-black text-primary-foreground transition-colors group-hover:bg-accent group-hover:text-accent-foreground"
-                  >
-                    {t.featured.details}
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </motion.article>
-            );
-          })}
-        </div>
-
-        {filteredAdventures.length === 0 && (
-          <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-            {t.featured.noResults}
+            <div
+              className="absolute bottom-0 left-0 z-10 overflow-visible"
+              style={
+                {
+                  "--gallery-unit": STEPPED_GALLERY_UNIT,
+                  width: `calc(var(--gallery-unit) * ${STEPPED_GALLERY_GROUP_WIDTH})`,
+                  height: `calc(var(--gallery-unit) * ${STEPPED_GALLERY_HEIGHT})`,
+                } as CSSProperties
+              }
+            >
+              {filteredAdventures.map((adventure, index) => (
+                <SteppedTripTile
+                  key={adventure.id}
+                  adventure={adventure}
+                  index={index}
+                  startIndex={galleryStartIndex}
+                  adventureCount={galleryAdventureCount}
+                  loopProgress={galleryLoopProgress}
+                  locale={contentLocale}
+                  dayLabel={t.featured.days}
+                  detailsLabel={t.featured.details}
+                  onSelect={setSelected}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
+            <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
+              {t.featured.noResults}
+            </div>
           </div>
         )}
       </div>

@@ -122,6 +122,44 @@ body *::after {
   font-family: var(--site-font) !important;
 }
 
+.trip-header-title {
+  font-size: clamp(1.65rem, 4vw, 3.45rem) !important;
+  line-height: 0.98 !important;
+  text-transform: uppercase;
+}
+
+.trip-header-title--hero {
+  font-size: clamp(2.1rem, 5.2vw, 4.6rem) !important;
+  line-height: 0.93 !important;
+}
+
+.trip-header-title--compact {
+  font-size: clamp(1.35rem, 3vw, 2.25rem) !important;
+  line-height: 1.02 !important;
+}
+
+.flow-frame {
+  height: calc(100svh / var(--site-scale));
+  min-height: calc(640px / var(--site-scale));
+  overflow: hidden;
+}
+
+.flow-panel {
+  height: calc(100svh / var(--site-scale));
+  min-height: calc(640px / var(--site-scale));
+  width: calc(100vw / var(--site-scale));
+  min-width: calc(100vw / var(--site-scale));
+  overflow: hidden;
+}
+
+.flow-image-fill {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
 .text-balance {
   text-wrap: balance;
 }
@@ -131,6 +169,38 @@ body *::after {
     0 2px 0 rgba(17, 16, 11, 0.78),
     0 7px 18px rgba(0, 0, 0, 0.58);
   -webkit-text-stroke: 1px rgba(255, 253, 243, 0.55);
+}
+
+.trip-marquee {
+  overflow: hidden;
+  width: 100%;
+}
+
+.trip-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 1.5rem;
+  animation: trip-marquee var(--marquee-duration, 32s) linear infinite;
+  will-change: transform;
+}
+
+.trip-marquee:hover .trip-marquee-track,
+.trip-marquee:focus-within .trip-marquee-track {
+  animation-play-state: paused;
+}
+
+.trip-marquee-track--reverse {
+  animation-direction: reverse;
+}
+
+@keyframes trip-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(calc(-50% - 0.75rem), 0, 0);
+  }
 }
 
 ::selection {

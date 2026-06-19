@@ -8,7 +8,7 @@ export default function AdminLoginPage() {
     <main className="relative min-h-screen overflow-hidden bg-[var(--primary)] px-5 py-10 text-[var(--foreground)]">
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[url('/nomadabe-hero-panorama.png')] bg-cover bg-center opacity-25"
+        className="absolute inset-0 bg-[url('/nomadabe-hero-panorama.webp')] bg-cover bg-center opacity-25"
       />
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/45 via-[var(--primary)]/90 to-[var(--primary)]" />
 
@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
           <Link href="/" className="flex items-center gap-3 text-white">
             <span
               aria-hidden="true"
-              className="h-11 w-11 rounded-md bg-black bg-[url('/nomadabe-mark.png')] bg-center bg-no-repeat shadow-sm ring-1 ring-white/20 [background-position:center_35%] [background-size:175%]"
+              className="h-11 w-11 rounded-md bg-black bg-[url('/nomadabe-mark.webp')] bg-center bg-no-repeat shadow-sm ring-1 ring-white/20 [background-position:center_35%] [background-size:175%]"
             />
             <span>
               <span className="block text-xl font-black leading-none text-[var(--accent)]">

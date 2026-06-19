@@ -703,7 +703,7 @@ export function TravelStyles({
         <div className="relative isolate min-h-[520px] overflow-hidden bg-primary px-6 py-28 text-white lg:px-10 lg:py-36">
           <div
             className="absolute inset-0 -z-20 bg-cover bg-center"
-            style={{ backgroundImage: "url('/nomadabe-hero-panorama.png')" }}
+            style={{ backgroundImage: "url('/nomadabe-hero-panorama.webp')" }}
           />
           <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/50 via-primary/62 to-primary/90" />
 

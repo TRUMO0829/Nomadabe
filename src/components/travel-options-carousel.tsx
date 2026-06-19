@@ -78,8 +78,8 @@ type DomesticTripCardProps = {
   onSelect: (adventure: Adventure) => void;
 };
 
-const PANEL_GAP_VW = 8;
-const PANEL_END_BUFFER_VH = 26;
+const PANEL_GAP_VW = 0;
+const PANEL_END_BUFFER_VH = 48;
 
 function DomesticTripCard({
   adventure,
@@ -94,48 +94,51 @@ function DomesticTripCard({
       : null;
 
   return (
-    <motion.article
-      className="group relative h-[calc(100svh/var(--site-scale))] w-[calc(100vw/var(--site-scale))] shrink-0 overflow-hidden bg-[#11100b]"
-    >
-      <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-[1400ms] ease-out group-hover:scale-[1.025]"
-        style={{ backgroundImage: `url(${adventure.image})` }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/42 to-black/16" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25" />
+    <motion.article className="relative grid h-[calc(100svh/var(--site-scale))] w-[calc(100vw/var(--site-scale))] shrink-0 overflow-hidden bg-white lg:grid-cols-2">
+      <div className="group relative min-h-[48svh] overflow-hidden bg-[#11100b] lg:min-h-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-[1400ms] ease-out group-hover:scale-[1.025]"
+          style={{ backgroundImage: `url(${adventure.image})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/24 via-transparent to-black/12" />
+        {price ? (
+          <div className="trip-meta-text absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-xs text-[#11100b] shadow-[0_18px_40px_rgba(0,0,0,0.18)] lg:left-8 lg:top-8">
+            {price}
+          </div>
+        ) : null}
+      </div>
 
-      {price ? (
-        <div className="absolute right-6 top-24 rounded-md bg-[#ffd400] px-3 py-1.5 text-xs font-bold text-[#11100b] sm:right-10 lg:right-14 lg:top-28">
-          {price}
+      <div className="flex h-full items-center bg-white px-6 py-10 text-[#11100b] sm:px-10 lg:px-[clamp(3rem,6vw,7rem)]">
+        <div className="max-w-xl">
+          <div className="trip-meta-text mb-6 flex flex-wrap gap-2 text-xs text-[#11100b] lg:text-sm">
+            <span className="flex items-center gap-1.5 rounded-full border border-[#e4c769]/75 bg-white px-4 py-2 shadow-[0_14px_34px_rgba(17,16,11,0.07)]">
+              <MapPin className="h-3.5 w-3.5 text-[#b89422]" />
+              {text.location}
+            </span>
+            <span className="flex items-center gap-1.5 rounded-full border border-[#e4c769]/75 bg-white px-4 py-2 shadow-[0_14px_34px_rgba(17,16,11,0.07)]">
+              <CalendarDays className="h-3.5 w-3.5 text-[#b89422]" />
+              {adventure.days} {copy.day}
+            </span>
+          </div>
+
+          <p className="trip-meta-text mb-4 text-sm uppercase tracking-[0.2em] text-[#b89422]">
+            {copy.route}
+          </p>
+          <h3 className="trip-header-title trip-header-title--hero max-w-[14ch] text-balance text-[#11100b]">
+            {text.title}
+          </h3>
+          <p className="trip-copy-text mt-5 max-w-2xl text-sm leading-7 text-[#4b4538] sm:text-base lg:text-lg">
+            {text.summary}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => onSelect(adventure)}
+            className="trip-meta-text mt-8 inline-flex min-h-12 items-center justify-center rounded-full border border-[#11100b] bg-[#11100b] px-7 text-sm uppercase text-white transition-colors hover:bg-white hover:text-[#11100b]"
+          >
+            {copy.details}
+          </button>
         </div>
-      ) : null}
-
-      <div className="absolute bottom-12 left-6 right-6 max-w-3xl sm:left-10 sm:right-10 lg:bottom-14 lg:left-14">
-        <div className="mb-5 flex flex-wrap gap-2 text-xs font-semibold text-[#fff8ea] lg:text-sm">
-          <span className="flex items-center gap-1.5 border border-[#e4c769]/55 bg-black/25 px-3 py-2 backdrop-blur">
-            <MapPin className="h-3.5 w-3.5 text-[#f0d57a]" />
-            {text.location}
-          </span>
-          <span className="flex items-center gap-1.5 border border-[#e4c769]/55 bg-black/25 px-3 py-2 backdrop-blur">
-            <CalendarDays className="h-3.5 w-3.5 text-[#f0d57a]" />
-            {adventure.days} {copy.day}
-          </span>
-        </div>
-
-        <h3 className="max-w-[15ch] text-3xl font-semibold uppercase leading-[1.02] text-[#fff8ea] text-balance sm:text-4xl lg:text-5xl xl:text-6xl">
-          {text.title}
-        </h3>
-        <p className="mt-4 max-w-2xl text-sm font-medium leading-7 text-[#fff8ea]/82 sm:text-base lg:text-lg">
-          {text.summary}
-        </p>
-
-        <button
-          type="button"
-          onClick={() => onSelect(adventure)}
-          className="mt-7 inline-flex min-h-12 items-center justify-center border border-[#f0d57a] bg-[#f0d57a] px-6 text-sm font-bold uppercase text-[#11100b] transition-colors hover:bg-transparent hover:text-[#f0d57a]"
-        >
-          {copy.details}
-        </button>
       </div>
     </motion.article>
   );
@@ -148,20 +151,24 @@ export function TravelOptionsCarousel({
   const copy = COPY[contentLocale];
   const sectionRef = useRef<HTMLElement>(null);
   const [selected, setSelected] = useState<Adventure | null>(null);
-  const domesticOptions = adventures.filter(
-    (adventure) => adventure.country === "Mongolia",
-  ).slice(0, 3);
+  const domesticOptions = adventures
+    .filter((adventure) => adventure.country === "Mongolia")
+    .slice(0, 3);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
   const maxDesktopShiftVw =
-    Math.max(0, domesticOptions.length - 1) * (100 + PANEL_GAP_VW) +
-    PANEL_GAP_VW;
+    Math.max(0, domesticOptions.length - 1) * (100 + PANEL_GAP_VW);
   const desktopTrackX = useTransform(
     scrollYProgress,
-    (value) => `calc(${-value * maxDesktopShiftVw}vw / var(--site-scale))`,
+    [0, 0.82, 1],
+    [
+      "calc(0vw / var(--site-scale))",
+      `calc(${-maxDesktopShiftVw}vw / var(--site-scale))`,
+      `calc(${-maxDesktopShiftVw}vw / var(--site-scale))`,
+    ],
   );
 
   if (domesticOptions.length === 0) {
@@ -170,11 +177,11 @@ export function TravelOptionsCarousel({
 
   return (
     <>
-      <TravelSectionIntro id="destinations" title={copy.eyebrow} />
+      <TravelSectionIntro id="destinations" title={copy.eyebrow} variant="plain" />
 
       <section
         ref={sectionRef}
-        className="relative overflow-clip bg-[#050505] text-[#11100b] max-lg:!h-auto"
+        className="relative overflow-clip bg-white text-[#11100b] max-lg:!h-auto"
         style={{
           height: `calc(${domesticOptions.length * 116 + PANEL_END_BUFFER_VH}svh / var(--site-scale))`,
         }}
@@ -210,6 +217,7 @@ export function TravelOptionsCarousel({
 
         <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
       </section>
+
     </>
   );
 }

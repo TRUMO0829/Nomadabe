@@ -52,7 +52,7 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroSubtitle:
     "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг төлөвлөн зохион байгуулна.",
   heroImage:
-    "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=80&fit=crop&fm=webp",
   accentColor: "#e85d2c",
   heroTextColor: "#ffffff",
   heroOverlayOpacity: 0.72,

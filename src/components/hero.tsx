@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import { useLanguage } from "./language-provider";
 
 const HERO_BACKGROUNDS = [
-  "/nomadabe-hero-panorama.png",
-  "/hero-winter.jpg",
-  "/hero-spring.jpg",
-  "/hero-autumn.jpg",
+  "/nomadabe-hero-panorama.webp",
+  "/hero-winter.webp",
+  "/hero-spring.webp",
+  "/hero-autumn.webp",
 ];
 
 export function Hero() {

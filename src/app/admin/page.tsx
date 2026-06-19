@@ -108,7 +108,7 @@ export default async function AdminDashboard({
             <div className="flex items-center gap-3">
               <div
                 aria-hidden="true"
-                className="h-12 w-12 rounded-md bg-black bg-[url('/nomadabe-mark.png')] bg-center bg-no-repeat shadow-sm ring-1 ring-white/15 [background-position:center_35%] [background-size:175%]"
+                className="h-12 w-12 rounded-md bg-black bg-[url('/nomadabe-mark.webp')] bg-center bg-no-repeat shadow-sm ring-1 ring-white/15 [background-position:center_35%] [background-size:175%]"
               />
               <div>
                 <div className="text-xl font-black leading-none text-[var(--accent)]">
@@ -161,7 +161,7 @@ export default async function AdminDashboard({
           <header id="overview" className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--primary)] px-5 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
             <div
               aria-hidden="true"
-              className="absolute inset-0 bg-[url('/nomadabe-hero-panorama.png')] bg-cover bg-center opacity-25"
+              className="absolute inset-0 bg-[url('/nomadabe-hero-panorama.webp')] bg-cover bg-center opacity-25"
             />
             <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/35 via-[var(--primary)]/85 to-[var(--primary)]" />
             <div className="relative flex flex-col justify-between gap-5 xl:flex-row xl:items-center">

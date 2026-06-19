@@ -324,7 +324,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                   }
                 >
                   <a
-                    href={`#book-${adventure.slug}`}
+                    href={`/plan?trip=${encodeURIComponent(adventure.slug)}&title=${encodeURIComponent(text.title)}`}
                     className="block w-full rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-accent-foreground transition-colors hover:bg-secondary"
                   >
                     {t.modal.register}

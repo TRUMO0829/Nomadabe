@@ -1,7 +1,11 @@
+import { Typewriter } from "@/components/ui/typewriter";
+
 type TravelSectionIntroProps = {
   id?: string;
   title: string;
+  description?: string;
   videoSrc?: string;
+  variant?: "video" | "plain";
 };
 
 const DEFAULT_TRAVEL_VIDEO =
@@ -10,8 +14,35 @@ const DEFAULT_TRAVEL_VIDEO =
 export function TravelSectionIntro({
   id,
   title,
+  description,
   videoSrc = DEFAULT_TRAVEL_VIDEO,
+  variant = "video",
 }: TravelSectionIntroProps) {
+  if (variant === "plain") {
+    return (
+      <section
+        id={id}
+        className="relative overflow-hidden bg-white px-6 py-12 text-center text-foreground lg:py-16"
+      >
+        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center">
+          <h2 className="min-h-[2.25em] text-balance text-[clamp(1.8rem,4.4vw,4.4rem)] font-black uppercase leading-none text-[#11100b]">
+            <Typewriter
+              words={[title]}
+              speed={62}
+              delayBetweenWords={1800}
+              cursorChar="_"
+            />
+          </h2>
+          {description ? (
+            <p className="mt-5 max-w-2xl text-sm font-medium leading-7 text-[#5f5340] sm:text-base lg:text-lg">
+              {description}
+            </p>
+          ) : null}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       id={id}

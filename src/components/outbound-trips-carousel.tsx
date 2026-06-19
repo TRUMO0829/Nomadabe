@@ -262,7 +262,7 @@ export function OutboundTripsCarousel({
 
   return (
     <>
-      <TravelSectionIntro title={copy.eyebrow} />
+      <TravelSectionIntro title={copy.eyebrow} variant="plain" />
 
       <section className="bg-card">
         <CardsParallax

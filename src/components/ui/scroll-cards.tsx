@@ -49,28 +49,28 @@ const Card: FC<iCardProps> = ({
         <div className="absolute inset-x-0 bottom-0 z-10">
           <div className="mx-auto max-w-7xl p-6 pb-10 sm:p-8 sm:pb-14 lg:p-10 lg:pb-16">
             {tag ? (
-              <div className="mb-4 inline-flex rounded-md bg-accent px-3 py-1.5 text-xs font-black uppercase text-accent-foreground">
+              <div className="trip-meta-text mb-4 inline-flex rounded-md bg-accent px-3 py-1.5 text-xs uppercase text-accent-foreground">
                 {tag}
               </div>
             ) : null}
-            <h3 className="max-w-4xl text-balance text-4xl font-black leading-tight sm:text-6xl lg:text-7xl">
+            <h3 className="trip-header-title trip-header-title--hero max-w-4xl text-balance text-white">
               {title}
             </h3>
-            <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white/84 sm:text-lg">
+            <p className="trip-copy-text mt-4 max-w-2xl text-base leading-7 text-white/84 sm:text-lg">
               {description}
             </p>
             {onSelect ? (
               <button
                 type="button"
                 onClick={onSelect}
-                className="mt-6 inline-flex rounded-md bg-white px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="mt-6 inline-flex rounded-md bg-white px-5 py-3 text-sm text-primary transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 {actionLabel}
               </button>
             ) : (
               <a
                 href={link}
-                className="mt-6 inline-flex rounded-md bg-white px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="mt-6 inline-flex rounded-md bg-white px-5 py-3 text-sm text-primary transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 {actionLabel}
               </a>

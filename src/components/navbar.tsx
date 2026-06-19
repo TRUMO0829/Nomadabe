@@ -1,15 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
-  Building2,
   ChevronDown,
-  Compass,
   Globe,
-  Globe2,
   Menu,
-  MountainSnow,
   Search,
   UserRound,
   X,
@@ -19,100 +16,48 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
 import { SiteSearch } from "./site-search";
 
-const NAV_DESTINATION_COPY = {
-  mn: {
-    title: "Аяллууд",
-    body: "Аялал, чиглэл, очих газраа нэг дороос сонго.",
-    viewAll: "Бүх аяллыг харах",
-  },
-  en: {
-    title: "Trips",
-    body: "Browse trips and destinations together by country and travel type.",
-    viewAll: "View all trips",
-  },
-  zh: {
-    title: "旅行",
-    body: "按国家和旅行类型浏览行程与目的地。",
-    viewAll: "查看全部旅行",
-  },
-  ja: {
-    title: "ツアー",
-    body: "国や旅のタイプ別に、ツアーと目的地をまとめて探せます。",
-    viewAll: "すべてのツアーを見る",
-  },
-  ko: {
-    title: "여행",
-    body: "국가와 여행 유형별로 여행과 목적지를 함께 찾아보세요.",
-    viewAll: "모든 여행 보기",
-  },
-} as const;
-
-const NAV_DESTINATION_GROUPS = [
-  {
-    icon: MountainSnow,
-    title: {
-      mn: "Дотоод аялал",
-      en: "Domestic",
-      zh: "国内旅行",
-      ja: "国内旅行",
-      ko: "국내 여행",
+const NAV_TRIP_CHOICES: Record<
+  CopyLocale,
+  Array<{ title: string; body: string; href: string }>
+> = {
+  mn: [
+    {
+      title: "Дотоод аялал",
+      body: "Монгол доторх аяллын багцууд.",
+      href: "/tours?scope=domestic",
     },
-    items: [
-      { mn: "Монгол", en: "Mongolia", zh: "蒙古", ja: "モンゴル", ko: "몽골" },
-      { mn: "Хөвсгөл", en: "Khuvsgul", zh: "库苏古尔", ja: "フブスグル", ko: "홉스골" },
-      { mn: "Говь", en: "Gobi", zh: "戈壁", ja: "ゴビ", ko: "고비" },
-      { mn: "Тэрэлж", en: "Terelj", zh: "特勒吉", ja: "テレルジ", ko: "테렐지" },
-    ],
-  },
-  {
-    icon: Globe2,
-    title: {
-      mn: "Гадаад аялал",
-      en: "Outbound",
-      zh: "出境旅行",
-      ja: "海外旅行",
-      ko: "해외 여행",
+    {
+      title: "Гадаад аялал",
+      body: "Хятад, Япон, Солонгос, Турк зэрэг чиглэлүүд.",
+      href: "/tours?scope=outbound",
     },
-    items: [
-      { mn: "Япон", en: "Japan", zh: "日本", ja: "日本", ko: "일본" },
-      { mn: "Солонгос", en: "Korea", zh: "韩国", ja: "韓国", ko: "한국" },
-      { mn: "Хятад", en: "China", zh: "中国", ja: "中国", ko: "중국" },
-      { mn: "Турк", en: "Turkey", zh: "土耳其", ja: "トルコ", ko: "튀르키예" },
-    ],
-  },
-  {
-    icon: Building2,
-    title: {
-      mn: "Хот, expo",
-      en: "Cities & expo",
-      zh: "城市与展会",
-      ja: "都市・展示会",
-      ko: "도시 및 엑스포",
+    {
+      title: "Бүх аялал",
+      body: "Бүх аяллын жагсаалтыг нэг дороос харах.",
+      href: "/tours",
     },
-    items: [
-      { mn: "Токио", en: "Tokyo", zh: "东京", ja: "東京", ko: "도쿄" },
-      { mn: "Сөүл", en: "Seoul", zh: "首尔", ja: "ソウル", ko: "서울" },
-      { mn: "Шанхай", en: "Shanghai", zh: "上海", ja: "上海", ko: "상하이" },
-      { mn: "Гуанжоу", en: "Guangzhou", zh: "广州", ja: "広州", ko: "광저우" },
-    ],
-  },
-  {
-    icon: Compass,
-    title: {
-      mn: "Амралтын хэв маяг",
-      en: "Vacation style",
-      zh: "旅行风格",
-      ja: "旅のスタイル",
-      ko: "여행 스타일",
-    },
-    items: [
-      { mn: "Гэр бүл", en: "Family", zh: "家庭", ja: "ファミリー", ko: "가족" },
-      { mn: "Бизнес", en: "Business", zh: "商务", ja: "ビジネス", ko: "비즈니스" },
-      { mn: "Арал", en: "Island", zh: "海岛", ja: "島", ko: "섬" },
-      { mn: "Захиалгат", en: "Custom", zh: "定制", ja: "カスタム", ko: "맞춤" },
-    ],
-  },
-] as const;
+  ],
+  en: [
+    { title: "Domestic trips", body: "Trips inside Mongolia.", href: "/tours?scope=domestic" },
+    { title: "Outbound trips", body: "China, Japan, Korea, Turkey, and more.", href: "/tours?scope=outbound" },
+    { title: "All trips", body: "Browse every available trip.", href: "/tours" },
+  ],
+  zh: [
+    { title: "国内旅行", body: "蒙古国内旅行套餐。", href: "/tours?scope=domestic" },
+    { title: "出境旅行", body: "中国、日本、韩国、土耳其等路线。", href: "/tours?scope=outbound" },
+    { title: "全部旅行", body: "查看所有旅行。", href: "/tours" },
+  ],
+  ja: [
+    { title: "国内旅行", body: "モンゴル国内の旅行プラン。", href: "/tours?scope=domestic" },
+    { title: "海外旅行", body: "中国、日本、韓国、トルコなど。", href: "/tours?scope=outbound" },
+    { title: "すべての旅行", body: "すべてのツアーを見る。", href: "/tours" },
+  ],
+  ko: [
+    { title: "국내 여행", body: "몽골 국내 여행 패키지.", href: "/tours?scope=domestic" },
+    { title: "해외 여행", body: "중국, 일본, 한국, 튀르키예 등.", href: "/tours?scope=outbound" },
+    { title: "전체 여행", body: "모든 여행 보기.", href: "/tours" },
+  ],
+};
 
 const AUTH_COPY = {
   mn: "Нэвтрэх / Бүртгүүлэх",
@@ -143,54 +88,25 @@ function openSignupPrompt() {
 }
 
 function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
-  const copy = NAV_DESTINATION_COPY[locale];
+  const choices = NAV_TRIP_CHOICES[locale];
 
   return (
-    <div className="overflow-hidden rounded-md border border-border bg-card font-sans text-foreground shadow-2xl">
-      <div className="grid gap-4 border-b border-border bg-background p-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <div>
-          <p className="text-lg font-black leading-none text-foreground">
-            {copy.title}
-          </p>
-          <p className="mt-2 max-w-sm text-sm font-medium leading-6 text-muted-foreground">
-            {copy.body}
-          </p>
-        </div>
-        <Link
-          href="/tours"
-          className="inline-flex items-center justify-center rounded-md bg-accent px-4 py-2.5 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary lg:justify-self-end"
-        >
-          {copy.viewAll}
-        </Link>
-      </div>
-
-      <div className="grid gap-0 md:grid-cols-4">
-        {NAV_DESTINATION_GROUPS.map((group) => {
-          const Icon = group.icon;
-
-          return (
-              <div key={group.title.en} className="border-border p-4 md:border-r md:last:border-r-0">
-              <div className="mb-3 flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-foreground">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <h3 className="text-sm font-black leading-tight">{group.title[locale]}</h3>
-              </div>
-              <ul className="grid gap-2">
-                {group.items.map((item) => (
-                  <li key={item.en}>
-                    <Link
-                      href="/tours"
-                      className="block rounded-md px-2 py-1 text-sm font-medium leading-5 text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
-                    >
-                      {item[locale]}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
+    <div className="w-full rounded-xl border border-white/15 bg-[#11100b]/95 p-3 text-white shadow-2xl backdrop-blur-xl">
+      <div className="grid gap-1">
+        {choices.map((choice) => (
+          <Link
+            key={choice.href}
+            href={choice.href}
+            className="block rounded-lg px-4 py-3 transition-colors hover:bg-white/10"
+          >
+            <span className="block text-sm font-black uppercase leading-tight text-white">
+              {choice.title}
+            </span>
+            <span className="mt-1 block text-sm font-medium leading-5 text-white/62">
+              {choice.body}
+            </span>
+          </Link>
+        ))}
       </div>
     </div>
   );
@@ -254,7 +170,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
       className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-300",
         scrolled
-          ? "bg-background/85 backdrop-blur-md border-b border-border"
+          ? "bg-transparent"
           : "bg-transparent"
       )}
     >
@@ -264,14 +180,14 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
           aria-label="Nomadabe Travel"
           className="order-1 flex shrink-0 items-center lg:absolute lg:left-8 lg:top-1/2 lg:-translate-y-1/2"
         >
-          <span
-            aria-hidden="true"
-            className={cn(
-              "h-16 w-16 bg-[url('/nomadabe-mark-transparent.png')] bg-center bg-no-repeat [background-size:175%] [background-position:center_35%] lg:h-20 lg:w-20",
-              scrolled
-                ? "invert"
-                : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
-            )}
+          <Image
+            src="/nomadabe-logo-cropped.webp"
+            alt=""
+            width={574}
+            height={615}
+            priority
+            sizes="(min-width: 1024px) 80px, 64px"
+            className="h-16 w-auto object-contain drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] lg:h-20"
           />
         </Link>
 
@@ -314,7 +230,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
                 </a>
 
                 {destinationOpen && (
-                  <div className="absolute left-1/2 top-full z-50 w-[760px] -translate-x-1/2 pt-5">
+                  <div className="absolute left-1/2 top-full z-50 w-[430px] -translate-x-1/2 pt-5">
                     <DestinationMegaMenu locale={contentLocale} />
                   </div>
                 )}
@@ -402,7 +318,10 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             href="/plan"
             className={cn(
               DESKTOP_ACTION_CLASS,
-              "border border-accent bg-accent text-accent-foreground transition-colors hover:bg-secondary"
+              "border transition-colors",
+              scrolled
+                ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
             )}
           >
             {t.nav.cta}
@@ -521,7 +440,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             <Link
               href="/plan"
               onClick={() => setOpen(false)}
-              className="mt-2 rounded-lg bg-accent px-5 py-3 text-center text-sm font-black uppercase text-accent-foreground"
+              className="mt-2 rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-black uppercase text-foreground"
             >
               {t.nav.cta}
             </Link>
