@@ -249,7 +249,7 @@ export function OutboundTripsCarousel({
     const card: iCardItem = {
       title,
       description: `${country} - ${option.days} ${copy.day}`,
-      tag: option.price,
+      tag: "",
       src: option.image,
       link: "#",
       color: "#11100B",

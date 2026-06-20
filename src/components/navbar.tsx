@@ -91,18 +91,18 @@ function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
   const choices = NAV_TRIP_CHOICES[locale];
 
   return (
-    <div className="w-full rounded-xl border border-white/15 bg-[#11100b]/95 p-3 text-white shadow-2xl backdrop-blur-xl">
-      <div className="grid gap-1">
+    <div className="w-full rounded-xl border border-[#eadfac] bg-white p-5 text-[#11100b] shadow-[0_30px_90px_rgba(17,16,11,0.16)] backdrop-blur-xl">
+      <div className="grid gap-2">
         {choices.map((choice) => (
           <Link
             key={choice.href}
             href={choice.href}
-            className="block rounded-lg px-4 py-3 transition-colors hover:bg-white/10"
+            className="block rounded-lg px-4 py-3 transition-colors hover:bg-[#fff6d8]"
           >
-            <span className="block text-sm font-black uppercase leading-tight text-white">
+            <span className="block text-sm font-black uppercase leading-tight text-[#11100b]">
               {choice.title}
             </span>
-            <span className="mt-1 block text-sm font-medium leading-5 text-white/62">
+            <span className="mt-1 block text-sm font-medium leading-5 text-[#4b4538]">
               {choice.body}
             </span>
           </Link>
@@ -230,7 +230,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
                 </a>
 
                 {destinationOpen && (
-                  <div className="absolute left-1/2 top-full z-50 w-[430px] -translate-x-1/2 pt-5">
+                  <div className="absolute left-1/2 top-full z-50 w-[min(520px,calc(100vw-2rem))] -translate-x-1/2 pt-5">
                     <DestinationMegaMenu locale={contentLocale} />
                   </div>
                 )}

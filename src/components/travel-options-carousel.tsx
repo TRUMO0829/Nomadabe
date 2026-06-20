@@ -79,7 +79,7 @@ type DomesticTripCardProps = {
 };
 
 const PANEL_GAP_VW = 0;
-const PANEL_END_BUFFER_VH = 48;
+const PANEL_END_BUFFER_VH = 70;
 
 function DomesticTripCard({
   adventure,
@@ -134,7 +134,7 @@ function DomesticTripCard({
           <button
             type="button"
             onClick={() => onSelect(adventure)}
-            className="trip-meta-text mt-8 inline-flex min-h-12 items-center justify-center rounded-full border border-[#11100b] bg-[#11100b] px-7 text-sm uppercase text-white transition-colors hover:bg-white hover:text-[#11100b]"
+            className="trip-meta-text mt-8 inline-flex min-h-12 items-center justify-center rounded-full border border-accent bg-accent px-7 text-sm uppercase text-accent-foreground transition-colors hover:bg-white hover:text-[#11100b]"
           >
             {copy.details}
           </button>
@@ -163,7 +163,7 @@ export function TravelOptionsCarousel({
     Math.max(0, domesticOptions.length - 1) * (100 + PANEL_GAP_VW);
   const desktopTrackX = useTransform(
     scrollYProgress,
-    [0, 0.82, 1],
+    [0, 0.72, 1],
     [
       "calc(0vw / var(--site-scale))",
       `calc(${-maxDesktopShiftVw}vw / var(--site-scale))`,
@@ -190,7 +190,7 @@ export function TravelOptionsCarousel({
           <div className="relative z-10 h-full w-full overflow-hidden">
             <motion.div
               style={{ x: desktopTrackX }}
-              className="flex h-full w-max gap-[calc(8vw/var(--site-scale))] pr-[calc(8vw/var(--site-scale))] will-change-transform"
+              className="flex h-full w-max gap-0 pr-0 will-change-transform"
             >
               {domesticOptions.map((adventure) => (
                 <DomesticTripCard

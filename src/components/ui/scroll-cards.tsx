@@ -63,14 +63,14 @@ const Card: FC<iCardProps> = ({
               <button
                 type="button"
                 onClick={onSelect}
-                className="mt-6 inline-flex rounded-md bg-white px-5 py-3 text-sm text-primary transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="mt-6 inline-flex rounded-md bg-accent px-5 py-3 text-sm text-accent-foreground transition-colors hover:bg-white hover:text-primary"
               >
                 {actionLabel}
               </button>
             ) : (
               <a
                 href={link}
-                className="mt-6 inline-flex rounded-md bg-white px-5 py-3 text-sm text-primary transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="mt-6 inline-flex rounded-md bg-accent px-5 py-3 text-sm text-accent-foreground transition-colors hover:bg-white hover:text-primary"
               >
                 {actionLabel}
               </a>

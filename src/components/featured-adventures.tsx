@@ -135,18 +135,18 @@ type SteppedGallerySlot = {
 };
 
 const STEPPED_GALLERY_SLOTS = [
-  { offset: -5, left: -7, top: 30, width: 7, opacity: 0, zIndex: 0 },
-  { offset: -4, left: 0, top: 30, width: 7, opacity: 1, zIndex: 10 },
-  { offset: -3, left: 7, top: 22.5, width: 13, opacity: 1, zIndex: 20 },
-  { offset: -2, left: 20, top: 13.125, width: 20.5, opacity: 1, zIndex: 30 },
-  { offset: -1, left: 40.5, top: 3.125, width: 28.5, opacity: 1, zIndex: 40 },
-  { offset: 0, left: 69, top: 0, width: 31, opacity: 1, zIndex: 50 },
-  { offset: 1, left: 101, top: 0, width: 31, opacity: 0, zIndex: 60 },
+  { offset: -5, left: -8, top: 40, width: 8, opacity: 0, zIndex: 0 },
+  { offset: -4, left: 0, top: 40, width: 8, opacity: 1, zIndex: 10 },
+  { offset: -3, left: 8, top: 32.5, width: 14, opacity: 1, zIndex: 20 },
+  { offset: -2, left: 22, top: 23.75, width: 21, opacity: 1, zIndex: 30 },
+  { offset: -1, left: 42, top: 13.75, width: 29, opacity: 1, zIndex: 40 },
+  { offset: 0, left: 63, top: 1.25, width: 39, opacity: 1, zIndex: 50 },
+  { offset: 1, left: 103, top: 1.25, width: 39, opacity: 0, zIndex: 60 },
 ] satisfies readonly SteppedGallerySlot[];
 
 const STEPPED_GALLERY_UNIT = "calc(1vw / var(--site-scale))";
 const STEPPED_GALLERY_GROUP_WIDTH = 100;
-const STEPPED_GALLERY_HEIGHT = 38.75;
+const STEPPED_GALLERY_HEIGHT = 50;
 const STEPPED_GALLERY_VISIBLE_COUNT = 5;
 
 function positiveModulo(value: number, divisor: number) {
@@ -595,10 +595,6 @@ function SteppedTripTile({
   onSelect: (adventure: Adventure) => void;
 }) {
   const text = getAdventureText(adventure, locale);
-  const price =
-    adventure.price > 0
-      ? `${adventure.price.toLocaleString()} ${adventure.currency}`
-      : null;
   const routeLabel = {
     mn: "чиглэл",
     en: "route",
@@ -680,7 +676,7 @@ function SteppedTripTile({
         style={{ opacity: activeShadeOpacity }}
       />
       <motion.div
-        className="absolute inset-x-0 bottom-0 z-30 p-4 text-white sm:p-5 lg:p-6"
+        className="absolute inset-x-0 bottom-[clamp(2.25rem,6vh,4.75rem)] z-30 p-4 text-white sm:p-5 lg:p-6"
         style={{ opacity: detailsOpacity, y: detailsY }}
       >
         <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase text-white/70">
@@ -701,11 +697,6 @@ function SteppedTripTile({
           {text.summary}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          {price ? (
-            <div className="trip-meta-text bg-white px-3 py-2 text-[10px] uppercase text-black">
-              {price}
-            </div>
-          ) : null}
           <button
             type="button"
             onClick={(event) => {
@@ -896,11 +887,11 @@ export function FeaturedAdventures({
   );
   const galleryLoopProgress = useTransform(
     galleryScrollYProgress,
-    [0, 0.9, 1],
+    [0, 0.86, 1],
     [0, galleryAdventureCount, galleryAdventureCount]
   );
   const galleryScrollHeight =
-    Math.max(1, galleryAdventureCount) * 72 + 34;
+    Math.max(1, galleryAdventureCount) * 96 + 52;
 
   const scopeOptions = [
     {
@@ -1055,7 +1046,7 @@ export function FeaturedAdventures({
                 <p className="tours-list-body max-w-xs text-sm uppercase leading-[1.34] text-black/78 sm:text-[15px]">
                   {sectionCopy.listBody}
                 </p>
-                <div className="tours-list-count mt-4 inline-flex border border-black bg-white px-3 py-2 text-xs uppercase text-black shadow-[6px_6px_0_#000]">
+                <div className="tours-list-count mt-4 inline-flex border border-black bg-white px-3 py-2 text-xs uppercase text-black">
                   {filteredAdventures.length} {sectionCopy.result}
                 </div>
               </div>

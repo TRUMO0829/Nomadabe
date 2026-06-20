@@ -124,10 +124,10 @@ export default function ParticleText({
       const maxTextWidth = canvas.width * 0.92;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.font = `400 ${fontSize}px Arial, Helvetica, sans-serif`;
+      ctx.font = `400 ${fontSize}px Montserrat, Arial, Helvetica, sans-serif`;
       while (fontSize > 34 && ctx.measureText(text).width > maxTextWidth) {
         fontSize *= 0.92;
-        ctx.font = `400 ${fontSize}px Arial, Helvetica, sans-serif`;
+        ctx.font = `400 ${fontSize}px Montserrat, Arial, Helvetica, sans-serif`;
       }
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -184,6 +184,7 @@ export default function ParticleText({
 
     init();
     animate();
+    void document.fonts?.ready.then(init);
 
     return () => {
       resizeObserver.disconnect();
