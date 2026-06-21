@@ -79,7 +79,7 @@ type DomesticTripCardProps = {
 };
 
 const PANEL_GAP_VW = 0;
-const PANEL_END_BUFFER_VH = 70;
+const PANEL_END_BUFFER_VH = 20;
 
 function DomesticTripCard({
   adventure,
@@ -183,7 +183,7 @@ export function TravelOptionsCarousel({
         ref={sectionRef}
         className="relative overflow-clip bg-white text-[#11100b] max-lg:!h-auto"
         style={{
-          height: `calc(${domesticOptions.length * 116 + PANEL_END_BUFFER_VH}svh / var(--site-scale))`,
+          height: `calc(${domesticOptions.length * 100 + PANEL_END_BUFFER_VH}svh / var(--site-scale))`,
         }}
       >
         <div className="hidden h-[calc(100svh/var(--site-scale))] overflow-hidden lg:sticky lg:top-0 lg:flex">

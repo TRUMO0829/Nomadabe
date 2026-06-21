@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { apiError, ok, sanitizeTrip } from "@/lib/server/api";
+import { apiError, ok, rateLimitRequest, sanitizeTrip } from "@/lib/server/api";
 import { getServices, getTrips } from "@/lib/server/admin-store";
 
 export const runtime = "nodejs";
@@ -34,6 +34,15 @@ const MAX_MESSAGE_LENGTH = 1600;
 const KNOWLEDGE_FILE = path.join(process.cwd(), "Nomadabe_Travel_Knowledge_Base.md");
 
 export async function POST(request: Request) {
+  const limited = rateLimitRequest(request, "chat", {
+    limit: 30,
+    windowMs: 10 * 60 * 1000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
   const webhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
 
   if (!webhookUrl) {

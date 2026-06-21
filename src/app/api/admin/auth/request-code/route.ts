@@ -1,9 +1,18 @@
-import { apiError, ok } from "@/lib/server/api";
+import { apiError, ok, rateLimitRequest } from "@/lib/server/api";
 import { requestAdminLoginCode } from "@/lib/server/admin-auth";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const limited = rateLimitRequest(request, "admin-request-code", {
+    limit: 5,
+    windowMs: 15 * 60 * 1000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
   try {
     const payload = (await request.json()) as { email?: unknown };
     return ok(await requestAdminLoginCode(payload.email));

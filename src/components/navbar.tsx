@@ -170,7 +170,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
       className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-300",
         scrolled
-          ? "bg-transparent"
+          ? "border-b border-border/70 bg-background/92 shadow-[0_16px_44px_rgba(17,16,11,0.08)] backdrop-blur-xl"
           : "bg-transparent"
       )}
     >
@@ -187,7 +187,12 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             height={615}
             priority
             sizes="(min-width: 1024px) 80px, 64px"
-            className="h-16 w-auto object-contain drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] lg:h-20"
+            className={cn(
+              "w-auto object-contain transition-all duration-300",
+              scrolled
+                ? "h-12 drop-shadow-[0_1px_5px_rgba(0,0,0,0.18)] lg:h-14"
+                : "h-16 drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] lg:h-20"
+            )}
           />
         </Link>
 
@@ -364,7 +369,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
           onClick={() => setOpen((v) => !v)}
           className={cn(
             "order-3 ml-auto rounded-md p-2 lg:hidden",
-            scrolled ? "text-foreground" : "text-white"
+            scrolled ? "bg-card/90 text-foreground shadow-sm" : "text-white"
           )}
         >
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

@@ -1,10 +1,19 @@
-import { apiError, ok } from "@/lib/server/api";
+import { apiError, ok, rateLimitRequest } from "@/lib/server/api";
 import { getTrips } from "@/lib/server/admin-store";
 import { saveInquiry, validateInquiry } from "@/lib/server/inquiries";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const limited = rateLimitRequest(request, "inquiries", {
+    limit: 12,
+    windowMs: 10 * 60 * 1000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
   try {
     const payload = await request.json();
     const tripSlug = getTripSlug(payload);
