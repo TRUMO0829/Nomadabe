@@ -124,7 +124,7 @@ function DomesticTripCard({
           <p className="trip-meta-text mb-4 text-sm uppercase tracking-[0.2em] text-[#b89422]">
             {copy.route}
           </p>
-          <h3 className="trip-header-title trip-header-title--hero max-w-[14ch] text-balance text-[#11100b]">
+          <h3 className="trip-header-title trip-header-title--hero domestic-trip-title max-w-[14ch] text-balance text-[#11100b]">
             {text.title}
           </h3>
           <p className="trip-copy-text mt-5 max-w-2xl text-sm leading-7 text-[#4b4538] sm:text-base lg:text-lg">
@@ -177,7 +177,12 @@ export function TravelOptionsCarousel({
 
   return (
     <>
-      <TravelSectionIntro id="destinations" title={copy.eyebrow} variant="plain" />
+      <TravelSectionIntro
+        id="destinations"
+        title={copy.eyebrow}
+        titleClassName="domestic-section-title"
+        variant="plain"
+      />
 
       <section
         ref={sectionRef}

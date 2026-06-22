@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&subset=cyrillic,cyrillic-ext,latin&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400&subset=cyrillic,cyrillic-ext,latin&display=swap");
 @import "tailwindcss" source("../");
 
 :root {
@@ -15,7 +15,7 @@
   --secondary: #FFC400;
   --border: #E8DDAE;
   --ring: #FFD400;
-  --site-font: "Noto Sans", Arial, Helvetica, sans-serif;
+  --site-font: "Montserrat", Arial, Helvetica, sans-serif;
 }
 
 @theme inline {
@@ -58,6 +58,7 @@ body {
   background-size: 42px 42px;
   color: var(--foreground);
   font-family: var(--site-font) !important;
+  font-weight: 200;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -101,12 +102,25 @@ h4,
 h5,
 h6,
 .site-heading {
-  font-weight: 700;
+  font-weight: 400;
   text-transform: uppercase;
 }
 
-.font-black {
-  font-weight: 800 !important;
+.font-black,
+.font-extrabold,
+.font-bold,
+.font-semibold,
+strong,
+b {
+  font-weight: 400 !important;
+}
+
+.font-medium,
+.font-normal,
+.font-light,
+.font-extralight,
+.font-thin {
+  font-weight: 200 !important;
 }
 
 button,
@@ -122,6 +136,33 @@ body *::after {
   font-family: var(--site-font) !important;
 }
 
+body :where(p, li, dd, dt, span, input, textarea, select) {
+  font-weight: 200;
+}
+
+body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
+.trip-header-title,
+.hero-heading,
+.site-heading,
+.section-header-title,
+.trip-meta-text,
+.nav-text {
+  font-weight: 400 !important;
+}
+
+.section-header-title {
+  font-family: var(--site-font) !important;
+  font-size: clamp(2rem, 4.4vw, 4.25rem) !important;
+  font-weight: 400 !important;
+  line-height: 0.98 !important;
+  text-transform: uppercase;
+}
+
+.domestic-section-title {
+  font-size: clamp(1.65rem, 3.4vw, 3.2rem) !important;
+  line-height: 1.02 !important;
+}
+
 .trip-header-title {
   font-size: clamp(1.65rem, 4vw, 3.45rem) !important;
   line-height: 0.98 !important;
@@ -133,9 +174,34 @@ body *::after {
   line-height: 0.93 !important;
 }
 
+.domestic-trip-title {
+  font-size: clamp(1.65rem, 3.5vw, 3.35rem) !important;
+  line-height: 1.02 !important;
+}
+
 .trip-header-title--compact {
   font-size: clamp(1.35rem, 3vw, 2.25rem) !important;
   line-height: 1.02 !important;
+}
+
+.testimonial-column {
+  overflow: hidden;
+}
+
+.testimonial-column-track {
+  animation: testimonial-column-scroll var(--testimonial-duration, 15s) linear infinite;
+  will-change: transform;
+}
+
+.testimonial-column:hover .testimonial-column-track,
+.testimonial-column:focus-within .testimonial-column-track {
+  animation-play-state: paused;
+}
+
+@keyframes testimonial-column-scroll {
+  to {
+    transform: translateY(-50%);
+  }
 }
 
 .flow-frame {

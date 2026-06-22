@@ -263,7 +263,7 @@ function FeaturedTripsScrollStack({
           particleGap={3}
           particleSize={1.35}
           mouseRadius={170}
-          className="h-[clamp(8rem,18vw,16rem)] w-full max-w-6xl"
+          className="h-[clamp(5rem,11vw,9rem)] w-full max-w-5xl"
           canvasClassName="pointer-events-auto"
         />
       </div>
@@ -350,7 +350,7 @@ function FeaturedTripsGrid({
           <p className="trip-meta-text mb-3 text-sm uppercase tracking-[0.2em] text-[#b89422]">
             {copy.eyebrow}
           </p>
-          <h2 className="trip-header-title max-w-[12ch] text-balance text-[#11100b]">
+          <h2 className="section-header-title max-w-[12ch] text-balance text-[#11100b]">
             {copy.title}
           </h2>
           <p className="trip-copy-text mt-4 max-w-xl text-sm leading-7 text-[#4b4538] sm:text-base">

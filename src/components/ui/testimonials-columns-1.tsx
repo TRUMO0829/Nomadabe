@@ -55,18 +55,14 @@ export function TestimonialsColumn(props: {
   duration?: number;
 }) {
   return (
-    <div className={props.className}>
-      <motion.div
-        animate={{
-          translateY: "-50%",
-        }}
-        transition={{
-          duration: props.duration || 10,
-          repeat: Infinity,
-          ease: "linear",
-          repeatType: "loop",
-        }}
-        className="flex w-full flex-col gap-3 bg-white pb-3"
+    <div className={`testimonial-column ${props.className ?? ""}`}>
+      <div
+        className="testimonial-column-track flex w-full flex-col gap-3 bg-white pb-3"
+        style={
+          {
+            "--testimonial-duration": `${props.duration ?? 10}s`,
+          } as React.CSSProperties
+        }
       >
         {new Array(2).fill(0).map((_, index) => (
           <React.Fragment key={index}>
@@ -111,7 +107,7 @@ export function TestimonialsColumn(props: {
             })}
           </React.Fragment>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

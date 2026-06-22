@@ -1,6 +1,5 @@
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
-import { WhyUs } from "@/components/why-us";
 import { Testimonials } from "@/components/testimonials";
 import { CtaFooter } from "@/components/cta-footer";
 import { SignupPromptModal } from "@/components/signup-prompt-modal";
@@ -16,14 +15,13 @@ export default async function Home() {
 
   return (
     <>
-      <SignupPromptModal />
+      <SignupPromptModal autoOpen={false} />
       <Navbar showHomeSearch />
       <main className="flex-1">
         <Hero />
         <TravelOptionsCarousel adventures={adventures} />
         <OutboundTripsCarousel adventures={adventures} />
         <FeaturedTripsCarousel adventures={adventures} />
-        <WhyUs />
         <Testimonials />
         <CtaFooter />
       </main>

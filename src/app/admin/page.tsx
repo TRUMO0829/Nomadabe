@@ -24,6 +24,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adventures";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
+import type { TeamMember } from "@/lib/site-settings";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
   getAdminDashboardData,
@@ -31,11 +32,13 @@ import {
 } from "@/lib/server/admin-store";
 import {
   deleteServiceAction,
+  deleteTeamMemberAction,
   deleteTripAction,
   emailLatestInquiryAction,
   logoutAdminAction,
   refreshAdminAction,
   saveServiceAction,
+  saveTeamMemberAction,
   saveTripAction,
   sendAdminEmailAction,
   updateInquiryStatusAction,
@@ -58,6 +61,7 @@ const navItems = [
   { label: "Бүртгэлүүд", href: "#registrations", icon: Users },
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
+  { label: "Манай баг", href: "#team", icon: Users },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
 ];
 
@@ -96,6 +100,8 @@ export default async function AdminDashboard({
     .map((result) => getErrorMessage(result.reason));
   const categoryOptions = getCategoryOptions(trips);
   const featuredTrips = trips.filter((trip) => trip.featured);
+  const teamMembers =
+    dashboardData.status === "fulfilled" ? dashboardData.value.siteSettings.teamMembers : [];
   const latestInquiries = inquiries.slice(0, 12);
   const latestCustomers = customers.slice(0, 12);
   const latestEmailLogs = emailLogs.slice(0, 8);
@@ -243,6 +249,16 @@ export default async function AdminDashboard({
               <div className="space-y-6">
                 <SectionHeader eyebrow="Удирдлага" title="Шинэ аяллын хөтөлбөр нэмэх" action="Хэрэглэгчийн веб дээр харагдана" />
                 <TripForm mode="create" categoryOptions={categoryOptions} />
+
+                <section id="team" className="scroll-mt-6 space-y-4">
+                  <SectionHeader eyebrow="About" title="Манай хамт олон" action={`Нийт ${teamMembers.length}`} />
+                  <TeamMemberForm mode="create" />
+                  <div className="grid gap-3 lg:grid-cols-3">
+                    {teamMembers.map((member) => (
+                      <TeamMemberEditor key={member.id} member={member} />
+                    ))}
+                  </div>
+                </section>
 
                 <section id="mail-sender" className="scroll-mt-6 space-y-4">
                   <SectionHeader eyebrow="Автоматжуулалт" title="Мэйл илгээх" action="Гараар болон автоматаар" />
@@ -504,6 +520,78 @@ function ServiceForm({ mode, service }: { mode: "create" | "edit"; service?: Tra
       >
         {mode === "create" ? <Plus className="h-4 w-4" /> : <Save className="h-4 w-4" />}
         {mode === "create" ? "Үйлчилгээ нэмэх" : "Үйлчилгээ хадгалах"}
+      </button>
+    </form>
+  );
+}
+
+function TeamMemberEditor({ member }: { member: TeamMember }) {
+  return (
+    <details className="rounded-md border border-[var(--border)] bg-white shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <div
+            aria-hidden="true"
+            className="h-16 w-12 shrink-0 rounded-md border border-[var(--border)] bg-[var(--muted)] bg-cover bg-center"
+            style={member.image ? { backgroundImage: `url('${member.image}')` } : undefined}
+          />
+          <div className="min-w-0">
+            <TypePill label="Багийн гишүүн" />
+            <h3 className="mt-2 truncate text-base font-semibold text-[var(--primary)]">
+              {member.name}
+            </h3>
+            <p className="mt-1 line-clamp-1 text-sm text-[var(--muted-foreground)]">
+              {member.role}
+            </p>
+          </div>
+        </div>
+        <span className="text-sm text-[var(--muted-foreground)]">Засах</span>
+      </summary>
+      <div className="border-t border-[var(--border)] p-4">
+        <TeamMemberForm mode="edit" member={member} />
+        <form action={deleteTeamMemberAction} className="mt-3">
+          <input type="hidden" name="id" defaultValue={member.id} />
+          <button
+            type="submit"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
+          >
+            <Trash2 className="h-4 w-4" />
+            Багийн гишүүн устгах
+          </button>
+        </form>
+      </div>
+    </details>
+  );
+}
+
+function TeamMemberForm({ mode, member }: { mode: "create" | "edit"; member?: TeamMember }) {
+  return (
+    <form action={saveTeamMemberAction} className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
+      {member ? <input type="hidden" name="id" defaultValue={member.id} /> : null}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TextField label="Нэр" name="name" defaultValue={member?.name} required />
+        <TextField label="Албан тушаал" name="role" defaultValue={member?.role} required />
+        <TextField
+          label="Зургийн URL"
+          name="image"
+          defaultValue={member?.image}
+          className="lg:col-span-2"
+          placeholder="https://..."
+        />
+        <TextareaField
+          label="Товч тайлбар"
+          name="bio"
+          defaultValue={member?.bio}
+          rows={3}
+          className="lg:col-span-2"
+        />
+      </div>
+      <button
+        type="submit"
+        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
+      >
+        {mode === "create" ? <Plus className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+        {mode === "create" ? "Багийн гишүүн нэмэх" : "Багийн гишүүн хадгалах"}
       </button>
     </form>
   );

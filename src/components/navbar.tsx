@@ -11,53 +11,10 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
+import { LANGUAGES } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
 import { SiteSearch } from "./site-search";
-
-const NAV_TRIP_CHOICES: Record<
-  CopyLocale,
-  Array<{ title: string; body: string; href: string }>
-> = {
-  mn: [
-    {
-      title: "Дотоод аялал",
-      body: "Монгол доторх аяллын багцууд.",
-      href: "/tours?scope=domestic",
-    },
-    {
-      title: "Гадаад аялал",
-      body: "Хятад, Япон, Солонгос, Турк зэрэг чиглэлүүд.",
-      href: "/tours?scope=outbound",
-    },
-    {
-      title: "Бүх аялал",
-      body: "Бүх аяллын жагсаалтыг нэг дороос харах.",
-      href: "/tours",
-    },
-  ],
-  en: [
-    { title: "Domestic trips", body: "Trips inside Mongolia.", href: "/tours?scope=domestic" },
-    { title: "Outbound trips", body: "China, Japan, Korea, Turkey, and more.", href: "/tours?scope=outbound" },
-    { title: "All trips", body: "Browse every available trip.", href: "/tours" },
-  ],
-  zh: [
-    { title: "国内旅行", body: "蒙古国内旅行套餐。", href: "/tours?scope=domestic" },
-    { title: "出境旅行", body: "中国、日本、韩国、土耳其等路线。", href: "/tours?scope=outbound" },
-    { title: "全部旅行", body: "查看所有旅行。", href: "/tours" },
-  ],
-  ja: [
-    { title: "国内旅行", body: "モンゴル国内の旅行プラン。", href: "/tours?scope=domestic" },
-    { title: "海外旅行", body: "中国、日本、韓国、トルコなど。", href: "/tours?scope=outbound" },
-    { title: "すべての旅行", body: "すべてのツアーを見る。", href: "/tours" },
-  ],
-  ko: [
-    { title: "국내 여행", body: "몽골 국내 여행 패키지.", href: "/tours?scope=domestic" },
-    { title: "해외 여행", body: "중국, 일본, 한국, 튀르키예 등.", href: "/tours?scope=outbound" },
-    { title: "전체 여행", body: "모든 여행 보기.", href: "/tours" },
-  ],
-};
 
 const AUTH_COPY = {
   mn: "Нэвтрэх / Бүртгүүлэх",
@@ -81,47 +38,28 @@ type AuthCustomer = {
   isAdmin?: boolean;
 };
 const DESKTOP_ACTION_CLASS =
-  "inline-flex h-10 items-center justify-center rounded-lg px-3 text-xs font-black uppercase leading-none";
+  "nav-text inline-flex h-10 items-center justify-center rounded-lg px-3 text-xs uppercase leading-none";
 
 function openSignupPrompt() {
   window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
 }
 
-function DestinationMegaMenu({ locale }: { locale: CopyLocale }) {
-  const choices = NAV_TRIP_CHOICES[locale];
+type NavbarProps = {
+  showHomeSearch?: boolean;
+  surface?: "auto" | "light";
+};
 
-  return (
-    <div className="w-full rounded-xl border border-[#eadfac] bg-white p-5 text-[#11100b] shadow-[0_30px_90px_rgba(17,16,11,0.16)] backdrop-blur-xl">
-      <div className="grid gap-2">
-        {choices.map((choice) => (
-          <Link
-            key={choice.href}
-            href={choice.href}
-            className="block rounded-lg px-4 py-3 transition-colors hover:bg-[#fff6d8]"
-          >
-            <span className="block text-sm font-black uppercase leading-tight text-[#11100b]">
-              {choice.title}
-            </span>
-            <span className="mt-1 block text-sm font-medium leading-5 text-[#4b4538]">
-              {choice.body}
-            </span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean }) {
+export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
-  const [destinationOpen, setDestinationOpen] = useState(false);
   const [customer, setCustomer] = useState<AuthCustomer | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const { contentLocale, locale, setLocale, t } = useLanguage();
   const currentLanguage =
     LANGUAGES.find((language) => language.code === locale) ?? LANGUAGES[0];
+  const visibleNavItems = t.nav.items.filter((item) => item.href !== "/#journal");
+  const useLightHeader = surface === "light" || scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -187,57 +125,38 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             height={615}
             priority
             sizes="(min-width: 1024px) 80px, 64px"
-            className="h-16 w-auto object-contain drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)] lg:h-20"
+            className={cn(
+              "h-16 w-auto object-contain lg:h-20",
+              useLightHeader
+                ? "drop-shadow-[0_2px_12px_rgba(0,0,0,0.88)]"
+                : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
+            )}
           />
         </Link>
 
-        <nav className="hidden items-center gap-10 lg:absolute lg:left-1/2 lg:top-1/2 lg:flex lg:-translate-x-1/2 lg:-translate-y-1/2">
-          {t.nav.items.map((n) => {
-            const isTrips = n.href === "/tours";
-
-            if (!isTrips) {
-              return (
-                <a
-                  key={n.href}
-                  href={n.href}
-                  className={cn(
-                    "text-sm font-black uppercase transition-colors hover:text-accent",
-                    scrolled ? "text-foreground/80" : "text-white/90"
-                  )}
-                >
-                  {n.label}
-                </a>
-              );
-            }
-
-            return (
-              <div
+        <div
+          className={cn(
+            "hidden items-center rounded-xl border px-2 py-2 backdrop-blur-xl lg:absolute lg:left-1/2 lg:top-1/2 lg:flex lg:-translate-x-1/2 lg:-translate-y-1/2",
+            useLightHeader
+              ? "border-border bg-card/90 shadow-[0_18px_45px_rgba(17,16,11,0.08)]"
+              : "border-white/25 bg-black/20 shadow-[0_18px_50px_rgba(0,0,0,0.18)]"
+          )}
+        >
+          <nav className="flex items-center gap-1">
+            {visibleNavItems.map((n) => (
+              <a
                 key={n.href}
-                className="relative"
-                onMouseEnter={() => setDestinationOpen(true)}
-                onMouseLeave={() => setDestinationOpen(false)}
-              >
-                <a
-                  href={n.href}
-                  onClick={() => setDestinationOpen(false)}
-                  className={cn(
-                    "text-sm font-black uppercase transition-colors hover:text-accent",
-                    destinationOpen && "text-accent",
-                    scrolled ? "text-foreground/80" : "text-white/90"
-                  )}
-                >
-                  {n.label}
-                </a>
-
-                {destinationOpen && (
-                  <div className="absolute left-1/2 top-full z-50 w-[min(520px,calc(100vw-2rem))] -translate-x-1/2 pt-5">
-                    <DestinationMegaMenu locale={contentLocale} />
-                  </div>
+                href={n.href}
+                className={cn(
+                  "nav-text rounded-lg px-3 py-2 text-sm uppercase transition-colors hover:bg-accent hover:text-accent-foreground",
+                  useLightHeader ? "text-foreground/80" : "text-white/90"
                 )}
-              </div>
-            );
-          })}
-        </nav>
+              >
+                {n.label}
+              </a>
+            ))}
+          </nav>
+        </div>
 
         <div className="hidden items-center gap-3 lg:ml-auto lg:flex">
           {showHomeSearch ? (
@@ -250,7 +169,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
                 "inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-colors",
                 searchOpen
                   ? "border-accent bg-accent text-accent-foreground"
-                  : scrolled
+                  : useLightHeader
                     ? "border-border bg-card/90 text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
                     : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
               )}
@@ -267,7 +186,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             aria-label={t.nav.language}
             className={cn(
               "relative h-10 rounded-lg border",
-              scrolled
+              useLightHeader
                 ? "border-border bg-card/90 text-foreground"
                 : "border-white/30 bg-black/25 text-white"
             )}
@@ -276,7 +195,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
               type="button"
               aria-expanded={languageOpen}
               onClick={() => setLanguageOpen((value) => !value)}
-              className="flex h-full items-center gap-2 rounded-lg px-3 text-xs font-black uppercase leading-none transition-colors hover:bg-white/15"
+              className="nav-text flex h-full items-center gap-2 rounded-lg px-3 text-xs uppercase leading-none transition-colors hover:bg-white/15"
             >
               <Globe className="h-4 w-4" />
               {currentLanguage.short}
@@ -301,7 +220,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
                       setLanguageOpen(false);
                     }}
                     className={cn(
-                      "flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs font-bold transition-colors",
+                      "nav-text flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors",
                       locale === language.code
                         ? "bg-accent text-accent-foreground"
                         : "hover:bg-muted"
@@ -319,7 +238,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             className={cn(
               DESKTOP_ACTION_CLASS,
               "border transition-colors",
-              scrolled
+              useLightHeader
                 ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
                 : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
             )}
@@ -332,7 +251,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
               className={cn(
                 DESKTOP_ACTION_CLASS,
                 "max-w-56 gap-2 border px-4 normal-case transition-colors",
-                scrolled
+                useLightHeader
                   ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
                   : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
               )}
@@ -348,7 +267,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
               className={cn(
                 DESKTOP_ACTION_CLASS,
                 "gap-2 border transition-colors",
-                scrolled
+                useLightHeader
                   ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
                   : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
               )}
@@ -364,7 +283,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
           onClick={() => setOpen((v) => !v)}
           className={cn(
             "order-3 ml-auto rounded-md p-2 lg:hidden",
-            scrolled ? "text-foreground" : "text-white"
+            useLightHeader ? "text-foreground" : "text-white"
           )}
         >
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -390,7 +309,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
                 type="button"
                 aria-expanded={languageOpen}
                 onClick={() => setLanguageOpen((value) => !value)}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold"
+                className="nav-text flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
               >
                 <Globe className="h-4 w-4 text-muted-foreground" />
                 {currentLanguage.short}
@@ -414,7 +333,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
                         setLanguageOpen(false);
                       }}
                       className={cn(
-                        "flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs font-bold transition-colors",
+                        "nav-text flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors",
                         locale === language.code
                           ? "bg-accent text-accent-foreground"
                           : "hover:bg-muted"
@@ -427,12 +346,12 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
                 </div>
               )}
             </div>
-            {t.nav.items.map((n) => (
+            {visibleNavItems.map((n) => (
               <a
                 key={n.href}
                 href={n.href}
                 onClick={() => setOpen(false)}
-                className="py-2 text-base font-black uppercase text-foreground/80 hover:text-accent"
+                className="nav-text py-2 text-base uppercase text-foreground/80 hover:text-accent"
               >
                 {n.label}
               </a>
@@ -440,7 +359,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
             <Link
               href="/plan"
               onClick={() => setOpen(false)}
-              className="mt-2 rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-black uppercase text-foreground"
+              className="nav-text mt-2 rounded-lg border border-border bg-card px-5 py-3 text-center text-sm uppercase text-foreground"
             >
               {t.nav.cta}
             </Link>
@@ -448,7 +367,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
               <Link
                 href={customer.isAdmin ? "/admin" : "/profile"}
                 onClick={() => setOpen(false)}
-                className="rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-black uppercase text-foreground"
+                className="nav-text rounded-lg border border-border bg-card px-5 py-3 text-center text-sm uppercase text-foreground"
               >
                 {PROFILE_COPY[contentLocale]}
               </Link>
@@ -459,7 +378,7 @@ export function Navbar({ showHomeSearch = false }: { showHomeSearch?: boolean })
                   setOpen(false);
                   openSignupPrompt();
                 }}
-                className="rounded-lg border border-border bg-card px-5 py-3 text-center text-sm font-black uppercase text-foreground"
+                className="nav-text rounded-lg border border-border bg-card px-5 py-3 text-center text-sm uppercase text-foreground"
               >
                 {AUTH_COPY[contentLocale]}
               </button>
