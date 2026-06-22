@@ -108,7 +108,7 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
       className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-300",
         scrolled
-          ? "bg-transparent"
+          ? "border-b border-border/70 bg-background/92 shadow-[0_16px_44px_rgba(17,16,11,0.08)] backdrop-blur-xl"
           : "bg-transparent"
       )}
     >
@@ -126,7 +126,8 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
             priority
             sizes="(min-width: 1024px) 80px, 64px"
             className={cn(
-              "h-16 w-auto object-contain lg:h-20",
+              "w-auto object-contain transition-all duration-300",
+              scrolled ? "h-12 lg:h-14" : "h-16 lg:h-20",
               useLightHeader
                 ? "drop-shadow-[0_2px_12px_rgba(0,0,0,0.88)]"
                 : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
@@ -283,7 +284,7 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
           onClick={() => setOpen((v) => !v)}
           className={cn(
             "order-3 ml-auto rounded-md p-2 lg:hidden",
-            useLightHeader ? "text-foreground" : "text-white"
+            useLightHeader ? "bg-card/90 text-foreground shadow-sm" : "text-white"
           )}
         >
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

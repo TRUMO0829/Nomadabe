@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { AdminVisualEditor } from "@/components/admin-visual-editor";
 import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adventures";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import type { TeamMember } from "@/lib/site-settings";
@@ -93,6 +94,8 @@ export default async function AdminDashboard({
           inquiries: [],
           bookingStats: [],
         };
+  const siteSettings =
+    dashboardData.status === "fulfilled" ? dashboardData.value.siteSettings : null;
   const customers = customersResult.status === "fulfilled" ? customersResult.value : [];
   const emailLogs = emailLogsResult.status === "fulfilled" ? emailLogsResult.value : [];
   const loadErrors = [dashboardData, customersResult, emailLogsResult]
@@ -247,6 +250,17 @@ export default async function AdminDashboard({
 
             <section className="grid gap-6 xl:grid-cols-[1fr_380px]">
               <div className="space-y-6">
+                {siteSettings ? (
+                  <>
+                    <SectionHeader
+                      eyebrow="Дизайн"
+                      title="Нүүр хэсгийн live editor"
+                      action="Hero хэсэгт шууд нөлөөлнө"
+                    />
+                    <AdminVisualEditor settings={siteSettings} />
+                  </>
+                ) : null}
+
                 <SectionHeader eyebrow="Удирдлага" title="Шинэ аяллын хөтөлбөр нэмэх" action="Хэрэглэгчийн веб дээр харагдана" />
                 <TripForm mode="create" categoryOptions={categoryOptions} />
 

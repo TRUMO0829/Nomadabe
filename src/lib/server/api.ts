@@ -4,6 +4,7 @@ import type { Adventure, TravelCategory } from "@/lib/adventures";
 export type ApiErrorCode =
   | "BAD_REQUEST"
   | "UNAUTHORIZED"
+  | "RATE_LIMITED"
   | "NOT_FOUND"
   | "METHOD_NOT_ALLOWED"
   | "INTERNAL_ERROR";
@@ -29,6 +30,64 @@ export function apiError(
     },
     { status }
   );
+}
+
+type RateLimitOptions = {
+  limit: number;
+  windowMs: number;
+};
+
+const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
+
+export function rateLimitRequest(
+  request: Request,
+  scope: string,
+  { limit, windowMs }: RateLimitOptions
+) {
+  const now = Date.now();
+  const clientIp = getClientIp(request);
+  const key = `${scope}:${clientIp}`;
+  const bucket = rateLimitBuckets.get(key);
+
+  if (!bucket || bucket.resetAt <= now) {
+    rateLimitBuckets.set(key, { count: 1, resetAt: now + windowMs });
+    cleanupRateLimitBuckets(now);
+    return null;
+  }
+
+  bucket.count += 1;
+
+  if (bucket.count <= limit) {
+    return null;
+  }
+
+  const retryAfter = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+  return apiError(
+    "RATE_LIMITED",
+    "Хэт олон удаа оролдлоо. Түр хүлээгээд дахин оролдоно уу.",
+    429,
+    { retryAfter: String(retryAfter) }
+  );
+}
+
+function getClientIp(request: Request) {
+  return (
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip")?.trim() ||
+    "local"
+  );
+}
+
+function cleanupRateLimitBuckets(now: number) {
+  if (rateLimitBuckets.size < 500) {
+    return;
+  }
+
+  for (const [key, bucket] of rateLimitBuckets) {
+    if (bucket.resetAt <= now) {
+      rateLimitBuckets.delete(key);
+    }
+  }
 }
 
 export function getTripsFromSearchParams(params: URLSearchParams, sourceTrips: Adventure[]) {

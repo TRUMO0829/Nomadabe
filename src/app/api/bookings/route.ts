@@ -1,4 +1,4 @@
-import { apiError, ok } from "@/lib/server/api";
+import { apiError, ok, rateLimitRequest } from "@/lib/server/api";
 import { getTrips } from "@/lib/server/admin-store";
 import { getCustomerFromRequest } from "@/lib/server/customer-auth";
 import { saveInquiry, validateInquiry } from "@/lib/server/inquiries";
@@ -6,12 +6,21 @@ import { saveInquiry, validateInquiry } from "@/lib/server/inquiries";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const limited = rateLimitRequest(request, "bookings", {
+    limit: 12,
+    windowMs: 10 * 60 * 1000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
   try {
     const payload = await request.json();
     const customer = await getCustomerFromRequest(request);
 
     if (!customer) {
-      return apiError("UNAUTHORIZED", "Please sign in with email before booking.", 401);
+      return apiError("UNAUTHORIZED", "Аялал захиалахын тулд эхлээд нэвтэрнэ үү.", 401);
     }
 
     const tripSlug = getTripSlug(payload);
@@ -23,7 +32,7 @@ export async function POST(request: Request) {
     const trip = (await getTrips()).find((item) => item.slug === tripSlug);
 
     if (!trip) {
-      return apiError("BAD_REQUEST", "Selected trip was not found.", 400);
+      return apiError("BAD_REQUEST", "Сонгосон аялал олдсонгүй.", 400);
     }
 
     const validation = validateInquiry({
@@ -35,7 +44,7 @@ export async function POST(request: Request) {
     });
 
     if (!validation.ok) {
-      return apiError("BAD_REQUEST", "Please check the booking fields.", 400, validation.errors);
+      return apiError("BAD_REQUEST", "Захиалгын мэдээллээ шалгана уу.", 400, validation.errors);
     }
 
     const inquiry = await saveInquiry(validation.value);
