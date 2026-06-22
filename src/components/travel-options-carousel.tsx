@@ -79,7 +79,7 @@ type DomesticTripCardProps = {
 };
 
 const PANEL_GAP_VW = 0;
-const PANEL_END_BUFFER_VH = 20;
+const PANEL_END_BUFFER_VH = 140;
 
 function DomesticTripCard({
   adventure,
@@ -108,8 +108,8 @@ function DomesticTripCard({
         ) : null}
       </div>
 
-      <div className="flex h-full items-center bg-white px-6 py-10 text-[#11100b] sm:px-10 lg:px-[clamp(3rem,6vw,7rem)]">
-        <div className="max-w-xl">
+      <div className="flex h-full min-w-0 items-center bg-white px-6 py-10 text-[#11100b] sm:px-10 lg:px-[clamp(3rem,5vw,6rem)]">
+        <div className="min-w-0 max-w-[min(34rem,calc(50vw-7rem))]">
           <div className="trip-meta-text mb-6 flex flex-wrap gap-2 text-xs text-[#11100b] lg:text-sm">
             <span className="flex items-center gap-1.5 rounded-full border border-[#e4c769]/75 bg-white px-4 py-2 shadow-[0_14px_34px_rgba(17,16,11,0.07)]">
               <MapPin className="h-3.5 w-3.5 text-[#b89422]" />
@@ -127,7 +127,7 @@ function DomesticTripCard({
           <h3 className="trip-header-title trip-header-title--hero domestic-trip-title max-w-[14ch] text-balance text-[#11100b]">
             {text.title}
           </h3>
-          <p className="trip-copy-text mt-5 max-w-2xl text-sm leading-7 text-[#4b4538] sm:text-base lg:text-lg">
+          <p className="trip-copy-text mt-5 max-w-full text-sm leading-7 text-[#4b4538] sm:text-base lg:text-lg">
             {text.summary}
           </p>
 
@@ -163,7 +163,7 @@ export function TravelOptionsCarousel({
     Math.max(0, domesticOptions.length - 1) * (100 + PANEL_GAP_VW);
   const desktopTrackX = useTransform(
     scrollYProgress,
-    [0, 0.72, 1],
+    [0, 0.58, 1],
     [
       "calc(0vw / var(--site-scale))",
       `calc(${-maxDesktopShiftVw}vw / var(--site-scale))`,

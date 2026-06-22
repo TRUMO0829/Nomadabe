@@ -57,20 +57,14 @@ const STORE_FILE = path.join(DATA_DIR, "admin-store.json");
 const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
   {
     id: "team-founder",
-    name: "Нэр оруулах",
-    role: "Үүсгэн байгуулагч",
+    name: "N. Ariunbold",
+    role: "Co-Founder, CEO",
     image: "",
   },
   {
     id: "team-travel-manager",
-    name: "Нэр оруулах",
-    role: "Аялал төлөвлөлтийн менежер",
-    image: "",
-  },
-  {
-    id: "team-operations-manager",
-    name: "Нэр оруулах",
-    role: "Зохион байгуулалтын менежер",
+    name: "B. Bilguun",
+    role: "Co-Founder, COO",
     image: "",
   },
 ];

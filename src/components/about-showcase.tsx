@@ -28,172 +28,172 @@ const SECTIONS: Array<{ id: SectionId }> = [
 const ABOUT_COPY = {
   mn: {
     eyebrow: "БИДНИЙ ТУХАЙ",
-    title: "Аяллыг санаанаас бодит маршрут болгодог баг.",
+    title: "Улаанбаатараас дэлхий рүү холбодог аяллын баг.",
     body:
-      "Nomadabe Travel нь дотоод болон гадаад чиглэлийн аяллыг нэг дор төлөвлөж, буудал, тээвэр, хөтөч, уулзалт, бичиг баримтын хэрэгцээг бодитоор зохион байгуулдаг.",
+      "Nomadabe Travel нь Улаанбаатар хотод төвтэй, бизнес аялал, inbound болон outbound чиглэлээр мэргэшсэн мэргэжлийн аяллын компани. Бид Монгол дотор болон олон улсын чиглэлд 10,000 гаруй аялагчийн аяллыг амжилттай зохион байгуулсан.",
     whoLabel: "Бид хэн бэ",
     whoText:
-      "Бид зөвхөн санал болгодог биш, аяллын алхам бүрийг газар дээр нь гүйцэтгэхээр төлөвлөдөг аяллын баг.",
+      "Since 2019, we have served over 2,000 travelers annually, bridging the gap between business and leisure by connecting entrepreneurs to major international events and opportunities for sustainable growth.",
     stats: [
-      { value: "24h", label: "Анхны чиглэл, хугацаа, төсвийн санал" },
-      { value: "1", label: "Нэг төлөвлөх баг" },
-      { value: "5+", label: "Дотоод, гадаад, expo, business, custom" },
+      { value: "7", label: "Жилийн туршлага" },
+      { value: "10К+", label: "Үйлчлүүлэгчид" },
+      { value: "2К+", label: "Жил бүрийн аялагч" },
     ],
     valuesLabel: "Бидний үнэт зүйлс",
     values: [
       {
-        title: "Ил тод байдал",
-        body: "Юу багтсан, юу нэмэгдэх, ямар бичиг баримт хэрэгтэйг эхнээс нь тодорхой болгоно.",
+        title: "Монголыг дэлхийд харуулах",
+        body: "Монголын байгалийн гайхамшиг, уламжлалт нүүдлийн соёлыг аялагчдад мартагдашгүй туршлага болгон хүргэнэ.",
       },
       {
-        title: "Хүний холбоо",
-        body: "Аялагч, байгууллага, хөтөч, үйлчилгээ үзүүлэгч бүрийн хэрэгцээг нэг хэл дээр ойлгуулна.",
+        title: "Дэлхий рүү холбох",
+        body: "Монгол аялагч, бизнесүүдийг олон улсын чиглэл, үзэсгэлэн, салбарын томоохон арга хэмжээнүүдтэй холбоно.",
       },
       {
-        title: "Бодит гүйцэтгэл",
-        body: "Маршрут, буудал, тээвэр, уулзалт, өдөр бүрийн хөтөлбөрийг газар дээр хэрэгжихээр бэлдэнэ.",
+        title: "Итгэлтэй зохион байгуулалт",
+        body: "Бизнес болон амралтын аяллыг буудал, тээвэр, хөтөлбөр, уулзалттай нь уялдуулан бодитоор хэрэгжүүлнэ.",
       },
       {
-        title: "Өөрийн хэв маяг",
-        body: "Ердийн багцаас илүү зорилго, хугацаа, төсөвт тохирсон аяллын хувилбар гаргана.",
+        title: "Урт хугацааны боломж",
+        body: "Аяллыг зөвхөн зорчих биш, шинэ түншлэл, зах зээл, бизнесийн өсөлтийн боломж болгохыг зорьдог.",
       },
     ],
     teamLabel: "Манай баг",
     workLabel: "Бид юу хийдэг вэ",
-    workTitle: "Тодорхой төлөвлөж, аяллыг саадгүй явуулдаг.",
+    workTitle: "Business, leisure, custom аяллыг нэг дор зохион байгуулдаг.",
     workBody:
-      "Бид аяллын санааг маршрутын зураг, өдрийн төлөвлөгөө, үйлчилгээний нөхцөл, холбоо барих дараагийн алхам болгон хувиргадаг.",
+      "Бид бизнес аялал, амралтын аялал, захиалгат маршрут, олон улсын expo болон салбарын арга хэмжээнд оролцох аяллыг төлөвлөж гүйцэтгэдэг.",
     work: [
-      { title: "Төлөвлөлт", body: "Чиглэл, хугацаа, төсөв, аяллын зорилгыг нэг дор тодорхойлно." },
-      { title: "Захиалга", body: "Буудал, нислэг, тээвэр, хөтөч, уулзалтыг уялдуулна." },
-      { title: "Гүйцэтгэл", body: "Өдөр бүрийн хөтөлбөр, газар дээрх холбоо, өөрчлөлтийн дэмжлэгийг бэлдэнэ." },
-      { title: "Бизнес + Экспо", body: "Үзэсгэлэн, уулзалт, бараа судалгаа, байгууллагын аялалд тохируулна." },
+      { title: "Business Tours", body: "Олон улсын үзэсгэлэн, уулзалт, салбарын арга хэмжээ, зах зээл судлах аяллыг зохион байгуулна." },
+      { title: "Leisure Tours", body: "Монгол болон гадаад чиглэлийн амралт, хот, байгаль, соёлын аяллыг төлөвлөнө." },
+      { title: "Customized Tours", body: "Гэр бүл, найз нөхөд, байгууллагын зорилгод тохирсон захиалгат маршрутыг гаргана." },
+      { title: "Inbound + Outbound", body: "Монголд ирэх болон Монголоос гадагш аялах чиглэлийг нэг баг гүйцэтгэнэ." },
     ],
     imageAlt: "Nomadabe Travel route planning",
   },
   en: {
     eyebrow: "ABOUT US",
-    title: "We turn travel ideas into real routes.",
+    title: "A Ulaanbaatar travel company connecting Mongolia with the world.",
     body:
-      "Nomadabe Travel plans domestic and outbound trips with practical coordination across hotels, transport, guides, meetings, documents, and every next step.",
+      "Nomadabe Travel is a professional travel company based in Ulaanbaatar, specializing in business travel, inbound tours, and outbound tours. We have successfully organized trips for over 10,000 travelers within Mongolia and to international destinations.",
     whoLabel: "Who We Are",
     whoText:
-      "We are a travel operations team, not just a recommendation desk. Every route is planned to work in the real world.",
+      "Since 2019, we have served over 2,000 travelers annually, bridging the gap between business and leisure by connecting entrepreneurs to major international events and opportunities for sustainable growth.",
     stats: [
-      { value: "24h", label: "Initial direction, timing, and budget range" },
-      { value: "1", label: "One planning team" },
-      { value: "5+", label: "Domestic, outbound, expo, business, custom" },
+      { value: "7", label: "Years of experience" },
+      { value: "10k+", label: "Clients" },
+      { value: "2k+", label: "Annual travelers" },
     ],
     valuesLabel: "Our Values",
     values: [
-      { title: "Transparency", body: "Inclusions, extras, documents, and risks are clarified from the start." },
-      { title: "Human connection", body: "Travelers, companies, guides, and suppliers are kept aligned through real communication." },
-      { title: "Real execution", body: "Routes, hotels, transport, meetings, and daily schedules are prepared to operate." },
-      { title: "Distinct fit", body: "Trips are shaped around purpose, timing, budget, and the people traveling." },
+      { title: "Showcase Mongolia", body: "We turn Mongolia's natural beauty and nomadic heritage into memorable travel experiences." },
+      { title: "Connect to the world", body: "We link travelers and businesses with international routes, exhibitions, and industry events." },
+      { title: "Trusted coordination", body: "Business and leisure trips are organized with hotels, transport, programs, and meetings aligned." },
+      { title: "Long-term opportunity", body: "Travel becomes a path to new partnerships, markets, and sustainable growth." },
     ],
     teamLabel: "Our Team",
     workLabel: "What We Do",
-    workTitle: "Plan clearly. Move smoothly. Travel with context.",
+    workTitle: "Business, leisure, and custom trips, organized end to end.",
     workBody:
-      "We convert a trip idea into a route map, daily plan, service conditions, and a clear next step.",
+      "We arrange business travel, leisure travel, customized routes, international expo trips, and major industry event travel across Asia and beyond.",
     work: [
-      { title: "Planning", body: "Destination, timing, budget, and purpose are clarified in one place." },
-      { title: "Booking", body: "Hotels, flights, transport, guides, and meetings are coordinated." },
-      { title: "Operations", body: "Daily schedules, local contacts, and change support are prepared." },
-      { title: "Business + Expo", body: "Exhibitions, meetings, sourcing, and company trips are tailored." },
+      { title: "Business Tours", body: "International exhibitions, meetings, industry events, and market research trips." },
+      { title: "Leisure Tours", body: "Domestic and international holidays shaped around nature, cities, culture, and rest." },
+      { title: "Customized Tours", body: "Routes tailored for families, friends, companies, and special travel goals." },
+      { title: "Inbound + Outbound", body: "One team for trips into Mongolia and from Mongolia to the world." },
     ],
     imageAlt: "Nomadabe Travel route planning",
   },
   zh: {
     eyebrow: "关于我们",
-    title: "我们把旅行想法变成可执行的路线。",
+    title: "一家位于乌兰巴托、连接蒙古与世界的旅行公司。",
     body:
-      "Nomadabe Travel 规划蒙古国内及出境旅行，协调酒店、交通、导游、会议、文件和后续步骤。",
+      "Nomadabe Travel 是一家位于蒙古首都乌兰巴托的专业旅行公司，专注于商务旅行、入境游和出境游。我们已为超过 10,000 名旅客成功组织蒙古国内及国际目的地旅行。",
     whoLabel: "我们是谁",
-    whoText: "我们不是简单推荐行程，而是让路线可以真正落地执行的旅行运营团队。",
+    whoText: "自 2019 年以来，我们每年服务超过 2,000 名旅客，连接商务与休闲旅行，并帮助企业家接触重要国际活动和可持续增长机会。",
     stats: [
-      { value: "24h", label: "初步方向、时间和预算建议" },
-      { value: "1", label: "一个规划团队" },
-      { value: "5+", label: "国内、出境、展会、商务、定制" },
+      { value: "7", label: "年经验" },
+      { value: "10k+", label: "客户" },
+      { value: "2k+", label: "年度旅客" },
     ],
     valuesLabel: "我们的价值观",
     values: [
-      { title: "透明", body: "包含项目、额外费用、文件和注意事项从一开始说明清楚。" },
-      { title: "真实沟通", body: "让旅客、企业、导游和供应商保持同一节奏。" },
-      { title: "实际执行", body: "路线、酒店、交通、会议和每日安排都按执行需求准备。" },
-      { title: "个性匹配", body: "根据目的、时间、预算和同行人员设计旅行。" },
+      { title: "展示蒙古", body: "把蒙古的自然之美和游牧文化转化为难忘的旅行体验。" },
+      { title: "连接世界", body: "帮助旅客和企业连接国际路线、展会及行业活动。" },
+      { title: "可信赖的统筹", body: "将酒店、交通、行程和会议协调到商务及休闲旅行中。" },
+      { title: "长期机会", body: "让旅行成为建立合作、进入市场和持续成长的机会。" },
     ],
     teamLabel: "我们的团队",
     workLabel: "我们的服务",
-    workTitle: "清晰规划，顺畅出行。",
-    workBody: "我们把旅行想法转化为路线、每日计划、服务条件和下一步安排。",
+    workTitle: "商务、休闲与定制旅行，全流程组织。",
+    workBody: "我们组织商务旅行、休闲旅行、定制路线、国际展会旅行以及亚洲及其他地区的重要行业活动旅行。",
     work: [
-      { title: "规划", body: "集中确认目的地、时间、预算和旅行目的。" },
-      { title: "预订", body: "协调酒店、航班、交通、导游和会议。" },
-      { title: "执行", body: "准备每日行程、当地联系和变化支持。" },
-      { title: "商务 + 展会", body: "支持展会、会议、采购考察和企业旅行。" },
+      { title: "商务旅行", body: "国际展会、会议、行业活动和市场调研旅行。" },
+      { title: "休闲旅行", body: "围绕自然、城市、文化和休息设计的国内外度假行程。" },
+      { title: "定制旅行", body: "为家庭、朋友、企业和特别目标量身定制路线。" },
+      { title: "入境 + 出境", body: "同一团队负责来蒙古和从蒙古前往世界的旅行。" },
     ],
     imageAlt: "Nomadabe Travel route planning",
   },
   ja: {
     eyebrow: "私たちについて",
-    title: "旅のアイデアを実行できるルートへ。",
+    title: "ウランバートルからモンゴルと世界をつなぐ旅行会社です。",
     body:
-      "Nomadabe Travel はモンゴル国内外の旅を、ホテル、移動、ガイド、商談、書類、次のステップまで実務的に整えます。",
+      "Nomadabe Travel はウランバートルを拠点とする旅行会社で、ビジネス旅行、インバウンド、アウトバウンドツアーを専門としています。モンゴル国内外で 10,000 人以上の旅行を手配してきました。",
     whoLabel: "私たち",
-    whoText: "私たちは提案だけでなく、現地で動く旅を設計するオペレーションチームです。",
+    whoText: "2019 年以来、年間 2,000 人以上の旅行者をサポートし、ビジネスとレジャーをつなぎながら、起業家を主要な国際イベントと持続的成長の機会へ結びつけています。",
     stats: [
-      { value: "24h", label: "初期ルート、時期、予算案" },
-      { value: "1", label: "一つの計画チーム" },
-      { value: "5+", label: "国内、海外、展示会、ビジネス、カスタム" },
+      { value: "7", label: "年の経験" },
+      { value: "10k+", label: "顧客" },
+      { value: "2k+", label: "年間旅行者" },
     ],
     valuesLabel: "大切にしていること",
     values: [
-      { title: "透明性", body: "含まれる内容、追加費用、書類、注意点を最初に明確にします。" },
-      { title: "人のつながり", body: "旅行者、企業、ガイド、手配先を実際の会話でつなぎます。" },
-      { title: "実行力", body: "ルート、ホテル、移動、商談、毎日の予定を運営前提で準備します。" },
-      { title: "目的に合う設計", body: "目的、時期、予算、同行者に合わせて旅を組み立てます。" },
+      { title: "モンゴルを伝える", body: "自然の美しさと遊牧文化を、記憶に残る旅の体験にします。" },
+      { title: "世界へつなぐ", body: "旅行者と企業を国際ルート、展示会、業界イベントにつなげます。" },
+      { title: "信頼できる手配", body: "ホテル、移動、プログラム、商談を一体で調整します。" },
+      { title: "長期的な機会", body: "旅を新しい提携、市場、持続的な成長につながる機会にします。" },
     ],
     teamLabel: "チーム",
     workLabel: "できること",
-    workTitle: "明確に計画し、スムーズに旅を進めます。",
-    workBody: "旅のアイデアを、ルート、日程、条件、次のアクションに変えます。",
+    workTitle: "ビジネス、レジャー、カスタム旅行を一貫して手配します。",
+    workBody: "ビジネス旅行、レジャー旅行、カスタムルート、国際展示会、アジア各地の業界イベント旅行を手配します。",
     work: [
-      { title: "計画", body: "目的地、時期、予算、目的を一か所で整理します。" },
-      { title: "予約", body: "ホテル、航空券、移動、ガイド、商談を調整します。" },
-      { title: "運営", body: "日程、現地連絡、変更対応を準備します。" },
-      { title: "ビジネス + 展示会", body: "展示会、商談、仕入れ調査、企業旅行に対応します。" },
+      { title: "Business Tours", body: "国際展示会、商談、業界イベント、市場調査の旅。" },
+      { title: "Leisure Tours", body: "自然、都市、文化、休暇に合わせた国内外の旅。" },
+      { title: "Customized Tours", body: "家族、友人、企業、特別な目的に合わせたルート。" },
+      { title: "Inbound + Outbound", body: "モンゴルへの旅と、モンゴルから世界への旅を一つのチームで。" },
     ],
     imageAlt: "Nomadabe Travel route planning",
   },
   ko: {
     eyebrow: "회사 소개",
-    title: "여행 아이디어를 실제 루트로 만듭니다.",
+    title: "울란바토르에서 몽골과 세계를 연결하는 여행사입니다.",
     body:
-      "Nomadabe Travel은 몽골 국내외 여행을 호텔, 교통, 가이드, 미팅, 서류, 다음 단계까지 실무적으로 조율합니다.",
+      "Nomadabe Travel은 울란바토르에 기반을 둔 전문 여행사로 비즈니스 여행, 인바운드, 아웃바운드 투어를 전문으로 합니다. 몽골 국내와 해외 목적지에서 10,000명 이상의 여행을 성공적으로 운영했습니다.",
     whoLabel: "우리는 누구인가",
-    whoText: "우리는 추천만 하는 팀이 아니라 실제로 운영 가능한 여행을 설계하는 팀입니다.",
+    whoText: "2019년부터 매년 2,000명 이상의 여행자를 지원하며, 비즈니스와 레저를 연결하고 기업가들이 주요 국제 행사와 지속 가능한 성장 기회를 만날 수 있도록 돕고 있습니다.",
     stats: [
-      { value: "24h", label: "초기 방향, 일정, 예산 제안" },
-      { value: "1", label: "하나의 기획팀" },
-      { value: "5+", label: "국내, 해외, 엑스포, 비즈니스, 맞춤" },
+      { value: "7", label: "년 경험" },
+      { value: "10k+", label: "고객" },
+      { value: "2k+", label: "연간 여행자" },
     ],
     valuesLabel: "우리의 가치",
     values: [
-      { title: "투명성", body: "포함 사항, 추가 비용, 서류, 유의점을 처음부터 명확히 안내합니다." },
-      { title: "사람 중심 소통", body: "여행자, 기업, 가이드, 공급자가 같은 흐름으로 움직이게 합니다." },
-      { title: "실행력", body: "루트, 호텔, 교통, 미팅, 일정을 실제 운영 기준으로 준비합니다." },
-      { title: "목적 맞춤", body: "목적, 시기, 예산, 동행자에 맞게 여행을 구성합니다." },
+      { title: "몽골을 보여주기", body: "몽골의 자연미와 유목 문화를 기억에 남는 여행 경험으로 만듭니다." },
+      { title: "세계와 연결", body: "여행자와 기업을 국제 노선, 전시회, 산업 행사와 연결합니다." },
+      { title: "신뢰할 수 있는 운영", body: "호텔, 교통, 일정, 미팅을 비즈니스 및 레저 여행에 맞춰 조율합니다." },
+      { title: "장기적 기회", body: "여행을 새로운 파트너십, 시장, 지속 가능한 성장의 기회로 만듭니다." },
     ],
     teamLabel: "우리 팀",
     workLabel: "우리가 하는 일",
-    workTitle: "명확하게 계획하고 매끄럽게 이동합니다.",
-    workBody: "여행 아이디어를 루트, 일정표, 조건, 다음 단계로 바꿉니다.",
+    workTitle: "비즈니스, 레저, 맞춤 여행을 처음부터 끝까지 운영합니다.",
+    workBody: "비즈니스 여행, 레저 여행, 맞춤 루트, 국제 엑스포, 아시아 및 기타 지역의 주요 산업 행사 여행을 운영합니다.",
     work: [
-      { title: "기획", body: "목적지, 일정, 예산, 여행 목적을 한곳에서 정리합니다." },
-      { title: "예약", body: "호텔, 항공, 교통, 가이드, 미팅을 조율합니다." },
-      { title: "운영", body: "일정, 현지 연락, 변경 지원을 준비합니다." },
-      { title: "비즈니스 + 엑스포", body: "전시회, 미팅, 소싱, 기업 여행에 맞춥니다." },
+      { title: "Business Tours", body: "국제 전시회, 미팅, 산업 행사, 시장 조사 여행." },
+      { title: "Leisure Tours", body: "자연, 도시, 문화, 휴식을 중심으로 구성한 국내외 여행." },
+      { title: "Customized Tours", body: "가족, 친구, 기업, 특별 목적에 맞춘 맞춤 루트." },
+      { title: "Inbound + Outbound", body: "몽골로 들어오는 여행과 몽골에서 세계로 나가는 여행을 한 팀이 담당합니다." },
     ],
     imageAlt: "Nomadabe Travel route planning",
   },
@@ -527,7 +527,7 @@ export function AboutShowcase({ teamMembers }: AboutShowcaseProps) {
           <div className="absolute left-1/2 top-[31%] h-10 w-10 -translate-x-1/2 rounded-full bg-[#FFD400]" />
         </div>
 
-        <div className="relative hidden min-h-[calc(100svh/var(--site-scale))] items-start px-6 pb-20 pt-6 sm:px-10 lg:flex lg:overflow-hidden lg:px-16 lg:pb-14 lg:pt-32">
+        <div className="relative hidden min-h-[calc(100svh/var(--site-scale))] items-start px-6 pb-20 pt-6 sm:px-10 lg:flex lg:overflow-hidden lg:px-16 lg:pb-14 lg:pt-28">
           <motion.div
             key={activeSection}
             initial={false}
@@ -595,18 +595,18 @@ function WhoPanel({ copy }: { copy: (typeof ABOUT_COPY)[keyof typeof ABOUT_COPY]
       <p className="trip-meta-text text-lg uppercase tracking-[0.18em] text-[#FFD400]">
         {copy.whoLabel}
       </p>
-      <p className="mt-5 max-w-3xl text-lg leading-9 text-[#11100b]/72 lg:text-xl">{copy.whoText}</p>
-      <div className="mt-8 grid gap-8">
+      <p className="mt-5 max-w-3xl text-base leading-8 text-[#11100b]/72 lg:text-lg">{copy.whoText}</p>
+      <div className="mt-6 grid gap-4 lg:gap-5">
         {copy.stats.map((stat) => (
-          <div key={stat.value} className="grid items-center gap-6 sm:grid-cols-[0.54fr_1fr]">
+          <div key={stat.value} className="grid items-center gap-3 sm:grid-cols-[minmax(7rem,0.34fr)_1fr]">
             <div
-              className="font-sans !font-extralight text-[clamp(6rem,9.4vw,11.4rem)] leading-[0.82] text-[#11100b]"
+              className="font-sans !font-extralight text-[clamp(3.5rem,5.4vw,6.4rem)] leading-[0.9] text-[#11100b]"
               style={{ fontWeight: 200 }}
             >
               {stat.value}
             </div>
             <p
-              className="text-balance !font-extralight text-2xl leading-tight text-[#11100b] sm:text-3xl lg:text-[2rem]"
+              className="text-balance !font-extralight text-lg leading-tight text-[#11100b] sm:text-xl lg:text-2xl"
               style={{ fontWeight: 200 }}
             >
               {stat.label}
@@ -660,7 +660,7 @@ function TeamPanel({
       <p className="trip-meta-text text-sm uppercase tracking-[0.18em] text-[#FFD400]">
         {copy.teamLabel}
       </p>
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {team.map((member, index) => (
           <article key={member.id} className="group relative aspect-[3/4] overflow-hidden border border-[#FFD400]/35 bg-white">
             {member.image ? (
@@ -772,10 +772,21 @@ function AboutFaq({ locale }: { locale: keyof typeof FAQ_COPY }) {
 
 function normalizeTeam(teamMembers: TeamMember[]) {
   const fallback: TeamMember[] = [
-    { id: "team-slot-1", name: "Нэр оруулах", role: "Үүсгэн байгуулагч", image: "" },
-    { id: "team-slot-2", name: "Нэр оруулах", role: "Аялал төлөвлөлтийн менежер", image: "" },
-    { id: "team-slot-3", name: "Нэр оруулах", role: "Зохион байгуулалтын менежер", image: "" },
+    { id: "team-founder-ceo", name: "N. Ariunbold", role: "Co-Founder, CEO", image: "" },
+    { id: "team-founder-coo", name: "B. Bilguun", role: "Co-Founder, COO", image: "" },
   ];
 
-  return [...teamMembers, ...fallback].slice(0, 3);
+  const members = [...fallback, ...teamMembers];
+  const seen = new Set<string>();
+
+  return members.filter((member) => {
+    const key = `${member.name.trim().toLowerCase()}-${member.role.trim().toLowerCase()}`;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
 }
