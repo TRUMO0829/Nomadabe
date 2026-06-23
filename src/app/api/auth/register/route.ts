@@ -14,7 +14,7 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const limited = rateLimitRequest(request, "auth-register", {
+  const limited = await rateLimitRequest(request, "auth-register", {
     limit: 6,
     windowMs: 10 * 60 * 1000,
   });

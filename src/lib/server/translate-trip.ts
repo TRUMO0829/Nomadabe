@@ -26,17 +26,20 @@ export async function translateAdventure(input: Adventure): Promise<Adventure> {
     };
   }
 
+  const translatedLocales = await Promise.all(
+    TARGET_LOCALES.map(
+      async (locale) =>
+        [locale, await translateAdventureToLocale(input, locale, existingTranslations[locale])] as const
+    )
+  );
+
   const translations: AdventureTranslations = {
     ...existingTranslations,
     mn: toSourceTranslation(input),
   };
 
-  for (const locale of TARGET_LOCALES) {
-    translations[locale] = await translateAdventureToLocale(
-      input,
-      locale,
-      existingTranslations[locale]
-    );
+  for (const [locale, translation] of translatedLocales) {
+    translations[locale] = translation;
   }
 
   return {
@@ -54,23 +57,45 @@ async function translateAdventureToLocale(
   locale: Exclude<CopyLocale, "mn">,
   existing?: AdventureTranslation
 ): Promise<AdventureTranslation> {
+  // Translate every field concurrently so saving a trip doesn't block on a
+  // long sequential chain of LibreTranslate calls.
+  const [
+    title,
+    location,
+    country,
+    groupSize,
+    difficulty,
+    summary,
+    tags,
+    idealFor,
+    includes,
+    businessSupport,
+  ] = await Promise.all([
+    existing?.title ? Promise.resolve(existing.title) : translateText(adventure.title, locale),
+    existing?.location ? Promise.resolve(existing.location) : translateText(adventure.location, locale),
+    existing?.country ? Promise.resolve(existing.country) : translateText(adventure.country, locale),
+    existing?.groupSize ? Promise.resolve(existing.groupSize) : translateText(adventure.groupSize, locale),
+    existing?.difficulty ? Promise.resolve(existing.difficulty) : translateText(adventure.difficulty, locale),
+    existing?.summary ? Promise.resolve(existing.summary) : translateText(adventure.summary, locale),
+    existing?.tags?.length ? Promise.resolve(existing.tags) : translateList(adventure.tags, locale),
+    existing?.idealFor?.length ? Promise.resolve(existing.idealFor) : translateList(adventure.idealFor, locale),
+    existing?.includes?.length ? Promise.resolve(existing.includes) : translateList(adventure.includes, locale),
+    existing?.businessSupport?.length
+      ? Promise.resolve(existing.businessSupport)
+      : translateList(adventure.businessSupport, locale),
+  ]);
+
   return {
-    title: existing?.title || (await translateText(adventure.title, locale)),
-    location: existing?.location || (await translateText(adventure.location, locale)),
-    country: existing?.country || (await translateText(adventure.country, locale)),
-    groupSize: existing?.groupSize || (await translateText(adventure.groupSize, locale)),
-    difficulty: existing?.difficulty || (await translateText(adventure.difficulty, locale)),
-    tags: existing?.tags?.length ? existing.tags : await translateList(adventure.tags, locale),
-    summary: existing?.summary || (await translateText(adventure.summary, locale)),
-    idealFor: existing?.idealFor?.length
-      ? existing.idealFor
-      : await translateList(adventure.idealFor, locale),
-    includes: existing?.includes?.length
-      ? existing.includes
-      : await translateList(adventure.includes, locale),
-    businessSupport: existing?.businessSupport?.length
-      ? existing.businessSupport
-      : await translateList(adventure.businessSupport, locale),
+    title,
+    location,
+    country,
+    groupSize,
+    difficulty,
+    tags,
+    summary,
+    idealFor,
+    includes,
+    businessSupport,
   };
 }
 
@@ -90,13 +115,7 @@ function toSourceTranslation(adventure: Adventure): AdventureTranslation {
 }
 
 async function translateList(values: string[], target: Exclude<CopyLocale, "mn">) {
-  const translated: string[] = [];
-
-  for (const value of values) {
-    translated.push(await translateText(value, target));
-  }
-
-  return translated;
+  return Promise.all(values.map((value) => translateText(value, target)));
 }
 
 async function translateText(value: string, target: Exclude<CopyLocale, "mn">) {
