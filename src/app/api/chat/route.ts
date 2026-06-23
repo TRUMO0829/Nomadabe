@@ -34,7 +34,7 @@ const MAX_MESSAGE_LENGTH = 1600;
 const KNOWLEDGE_FILE = path.join(process.cwd(), "Nomadabe_Travel_Knowledge_Base.md");
 
 export async function POST(request: Request) {
-  const limited = rateLimitRequest(request, "chat", {
+  const limited = await rateLimitRequest(request, "chat", {
     limit: 30,
     windowMs: 10 * 60 * 1000,
   });

@@ -9,7 +9,7 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const limited = rateLimitRequest(request, "admin-verify-code", {
+  const limited = await rateLimitRequest(request, "admin-verify-code", {
     limit: 8,
     windowMs: 15 * 60 * 1000,
   });

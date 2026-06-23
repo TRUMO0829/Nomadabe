@@ -19,15 +19,6 @@ export type Customer = {
   updatedAt: string;
 };
 
-type AuthCode = {
-  id: string;
-  identifier: string;
-  code: string;
-  expiresAt: string;
-  createdAt: string;
-  usedAt?: string;
-};
-
 type PasswordResetCode = {
   id: string;
   email: string;
@@ -48,11 +39,8 @@ export const CUSTOMER_SESSION_COOKIE = "nomadabe_customer_session";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const CUSTOMERS_FILE = path.join(DATA_DIR, "customers.json");
-const AUTH_CODES_FILE = path.join(DATA_DIR, "auth-codes.json");
-const PASSWORD_RESET_CODES_FILE = path.join(DATA_DIR, "password-reset-codes.json");
 const SESSIONS_FILE = path.join(DATA_DIR, "customer-sessions.json");
 const CODE_TTL_MS = 10 * 60 * 1000;
-const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export function normalizeIdentifier(value: unknown) {
   const raw = typeof value === "string" ? value.trim() : "";
@@ -61,51 +49,6 @@ export function normalizeIdentifier(value: unknown) {
 
 export function isValidIdentifier(identifier: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-}
-
-export async function requestCustomerLoginCode(identifierValue: unknown) {
-  const identifier = normalizeIdentifier(identifierValue);
-
-  if (!isValidIdentifier(identifier)) {
-    throw new Error("Зөв и-мэйл хаяг оруулна уу.");
-  }
-
-  assertLocalJsonStoreAllowed();
-  const codes = await readJsonFile<AuthCode[]>(AUTH_CODES_FILE, []);
-  const code = String(randomInt(100000, 1000000));
-  const now = new Date();
-  const record: AuthCode = {
-    id: randomUUID(),
-    identifier,
-    code,
-    createdAt: now.toISOString(),
-    expiresAt: new Date(now.getTime() + CODE_TTL_MS).toISOString(),
-  };
-
-  await writeJsonFile(AUTH_CODES_FILE, [...codes, record].slice(-100));
-
-  const delivery = "email";
-  const n8nDelivered = await sendVerificationCodeToN8n({
-    identifier,
-    delivery,
-    code,
-    expiresAt: record.expiresAt,
-  });
-
-  if (!n8nDelivered && delivery === "email") {
-    await sendEmail({
-      to: identifier,
-      subject: "Nomadabe нэвтрэх код",
-      body: `Таны Nomadabe Travel нэвтрэх код: ${code}. Энэ код 10 минутын дараа хүчингүй болно.`,
-    });
-  }
-
-  return {
-    identifier,
-    delivery,
-    expiresAt: record.expiresAt,
-    devCode: process.env.NODE_ENV === "production" ? undefined : code,
-  };
 }
 
 export async function getCustomers() {
@@ -159,23 +102,7 @@ export async function registerCustomerWithPassword(payload: {
     };
   }
 
-  assertLocalJsonStoreAllowed();
-  const now = new Date().toISOString();
-  const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
-  const existing = customers.find((customer) => customer.email === email);
-  const customer: Customer = existing
-    ? { ...existing, name: name || existing.name, updatedAt: now }
-    : { id: randomUUID(), email, name: name || undefined, createdAt: now, updatedAt: now };
-
-  await writeJsonFile(
-    CUSTOMERS_FILE,
-    existing
-      ? customers.map((item) => (item.id === customer.id ? customer : item))
-      : [customer, ...customers]
-  );
-
-  const session = await createLocalSession(customer.id);
-  return { customer, session, emailVerificationRequired: false };
+  throw new Error("Бүртгэлийн үйлчилгээ тохируулагдаагүй байна.");
 }
 
 export async function loginCustomerWithPassword(payload: {
@@ -209,15 +136,7 @@ export async function loginCustomerWithPassword(payload: {
     };
   }
 
-  assertLocalJsonStoreAllowed();
-  const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
-  const customer = customers.find((item) => item.email === email);
-
-  if (!customer) {
-    throw new Error("Энэ и-мэйлээр бүртгэл олдсонгүй.");
-  }
-
-  return { customer, session: await createLocalSession(customer.id) };
+  throw new Error("Нэвтрэх үйлчилгээ тохируулагдаагүй байна.");
 }
 
 export async function requestCustomerPasswordReset(emailValue: unknown) {
@@ -225,6 +144,10 @@ export async function requestCustomerPasswordReset(emailValue: unknown) {
 
   if (!isValidIdentifier(email)) {
     throw new Error("Зөв и-мэйл хаяг оруулна уу.");
+  }
+
+  if (!isSupabaseConfigured()) {
+    throw new Error("Нууц үг сэргээх үйлчилгээ тохируулагдаагүй байна.");
   }
 
   const now = new Date();
@@ -236,23 +159,17 @@ export async function requestCustomerPasswordReset(emailValue: unknown) {
     expiresAt: new Date(now.getTime() + CODE_TTL_MS).toISOString(),
   };
 
-  if (isSupabaseConfigured()) {
-    const profile = await findSupabaseProfileByEmail(email);
+  const profile = await findSupabaseProfileByEmail(email);
 
-    if (!profile) {
-      return {
-        email,
-        expiresAt: record.expiresAt,
-        devCode: undefined,
-      };
-    }
-
-    await createSupabasePasswordResetCode(record);
-  } else {
-    assertLocalJsonStoreAllowed();
-    const codes = await readJsonFile<PasswordResetCode[]>(PASSWORD_RESET_CODES_FILE, []);
-    await writeJsonFile(PASSWORD_RESET_CODES_FILE, [...codes, record].slice(-100));
+  if (!profile) {
+    return {
+      email,
+      expiresAt: record.expiresAt,
+      devCode: undefined,
+    };
   }
+
+  await createSupabasePasswordResetCode(record);
 
   await sendEmail({
     to: email,
@@ -284,111 +201,36 @@ export async function resetCustomerPassword(payload: {
     throw new Error("Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой.");
   }
 
+  if (!isSupabaseConfigured()) {
+    throw new Error("Нууц үг сэргээх үйлчилгээ тохируулагдаагүй байна.");
+  }
+
   const now = new Date().toISOString();
-  const match = isSupabaseConfigured()
-    ? await findSupabasePasswordResetCode(email, code, now)
-    : await findLocalPasswordResetCode(email, code, Date.now());
+  const match = await findSupabasePasswordResetCode(email, code, now);
 
   if (!match) {
     throw new Error("Код буруу эсвэл хугацаа дууссан байна.");
   }
 
-  if (isSupabaseConfigured()) {
-    const profile = await findSupabaseProfileByEmail(email);
+  const profile = await findSupabaseProfileByEmail(email);
 
-    if (!profile) {
-      throw new Error("Энэ и-мэйлээр бүртгэл олдсонгүй.");
-    }
-
-    await updateSupabaseUserPassword(profile.id, password);
-    await markSupabasePasswordResetCodeUsed(match.id, now);
-    const authSession = await signInSupabaseWithPassword({ email, password });
-
-    return {
-      customer: fromSupabaseProfile(profile),
-      session: {
-        token: authSession.access_token,
-        customerId: profile.id,
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + authSession.expires_in * 1000).toISOString(),
-      },
-    };
-  }
-
-  assertLocalJsonStoreAllowed();
-  const codes = await readJsonFile<PasswordResetCode[]>(PASSWORD_RESET_CODES_FILE, []);
-  await writeJsonFile(
-    PASSWORD_RESET_CODES_FILE,
-    codes.map((item) =>
-      item.email === match.email && item.code === match.code && item.createdAt === match.createdAt
-        ? { ...item, usedAt: now }
-        : item
-    )
-  );
-
-  const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
-  const customer = customers.find((item) => item.email === email);
-
-  if (!customer) {
+  if (!profile) {
     throw new Error("Энэ и-мэйлээр бүртгэл олдсонгүй.");
   }
 
-  return { customer, session: await createLocalSession(customer.id) };
-}
+  await updateSupabaseUserPassword(profile.id, password);
+  await markSupabasePasswordResetCodeUsed(match.id, now);
+  const authSession = await signInSupabaseWithPassword({ email, password });
 
-export async function verifyCustomerLoginCode(identifierValue: unknown, codeValue: unknown) {
-  const identifier = normalizeIdentifier(identifierValue);
-  const code = typeof codeValue === "string" ? codeValue.trim() : "";
-
-  if (!isValidIdentifier(identifier) || !/^\d{6}$/.test(code)) {
-    throw new Error("И-мэйл болон 6 оронтой кодоо зөв оруулна уу.");
-  }
-
-  assertLocalJsonStoreAllowed();
-  const codes = await readJsonFile<AuthCode[]>(AUTH_CODES_FILE, []);
-  const now = new Date();
-  const match = [...codes]
-    .reverse()
-    .find(
-      (item) =>
-        item.identifier === identifier &&
-        item.code === code &&
-        !item.usedAt &&
-        new Date(item.expiresAt).getTime() > now.getTime()
-    );
-
-  if (!match) {
-    throw new Error("Код буруу эсвэл хугацаа дууссан байна.");
-  }
-
-  const customers = await readJsonFile<Customer[]>(CUSTOMERS_FILE, []);
-  const existing = customers.find((customer) => customer.email === identifier);
-  const customer: Customer = existing
-    ? {
-        ...existing,
-        updatedAt: now.toISOString(),
-      }
-    : {
-        id: randomUUID(),
-        email: identifier,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString(),
-      };
-
-  await writeJsonFile(
-    CUSTOMERS_FILE,
-    existing
-      ? customers.map((item) => (item.id === customer.id ? customer : item))
-      : [customer, ...customers]
-  );
-  await writeJsonFile(
-    AUTH_CODES_FILE,
-    codes.map((item) => (item.id === match.id ? { ...item, usedAt: now.toISOString() } : item))
-  );
-
-  const session = await createLocalSession(customer.id);
-
-  return { customer, session };
+  return {
+    customer: fromSupabaseProfile(profile),
+    session: {
+      token: authSession.access_token,
+      customerId: profile.id,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + authSession.expires_in * 1000).toISOString(),
+    },
+  };
 }
 
 export async function getCustomerFromRequest(request: Request) {
@@ -485,64 +327,6 @@ function assertLocalJsonStoreAllowed() {
 
 function isNodeFileError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error;
-}
-
-async function sendVerificationCodeToN8n({
-  identifier,
-  delivery,
-  code,
-  expiresAt,
-}: {
-  identifier: string;
-  delivery: "email" | "phone";
-  code: string;
-  expiresAt: string;
-}) {
-  const webhookUrl = process.env.N8N_VERIFICATION_WEBHOOK_URL;
-
-  if (!webhookUrl) {
-    return false;
-  }
-
-  const response = await fetch(webhookUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(process.env.N8N_VERIFICATION_WEBHOOK_SECRET
-        ? { "x-nomadabe-secret": process.env.N8N_VERIFICATION_WEBHOOK_SECRET }
-        : {}),
-    },
-    body: JSON.stringify({
-      source: "nomadabe",
-      identifier,
-      delivery,
-      email: delivery === "email" ? identifier : undefined,
-      phone: delivery === "phone" ? identifier : undefined,
-      code,
-      expiresAt,
-      message: `Таны Nomadabe Travel нэвтрэх код: ${code}. Энэ код 10 минутын дараа хүчингүй болно.`,
-    }),
-  });
-
-  if (!response.ok) {
-    return false;
-  }
-
-  return true;
-}
-
-async function createLocalSession(customerId: string) {
-  assertLocalJsonStoreAllowed();
-  const now = new Date();
-  const session: CustomerSession = {
-    token: `${randomUUID()}${randomUUID()}`,
-    customerId,
-    createdAt: now.toISOString(),
-    expiresAt: new Date(now.getTime() + SESSION_TTL_MS).toISOString(),
-  };
-  const sessions = await readJsonFile<CustomerSession[]>(SESSIONS_FILE, []);
-  await writeJsonFile(SESSIONS_FILE, [session, ...sessions].slice(0, 500));
-  return session;
 }
 
 type SupabaseProfile = {
@@ -749,22 +533,6 @@ async function updateSupabaseUserPassword(userId: string, password: string) {
   if (!response.ok) {
     throw new Error(await getSupabaseError(response));
   }
-}
-
-async function findLocalPasswordResetCode(email: string, code: string, now: number) {
-  assertLocalJsonStoreAllowed();
-  const codes = await readJsonFile<PasswordResetCode[]>(PASSWORD_RESET_CODES_FILE, []);
-  return (
-    [...codes]
-      .reverse()
-      .find(
-        (item) =>
-          item.email === email &&
-          item.code === code &&
-          !item.usedAt &&
-          new Date(item.expiresAt).getTime() > now
-      ) ?? null
-  );
 }
 
 function fromSupabasePasswordResetCode(row: PasswordResetCodeRow): PasswordResetCode {

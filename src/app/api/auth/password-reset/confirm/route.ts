@@ -8,7 +8,7 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const limited = rateLimitRequest(request, "password-reset-confirm", {
+  const limited = await rateLimitRequest(request, "password-reset-confirm", {
     limit: 8,
     windowMs: 15 * 60 * 1000,
   });

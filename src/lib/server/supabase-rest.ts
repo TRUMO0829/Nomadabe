@@ -71,11 +71,19 @@ export async function supabaseRest<T>(
     throw new Error(await getSupabaseError(response));
   }
 
+  // 204, or 201/200 with an empty body (e.g. Prefer: return=minimal) — there is
+  // nothing to parse, so avoid throwing on JSON.parse of an empty string.
   if (response.status === 204) {
     return null as T;
   }
 
-  return (await response.json()) as T;
+  const text = await response.text();
+
+  if (!text) {
+    return null as T;
+  }
+
+  return JSON.parse(text) as T;
 }
 
 export function getSupabaseConfigurationErrorMessage() {

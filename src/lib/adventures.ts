@@ -94,7 +94,7 @@ export const ADVENTURES: Adventure[] = [
     tags: ["Business", "Expo", "Import"],
     rating: 4.9,
     reviews: 38,
-    category: "expo",
+    category: "festival",
     summary:
       "Импортын бизнес эхлүүлэх, шинэ бараа бүтээгдэхүүн судлах, үйлдвэрлэгчтэй шууд холбогдох зорилготой expo аялал.",
     idealFor: [
@@ -132,7 +132,7 @@ export const ADVENTURES: Adventure[] = [
     tags: ["Energy", "Expo", "Technology"],
     rating: 4.8,
     reviews: 21,
-    category: "expo",
+    category: "festival",
     summary:
       "Нарны эрчим хүч, шинэ технологи, тоног төхөөрөмжийн нийлүүлэгчтэй холбогдох бизнес аялал.",
     idealFor: ["Эрчим хүчний бизнес эрхлэгч", "Тоног төхөөрөмж судалж буй хүн"],
@@ -1408,7 +1408,7 @@ const FALLBACK_GALLERIES: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1200&q=80&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80&fit=crop&fm=webp",
   ],
-  expo: [
+  festival: [
     "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&q=80&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1511578314322-379afb476865?w=1200&q=80&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&q=80&fit=crop&fm=webp",
@@ -1462,8 +1462,8 @@ function getFallbackGalleryImages(adventure: Adventure): string[] {
     return FALLBACK_GALLERIES.china;
   }
 
-  if (haystack.includes("expo") || haystack.includes("fair")) {
-    return FALLBACK_GALLERIES.expo;
+  if (haystack.includes("expo") || haystack.includes("fair") || haystack.includes("festival")) {
+    return FALLBACK_GALLERIES.festival;
   }
 
   if (
@@ -1542,7 +1542,7 @@ export function getAdventureDetailInfo(
   const copyLocale = getCopyLocale(locale);
   const text = getAdventureText(adventure, copyLocale);
   const isDomestic = adventure.country === "Mongolia";
-  const isExpo = adventure.category === "expo";
+  const isExpo = adventure.category === "festival";
   const isBusiness = adventure.category === "business" || isExpo;
   const detailCopy = {
     mn: {

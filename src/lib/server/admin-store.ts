@@ -246,28 +246,41 @@ async function getSupabaseAdminStore() {
 }
 
 async function saveSupabaseAdminStore(store: AdminStore) {
+  // Upsert first so a failure never leaves the tables empty, then prune the
+  // rows that no longer exist. This avoids the data-loss window of the old
+  // delete-all-then-insert-all approach.
   await Promise.all([
-    supabaseRest<null>("/admin_trips?id=not.is.null", { method: "DELETE" }),
-    supabaseRest<null>("/admin_services?id=not.is.null", { method: "DELETE" }),
+    upsertSupabaseRows("/admin_trips", store.trips.map(toSupabaseTripRow)),
+    upsertSupabaseRows("/admin_services", store.services.map(toSupabaseServiceRow)),
     upsertSupabaseSiteSettings(store.siteSettings),
   ]);
 
   await Promise.all([
-    store.trips.length > 0
-      ? supabaseRest<AdminTripRow[]>("/admin_trips", {
-          method: "POST",
-          prefer: "return=representation",
-          body: JSON.stringify(store.trips.map(toSupabaseTripRow)),
-        })
-      : Promise.resolve([]),
-    store.services.length > 0
-      ? supabaseRest<AdminServiceRow[]>("/admin_services", {
-          method: "POST",
-          prefer: "return=representation",
-          body: JSON.stringify(store.services.map(toSupabaseServiceRow)),
-        })
-      : Promise.resolve([]),
+    deleteSupabaseRowsNotIn("/admin_trips", store.trips.map((trip) => trip.id)),
+    deleteSupabaseRowsNotIn("/admin_services", store.services.map((service) => service.id)),
   ]);
+}
+
+async function upsertSupabaseRows(path: string, rows: Array<{ id: string }>) {
+  if (rows.length === 0) {
+    return;
+  }
+
+  await supabaseRest<unknown[]>(path, {
+    method: "POST",
+    prefer: "resolution=merge-duplicates,return=minimal",
+    body: JSON.stringify(rows),
+  });
+}
+
+async function deleteSupabaseRowsNotIn(path: string, ids: string[]) {
+  if (ids.length === 0) {
+    await supabaseRest<null>(`${path}?id=not.is.null`, { method: "DELETE" });
+    return;
+  }
+
+  const list = ids.map((id) => `"${encodeURIComponent(id)}"`).join(",");
+  await supabaseRest<null>(`${path}?id=not.in.(${list})`, { method: "DELETE" });
 }
 
 async function upsertSupabaseSiteSettings(siteSettings: SiteSettings) {
