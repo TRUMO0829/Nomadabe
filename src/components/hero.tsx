@@ -65,7 +65,6 @@ export function Hero({ settings }: HeroProps) {
         }}
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.04)_90%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/70 to-transparent" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-1 text-center">
         <motion.h1
@@ -75,9 +74,7 @@ export function Hero({ settings }: HeroProps) {
           className="hero-heading max-w-5xl whitespace-pre-line text-2xl font-black leading-tight sm:text-4xl lg:text-5xl xl:text-6xl"
           style={{ color: textColor }}
         >
-          <span className="hero-title-mark">
-            {heading}
-          </span>
+          <span className="hero-title-mark">{heading}</span>
         </motion.h1>
       </div>
     </section>

@@ -56,6 +56,9 @@ export function PlaneCursor() {
 
       document.body.classList.toggle("plane-cursor-enabled", enabled);
       cursor.style.display = enabled ? "flex" : "none";
+      if (!enabled) {
+        cursor.style.opacity = "0";
+      }
     };
 
     const handlePointerMove = (event: PointerEvent) => {

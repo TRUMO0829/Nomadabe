@@ -302,6 +302,7 @@ const TRIP_SEARCH_COPY = {
     where: "Хаашаа",
     wherePlaceholder: "Чиглэл хайх",
     whereHint: "Манай аяллын чиглэлүүд",
+    allDestinations: "All",
     when: "Хэзээ",
     whenPlaceholder: "Огноо нэмэх",
     who: "Хэн",
@@ -324,6 +325,7 @@ const TRIP_SEARCH_COPY = {
     where: "Where",
     wherePlaceholder: "Search destinations",
     whereHint: "Available trip destinations",
+    allDestinations: "All",
     when: "When",
     whenPlaceholder: "Add dates",
     who: "Who",
@@ -346,6 +348,7 @@ const TRIP_SEARCH_COPY = {
     where: "地点",
     wherePlaceholder: "搜索目的地",
     whereHint: "可选旅行目的地",
+    allDestinations: "All",
     when: "时间",
     whenPlaceholder: "添加日期",
     who: "人数",
@@ -368,6 +371,7 @@ const TRIP_SEARCH_COPY = {
     where: "行き先",
     wherePlaceholder: "目的地を検索",
     whereHint: "選べる旅行先",
+    allDestinations: "All",
     when: "日程",
     whenPlaceholder: "日付を追加",
     who: "人数",
@@ -390,6 +394,7 @@ const TRIP_SEARCH_COPY = {
     where: "어디로",
     wherePlaceholder: "목적지 검색",
     whereHint: "가능한 여행 목적지",
+    allDestinations: "All",
     when: "언제",
     whenPlaceholder: "날짜 추가",
     who: "누구와",
@@ -631,7 +636,7 @@ export function TripRatingWidget({
                 aria-label={`${copy.score} ${value}`}
                 aria-pressed={rating === value}
                 onClick={() => setRating(value)}
-                className="rounded-sm p-0.5 text-accent transition-transform hover:scale-110"
+                className="rounded-sm p-0.5 text-accent"
               >
                 <Star
                   className={`h-4 w-4 ${
@@ -783,7 +788,7 @@ function SteppedTripTile({
       onClick={() => onSelect(adventure)}
     >
       <motion.div
-        className="h-full w-full bg-cover bg-center transition-transform duration-[900ms] ease-out group-hover:scale-[1.035]"
+        className="h-full w-full bg-cover bg-center"
         style={{
           backgroundImage: `url(${adventure.image})`,
           scale: imageScale,
@@ -853,6 +858,7 @@ export function FeaturedAdventures({
   });
   const [activeHeroImage, setActiveHeroImage] = useState(0);
   const gallerySectionRef = useRef<HTMLDivElement>(null);
+  const searchFormRef = useRef<HTMLFormElement>(null);
   const { contentLocale, t } = useLanguage();
   const sectionCopy = SECTION_COPY[contentLocale];
   const searchCopy = TRIP_SEARCH_COPY[contentLocale];
@@ -970,6 +976,28 @@ export function FeaturedAdventures({
 
     return () => window.clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!activeSearchPanel) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target;
+
+      if (
+        target instanceof Node &&
+        searchFormRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      setActiveSearchPanel(null);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [activeSearchPanel]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1108,9 +1136,6 @@ export function FeaturedAdventures({
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 pt-24 lg:px-10 lg:pt-32">
           <div className="max-w-xl">
-            <p className="trip-meta-text mb-4 inline-block bg-accent px-3 py-1 font-sans text-sm uppercase tracking-[0.16em] text-accent-foreground">
-              {sectionCopy.eyebrow}
-            </p>
             <h1 className="trip-header-title max-w-xl text-balance font-sans text-white">
               {sectionCopy.title}
             </h1>
@@ -1119,10 +1144,11 @@ export function FeaturedAdventures({
 
         <div className="absolute inset-x-0 top-[300px] z-30 px-6 sm:top-[330px] lg:top-[390px] lg:px-10">
           <form
+            ref={searchFormRef}
             onSubmit={handleTripSearchSubmit}
             className="relative mx-auto max-w-5xl text-[#11100b]"
           >
-            <div className="grid overflow-hidden rounded-[2rem] border border-white/55 bg-white/68 shadow-[0_24px_80px_rgba(17,16,11,0.28)] backdrop-blur-xl sm:rounded-full lg:grid-cols-[1.12fr_0.9fr_0.86fr_auto]">
+            <div className="grid overflow-hidden rounded-[2rem] border border-white/45 bg-white/24 shadow-[0_24px_80px_rgba(17,16,11,0.18)] backdrop-blur-0 sm:rounded-full lg:grid-cols-[1.12fr_0.9fr_0.86fr_auto]">
               <div
                 className={cn(
                   "flex min-h-[76px] flex-col justify-center border-b border-[#11100b]/10 px-6 py-4 transition-colors sm:border-b-0 lg:border-r",
@@ -1184,7 +1210,7 @@ export function FeaturedAdventures({
               <div className="flex items-center justify-end px-3 pb-3 sm:pb-3 lg:p-3">
                 <button
                   type="submit"
-                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-accent px-7 text-sm uppercase text-accent-foreground shadow-[0_12px_34px_rgba(17,16,11,0.22)] transition-transform hover:scale-[1.02] lg:w-auto"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-7 text-sm uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
                 >
                   <Search className="h-5 w-5" />
                   <span>{searchCopy.search}</span>
@@ -1200,6 +1226,22 @@ export function FeaturedAdventures({
                       {searchCopy.whereHint}
                     </p>
                     <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQuery("");
+                          setScope("all");
+                          setActiveSearchPanel(null);
+                        }}
+                        className="rounded-xl border border-[#eadfac] bg-[#fffdf3] px-4 py-3 text-left transition-colors hover:border-accent hover:bg-accent/15"
+                      >
+                        <span className="block text-base text-[#11100b]">
+                          {searchCopy.allDestinations}
+                        </span>
+                        <span className="mt-1 block text-xs text-[#6d6352]">
+                          {allAdventures.length} {sectionCopy.result}
+                        </span>
+                      </button>
                       {visibleDestinationOptions.length > 0 ? (
                         visibleDestinationOptions.map((option) => (
                           <button

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   ChevronDown,
   Globe,
@@ -37,8 +37,12 @@ type AuthCustomer = {
   name?: string;
   isAdmin?: boolean;
 };
-const DESKTOP_ACTION_CLASS =
-  "nav-text inline-flex h-10 items-center justify-center rounded-lg px-3 text-xs uppercase leading-none";
+const DESKTOP_BAR_ITEM_CLASS =
+  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-white/10 hover:text-accent";
+const DESKTOP_NAV_LINK_CLASS =
+  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-white/10 hover:text-accent";
+const DESKTOP_BAR_DIVIDER_CLASS =
+  "w-px shrink-0 bg-current/30 transition-all duration-300";
 
 function openSignupPrompt() {
   window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
@@ -50,7 +54,6 @@ type NavbarProps = {
 };
 
 export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps) {
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [customer, setCustomer] = useState<AuthCustomer | null>(null);
@@ -59,14 +62,7 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
   const currentLanguage =
     LANGUAGES.find((language) => language.code === locale) ?? LANGUAGES[0];
   const visibleNavItems = t.nav.items.filter((item) => item.href !== "/#journal");
-  const useLightHeader = surface === "light" || scrolled;
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const useLightHeader = surface === "light";
 
   useEffect(() => {
     let cancelled = false;
@@ -105,14 +101,9 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
 
   return (
     <header
-      className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-300",
-        scrolled
-          ? "border-b border-border/70 bg-background/92 shadow-[0_16px_44px_rgba(17,16,11,0.08)] backdrop-blur-xl"
-          : "bg-transparent"
-      )}
+      className="fixed top-0 inset-x-0 z-50 bg-transparent transition-all duration-300"
     >
-      <div className="relative flex h-16 w-full items-center px-6 lg:h-20 lg:px-8">
+      <div className="relative flex h-16 w-full items-center px-6 transition-all duration-300 lg:h-16 lg:items-start lg:px-8 lg:pt-2">
         <Link
           href="/#home"
           aria-label="Nomadabe Travel"
@@ -127,7 +118,7 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
             sizes="(min-width: 1024px) 80px, 64px"
             className={cn(
               "w-auto object-contain transition-all duration-300",
-              scrolled ? "h-12 lg:h-14" : "h-16 lg:h-20",
+              "h-12 lg:h-14",
               useLightHeader
                 ? "drop-shadow-[0_2px_12px_rgba(0,0,0,0.88)]"
                 : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
@@ -137,146 +128,165 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
 
         <div
           className={cn(
-            "hidden items-center rounded-xl border px-2 py-2 backdrop-blur-xl lg:absolute lg:left-1/2 lg:top-1/2 lg:flex lg:-translate-x-1/2 lg:-translate-y-1/2",
+            "hidden items-center border transition-all duration-300 lg:ml-auto lg:flex",
+            "rounded-[1.05rem] px-3 py-2",
             useLightHeader
-              ? "border-border bg-card/90 shadow-[0_18px_45px_rgba(17,16,11,0.08)]"
-              : "border-white/25 bg-black/20 shadow-[0_18px_50px_rgba(0,0,0,0.18)]"
+              ? "border-[#d7bd6c]/65 bg-[#050504]/20 text-white shadow-[0_18px_45px_rgba(17,16,11,0.06)]"
+              : "border-[#d7bd6c]/80 bg-[#050504]/20 text-white shadow-[0_18px_50px_rgba(0,0,0,0.12)]"
           )}
         >
-          <nav className="flex items-center gap-1">
-            {visibleNavItems.map((n) => (
-              <a
-                key={n.href}
-                href={n.href}
-                className={cn(
-                  "nav-text rounded-lg px-3 py-2 text-sm uppercase transition-colors hover:bg-accent hover:text-accent-foreground",
-                  useLightHeader ? "text-foreground/80" : "text-white/90"
-                )}
-              >
-                {n.label}
-              </a>
+          <nav className="flex items-center">
+            {visibleNavItems.map((n, index) => (
+              <Fragment key={n.href}>
+                <a
+                  href={n.href}
+                  className={cn(
+                    DESKTOP_NAV_LINK_CLASS,
+                    "h-10 px-3 text-sm"
+                  )}
+                >
+                  {n.label}
+                </a>
+                {index < visibleNavItems.length - 1 ? (
+                  <span
+                    aria-hidden="true"
+                    className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+                  />
+                ) : null}
+              </Fragment>
             ))}
           </nav>
-        </div>
-
-        <div className="hidden items-center gap-3 lg:ml-auto lg:flex">
-          {showHomeSearch ? (
-            <button
-              type="button"
-              aria-label="Аялал хайх"
-              aria-expanded={searchOpen}
-              onClick={() => setSearchOpen((value) => !value)}
-              className={cn(
-                "inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-colors",
-                searchOpen
-                  ? "border-accent bg-accent text-accent-foreground"
-                  : useLightHeader
-                    ? "border-border bg-card/90 text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
-                    : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
-              )}
-            >
-              {searchOpen ? (
-                <X className="h-4 w-4" />
-              ) : (
-                <Search className="h-4 w-4" />
-              )}
-            </button>
-          ) : null}
-
-          <div
-            aria-label={t.nav.language}
-            className={cn(
-              "relative h-10 rounded-lg border",
-              useLightHeader
-                ? "border-border bg-card/90 text-foreground"
-                : "border-white/30 bg-black/25 text-white"
-            )}
-          >
-            <button
-              type="button"
-              aria-expanded={languageOpen}
-              onClick={() => setLanguageOpen((value) => !value)}
-              className="nav-text flex h-full items-center gap-2 rounded-lg px-3 text-xs uppercase leading-none transition-colors hover:bg-white/15"
-            >
-              <Globe className="h-4 w-4" />
-              {currentLanguage.short}
-              <ChevronDown
-                className={cn(
-                  "h-3.5 w-3.5 transition-transform",
-                  languageOpen && "rotate-180"
-                )}
-              />
-            </button>
-
-            {languageOpen && (
-              <div className="absolute right-0 top-[calc(100%+0.5rem)] min-w-36 overflow-hidden rounded-lg border border-border bg-card p-1 text-foreground shadow-xl">
-                {LANGUAGES.map((language) => (
-                  <button
-                    key={language.code}
-                    type="button"
-                    aria-pressed={locale === language.code}
-                    title={language.label}
-                    onClick={() => {
-                      setLocale(language.code);
-                      setLanguageOpen(false);
-                    }}
-                    className={cn(
-                      "nav-text flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors",
-                      locale === language.code
-                        ? "bg-accent text-accent-foreground"
-                        : "hover:bg-muted"
-                    )}
-                  >
-                    <span>{language.label}</span>
-                    <span>{language.short}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <Link
-            href="/plan"
-            className={cn(
-              DESKTOP_ACTION_CLASS,
-              "border transition-colors",
-              useLightHeader
-                ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
-                : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
-            )}
-          >
-            {t.nav.cta}
-          </Link>
-          {customer ? (
+          <div className="flex items-center">
+            <span
+              aria-hidden="true"
+              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+            />
             <Link
-              href={customer.isAdmin ? "/admin" : "/profile"}
+              href="/plan"
               className={cn(
-                DESKTOP_ACTION_CLASS,
-                "max-w-56 gap-2 border px-4 normal-case transition-colors",
-                useLightHeader
-                  ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
-                  : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                DESKTOP_BAR_ITEM_CLASS,
+                "h-10 px-4 text-sm"
               )}
-              title={customer.email}
             >
-              <UserRound className="h-4 w-4 shrink-0" />
-              <span className="truncate">{PROFILE_COPY[contentLocale]}</span>
+              {t.nav.cta}
             </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={openSignupPrompt}
-              className={cn(
-                DESKTOP_ACTION_CLASS,
-                "gap-2 border transition-colors",
-                useLightHeader
-                  ? "border-border bg-card text-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground"
-                  : "border-white/30 bg-black/25 text-white hover:border-accent hover:bg-accent hover:text-accent-foreground"
-              )}
+            <span
+              aria-hidden="true"
+              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+            />
+            {customer ? (
+              <Link
+                href={customer.isAdmin ? "/admin" : "/profile"}
+                className={cn(
+                  DESKTOP_BAR_ITEM_CLASS,
+                  "max-w-56 gap-2 normal-case",
+                  "h-10 px-4 text-sm"
+                )}
+                title={customer.email}
+              >
+                <UserRound
+                  className="h-5 w-5 shrink-0 transition-all duration-300"
+                />
+                <span className="truncate">{PROFILE_COPY[contentLocale]}</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={openSignupPrompt}
+                className={cn(
+                  DESKTOP_BAR_ITEM_CLASS,
+                  "gap-2",
+                  "h-10 px-4 text-sm"
+                )}
+              >
+                <UserRound
+                  className="h-5 w-5 shrink-0 transition-all duration-300"
+                />
+                {AUTH_COPY[contentLocale]}
+              </button>
+            )}
+            <span
+              aria-hidden="true"
+              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+            />
+            <div
+              aria-label={t.nav.language}
+              className="relative h-10 transition-all duration-300"
             >
-              <UserRound className="h-4 w-4" />
-              {AUTH_COPY[contentLocale]}
-            </button>
-          )}
+              <button
+                type="button"
+                aria-expanded={languageOpen}
+                onClick={() => setLanguageOpen((value) => !value)}
+                className={cn(
+                  DESKTOP_BAR_ITEM_CLASS,
+                  "h-full gap-2",
+                  "px-3 text-sm"
+                )}
+              >
+                <Globe
+                  className="h-5 w-5 shrink-0 transition-all duration-300"
+                />
+                {currentLanguage.short}
+                <ChevronDown
+                  className={cn(
+                    "h-3.5 w-3.5 transition-all duration-300",
+                    languageOpen && "rotate-180"
+                  )}
+                />
+              </button>
+
+              {languageOpen && (
+                <div className="absolute right-0 top-[calc(100%+0.75rem)] min-w-36 overflow-hidden rounded-lg border border-border bg-card p-1 text-foreground shadow-xl">
+                  {LANGUAGES.map((language) => (
+                    <button
+                      key={language.code}
+                      type="button"
+                      aria-pressed={locale === language.code}
+                      title={language.label}
+                      onClick={() => {
+                        setLocale(language.code);
+                        setLanguageOpen(false);
+                      }}
+                      className={cn(
+                        "nav-text flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors",
+                        locale === language.code
+                          ? "bg-accent text-accent-foreground"
+                          : "hover:bg-muted"
+                      )}
+                    >
+                      <span>{language.label}</span>
+                      <span>{language.short}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {showHomeSearch ? (
+              <>
+                <span
+                  aria-hidden="true"
+                  className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+                />
+                <button
+                  type="button"
+                  aria-label="Аялал хайх"
+                  aria-expanded={searchOpen}
+                  onClick={() => setSearchOpen((value) => !value)}
+                  className={cn(
+                    DESKTOP_BAR_ITEM_CLASS,
+                    "h-10 w-10 px-0 text-sm",
+                    searchOpen && "bg-accent text-accent-foreground hover:bg-accent"
+                  )}
+                >
+                  {searchOpen ? (
+                    <X className="h-5 w-5" />
+                  ) : (
+                    <Search className="h-5 w-5" />
+                  )}
+                </button>
+              </>
+            ) : null}
+          </div>
         </div>
 
         <button

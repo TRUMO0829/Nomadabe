@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { motion, useMotionValueEvent, useScroll } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useScroll,
+} from "framer-motion";
 import {
   CalendarCheck,
   Compass,
@@ -202,6 +207,7 @@ const ABOUT_COPY = {
 const WORK_ICONS = [Compass, CalendarCheck, Route, Handshake] as const;
 const LAST_SECTION_INDEX = SECTIONS.length - 1;
 const SECTION_PROGRESS_STOPS = [0, 0.22, 0.44, 0.62] as const;
+
 const FAQ_COPY = {
   mn: {
     eyebrow: "FAQ",
@@ -459,8 +465,8 @@ export function AboutShowcase({ teamMembers }: AboutShowcaseProps) {
       className="relative min-h-screen overflow-hidden bg-white text-[#11100b] lg:h-[calc(680svh/var(--site-scale))] lg:overflow-clip"
       style={contentLocale === "mn" ? { letterSpacing: "2px" } : undefined}
     >
-      <div className="relative z-10 grid min-h-screen lg:sticky lg:top-0 lg:h-[calc(100svh/var(--site-scale))] lg:grid-cols-[0.98fr_1px_1.02fr]">
-        <div className="flex min-h-[calc(100svh/var(--site-scale))] flex-col justify-start px-6 pb-12 pt-28 sm:px-10 lg:px-16 lg:pt-32">
+      <div className="relative z-10 grid min-h-screen lg:sticky lg:top-0 lg:h-[calc(100svh/var(--site-scale))] lg:grid-cols-[0.9fr_1px_1.1fr]">
+        <div className="flex min-h-[calc(100svh/var(--site-scale))] flex-col px-6 pb-12 pt-20 sm:px-10 lg:px-16 lg:pt-24">
           <motion.p
             initial={false}
             animate={{ opacity: 1, y: 0 }}
@@ -488,7 +494,7 @@ export function AboutShowcase({ teamMembers }: AboutShowcaseProps) {
             {copy.body}
           </motion.p>
 
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-8 grid border border-[#FFD400]/35 bg-white/70 shadow-[0_24px_80px_rgba(17,16,11,0.06)] backdrop-blur-sm sm:grid-cols-2 xl:grid-cols-4">
             {SECTIONS.map((section, index) => {
               const selected = activeSection === section.id;
 
@@ -498,24 +504,23 @@ export function AboutShowcase({ teamMembers }: AboutShowcaseProps) {
                   type="button"
                   aria-pressed={selected}
                   onClick={() => scrollToSection(index, section.id)}
-                  className="group flex items-center gap-4 text-left text-base uppercase tracking-wide text-[#11100b]/46 transition-colors hover:text-[#11100b] sm:text-lg"
+                  className={[
+                    "group relative flex min-h-20 flex-col justify-between border-[#FFD400]/25 px-4 py-3 text-left uppercase transition-colors hover:bg-[#FFD400]/8",
+                    "sm:border-r sm:[&:nth-child(2n)]:border-r-0 xl:[&:nth-child(2n)]:border-r xl:[&:last-child]:border-r-0",
+                    selected ? "text-[#11100b]" : "text-[#11100b]/48",
+                  ].join(" ")}
                 >
-                  <span className="relative flex h-6 w-6 items-center justify-center">
-                    <span className="absolute h-2 w-2 rotate-45 bg-[#FFD400]" />
-                    {selected ? (
-                      <motion.span
-                        layoutId="about-tab-ring"
-                        className="absolute h-6 w-6 rounded-full border border-[#FFD400]/70"
-                      />
-                    ) : null}
+                  {selected ? (
+                    <motion.span
+                      layoutId="about-tab-highlight"
+                      className="absolute inset-x-0 bottom-0 h-1 bg-[#FFD400]"
+                    />
+                  ) : null}
+                  <span className="trip-meta-text text-xs tracking-[0.18em] text-[#FFD400]">
+                    {String(index + 1).padStart(2, "0")}
                   </span>
-                  <span className="flex flex-col">
-                    <span className={selected ? "text-[#FFD400]" : ""}>
-                      {sectionLabels[section.id]}
-                    </span>
-                    <span className={selected ? "mt-1 text-sm text-[#FFD400]" : "mt-1 text-sm text-[#11100b]/35"}>
-                      {index + 1}
-                    </span>
+                  <span className="mt-3 whitespace-normal text-sm leading-tight tracking-wide sm:text-base">
+                    {sectionLabels[section.id]}
                   </span>
                 </button>
               );
@@ -527,16 +532,19 @@ export function AboutShowcase({ teamMembers }: AboutShowcaseProps) {
           <div className="absolute left-1/2 top-[31%] h-10 w-10 -translate-x-1/2 rounded-full bg-[#FFD400]" />
         </div>
 
-        <div className="relative hidden min-h-[calc(100svh/var(--site-scale))] items-start px-6 pb-20 pt-6 sm:px-10 lg:flex lg:overflow-hidden lg:px-16 lg:pb-14 lg:pt-28">
-          <motion.div
-            key={activeSection}
-            initial={false}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full"
-          >
-            <AboutPanel section={activeSection} copy={copy} team={team} />
-          </motion.div>
+        <div className="relative hidden min-h-[calc(100svh/var(--site-scale))] items-start px-6 pb-20 pt-6 sm:px-10 lg:flex lg:overflow-x-hidden lg:overflow-y-auto lg:px-16 lg:pb-14 lg:pt-16">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 96, clipPath: "inset(18% 0 0 0)" }}
+              animate={{ opacity: 1, y: 0, clipPath: "inset(0% 0 0 0)" }}
+              exit={{ opacity: 0, y: -48, clipPath: "inset(0 0 18% 0)" }}
+              transition={{ duration: 0.84, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full will-change-transform"
+            >
+              <AboutPanel section={activeSection} copy={copy} team={team} />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
@@ -595,7 +603,14 @@ function WhoPanel({ copy }: { copy: (typeof ABOUT_COPY)[keyof typeof ABOUT_COPY]
       <p className="trip-meta-text text-lg uppercase tracking-[0.18em] text-[#FFD400]">
         {copy.whoLabel}
       </p>
-      <p className="mt-5 max-w-3xl text-base leading-8 text-[#11100b]/72 lg:text-lg">{copy.whoText}</p>
+      <motion.p
+        initial={{ opacity: 0, y: 34 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.72, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+        className="mt-5 max-w-3xl text-base font-semibold leading-[1.7] text-[#11100b]/72 lg:text-lg"
+      >
+        {copy.whoText}
+      </motion.p>
       <div className="mt-6 grid gap-4 lg:gap-5">
         {copy.stats.map((stat) => (
           <div key={stat.value} className="grid items-center gap-3 sm:grid-cols-[minmax(7rem,0.34fr)_1fr]">
@@ -624,23 +639,33 @@ function ValuesPanel({ copy }: { copy: (typeof ABOUT_COPY)[keyof typeof ABOUT_CO
       <p className="trip-meta-text text-sm uppercase tracking-[0.18em] text-[#FFD400]">
         {copy.valuesLabel}
       </p>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      <div className="mt-8 max-h-none overflow-hidden rounded-[18px] border border-[#FFD400]/45 bg-white shadow-[0_26px_80px_rgba(17,16,11,0.10)] lg:max-h-[calc(100svh/var(--site-scale)-12rem)] lg:overflow-y-auto">
         {copy.values.map((value, index) => (
           <motion.article
             key={value.title}
-            initial={false}
+            initial={{ opacity: 0, y: 34 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: index * 0.06 }}
-            className="min-h-52 border border-[#FFD400]/35 bg-white p-6"
+            transition={{
+              duration: 0.6,
+              delay: index * 0.08,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            className="grid gap-4 border-b border-[#FFD400]/28 bg-white px-6 py-6 last:border-b-0 odd:bg-[#fffdf3] sm:grid-cols-[5rem_1fr] lg:px-8 lg:py-6"
           >
-            <div className="flex items-center justify-between text-[#FFD400]">
-              <ShieldCheck className="h-6 w-6" />
-              <span className="trip-meta-text text-xs tracking-[0.18em]">
+            <div className="flex items-center justify-between text-[#FFD400] sm:block">
+              <ShieldCheck className="h-6 w-6" aria-hidden />
+              <span className="trip-meta-text text-xs tracking-[0.18em] sm:mt-3 sm:block">
                 {String(index + 1).padStart(2, "0")}
               </span>
             </div>
-            <h2 className="mt-8 text-2xl leading-tight text-[#11100b]">{value.title}</h2>
-            <p className="mt-4 text-sm leading-7 text-[#11100b]/62">{value.body}</p>
+            <div>
+              <h2 className="text-2xl leading-tight text-[#11100b] lg:text-3xl">
+                {value.title}
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-[#11100b]/64 lg:text-base lg:leading-8">
+                {value.body}
+              </p>
+            </div>
           </motion.article>
         ))}
       </div>
@@ -660,26 +685,32 @@ function TeamPanel({
       <p className="trip-meta-text text-sm uppercase tracking-[0.18em] text-[#FFD400]">
         {copy.teamLabel}
       </p>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-8 grid gap-6 xl:grid-cols-2">
         {team.map((member, index) => (
-          <article key={member.id} className="group relative aspect-[3/4] overflow-hidden border border-[#FFD400]/35 bg-white">
+          <article
+            key={member.id}
+            className="group relative min-h-[420px] overflow-hidden border border-[#FFD400]/45 bg-[#11100b] shadow-[0_26px_70px_rgba(17,16,11,0.08)] lg:min-h-[480px]"
+          >
             {member.image ? (
               <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                 style={{ backgroundImage: `url('${member.image}')` }}
               />
             ) : (
-              <div className="absolute inset-0 bg-white" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,212,0,0.18),transparent_34%),linear-gradient(145deg,#fff,#f4f0df)]" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-5">
-              <p className="text-lg font-semibold text-[#11100b]">{member.name}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#FFD400]">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/18 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-white lg:p-7">
+              <p className="text-2xl font-semibold leading-tight lg:text-3xl">{member.name}</p>
+              <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#FFD400]">
                 {member.role}
               </p>
+              {member.bio ? (
+                <p className="mt-4 text-sm leading-7 text-white/72">{member.bio}</p>
+              ) : null}
             </div>
             {!member.image ? (
-              <div className="absolute left-5 top-5 font-display text-6xl leading-none text-[#FFD400]/32">
+              <div className="absolute left-6 top-6 font-display text-[clamp(5rem,8vw,8.5rem)] leading-none text-[#FFD400]/42">
                 {String(index + 1).padStart(2, "0")}
               </div>
             ) : null}
@@ -699,17 +730,21 @@ function WorkPanel({ copy }: { copy: (typeof ABOUT_COPY)[keyof typeof ABOUT_COPY
       <h2 className="mt-4 max-w-2xl text-balance font-display text-3xl leading-tight text-[#11100b] lg:text-4xl">
         {copy.workTitle}
       </h2>
-      <p className="mt-4 max-w-2xl text-sm leading-7 text-[#11100b]/66 lg:text-base">{copy.workBody}</p>
+      <motion.p
+        initial={{ opacity: 0, y: 34 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.72, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+        className="mt-4 max-w-2xl text-sm leading-7 text-[#11100b]/66 lg:text-base lg:leading-8"
+      >
+        {copy.workBody}
+      </motion.p>
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {copy.work.map((item, index) => {
           const Icon = WORK_ICONS[index];
 
           return (
-            <motion.article
+            <article
               key={item.title}
-              initial={false}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: index * 0.06 }}
               className="min-h-40 border border-[#FFD400]/45 bg-white p-4 lg:min-h-44"
             >
               <div className="flex items-center justify-between text-[#FFD400]">
@@ -719,8 +754,8 @@ function WorkPanel({ copy }: { copy: (typeof ABOUT_COPY)[keyof typeof ABOUT_COPY
                 </span>
               </div>
               <h3 className="mt-5 text-xl text-[#11100b] lg:text-2xl">{item.title}</h3>
-              <p className="mt-3 text-sm leading-6 text-[#11100b]/62">{item.body}</p>
-            </motion.article>
+              <p className="mt-3 text-sm leading-7 text-[#11100b]/62">{item.body}</p>
+            </article>
           );
         })}
       </div>

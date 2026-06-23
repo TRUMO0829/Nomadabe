@@ -79,7 +79,9 @@ type DomesticTripCardProps = {
 };
 
 const PANEL_GAP_VW = 0;
-const PANEL_END_BUFFER_VH = 140;
+const PANEL_SCROLL_VH_PER_CARD = 180;
+const PANEL_END_BUFFER_VH = 280;
+const PANEL_FULLY_VISIBLE_HOLD_VH = 180;
 
 function DomesticTripCard({
   adventure,
@@ -97,7 +99,7 @@ function DomesticTripCard({
     <motion.article className="relative grid h-[calc(100svh/var(--site-scale))] w-[calc(100vw/var(--site-scale))] shrink-0 overflow-hidden bg-white lg:grid-cols-2">
       <div className="group relative min-h-[48svh] overflow-hidden bg-[#11100b] lg:min-h-0">
         <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-[1400ms] ease-out group-hover:scale-[1.025]"
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-[2600ms] ease-out group-hover:scale-[1.025]"
           style={{ backgroundImage: `url(${adventure.image})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/24 via-transparent to-black/12" />
@@ -121,13 +123,13 @@ function DomesticTripCard({
             </span>
           </div>
 
-          <p className="trip-meta-text mb-4 text-sm uppercase tracking-[0.2em] text-[#b89422]">
+          <p className="trip-meta-text mb-4 text-sm uppercase tracking-[0.2em] text-[#11100b]">
             {copy.route}
           </p>
           <h3 className="trip-header-title trip-header-title--hero domestic-trip-title max-w-[14ch] text-balance text-[#11100b]">
             {text.title}
           </h3>
-          <p className="trip-copy-text mt-5 max-w-full text-sm leading-7 text-[#4b4538] sm:text-base lg:text-lg">
+          <p className="trip-copy-text mt-5 max-w-full text-sm leading-7 text-[#11100b] sm:text-base lg:text-lg">
             {text.summary}
           </p>
 
@@ -161,9 +163,17 @@ export function TravelOptionsCarousel({
   });
   const maxDesktopShiftVw =
     Math.max(0, domesticOptions.length - 1) * (100 + PANEL_GAP_VW);
+  const desktopScrollDistanceVh = Math.max(
+    1,
+    domesticOptions.length * PANEL_SCROLL_VH_PER_CARD + PANEL_END_BUFFER_VH - 100
+  );
+  const desktopTrackSettleProgress = Math.max(
+    0.5,
+    Math.min(0.9, 1 - PANEL_FULLY_VISIBLE_HOLD_VH / desktopScrollDistanceVh)
+  );
   const desktopTrackX = useTransform(
     scrollYProgress,
-    [0, 0.58, 1],
+    [0, desktopTrackSettleProgress, 1],
     [
       "calc(0vw / var(--site-scale))",
       `calc(${-maxDesktopShiftVw}vw / var(--site-scale))`,
@@ -188,7 +198,7 @@ export function TravelOptionsCarousel({
         ref={sectionRef}
         className="relative overflow-clip bg-white text-[#11100b] max-lg:!h-auto"
         style={{
-          height: `calc(${domesticOptions.length * 100 + PANEL_END_BUFFER_VH}svh / var(--site-scale))`,
+          height: `calc(${domesticOptions.length * PANEL_SCROLL_VH_PER_CARD + PANEL_END_BUFFER_VH}svh / var(--site-scale))`,
         }}
       >
         <div className="hidden h-[calc(100svh/var(--site-scale))] overflow-hidden lg:sticky lg:top-0 lg:flex">

@@ -147,6 +147,30 @@ const COPY = {
 let hasShownSignupPrompt = false;
 const OPEN_SIGNUP_PROMPT_EVENT = "nomadabe:open-signup-prompt";
 
+type AuthActionResult = {
+  ok?: boolean;
+  data?: { emailVerificationRequired?: boolean; adminRedirect?: boolean };
+  error?: { message?: string };
+};
+
+async function readAuthActionResult(
+  response: Response,
+  fallbackMessage: string
+): Promise<AuthActionResult> {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    return (await response.json()) as AuthActionResult;
+  }
+
+  await response.text().catch(() => "");
+
+  return {
+    ok: false,
+    error: { message: fallbackMessage },
+  };
+}
+
 type SignupPromptModalProps = {
   autoOpen?: boolean;
 };
@@ -206,10 +230,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email }),
           });
-          const result = (await response.json()) as {
-            ok?: boolean;
-            error?: { message?: string };
-          };
+          const result = await readAuthActionResult(response, copy.error);
 
           if (!response.ok || !result.ok) {
             throw new Error(result.error?.message ?? copy.error);
@@ -227,10 +248,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: resetEmail || email, code, password }),
         });
-        const result = (await response.json()) as {
-          ok?: boolean;
-          error?: { message?: string };
-        };
+        const result = await readAuthActionResult(response, copy.error);
 
         if (!response.ok || !result.ok) {
           throw new Error(result.error?.message ?? copy.error);
@@ -247,11 +265,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-      const result = (await response.json()) as {
-        ok?: boolean;
-        data?: { emailVerificationRequired?: boolean; adminRedirect?: boolean };
-        error?: { message?: string };
-      };
+      const result = await readAuthActionResult(response, copy.error);
 
       if (!response.ok || !result.ok) {
         throw new Error(result.error?.message ?? copy.error);
