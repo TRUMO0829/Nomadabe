@@ -1,8 +1,10 @@
 import { Typewriter } from "@/components/ui/typewriter";
+import { cn } from "@/lib/utils";
 
 type TravelSectionIntroProps = {
   id?: string;
   title: string;
+  titleClassName?: string;
   description?: string;
   videoSrc?: string;
   variant?: "video" | "plain";
@@ -14,6 +16,7 @@ const DEFAULT_TRAVEL_VIDEO =
 export function TravelSectionIntro({
   id,
   title,
+  titleClassName,
   description,
   videoSrc = DEFAULT_TRAVEL_VIDEO,
   variant = "video",
@@ -25,16 +28,17 @@ export function TravelSectionIntro({
         className="relative overflow-hidden bg-white px-6 py-12 text-center text-foreground lg:py-16"
       >
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center">
-          <h2 className="min-h-[2.25em] text-balance text-[clamp(1.8rem,4.4vw,4.4rem)] font-black uppercase leading-none text-[#11100b]">
+          <h2 className={cn("section-header-title min-h-[2.25em] text-balance text-[#11100b]", titleClassName)}>
             <Typewriter
               words={[title]}
               speed={62}
               delayBetweenWords={1800}
               cursorChar="_"
+              loop={false}
             />
           </h2>
           {description ? (
-            <p className="mt-5 max-w-2xl text-sm font-medium leading-7 text-[#5f5340] sm:text-base lg:text-lg">
+            <p className="mt-5 max-w-2xl text-sm leading-7 text-[#5f5340] sm:text-base lg:text-lg">
               {description}
             </p>
           ) : null}
@@ -62,7 +66,7 @@ export function TravelSectionIntro({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,212,0,0.18),transparent_32%),linear-gradient(180deg,rgba(17,16,11,0.1),rgba(17,16,11,0.76))]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.18] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,248,234,0.45)_1px,transparent_0)] [background-size:18px_18px]" />
       <div className="relative z-10 mx-auto max-w-[92vw]">
-        <h2 className="whitespace-nowrap text-[clamp(1.65rem,4.6vw,4.4rem)] font-semibold uppercase leading-none drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)]">
+        <h2 className={cn("section-header-title whitespace-nowrap drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)]", titleClassName)}>
           {title}
         </h2>
       </div>

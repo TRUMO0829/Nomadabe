@@ -35,9 +35,11 @@ export async function GET(request: Request) {
     }),
     stats: {
       totalInquiries: inquiries.length,
-      confirmed: inquiries.filter((inquiry) => inquiry.status === "confirmed").length,
+      confirmed: inquiries.filter((inquiry) =>
+        ["confirmed", "closed"].includes(inquiry.status)
+      ).length,
       active: inquiries.filter((inquiry) =>
-        ["new", "contacted", "confirmed"].includes(inquiry.status)
+        ["new", "contacted"].includes(inquiry.status)
       ).length,
     },
   });

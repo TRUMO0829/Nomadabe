@@ -53,10 +53,10 @@ const Card: FC<iCardProps> = ({
                 {tag}
               </div>
             ) : null}
-            <h3 className="trip-header-title trip-header-title--hero max-w-4xl text-balance text-white">
+            <h3 className="trip-header-title max-w-3xl text-balance !text-[clamp(1.65rem,3.5vw,3.35rem)] !leading-[1.02] text-white">
               {title}
             </h3>
-            <p className="trip-copy-text mt-4 max-w-2xl text-base leading-7 text-white/84 sm:text-lg">
+            <p className="trip-copy-text mt-4 max-w-2xl text-sm leading-6 text-white/84 sm:text-base lg:leading-7">
               {description}
             </p>
             {onSelect ? (

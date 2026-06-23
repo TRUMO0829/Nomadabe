@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AiChatbot } from "@/components/ai-chatbot";
 import { LanguageProvider } from "@/components/language-provider";
 import { PlaneCursor } from "@/components/plane-cursor";
 import "./globals.css";
@@ -20,6 +21,7 @@ export default function RootLayout({
         <LanguageProvider>
           <PlaneCursor />
           {children}
+          <AiChatbot />
         </LanguageProvider>
       </body>
     </html>

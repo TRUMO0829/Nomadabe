@@ -8,6 +8,7 @@ interface TypewriterProps {
   delayBetweenWords?: number;
   cursor?: boolean;
   cursorChar?: string;
+  loop?: boolean;
 }
 
 export function Typewriter({
@@ -16,6 +17,7 @@ export function Typewriter({
   delayBetweenWords = 2000,
   cursor = true,
   cursorChar = "|",
+  loop = true,
 }: TypewriterProps) {
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -24,11 +26,14 @@ export function Typewriter({
   const [showCursor, setShowCursor] = useState(true);
 
   const currentWord = words[wordIndex] ?? "";
+  const isComplete = !isDeleting && charIndex >= currentWord.length;
 
   useEffect(() => {
     if (words.length === 0) return;
 
     const isWordComplete = !isDeleting && charIndex >= currentWord.length;
+    if (isWordComplete && !loop) return;
+
     const timeoutDelay = isWordComplete ? delayBetweenWords : isDeleting ? speed / 2 : speed;
 
     const timeout = window.setTimeout(() => {
@@ -49,7 +54,7 @@ export function Typewriter({
     }, timeoutDelay);
 
     return () => window.clearTimeout(timeout);
-  }, [charIndex, currentWord, delayBetweenWords, isDeleting, speed, wordIndex, words]);
+  }, [charIndex, currentWord, delayBetweenWords, isDeleting, loop, speed, wordIndex, words]);
 
   useEffect(() => {
     if (!cursor) return;
@@ -64,7 +69,7 @@ export function Typewriter({
   return (
     <span className="inline-block">
       {displayText}
-      {cursor ? (
+      {cursor && (loop || !isComplete) ? (
         <span
           className="ml-1 transition-opacity duration-75"
           style={{ opacity: showCursor ? 1 : 0 }}

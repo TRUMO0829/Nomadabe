@@ -38,9 +38,9 @@ export const UI_COPY = {
       items: [
         { label: "Аяллууд", href: "/tours" },
         { label: "Сэтгэгдэл", href: "/#journal" },
-        { label: "Бидний тухай", href: "/#about" },
+        { label: "Бидний тухай", href: "/about" },
       ],
-      cta: "Аялал төлөвлөх",
+      cta: "Хүсэлт",
       language: "Хэл сонгох",
       openMenu: "Цэс нээх",
       closeMenu: "Цэс хаах",
@@ -50,7 +50,7 @@ export const UI_COPY = {
       established: "2025 оноос - Улаанбаатар",
       headingLine1: "Аяллаа",
       headingEmphasis: "нүүдэлчин",
-      headingLine2: "хэмнэлээр.",
+      headingLine2: "хэмнэлээр",
       body:
         "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг эхнээс нь дуустал зохион байгуулна.",
       quick: [
@@ -179,7 +179,7 @@ export const UI_COPY = {
         },
         {
           title: "Тусламж",
-          links: ["Асуулт хариулт", "Захиалгын нөхцөл", "Даатгал", "Холбоо барих", "Нэвтрэх"],
+          links: ["Захиалгын нөхцөл", "Даатгал", "Холбоо барих", "Нэвтрэх"],
         },
       ],
       copyright: "Nomadabe LLC - Улаанбаатар, Монгол",
@@ -209,9 +209,9 @@ export const UI_COPY = {
       items: [
         { label: "Adventures", href: "/tours" },
         { label: "Reviews", href: "/#journal" },
-        { label: "About", href: "/#about" },
+        { label: "About", href: "/about" },
       ],
-      cta: "Plan your trip",
+      cta: "Request",
       language: "Choose language",
       openMenu: "Open menu",
       closeMenu: "Close menu",
@@ -221,7 +221,7 @@ export const UI_COPY = {
       established: "Est. 2025 - Ulaanbaatar",
       headingLine1: "Travel the",
       headingEmphasis: "nomad",
-      headingLine2: "way.",
+      headingLine2: "way",
       body:
         "Small-group, business, expo, and leisure trips across Mongolia and beyond, planned end to end by a local team.",
       quick: ["Canton Fair", "Solar energy", "Food expo", "Custom trip", "Family holiday"],
@@ -344,7 +344,7 @@ export const UI_COPY = {
         },
         {
           title: "Help",
-          links: ["FAQ", "Booking terms", "Insurance", "Contact", "Login"],
+          links: ["Booking terms", "Insurance", "Contact", "Login"],
         },
       ],
       copyright: "Nomadabe LLC - Ulaanbaatar, Mongolia",
@@ -374,9 +374,9 @@ export const UI_COPY = {
       items: [
         { label: "旅游", href: "/tours" },
         { label: "评价", href: "/#journal" },
-        { label: "关于我们", href: "/#about" },
+        { label: "关于我们", href: "/about" },
       ],
-      cta: "规划行程",
+      cta: "提交请求",
       language: "选择语言",
       openMenu: "打开菜单",
       closeMenu: "关闭菜单",
@@ -509,7 +509,7 @@ export const UI_COPY = {
         },
         {
           title: "帮助",
-          links: ["常见问题", "预订条款", "保险", "联系", "登录"],
+          links: ["预订条款", "保险", "联系", "登录"],
         },
       ],
       copyright: "Nomadabe LLC - 乌兰巴托，蒙古",
@@ -539,9 +539,9 @@ export const UI_COPY = {
       items: [
         { label: "ツアー", href: "/tours" },
         { label: "レビュー", href: "/#journal" },
-        { label: "私たちについて", href: "/#about" },
+        { label: "私たちについて", href: "/about" },
       ],
-      cta: "旅を計画する",
+      cta: "リクエスト",
       language: "言語を選択",
       openMenu: "メニューを開く",
       closeMenu: "メニューを閉じる",
@@ -674,7 +674,7 @@ export const UI_COPY = {
         },
         {
           title: "ヘルプ",
-          links: ["FAQ", "予約条件", "保険", "お問い合わせ", "ログイン"],
+          links: ["予約条件", "保険", "お問い合わせ", "ログイン"],
         },
       ],
       copyright: "Nomadabe LLC - ウランバートル、モンゴル",
@@ -704,9 +704,9 @@ export const UI_COPY = {
       items: [
         { label: "여행", href: "/tours" },
         { label: "후기", href: "/#journal" },
-        { label: "회사 소개", href: "/#about" },
+        { label: "회사 소개", href: "/about" },
       ],
-      cta: "여행 계획하기",
+      cta: "요청하기",
       language: "언어 선택",
       openMenu: "메뉴 열기",
       closeMenu: "메뉴 닫기",
@@ -839,7 +839,7 @@ export const UI_COPY = {
         },
         {
           title: "도움말",
-          links: ["FAQ", "예약 조건", "보험", "연락처", "로그인"],
+          links: ["예약 조건", "보험", "연락처", "로그인"],
         },
       ],
       copyright: "Nomadabe LLC - 울란바토르, 몽골",

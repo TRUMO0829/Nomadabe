@@ -270,6 +270,12 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
           ? copy.verificationSent
           : copy.codeSent
       );
+
+      if (!(mode === "register" && result.data?.emailVerificationRequired)) {
+        setOpen(false);
+        setSubmitted(false);
+        setMessage("");
+      }
     } catch (error) {
       setSubmitted(false);
       setMessage(error instanceof Error ? error.message : copy.error);
