@@ -1,20 +1,17 @@
 "use client";
 
 import {
-  type CSSProperties,
   type FormEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
+  type WheelEvent as ReactWheelEvent,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import {
-  motion,
-  type MotionValue,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   CalendarDays,
@@ -25,7 +22,12 @@ import {
   Star,
   Send,
 } from "lucide-react";
-import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
+import {
+  ADVENTURES,
+  getAdventureText,
+  type Adventure,
+  type AdventureTranslations,
+} from "@/lib/adventures";
 import { cn } from "@/lib/utils";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
@@ -46,6 +48,8 @@ type FeaturedAdventuresProps = {
   adventures?: Adventure[];
   beforeList?: ReactNode;
 };
+
+const SEARCH_LOCALES = ["mn", "en", "zh", "ja", "ko"] as const;
 
 const TOURS_BACKGROUNDS = [
   "/nomadabe-hero-panorama.webp",
@@ -87,7 +91,7 @@ function compareTripDays(
 
 function getOutboundOptionTitle(
   option: (typeof OUTBOUND_OPTIONS)[number],
-  locale: keyof typeof SECTION_COPY
+  locale: (typeof SEARCH_LOCALES)[number]
 ) {
   switch (locale) {
     case "mn":
@@ -106,7 +110,7 @@ function getOutboundOptionTitle(
 
 function getOutboundOptionCountry(
   option: (typeof OUTBOUND_OPTIONS)[number],
-  locale: keyof typeof SECTION_COPY
+  locale: (typeof SEARCH_LOCALES)[number]
 ) {
   switch (locale) {
     case "mn":
@@ -128,95 +132,90 @@ function parseMntPrice(price: string) {
   return Number.isFinite(numericPrice) ? numericPrice : 0;
 }
 
-type SteppedGallerySlot = {
-  offset: number;
-  left: number;
-  top: number;
-  width: number;
-  opacity: number;
-  zIndex: number;
-};
-
-const STEPPED_GALLERY_SLOTS = [
-  { offset: -5, left: -8, top: 40, width: 8, opacity: 0, zIndex: 0 },
-  { offset: -4, left: 0, top: 40, width: 8, opacity: 1, zIndex: 10 },
-  { offset: -3, left: 8, top: 32.5, width: 14, opacity: 1, zIndex: 20 },
-  { offset: -2, left: 22, top: 23.75, width: 21, opacity: 1, zIndex: 30 },
-  { offset: -1, left: 42, top: 13.75, width: 29, opacity: 1, zIndex: 40 },
-  { offset: 0, left: 63, top: 1.25, width: 39, opacity: 1, zIndex: 50 },
-  { offset: 1, left: 103, top: 1.25, width: 39, opacity: 0, zIndex: 60 },
-] satisfies readonly SteppedGallerySlot[];
-
-const STEPPED_GALLERY_GROUP_WIDTH = 100;
-const STEPPED_GALLERY_HEIGHT = 50;
-const STEPPED_GALLERY_VISIBLE_COUNT = 5;
-
-function positiveModulo(value: number, divisor: number) {
-  return ((value % divisor) + divisor) % divisor;
+function normalizeSearchText(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
-function getLoopOffset(value: number, count: number) {
-  if (count <= 0) {
-    return 99;
-  }
-
-  if (count === 1) {
-    return 0;
-  }
-
-  return positiveModulo(value + count / 2, count) - count / 2;
-}
-
-function interpolateNumber(
-  input: number,
-  inputStart: number,
-  inputEnd: number,
-  outputStart: number,
-  outputEnd: number
+function getOutboundOptionSummary(
+  option: (typeof OUTBOUND_OPTIONS)[number],
+  locale: (typeof SEARCH_LOCALES)[number]
 ) {
-  if (inputEnd === inputStart) {
-    return outputEnd;
-  }
+  const country = getOutboundOptionCountry(option, locale);
 
-  const progress = (input - inputStart) / (inputEnd - inputStart);
-  return outputStart + (outputEnd - outputStart) * progress;
+  switch (locale) {
+    case "mn":
+      return `${country} чиглэлийн ${option.days} хоногийн гадаад аяллын багц.`;
+    case "zh":
+    case "ja":
+    case "ko":
+    case "en":
+    default:
+      return `${option.days}-day outbound travel package for ${country}.`;
+  }
 }
 
-function interpolateSteppedSlot(
-  relativeOffset: number,
-  key: keyof Omit<SteppedGallerySlot, "offset">
-) {
-  const firstSlot = STEPPED_GALLERY_SLOTS[0];
-  const lastSlot = STEPPED_GALLERY_SLOTS[STEPPED_GALLERY_SLOTS.length - 1];
-
-  if (relativeOffset <= firstSlot.offset) {
-    return firstSlot[key];
-  }
-
-  if (relativeOffset >= lastSlot.offset) {
-    return lastSlot[key];
-  }
-
-  for (let index = 0; index < STEPPED_GALLERY_SLOTS.length - 1; index += 1) {
-    const current = STEPPED_GALLERY_SLOTS[index];
-    const next = STEPPED_GALLERY_SLOTS[index + 1];
-
-    if (relativeOffset >= current.offset && relativeOffset <= next.offset) {
-      return interpolateNumber(
-        relativeOffset,
-        current.offset,
-        next.offset,
-        current[key],
-        next[key]
-      );
+function getOutboundOptionTranslations(
+  option: (typeof OUTBOUND_OPTIONS)[number]
+): AdventureTranslations {
+  return SEARCH_LOCALES.reduce<AdventureTranslations>((translations, locale) => {
+    if (locale === "mn") {
+      return translations;
     }
-  }
 
-  return lastSlot[key];
+    const country = getOutboundOptionCountry(option, locale);
+
+    translations[locale] = {
+      title: getOutboundOptionTitle(option, locale),
+      location: country,
+      country,
+      groupSize: "Small group",
+      tags: ["Outbound", country],
+      summary: getOutboundOptionSummary(option, locale),
+      idealFor: ["Families", "Small groups", "Leisure"],
+      includes: ["Route planning", "Travel consulting", "Organization"],
+      businessSupport: [],
+    };
+
+    return translations;
+  }, {});
 }
 
-function getActiveWeight(relativeOffset: number) {
-  return Math.max(0, 1 - Math.abs(relativeOffset) / 0.72);
+function getAdventureSearchText(adventure: Adventure) {
+  const localizedParts = SEARCH_LOCALES.flatMap((locale) => {
+    const text = getAdventureText(adventure, locale);
+
+    return [
+      text.title,
+      text.location,
+      text.country,
+      text.groupSize,
+      text.difficulty,
+      text.summary,
+      text.nextDeparture ?? "",
+      ...text.tags,
+      ...text.idealFor,
+      ...text.includes,
+      ...text.businessSupport,
+    ];
+  });
+
+  return normalizeSearchText(
+    [
+      adventure.title,
+      adventure.location,
+      adventure.country,
+      adventure.category,
+      adventure.slug,
+      ...adventure.tags,
+      ...adventure.idealFor,
+      ...adventure.includes,
+      ...adventure.businessSupport,
+      ...localizedParts,
+    ].join(" ")
+  );
 }
 
 const SECTION_COPY = {
@@ -709,144 +708,337 @@ export function TripRatingWidget({
   );
 }
 
-function SteppedTripTile({
-  adventure,
-  index,
-  startIndex,
-  adventureCount,
-  loopProgress,
+function DestinationDragCarousel({
+  id,
+  title,
+  resultLabel,
+  adventures,
+  isSearchActive,
   locale,
   dayLabel,
   detailsLabel,
   onSelect,
 }: {
-  adventure: Adventure;
-  index: number;
-  startIndex: number;
-  adventureCount: number;
-  loopProgress: MotionValue<number>;
+  id: string;
+  title: string;
+  resultLabel: string;
+  adventures: Adventure[];
+  isSearchActive: boolean;
   locale: keyof typeof SECTION_COPY;
   dayLabel: string;
   detailsLabel: string;
   onSelect: (adventure: Adventure) => void;
 }) {
-  const text = getAdventureText(adventure, locale);
-  const routeLabel = {
-    mn: "чиглэл",
-    en: "route",
-    zh: "路线",
-    ja: "ルート",
-    ko: "루트",
-  }[locale];
-  const getRelativeOffset = (progress: number) =>
-    getLoopOffset(index - startIndex + progress, adventureCount);
-  const left = useTransform(
-    loopProgress,
-    (progress) =>
-      `calc(var(--gallery-unit) * ${interpolateSteppedSlot(
-        getRelativeOffset(progress),
-        "left"
-      ).toFixed(4)})`
-  );
-  const top = useTransform(
-    loopProgress,
-    (progress) =>
-      `calc(var(--gallery-unit) * ${interpolateSteppedSlot(
-        getRelativeOffset(progress),
-        "top"
-      ).toFixed(4)})`
-  );
-  const width = useTransform(
-    loopProgress,
-    (progress) =>
-      `calc(var(--gallery-unit) * ${interpolateSteppedSlot(
-        getRelativeOffset(progress),
-        "width"
-      ).toFixed(4)})`
-  );
-  const opacity = useTransform(loopProgress, (progress) =>
-    interpolateSteppedSlot(getRelativeOffset(progress), "opacity")
-  );
-  const zIndex = useTransform(loopProgress, (progress) =>
-    Math.round(interpolateSteppedSlot(getRelativeOffset(progress), "zIndex"))
-  );
-  const detailsOpacity = useTransform(loopProgress, (progress) =>
-    getActiveWeight(getRelativeOffset(progress))
-  );
-  const detailsY = useTransform(
-    detailsOpacity,
-    (value) => `${(1 - value) * 18}px`
-  );
-  const activeShadeOpacity = useTransform(
-    detailsOpacity,
-    (value) => 0.18 + value * 0.82
-  );
-  const imageScale = useTransform(
-    detailsOpacity,
-    (value) => 1.01 + value * 0.03
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef({
+    active: false,
+    startX: 0,
+    lastX: 0,
+    lastTime: 0,
+    velocity: 0,
+    didDrag: false,
+    frame: 0,
+  });
+  const adventureCount = adventures.length;
+  const adventureSignature = useMemo(
+    () => adventures.map((adventure) => adventure.id).join("|"),
+    [adventures]
   );
 
+  useEffect(() => {
+    const dragState = dragRef.current;
+
+    return () => {
+      if (dragState.frame) {
+        window.cancelAnimationFrame(dragState.frame);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+
+    if (!scroller) {
+      return;
+    }
+
+    if (dragRef.current.frame) {
+      window.cancelAnimationFrame(dragRef.current.frame);
+      dragRef.current.frame = 0;
+    }
+
+    dragRef.current.active = false;
+    dragRef.current.velocity = 0;
+    dragRef.current.didDrag = false;
+    setIsDragging(false);
+    scroller.scrollLeft = 0;
+  }, [adventureSignature]);
+
+  function stopMomentum() {
+    if (dragRef.current.frame) {
+      window.cancelAnimationFrame(dragRef.current.frame);
+      dragRef.current.frame = 0;
+    }
+  }
+
+  function snapToNearestCard() {
+    const scroller = scrollerRef.current;
+
+    if (!scroller) {
+      return;
+    }
+
+    const cards = Array.from(
+      scroller.querySelectorAll<HTMLElement>("[data-carousel-card]")
+    );
+
+    if (cards.length === 0) {
+      return;
+    }
+
+    const scrollerLeft = scroller.getBoundingClientRect().left;
+    const currentScroll = scroller.scrollLeft;
+    let nearestScroll = currentScroll;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+
+    for (const card of cards) {
+      const cardLeft = card.getBoundingClientRect().left;
+      const targetScroll = currentScroll + cardLeft - scrollerLeft;
+      const distance = Math.abs(cardLeft - scrollerLeft);
+
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestScroll = targetScroll;
+      }
+    }
+
+    scroller.classList.remove("snap-none");
+    scroller.classList.add("snap-x", "snap-mandatory");
+    scroller.scrollTo({ left: nearestScroll, behavior: "smooth" });
+  }
+
+  function startMomentum() {
+    const scroller = scrollerRef.current;
+
+    if (!scroller) {
+      return;
+    }
+
+    let velocity = dragRef.current.velocity;
+    let lastTime = performance.now();
+
+    const step = (time: number) => {
+      const elapsed = time - lastTime;
+      lastTime = time;
+
+      scroller.scrollLeft += velocity * elapsed;
+      velocity *= 0.94;
+
+      const atStart = scroller.scrollLeft <= 0;
+      const atEnd =
+        scroller.scrollLeft >= scroller.scrollWidth - scroller.clientWidth - 1;
+
+      if (Math.abs(velocity) < 0.025 || atStart || atEnd) {
+        dragRef.current.frame = 0;
+        snapToNearestCard();
+        return;
+      }
+
+      dragRef.current.frame = window.requestAnimationFrame(step);
+    };
+
+    dragRef.current.frame = window.requestAnimationFrame(step);
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== "mouse") {
+      return;
+    }
+
+    const scroller = scrollerRef.current;
+
+    if (!scroller) {
+      return;
+    }
+
+    stopMomentum();
+    dragRef.current.active = true;
+    dragRef.current.startX = event.clientX;
+    dragRef.current.lastX = event.clientX;
+    dragRef.current.lastTime = performance.now();
+    dragRef.current.velocity = 0;
+    dragRef.current.didDrag = false;
+    setIsDragging(true);
+    scroller.classList.add("snap-none");
+    scroller.classList.remove("snap-x", "snap-mandatory");
+    scroller.setPointerCapture(event.pointerId);
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const scroller = scrollerRef.current;
+
+    if (!dragRef.current.active || !scroller) {
+      return;
+    }
+
+    const now = performance.now();
+    const deltaX = event.clientX - dragRef.current.lastX;
+    const elapsed = Math.max(1, now - dragRef.current.lastTime);
+    const deltaScroll = -deltaX;
+
+    if (Math.abs(event.clientX - dragRef.current.startX) > 4) {
+      dragRef.current.didDrag = true;
+    }
+
+    scroller.scrollLeft += deltaScroll;
+    dragRef.current.velocity = deltaScroll / elapsed;
+    dragRef.current.lastX = event.clientX;
+    dragRef.current.lastTime = now;
+  }
+
+  function endPointerDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    const scroller = scrollerRef.current;
+
+    if (!dragRef.current.active || !scroller) {
+      return;
+    }
+
+    dragRef.current.active = false;
+    setIsDragging(false);
+
+    if (scroller.hasPointerCapture(event.pointerId)) {
+      scroller.releasePointerCapture(event.pointerId);
+    }
+
+    if (Math.abs(dragRef.current.velocity) > 0.05) {
+      startMomentum();
+    } else {
+      snapToNearestCard();
+    }
+  }
+
+  function handleWheel(event: ReactWheelEvent<HTMLDivElement>) {
+    const scroller = scrollerRef.current;
+
+    if (!scroller || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+      return;
+    }
+
+    const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+    const nextScroll = scroller.scrollLeft + event.deltaY;
+
+    if (nextScroll <= 0 || nextScroll >= maxScroll) {
+      return;
+    }
+
+    event.preventDefault();
+    scroller.scrollLeft = nextScroll;
+  }
+
+  function handleCardClick(
+    event: ReactMouseEvent<HTMLElement>,
+    adventure: Adventure
+  ) {
+    if (dragRef.current.didDrag) {
+      event.preventDefault();
+      event.stopPropagation();
+      dragRef.current.didDrag = false;
+      return;
+    }
+
+    onSelect(adventure);
+  }
+
+  if (adventureCount === 0) {
+    return null;
+  }
+
   return (
-    <motion.figure
-      className="group absolute m-0 cursor-pointer overflow-hidden bg-[#e8e8e8]"
-      style={{
-        left,
-        top,
-        width,
-        aspectRatio: "4 / 5",
-        opacity,
-        zIndex,
-      }}
-      onClick={() => onSelect(adventure)}
+    <section
+      id={id}
+      className="overflow-hidden bg-white py-10 lg:py-12"
     >
-      <motion.div
-        className="h-full w-full bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${adventure.image})`,
-          scale: imageScale,
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-white/6" />
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-t from-black/76 via-black/12 to-white/6"
-        style={{ opacity: activeShadeOpacity }}
-      />
-      <motion.div
-        className="absolute inset-x-0 bottom-[clamp(4.75rem,10vh,7.25rem)] z-30 p-4 text-white sm:p-5 lg:px-6 lg:py-5"
-        style={{ opacity: detailsOpacity, y: detailsY }}
-      >
-        <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase text-white/70">
-          <span>{routeLabel}</span>
-          <span className="inline-flex items-center gap-1">
-            <MapPinned className="h-3.5 w-3.5 text-white" />
-            {text.location}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <CalendarDays className="h-3.5 w-3.5 text-white" />
-            {adventure.days} {dayLabel}
-          </span>
-        </p>
-        <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[14ch] text-balance !text-[clamp(1.45rem,2.55vw,2.65rem)] !leading-[1.04] text-white">
-          {text.title}
-        </h3>
-        <p className="trip-copy-text mt-2 line-clamp-2 max-w-sm text-xs leading-5 text-white/78 sm:text-sm">
-          {text.summary}
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onSelect(adventure);
-            }}
-            className="inline-flex min-h-10 items-center justify-center gap-2 bg-accent px-4 text-[10px] uppercase text-accent-foreground transition-colors hover:bg-white hover:text-black"
-          >
-            {detailsLabel}
-            <ArrowRight className="h-4 w-4" />
-          </button>
+      <div className="text-[#050505]">
+        <div className="tours-list-copy mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
+          <h2 className="section-header-title tours-list-title max-w-[13ch] text-balance text-black">
+            {title}
+          </h2>
+          <div className="tours-list-count mt-5 inline-flex border border-black bg-white px-3 py-2 text-xs uppercase text-black">
+            {adventureCount} {resultLabel}
+          </div>
         </div>
-      </motion.div>
-    </motion.figure>
+
+        <div
+          ref={scrollerRef}
+          className={cn(
+            "mt-8 flex w-full cursor-grab snap-x snap-mandatory gap-4 overflow-x-auto pb-4 active:cursor-grabbing sm:gap-5 lg:mt-10 lg:gap-6",
+            isSearchActive && "mx-auto max-w-7xl px-6 sm:px-8 lg:px-10",
+            "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            "[-webkit-overflow-scrolling:touch] [touch-action:pan-x]",
+            isDragging && "cursor-grabbing select-none"
+          )}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endPointerDrag}
+          onPointerCancel={endPointerDrag}
+          onWheel={handleWheel}
+        >
+          {adventures.map((adventure) => {
+            const text = getAdventureText(adventure, locale);
+
+            return (
+              <article
+                key={adventure.id}
+                data-carousel-card
+                onClick={(event) => handleCardClick(event, adventure)}
+                className="relative m-0 flex min-w-[82vw] shrink-0 snap-start cursor-pointer flex-col sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
+              >
+                <div className="aspect-[4/4.85] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8]">
+                  <div
+                    className="h-full w-full bg-cover bg-center"
+                    style={{ backgroundImage: `url(${adventure.image})` }}
+                  />
+                </div>
+                <div className="flex flex-1 flex-col px-0 pt-4 text-[#050505] sm:pt-5">
+                  <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase text-black/58">
+                    <span>{text.country}</span>
+                    <span className="inline-flex items-center gap-1">
+                      <MapPinned className="h-3.5 w-3.5 text-[#8f7020]" />
+                      {text.location}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <CalendarDays className="h-3.5 w-3.5 text-[#8f7020]" />
+                      {adventure.days} {dayLabel}
+                    </span>
+                  </p>
+                  <h3 className="trip-header-title trip-header-title--compact mt-2 min-h-[3.15em] max-w-[14ch] text-balance !text-[clamp(1.45rem,2.55vw,2.65rem)] !leading-[1.04] text-black">
+                    {text.title}
+                  </h3>
+                  <p className="trip-copy-text mt-2 line-clamp-2 min-h-10 max-w-sm text-xs leading-5 text-black/68 sm:text-sm">
+                    {text.summary}
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        dragRef.current.didDrag = false;
+                        onSelect(adventure);
+                      }}
+                      className="inline-flex min-h-10 items-center justify-center gap-2 bg-accent px-4 text-[10px] uppercase text-accent-foreground"
+                    >
+                      {detailsLabel}
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -876,16 +1068,12 @@ export function FeaturedAdventures({
   const sectionCopy = SECTION_COPY[contentLocale];
   const searchCopy = TRIP_SEARCH_COPY[contentLocale];
   const localeTag = LOCALE_TAGS[contentLocale];
-  const { scrollYProgress: galleryScrollYProgress } = useScroll({
-    target: gallerySectionRef,
-    offset: ["start start", "end end"],
-  });
 
   const staticOutboundAdventures = useMemo<Adventure[]>(
     () =>
       OUTBOUND_OPTIONS.map((option, index) => {
-        const title = getOutboundOptionTitle(option, contentLocale);
-        const country = getOutboundOptionCountry(option, contentLocale);
+        const title = getOutboundOptionTitle(option, "mn");
+        const country = getOutboundOptionCountry(option, "mn");
 
         return {
           id: `static-outbound-${option.id}`,
@@ -903,17 +1091,15 @@ export function FeaturedAdventures({
           rating: 4.8,
           reviews: 18 + index * 4,
           category: "outbound",
-          summary:
-            contentLocale === "mn"
-              ? `${country} чиглэлийн ${option.days} хоногийн гадаад аяллын багц.`
-              : `${option.days}-day outbound travel package for ${country}.`,
+          summary: getOutboundOptionSummary(option, "mn"),
           idealFor: ["Гэр бүл", "Жижиг групп", "Амралт"],
           includes: ["Маршрут төлөвлөлт", "Аяллын зөвлөгөө", "Зохион байгуулалт"],
           businessSupport: [],
           nextDeparture: sectionCopy.flexible,
+          translations: getOutboundOptionTranslations(option),
         };
       }),
-    [contentLocale, sectionCopy.flexible]
+    [sectionCopy.flexible]
   );
 
   const allAdventures = useMemo(
@@ -922,7 +1108,10 @@ export function FeaturedAdventures({
   );
 
   const destinationOptions = useMemo(() => {
-    const options = new Map<string, { label: string; count: number }>();
+    const options = new Map<
+      string,
+      { label: string; count: number; searchText: string }
+    >();
 
     allAdventures.forEach((adventure) => {
       const text = getAdventureText(adventure, contentLocale);
@@ -937,6 +1126,9 @@ export function FeaturedAdventures({
       options.set(key, {
         label,
         count: (current?.count ?? 0) + 1,
+        searchText: current
+          ? `${current.searchText} ${getAdventureSearchText(adventure)}`
+          : getAdventureSearchText(adventure),
       });
     });
 
@@ -946,46 +1138,16 @@ export function FeaturedAdventures({
   }, [allAdventures, contentLocale, localeTag]);
 
   const visibleDestinationOptions = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = normalizeSearchText(query.trim());
 
     return destinationOptions
       .filter((option) =>
         normalizedQuery
-          ? option.label.toLowerCase().includes(normalizedQuery)
+          ? normalizeSearchText(option.searchText).includes(normalizedQuery)
           : true
       )
       .slice(0, 8);
   }, [destinationOptions, query]);
-
-  const today = useMemo(() => startOfDay(new Date()), []);
-  const calendarStartMonth = useMemo(() => startOfMonth(new Date()), []);
-  const visibleCalendarMonth = useMemo(
-    () => addMonths(calendarStartMonth, calendarOffset),
-    [calendarOffset, calendarStartMonth]
-  );
-  const selectedStartDateKey = selectedStartDate ? getDateKey(selectedStartDate) : null;
-  const selectedEndDateKey = selectedEndDate ? getDateKey(selectedEndDate) : null;
-  const dateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat(localeTag, {
-        month: "short",
-        day: "numeric",
-      }),
-    [localeTag]
-  );
-  const selectedDateLabel = selectedStartDate
-    ? selectedEndDate
-      ? `${dateFormatter.format(selectedStartDate)} - ${dateFormatter.format(selectedEndDate)}`
-      : `${dateFormatter.format(selectedStartDate)} - ...`
-    : searchCopy.whenPlaceholder;
-  const guestTotal = Object.values(guestCounts).reduce(
-    (total, count) => total + count,
-    0
-  );
-  const guestLabel =
-    guestTotal > 0
-      ? `${guestTotal} ${searchCopy.guests}`
-      : searchCopy.whoPlaceholder;
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -1046,24 +1208,11 @@ export function FeaturedAdventures({
   }, []);
 
   const filteredAdventures = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = normalizeSearchText(query.trim());
 
     const matches = allAdventures.filter((adventure) => {
-      const text = getAdventureText(adventure, contentLocale);
       const isDomestic = adventure.country === "Mongolia";
-      const searchText = [
-        text.title,
-        text.location,
-        text.country,
-        text.summary,
-        adventure.location,
-        adventure.country,
-        adventure.category,
-        ...text.tags,
-        ...text.idealFor,
-      ]
-        .join(" ")
-        .toLowerCase();
+      const searchText = getAdventureSearchText(adventure);
 
       const matchesScope =
         scope === "all" ||
@@ -1104,20 +1253,38 @@ export function FeaturedAdventures({
     }
 
     return sortedMatches;
-  }, [allAdventures, contentLocale, query, scope, sortMode]);
+  }, [allAdventures, query, scope, sortMode]);
 
-  const galleryAdventureCount = filteredAdventures.length;
-  const galleryStartIndex = Math.min(
-    STEPPED_GALLERY_VISIBLE_COUNT - 1,
-    Math.max(0, galleryAdventureCount - 1)
+  const groupedFilteredAdventures = useMemo(() => {
+    const outbound = filteredAdventures.filter(
+      (adventure) => adventure.country !== "Mongolia"
+    );
+    const domestic = filteredAdventures.filter(
+      (adventure) => adventure.country === "Mongolia"
+    );
+
+    return [
+      {
+        id: "outbound-trips",
+        title: sectionCopy.outbound,
+        adventures: outbound,
+      },
+      {
+        id: "domestic-trips",
+        title: sectionCopy.domestic,
+        adventures: domestic,
+      },
+    ].filter((group) => group.adventures.length > 0);
+  }, [filteredAdventures, sectionCopy.domestic, sectionCopy.outbound]);
+  const isSearchActive = query.trim().length > 0;
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const calendarStartMonth = useMemo(() => startOfMonth(new Date()), []);
+  const visibleCalendarMonth = useMemo(
+    () => addMonths(calendarStartMonth, calendarOffset),
+    [calendarOffset, calendarStartMonth]
   );
-  const galleryLoopProgress = useTransform(
-    galleryScrollYProgress,
-    [0, 0.86, 1],
-    [0, galleryAdventureCount, galleryAdventureCount]
-  );
-  const galleryScrollHeight =
-    Math.max(1, galleryAdventureCount) * 96 + 52;
+  const selectedStartDateKey = selectedStartDate ? getDateKey(selectedStartDate) : null;
+  const selectedEndDateKey = selectedEndDate ? getDateKey(selectedEndDate) : null;
 
   function handleTripSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1155,20 +1322,21 @@ export function FeaturedAdventures({
 
   return (
     <section id="adventures" className="bg-background">
-      <div className="relative min-h-[560px] overflow-x-clip bg-primary text-primary-foreground lg:min-h-[660px]">
-        {TOURS_BACKGROUNDS.map((image, index) => (
-          <motion.div
-            key={image}
-            aria-hidden="true"
-            initial={false}
-            animate={{ opacity: activeHeroImage === index ? 1 : 0 }}
-            transition={{ duration: 1.1, ease: "easeInOut" }}
-            className="absolute inset-0 scale-105 bg-cover bg-center"
-            style={{ backgroundImage: `url('${image}')` }}
-          />
-        ))}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/38 to-primary/82" />
-        <div className="absolute inset-0 bg-primary/10" />
+      <div className="relative min-h-[calc(100svh/var(--site-scale))] overflow-visible bg-primary text-primary-foreground">
+        <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+          {TOURS_BACKGROUNDS.map((image, index) => (
+            <motion.div
+              key={image}
+              initial={false}
+              animate={{ opacity: activeHeroImage === index ? 1 : 0 }}
+              transition={{ duration: 1.1, ease: "easeInOut" }}
+              className="absolute inset-0 scale-105 bg-cover bg-center"
+              style={{ backgroundImage: `url('${image}')` }}
+            />
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/38 to-primary/82" />
+          <div className="absolute inset-0 bg-primary/10" />
+        </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 pt-24 lg:px-10 lg:pt-32">
           <div className="max-w-xl">
@@ -1182,9 +1350,9 @@ export function FeaturedAdventures({
           <form
             ref={searchFormRef}
             onSubmit={handleTripSearchSubmit}
-            className="relative mx-auto max-w-5xl text-white"
+            className="relative mx-auto max-w-4xl text-white"
           >
-            <div className="grid overflow-hidden rounded-[2rem] border border-white/50 bg-white/10 shadow-[0_24px_80px_rgba(17,16,11,0.18)] backdrop-blur-[1px] sm:rounded-full lg:grid-cols-[1.12fr_0.9fr_0.86fr_auto]">
+            <div className="grid overflow-hidden rounded-[2rem] border border-white/50 bg-white/10 shadow-[0_24px_80px_rgba(17,16,11,0.18)] backdrop-blur-[1px] sm:rounded-full lg:grid-cols-[1fr_auto]">
               <div
                 className={cn(
                   "flex min-h-[76px] flex-col justify-center border-b border-white/24 px-6 py-4 transition-colors sm:border-b-0 lg:border-r",
@@ -1207,41 +1375,9 @@ export function FeaturedAdventures({
                     setActiveSearchPanel("where");
                   }}
                   placeholder={searchCopy.wherePlaceholder}
-                  className="mt-1 min-w-0 bg-transparent text-base text-white outline-none placeholder:text-white/62 lg:text-xl"
+                  className="mt-1 min-w-0 appearance-none border-0 bg-transparent p-0 text-base text-white shadow-none outline-none [background:transparent] placeholder:text-white/62 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-xl"
                 />
               </div>
-
-              <button
-                type="button"
-                onClick={() => setActiveSearchPanel("when")}
-                className={cn(
-                  "flex min-h-[76px] flex-col justify-center border-b border-white/24 px-6 py-4 text-left transition-colors sm:border-b-0 lg:border-r",
-                  activeSearchPanel === "when" && "bg-white/14"
-                )}
-              >
-                <span className="trip-meta-text text-xs uppercase tracking-[0.14em] text-white/82">
-                  {searchCopy.when}
-                </span>
-                <span className="mt-1 truncate text-base text-white/86 lg:text-xl">
-                  {selectedDateLabel}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveSearchPanel("who")}
-                className={cn(
-                  "flex min-h-[76px] flex-col justify-center px-6 py-4 text-left transition-colors lg:border-r lg:border-white/24",
-                  activeSearchPanel === "who" && "bg-white/14"
-                )}
-              >
-                <span className="trip-meta-text text-xs uppercase tracking-[0.14em] text-white/82">
-                  {searchCopy.who}
-                </span>
-                <span className="mt-1 truncate text-base text-white/86 lg:text-xl">
-                  {guestLabel}
-                </span>
-              </button>
 
               <div className="flex items-center justify-end px-3 pb-3 sm:pb-3 lg:p-3">
                 <button
@@ -1471,56 +1607,23 @@ export function FeaturedAdventures({
       <div
         ref={gallerySectionRef}
         id="all"
-        className="overflow-clip bg-white"
-        style={
-          filteredAdventures.length > 0
-            ? ({
-                height: `calc(${galleryScrollHeight}svh / var(--site-scale))`,
-              } satisfies CSSProperties)
-            : undefined
-        }
+        className="bg-white"
       >
-        {filteredAdventures.length > 0 ? (
-          <div className="flow-frame sticky top-0 bg-white text-[#050505]">
-            <div className="tours-list-copy absolute left-0 top-[8vh] z-20 w-[min(620px,88vw)] px-6 sm:px-8 lg:top-[10vh] lg:px-10">
-              <h2 className="section-header-title tours-list-title max-w-[13ch] text-balance text-black">
-                {sectionCopy.listTitle}
-              </h2>
-              <div className="mt-4 max-w-xs">
-                <p className="tours-list-body max-w-xs text-sm uppercase leading-[1.34] text-black/78 sm:text-[15px]">
-                  {sectionCopy.listBody}
-                </p>
-                <div className="tours-list-count mt-4 inline-flex border border-black bg-white px-3 py-2 text-xs uppercase text-black">
-                  {filteredAdventures.length} {sectionCopy.result}
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="absolute bottom-0 left-0 z-10 overflow-visible [--gallery-unit:calc(1.32vw/var(--site-scale))] sm:[--gallery-unit:calc(1.14vw/var(--site-scale))] lg:[--gallery-unit:calc(1vw/var(--site-scale))]"
-              style={
-                {
-                  width: `calc(var(--gallery-unit) * ${STEPPED_GALLERY_GROUP_WIDTH})`,
-                  height: `calc(var(--gallery-unit) * ${STEPPED_GALLERY_HEIGHT})`,
-                } as CSSProperties
-              }
-            >
-              {filteredAdventures.map((adventure, index) => (
-                <SteppedTripTile
-                  key={adventure.id}
-                  adventure={adventure}
-                  index={index}
-                  startIndex={galleryStartIndex}
-                  adventureCount={galleryAdventureCount}
-                  loopProgress={galleryLoopProgress}
-                  locale={contentLocale}
-                  dayLabel={t.featured.days}
-                  detailsLabel={t.featured.details}
-                  onSelect={setSelected}
-                />
-              ))}
-            </div>
-          </div>
+        {groupedFilteredAdventures.length > 0 ? (
+          groupedFilteredAdventures.map((group) => (
+            <DestinationDragCarousel
+              key={group.id}
+              id={group.id}
+              title={group.title}
+              resultLabel={sectionCopy.result}
+              adventures={group.adventures}
+              isSearchActive={isSearchActive}
+              locale={contentLocale}
+              dayLabel={t.featured.days}
+              detailsLabel={t.featured.details}
+              onSelect={setSelected}
+            />
+          ))
         ) : (
           <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
             <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">

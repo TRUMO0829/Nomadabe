@@ -13,30 +13,37 @@ const COPY = {
   mn: {
     eyebrow: "Онцлох аяллууд",
     title: "Онцлох аяллууд",
+    subtitle:
+      "Сонгосон аяллаа дарж дэлгэрэнгүй мэдээлэл, үнэ, багцын нөхцөлийг хараарай.",
     details: "Дэлгэрэнгүй",
     day: "хоног",
   },
   en: {
     eyebrow: "Featured trips",
     title: "Featured trips",
+    subtitle:
+      "Open a trip to view details, pricing, inclusions, and planning notes.",
     details: "Details",
     day: "days",
   },
   zh: {
     eyebrow: "精选旅行",
     title: "精选旅行",
+    subtitle: "打开行程即可查看详情、价格、包含项目和规划说明。",
     details: "详情",
     day: "天",
   },
   ja: {
     eyebrow: "注目ツアー",
     title: "注目ツアー",
+    subtitle: "ツアーを開くと、詳細、料金、含まれる内容、計画メモを確認できます。",
     details: "詳細",
     day: "日",
   },
   ko: {
     eyebrow: "추천 여행",
     title: "추천 여행",
+    subtitle: "여행을 열어 상세 정보, 가격, 포함 사항, 일정 메모를 확인하세요.",
     details: "자세히",
     day: "일",
   },
@@ -58,10 +65,18 @@ function uniqueBySlug(trips: Adventure[]) {
 }
 
 function getFeaturedTrips(adventures: Adventure[]) {
-  return uniqueBySlug([
+  const featuredTrips = uniqueBySlug([
     ...adventures.filter((adventure) => adventure.featured),
     ...ADVENTURES.filter((adventure) => adventure.featured),
-  ]).slice(0, 4);
+  ]);
+
+  return featuredTrips
+    .sort((a, b) => {
+      if (a.slug === "mongolia-festival-experience") return -1;
+      if (b.slug === "mongolia-festival-experience") return 1;
+      return 0;
+    })
+    .slice(0, 4);
 }
 
 function FeaturedTripScrollPanel({
@@ -338,17 +353,30 @@ function FeaturedTripsGrid({
   const { contentLocale } = useLanguage();
 
   return (
-    <section id="trips" className="bg-white px-3 py-4 text-[#1d1d1f] sm:px-4 lg:px-5">
-      <div className="mx-auto max-w-[1800px]">
-        <div className="mx-auto max-w-3xl px-4 py-8 text-center lg:py-12">
+    <section id="trips" className="bg-[#f4f5f8] px-4 py-8 text-[#1d1d1f] sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1500px]">
+        <div className="mx-auto max-w-3xl px-4 py-8 text-center lg:py-10">
           <h2 className="!normal-case text-[clamp(2.1rem,4vw,4.25rem)] leading-[1.02] text-[#1d1d1f]">
             {copy.title}
           </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#6e6e73] sm:text-base">
+            {copy.subtitle}
+          </p>
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid justify-items-center gap-7 md:grid-cols-2">
           {featuredTrips.map((adventure, index) => {
             const text = getAdventureText(adventure, contentLocale);
+            const isFestivalCard = adventure.slug === "mongolia-festival-experience";
+            const title =
+              contentLocale === "mn" && isFestivalCard
+                ? "Монгол Фестивалийн аялал"
+                : text.title;
+            const summary =
+              contentLocale === "mn" && isFestivalCard
+                ? "Наадам, хотын соёлын арга хэмжээ, үндэсний хоол, музей болон өдөр бүрийн уян хатан хөтөлбөртэй festival аялал."
+                : text.summary;
+
             return (
               <motion.article
                 key={adventure.id}
@@ -356,37 +384,35 @@ function FeaturedTripsGrid({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-70px" }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="group relative isolate min-h-[560px] overflow-hidden bg-[#11100b] text-center lg:min-h-[680px]"
+                className="group relative isolate aspect-[4/5] w-full overflow-hidden bg-[#11100b] text-left shadow-[0_18px_46px_rgba(17,16,11,0.09)] sm:aspect-[5/4] lg:aspect-[4/3]"
               >
-                <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute inset-0 overflow-hidden bg-[#11100b]">
                   <Image
                     src={adventure.image}
-                    alt={text.title}
+                    alt={title}
                     fill
                     priority={index === 0}
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover object-center"
+                    sizes="(max-width: 768px) 100vw, 560px"
+                    className="object-cover object-center opacity-85 transition duration-700 ease-out group-hover:scale-[1.035]"
                   />
-                </div>
-
-                <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center px-6 pt-12 drop-shadow-[0_2px_12px_rgba(0,0,0,0.72)] sm:pt-14 lg:pt-16">
-                  <h3 className="max-w-[14ch] !normal-case text-balance text-[clamp(2.15rem,4.6vw,4.25rem)] leading-[0.98] text-white">
-                    {text.title}
-                  </h3>
-                  <p className="mt-3 line-clamp-2 max-w-xl text-sm leading-6 text-white lg:text-base">
-                    {text.summary}
-                  </p>
-                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/48 via-black/18 to-black/4" />
+                  <div className="absolute left-8 right-8 top-10 z-10 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] sm:left-10 sm:right-10 sm:top-12">
+                    <h3 className="max-w-[14ch] text-balance text-[clamp(1.75rem,4.2vw,3.25rem)] leading-[0.98] text-white">
+                      {title}
+                    </h3>
+                    <div className="mt-5 h-px w-[min(22rem,78%)] bg-white/88" />
+                    <p className="mt-5 line-clamp-3 max-w-[32rem] text-xs leading-5 text-white sm:text-[13px] sm:leading-5">
+                      {summary}
+                    </p>
                     <button
                       type="button"
                       onClick={() => onSelect(adventure)}
-                      className="nav-text inline-flex h-11 items-center justify-center rounded-full bg-accent px-6 text-sm text-accent-foreground transition-colors hover:bg-white hover:text-[#11100b]"
+                      className="nav-text mt-6 inline-flex text-sm text-accent transition-colors hover:text-white"
                     >
                       {copy.details}
                     </button>
                   </div>
                 </div>
-
               </motion.article>
             );
           })}

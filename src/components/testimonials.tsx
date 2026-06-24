@@ -7,42 +7,89 @@ import {
 } from "@/components/ui/testimonials-columns-1";
 import { useLanguage } from "./language-provider";
 
-const REVIEW_EMAILS = [
-  "nomin.bayar@gmail.com",
-  "temuulen.ariun@gmail.com",
-  "saruul.erdene@gmail.com",
-  "enkhjin.travel@gmail.com",
-  "munkhorgil.b@gmail.com",
-  "anuka.nomad@gmail.com",
-  "bilguun.expo@gmail.com",
-  "oyuka.route@gmail.com",
-  "tulga.trip@gmail.com",
-];
-
-const REVIEW_AVATARS: TestimonialColumnItem["avatar"][] = [
-  { icon: "sparkles", gradient: "linear-gradient(135deg,#ff6b9d,#ffd166)", foreground: "#7a1238" },
-  { icon: "clapperboard", gradient: "linear-gradient(135deg,#5b8cff,#8fffd2)", foreground: "#102a66" },
-  { icon: "popcorn", gradient: "linear-gradient(135deg,#ffd166,#f97316)", foreground: "#5a2106" },
-  { icon: "film", gradient: "linear-gradient(135deg,#a78bfa,#f0abfc)", foreground: "#3b1768" },
-  { icon: "wand", gradient: "linear-gradient(135deg,#22d3ee,#818cf8)", foreground: "#0f2d5c" },
-  { icon: "camera", gradient: "linear-gradient(135deg,#fb7185,#fef08a)", foreground: "#651524" },
-  { icon: "video", gradient: "linear-gradient(135deg,#34d399,#60a5fa)", foreground: "#063d35" },
-  { icon: "star", gradient: "linear-gradient(135deg,#facc15,#fb923c)", foreground: "#4d2c05" },
-  { icon: "palette", gradient: "linear-gradient(135deg,#f472b6,#38bdf8)", foreground: "#4a1740" },
+const REVIEW_PROFILES: Array<{
+  email: string;
+  role: string;
+  text: string;
+  avatar: TestimonialColumnItem["avatar"];
+}> = [
+  {
+    email: "nomin.b***@gmail.com",
+    role: "Canton Fair - 7 өдөр",
+    text:
+      "Анх удаа Canton Fair-д явсан болохоор бүртгэл, павильон, уулзалтын цаг бүгдийг нь урьдчилж цэгцэлж өгсөн нь хамгийн их хэрэг болсон.",
+    avatar: { initials: "Н", background: "#1a73e8", foreground: "#ffffff" },
+  },
+  {
+    email: "temuulen.a***@gmail.com",
+    role: "Шанхай бизнес аялал - 5 өдөр",
+    text:
+      "Нислэг хойшлоход буудал, тосолт, дараагийн өдрийн маршрутыг хурдан өөрчилж өгсөн. Ажлын уулзалтуудаа алдалгүй амжуулсан.",
+    avatar: { initials: "Т", background: "#0f9d58", foreground: "#ffffff" },
+  },
+  {
+    email: "saruul.e***@gmail.com",
+    role: "Жэжү гэр бүлийн аялал - 6 өдөр",
+    text:
+      "Хүүхдүүдтэй явсан болохоор хөтөлбөр нь хэт шахуу биш, буудал нь далайд ойр байсан нь таалагдсан. Өдөр бүрийн мэдээлэл тодорхой ирдэг байсан.",
+    avatar: { initials: "С", background: "#fbbc04", foreground: "#202124" },
+  },
+  {
+    email: "enkhjin.m***@gmail.com",
+    role: "Япон 4 хотын аялал - 5 өдөр",
+    text:
+      "Галт тэрэг, хот хоорондын шилжилт дээр санаа зовж байсан ч бүх цагийн хуваарь ойлгомжтой байсан. Хөтөч нь маш тайван тайлбарладаг.",
+    avatar: { initials: "Э", background: "#db4437", foreground: "#ffffff" },
+  },
+  {
+    email: "munkhorgil.b***@gmail.com",
+    role: "Тайвань үзэсгэлэн аялал - 7 өдөр",
+    text:
+      "Үзэсгэлэнгийн дараах ханган нийлүүлэгчийн уулзалтуудыг тусад нь тохируулж өгсөн. Зөвхөн аялал биш бизнес талдаа бодит үр дүнтэй байлаа.",
+    avatar: { initials: "М", background: "#673ab7", foreground: "#ffffff" },
+  },
+  {
+    email: "anuka.d***@gmail.com",
+    role: "Турк амралт аялал - 8 өдөр",
+    text:
+      "Үнэ дотор юу багтсан, юуг тусад нь төлөхийг эхнээс нь тодорхой хэлсэн. Очоод гэнэтийн нэмэлт зардал гараагүй нь итгэл төрүүлсэн.",
+    avatar: { initials: "А", background: "#00acc1", foreground: "#ffffff" },
+  },
+  {
+    email: "bilguun.o***@gmail.com",
+    role: "Хятад үйлдвэртэй уулзах аялал - 4 өдөр",
+    text:
+      "Орчуулагч, тээврийн зохицуулалт сайн байсан. Үйлдвэр дээр очих цаг, буцах зам, хот доторх хөдөлгөөн бүгд төлөвлөгөөний дагуу явсан.",
+    avatar: { initials: "Б", background: "#e8710a", foreground: "#ffffff" },
+  },
+  {
+    email: "oyuka.r***@gmail.com",
+    role: "Монгол фестивалийн аялал - 6 өдөр",
+    text:
+      "Гадаад найзуудтайгаа явсан, хөтөч нь ёс заншил, наадмын хөтөлбөрийг ойлгомжтой тайлбарласан. Зураг авах цэгүүд хүртэл сайн сонгосон байсан.",
+    avatar: { initials: "О", background: "#d81b60", foreground: "#ffffff" },
+  },
+  {
+    email: "tulga.s***@gmail.com",
+    role: "Захиалгат маршрут - 3 өдөр",
+    text:
+      "Богино хугацаанд багийнхаа төсөв, уулзалтын зорилгод тааруулж маршрут гаргуулсан. Хариу хурдан, зохион байгуулалт нь цэгцтэй.",
+    avatar: { initials: "Т", background: "#3c4043", foreground: "#ffffff" },
+  },
 ];
 
 export function Testimonials() {
-  const { t } = useLanguage();
+  const { contentLocale, t } = useLanguage();
   const copy = t.testimonials;
 
-  const testimonials: TestimonialColumnItem[] = Array.from({ length: 9 }, (_, index) => {
+  const testimonials: TestimonialColumnItem[] = REVIEW_PROFILES.map((profile, index) => {
     const quote = copy.quotes[index % copy.quotes.length];
 
     return {
-      text: quote.body,
-      email: REVIEW_EMAILS[index],
-      avatar: REVIEW_AVATARS[index],
-      role: quote.trip,
+      text: contentLocale === "mn" ? profile.text : quote.body,
+      email: profile.email,
+      avatar: profile.avatar,
+      role: contentLocale === "mn" ? profile.role : quote.trip,
     };
   });
 
