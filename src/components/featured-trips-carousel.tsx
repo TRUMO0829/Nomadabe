@@ -13,36 +13,30 @@ const COPY = {
   mn: {
     eyebrow: "Онцлох аяллууд",
     title: "Онцлох аяллууд",
-    body:
-      "Хамгийн их сонирхол татдаг бизнес, expo, амралт болон захиалгат аяллын багцууд.",
     details: "Дэлгэрэнгүй",
     day: "хоног",
   },
   en: {
     eyebrow: "Featured trips",
     title: "Featured trips",
-    body: "Popular business, expo, leisure, and custom travel packages.",
     details: "Details",
     day: "days",
   },
   zh: {
     eyebrow: "精选旅行",
     title: "精选旅行",
-    body: "热门商务、展会、休闲和定制旅行套餐。",
     details: "详情",
     day: "天",
   },
   ja: {
     eyebrow: "注目ツアー",
     title: "注目ツアー",
-    body: "人気のビジネス、展示会、レジャー、カスタム旅行プラン。",
     details: "詳細",
     day: "日",
   },
   ko: {
     eyebrow: "추천 여행",
     title: "추천 여행",
-    body: "인기 비즈니스, 엑스포, 휴양, 맞춤 여행 패키지.",
     details: "자세히",
     day: "일",
   },
@@ -141,7 +135,7 @@ function FeaturedTripScrollPanel({
   const panelMutedColor = useTransform(
     scrollYProgress,
     [0, 0.58, 0.74, 1],
-    ["#4b4538", "#4b4538", "rgba(255,253,243,0.82)", "rgba(255,253,243,0.82)"],
+    ["#11100b", "#11100b", "#fffdf3", "#fffdf3"],
   );
   const panelAccentColor = useTransform(
     scrollYProgress,
@@ -297,7 +291,7 @@ function FeaturedTripsScrollStack({
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/18 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <div className="trip-meta-text mb-3 flex flex-wrap gap-2 text-[10px] uppercase text-white/82">
+                  <div className="trip-meta-text mb-3 flex flex-wrap gap-2 text-[10px] uppercase text-white">
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/36 px-2.5 py-1 backdrop-blur">
                       <MapPin className="h-3.5 w-3.5" />
                       {text.location}
@@ -313,7 +307,7 @@ function FeaturedTripsScrollStack({
                 </div>
               </div>
               <div className="space-y-4 p-5">
-                <p className="trip-copy-text text-sm leading-7 text-black/70">
+                <p className="trip-copy-text text-sm leading-7 text-black">
                   {text.summary}
                 </p>
                 <button
@@ -344,69 +338,55 @@ function FeaturedTripsGrid({
   const { contentLocale } = useLanguage();
 
   return (
-    <section id="trips" className="bg-white px-6 py-16 text-black lg:px-10 lg:py-24">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-10 text-center">
-          <h2 className="section-header-title mx-auto max-w-none whitespace-nowrap text-center text-[#11100b]">
+    <section id="trips" className="bg-white px-3 py-4 text-[#1d1d1f] sm:px-4 lg:px-5">
+      <div className="mx-auto max-w-[1800px]">
+        <div className="mx-auto max-w-3xl px-4 py-8 text-center lg:py-12">
+          <h2 className="!normal-case text-[clamp(2.1rem,4vw,4.25rem)] leading-[1.02] text-[#1d1d1f]">
             {copy.title}
           </h2>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-2">
           {featuredTrips.map((adventure, index) => {
             const text = getAdventureText(adventure, contentLocale);
             return (
               <motion.article
                 key={adventure.id}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-70px" }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
-                onClick={() => onSelect(adventure)}
-                className="group cursor-pointer overflow-hidden rounded-[26px] border border-[#eadfac] bg-white shadow-[0_20px_60px_rgba(17,16,11,0.08)] transition-transform duration-500 hover:-translate-y-1"
+                className="group relative isolate min-h-[560px] overflow-hidden bg-[#11100b] text-center lg:min-h-[680px]"
               >
-                <div className="relative aspect-[16/11] overflow-hidden bg-[#11100b]">
+                <div className="absolute inset-0 overflow-hidden">
                   <Image
                     src={adventure.image}
                     alt={text.title}
                     fill
                     priority={index === 0}
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="object-cover object-center"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/76 via-black/12 to-transparent" />
-                  <div className="absolute bottom-5 left-5 right-5 text-white">
-                    <div className="trip-meta-text mb-3 flex flex-wrap gap-2 text-[10px] uppercase text-white/82">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-black/34 px-3 py-1.5 backdrop-blur">
-                        <MapPin className="h-3.5 w-3.5" />
-                        {text.location}
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-black/34 px-3 py-1.5 backdrop-blur">
-                        <CalendarDays className="h-3.5 w-3.5" />
-                        {adventure.days} {copy.day}
-                      </span>
-                    </div>
-                    <h3 className="trip-header-title trip-header-title--compact max-w-[15ch] text-balance text-white">
-                      {text.title}
-                    </h3>
+                </div>
+
+                <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center px-6 pt-12 drop-shadow-[0_2px_12px_rgba(0,0,0,0.72)] sm:pt-14 lg:pt-16">
+                  <h3 className="max-w-[14ch] !normal-case text-balance text-[clamp(2.15rem,4.6vw,4.25rem)] leading-[0.98] text-white">
+                    {text.title}
+                  </h3>
+                  <p className="mt-3 line-clamp-2 max-w-xl text-sm leading-6 text-white lg:text-base">
+                    {text.summary}
+                  </p>
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => onSelect(adventure)}
+                      className="nav-text inline-flex h-11 items-center justify-center rounded-full bg-accent px-6 text-sm text-accent-foreground transition-colors hover:bg-white hover:text-[#11100b]"
+                    >
+                      {copy.details}
+                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-5 p-6">
-                  <p className="trip-copy-text line-clamp-3 text-sm leading-7 text-[#4b4538]">
-                    {text.summary}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onSelect(adventure);
-                    }}
-                    className="trip-meta-text inline-flex min-h-11 items-center justify-center rounded-full border border-accent bg-accent px-5 text-xs uppercase text-accent-foreground transition-colors hover:bg-white hover:text-[#11100b]"
-                  >
-                    {copy.details}
-                  </button>
-                </div>
               </motion.article>
             );
           })}
@@ -428,6 +408,28 @@ export function FeaturedTripsCarousel({
     variant === "compact" ? 4 : 3,
   );
 
+  function handleFeaturedRegister() {
+    setSelected(null);
+
+    window.setTimeout(() => {
+      const requestSection = document.getElementById("contact");
+
+      if (!requestSection) {
+        window.location.href = "/plan#contact";
+        return;
+      }
+
+      requestSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}#contact`
+      );
+    }, 0);
+
+    return true;
+  }
+
   if (featuredTrips.length === 0) {
     return null;
   }
@@ -440,7 +442,11 @@ export function FeaturedTripsCarousel({
           featuredTrips={featuredTrips}
           onSelect={setSelected}
         />
-        <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
+        <AdventureModal
+          adventure={selected}
+          onClose={() => setSelected(null)}
+          onRegisterClick={handleFeaturedRegister}
+        />
       </>
     );
   }
@@ -452,7 +458,11 @@ export function FeaturedTripsCarousel({
         featuredTrips={featuredTrips}
         onSelect={setSelected}
       />
-      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
+      <AdventureModal
+        adventure={selected}
+        onClose={() => setSelected(null)}
+        onRegisterClick={handleFeaturedRegister}
+      />
     </>
   );
 }

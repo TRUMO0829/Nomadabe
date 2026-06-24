@@ -161,6 +161,7 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 .domestic-section-title {
   font-size: clamp(1.65rem, 3.4vw, 3.2rem) !important;
   line-height: 1.02 !important;
+  white-space: nowrap;
 }
 
 .trip-header-title {
@@ -237,6 +238,26 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
   -webkit-text-stroke: 1px rgba(255, 253, 243, 0.55);
 }
 
+@keyframes premiumHeroProgress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes premiumHeroDrift {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: scale(1.1) translate3d(-1.2%, -0.8%, 0);
+  }
+}
+
 .trip-marquee {
   overflow: hidden;
   width: 100%;
@@ -276,7 +297,16 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 
 @media (pointer: fine) {
   body.plane-cursor-enabled,
-  body.plane-cursor-enabled * {
+  body.plane-cursor-enabled *,
+  body.plane-cursor-enabled input,
+  body.plane-cursor-enabled textarea,
+  body.plane-cursor-enabled select,
+  body.plane-cursor-enabled button,
+  body.plane-cursor-enabled summary,
+  body.plane-cursor-enabled label,
+  body.plane-cursor-enabled input::-webkit-calendar-picker-indicator,
+  body.plane-cursor-enabled input::-webkit-inner-spin-button,
+  body.plane-cursor-enabled input::-webkit-outer-spin-button {
     cursor: none !important;
   }
 }

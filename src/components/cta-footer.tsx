@@ -53,7 +53,7 @@ const PLAN_COPY = {
     name: "Нэр",
     email: "И-мэйл",
     destination: "Чиглэл",
-    month: "Явах сар",
+    month: "Явах огноо",
     travelers: "Хүний тоо",
     budget: "Төсөв",
     type: "Аяллын төрөл",
@@ -81,7 +81,7 @@ const PLAN_COPY = {
     name: "Name",
     email: "Email",
     destination: "Destination",
-    month: "Travel month",
+    month: "Travel date",
     travelers: "Travelers",
     budget: "Budget",
     type: "Trip type",
@@ -112,12 +112,12 @@ const FOOTER_COPY = {
     description:
       "Монгол болон дэлхийн чиглэлүүдэд бизнес, expo, амралт зугаалга, захиалгат аяллыг төлөвлөж зохион байгуулна.",
     linksTitle: "Холбоосууд",
-    contactTitle: "Холбоо барих",
+    contactTitle: "Төлөвлөх",
     mapTitle: "Байршил",
     links: [
       { label: "Бидний тухай", href: "/about" },
       { label: "Аяллууд", href: "/tours" },
-      { label: "Холбоо барих", href: "/plan" },
+      { label: "Төлөвлөх", href: "/plan" },
     ],
     contacts: CONTACTS,
     mapButton: "Google Maps нээх",
@@ -353,7 +353,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               />
               <PlanInput
                 label={planCopy.month}
-                type="month"
+                type="date"
                 value={planningForm.preferredDate}
                 onChange={(value) =>
                   setPlanningForm((form) => ({ ...form, preferredDate: value }))
@@ -470,7 +470,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={social.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white text-xs font-black shadow-sm transition-transform hover:scale-105"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-transparent text-white transition-[border-color,transform] hover:scale-105 hover:border-accent"
                   >
                     <SocialIcon icon={social.icon} />
                   </a>
@@ -590,8 +590,8 @@ function SocialIcon({ icon }: { icon: (typeof SOCIALS)[number]["icon"] }) {
         className="h-5 w-5"
       >
         <path
-          fill="#1877F2"
-          d="M14 8.1h2.4V4.2c-.4-.1-1.8-.2-3.4-.2-3.4 0-5.7 2.1-5.7 6v3.3H3.5v4.4h3.8V24h4.7v-6.3h3.7l.6-4.4H12v-2.9c0-1.3.3-2.3 2-2.3Z"
+          fill="currentColor"
+          d="M18.9 13.5l.7-4.7h-4.5v-3c0-1.3.6-2.5 2.6-2.5h2.1V.2S17.9 0 16.1 0C12.3 0 9.8 2.3 9.8 6.5v2.3H5.6v4.7h4.2V24H15V13.5h3.9Z"
         />
       </svg>
     );
@@ -603,17 +603,9 @@ function SocialIcon({ icon }: { icon: (typeof SOCIALS)[number]["icon"] }) {
       viewBox="0 0 24 24"
       className="h-5 w-5 fill-none stroke-[2]"
     >
-      <defs>
-        <linearGradient id="instagram-logo-gradient" x1="3" y1="21" x2="21" y2="3">
-          <stop offset="0%" stopColor="#F58529" />
-          <stop offset="35%" stopColor="#DD2A7B" />
-          <stop offset="70%" stopColor="#8134AF" />
-          <stop offset="100%" stopColor="#515BD4" />
-        </linearGradient>
-      </defs>
-      <rect x="3" y="3" width="18" height="18" rx="5" stroke="url(#instagram-logo-gradient)" />
-      <circle cx="12" cy="12" r="4" stroke="url(#instagram-logo-gradient)" />
-      <circle cx="17.5" cy="6.5" r="1.1" fill="#DD2A7B" className="stroke-none" />
+      <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" />
+      <circle cx="12" cy="12" r="4" stroke="currentColor" />
+      <circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" className="stroke-none" />
     </svg>
   );
 }

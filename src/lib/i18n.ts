@@ -40,7 +40,7 @@ export const UI_COPY = {
         { label: "Сэтгэгдэл", href: "/#journal" },
         { label: "Бидний тухай", href: "/about" },
       ],
-      cta: "Хүсэлт",
+      cta: "Төлөвлөх",
       language: "Хэл сонгох",
       openMenu: "Цэс нээх",
       closeMenu: "Цэс хаах",

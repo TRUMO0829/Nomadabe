@@ -1,12 +1,20 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowLeft,
   Calendar,
   CheckCircle2,
   ChevronDown,
-  MapPin,
+  Mail,
   Mountain,
   Star,
   Users,
@@ -24,11 +32,13 @@ import { useLanguage } from "./language-provider";
 type Props = {
   adventure: Adventure | null;
   onClose: () => void;
+  onRegisterClick?: (adventure: Adventure) => boolean | void;
 };
 
 type AuthCustomer = {
-  email: string;
+  id?: string;
   name?: string;
+  email: string;
 };
 
 const DETAIL_COPY = {
@@ -147,55 +157,108 @@ const BOOKING_COPY = {
   },
 } as const;
 
-export function AdventureModal({ adventure, onClose }: Props) {
+type BookingResponse = {
+  ok?: boolean;
+  data?: {
+    booking?: {
+      id?: string;
+      status?: string;
+    };
+  };
+  error?: { message?: string };
+};
+
+const PRICE_FALLBACK_COPY = {
+  mn: {
+    value: "Үнийн мэдээлэл",
+    detail: "Аяллын багц, хүний тоо, хугацаанаас хамаарч баталгаажна.",
+  },
+  en: {
+    value: "Price details",
+    detail: "Final price depends on package, group size, and travel dates.",
+  },
+  zh: {
+    value: "价格信息",
+    detail: "最终价格取决于套餐、人数和出行日期。",
+  },
+  ja: {
+    value: "料金情報",
+    detail: "最終料金は内容、人数、日程によって決まります。",
+  },
+  ko: {
+    value: "가격 정보",
+    detail: "최종 가격은 구성, 인원, 여행 날짜에 따라 달라집니다.",
+  },
+} as const;
+
+const HERO_AUTOPLAY_MS = 3000;
+
+type ModalHeroSlide = {
+  image: string;
+};
+
+async function readJsonResponse<T>(response: Response): Promise<T> {
+  const text = await response.text();
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return {
+      ok: false,
+      error: { message: text.slice(0, 160) || response.statusText },
+    } as T;
+  }
+}
+
+export function AdventureModal({ adventure, onClose, onRegisterClick }: Props) {
   const [heroImageState, setHeroImageState] = useState<{
     adventureId: Adventure["id"] | null;
     index: number;
   }>({ adventureId: null, index: 0 });
+  const [heroProgressKey, setHeroProgressKey] = useState(0);
   const [customer, setCustomer] = useState<AuthCustomer | null>(null);
-  const [bookingAdventureId, setBookingAdventureId] = useState<
-    Adventure["id"] | null
-  >(null);
-  const [bookingStatus, setBookingStatus] = useState<{
-    adventureId: Adventure["id"];
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const [bookingMode, setBookingMode] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
-  const pendingBookingAdventureIdRef = useRef<Adventure["id"] | null>(null);
+  const [bookingStatus, setBookingStatus] = useState<{
+    type: "success" | "error" | "info";
+    message: string;
+  } | null>(null);
   const { contentLocale, t } = useLanguage();
   const copy = DETAIL_COPY[contentLocale];
   const bookingCopy = BOOKING_COPY[contentLocale];
+  const priceFallback = PRICE_FALLBACK_COPY[contentLocale];
   const text = adventure ? getAdventureText(adventure, contentLocale) : null;
   const details = adventure
     ? getAdventureDetailInfo(adventure, contentLocale)
     : null;
   const adventureId = adventure?.id ?? null;
-  const heroImages = useMemo(() => {
-    if (!adventure) {
+  const heroSlides = useMemo<ModalHeroSlide[]>(() => {
+    if (!adventure || !text || !details) {
       return [];
     }
 
-    return Array.from(
+    const images = Array.from(
       new Set(
         [adventure.image, ...getAdventureGalleryImages(adventure)].filter(
           (image) => image.length > 0
         )
       )
     );
-  }, [adventure]);
+    const fallbackImages = images.length > 0 ? images : [adventure.image];
+
+    return fallbackImages.map((image) => ({ image }));
+  }, [adventure, details, text]);
   const heroImageIndex =
     adventureId !== null && heroImageState.adventureId === adventureId
       ? heroImageState.index
       : 0;
-  const showBookingForm =
-    adventureId !== null &&
-    bookingAdventureId === adventureId &&
-    customer !== null;
-  const activeBookingStatus =
-    adventureId !== null && bookingStatus?.adventureId === adventureId
-      ? bookingStatus
-      : null;
+
+  const handleModalClose = useCallback(() => {
+    setBookingMode(false);
+    setBookingStatus(null);
+    setBookingSubmitting(false);
+    onClose();
+  }, [onClose]);
 
   useEffect(() => {
     let cancelled = false;
@@ -203,22 +266,15 @@ export function AdventureModal({ adventure, onClose }: Props) {
     async function loadCustomer() {
       try {
         const response = await fetch("/api/auth/me", { cache: "no-store" });
-        const result = (await response.json()) as {
+        const result = await readJsonResponse<{
           ok?: boolean;
           data?: { customer?: AuthCustomer | null };
-        };
+        }>(response);
         const loadedCustomer =
           response.ok && result.ok ? (result.data?.customer ?? null) : null;
 
-        if (cancelled) {
-          return;
-        }
-
-        setCustomer(loadedCustomer);
-
-        if (loadedCustomer && pendingBookingAdventureIdRef.current !== null) {
-          setBookingAdventureId(pendingBookingAdventureIdRef.current);
-          pendingBookingAdventureIdRef.current = null;
+        if (!cancelled) {
+          setCustomer(loadedCustomer);
         }
       } catch {
         if (!cancelled) {
@@ -236,30 +292,26 @@ export function AdventureModal({ adventure, onClose }: Props) {
     };
   }, []);
 
-  useEffect(() => {
-    if (adventureId === null || heroImages.length <= 1) {
+  const advanceHeroImage = useCallback(() => {
+    if (adventureId === null || heroSlides.length <= 1) {
       return;
     }
 
-    const intervalId = window.setInterval(() => {
-      setHeroImageState((current) => {
-        const currentIndex =
-          current.adventureId === adventureId ? current.index : 0;
+    setHeroImageState((current) => {
+      const currentIndex = current.adventureId === adventureId ? current.index : 0;
 
-        return {
-          adventureId,
-          index: (currentIndex + 1) % heroImages.length,
-        };
-      });
-    }, 2000);
-
-    return () => window.clearInterval(intervalId);
-  }, [adventureId, heroImages.length]);
+      return {
+        adventureId,
+        index: (currentIndex + 1) % heroSlides.length,
+      };
+    });
+    setHeroProgressKey((current) => current + 1);
+  }, [adventureId, heroSlides.length]);
 
   useEffect(() => {
     if (!adventure) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") handleModalClose();
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -267,46 +319,55 @@ export function AdventureModal({ adventure, onClose }: Props) {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [adventure, onClose]);
+  }, [adventure, handleModalClose]);
 
-  function handleRegisterClick() {
+  function handleHeroSlideSelect(index: number) {
     if (adventureId === null) {
       return;
     }
 
-    setBookingStatus(null);
+    setHeroImageState({ adventureId, index });
+    setHeroProgressKey((current) => current + 1);
+  }
 
-    if (!customer) {
-      pendingBookingAdventureIdRef.current = adventureId;
-      window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+  function handleRegisterClick() {
+    if (!adventure) {
       return;
     }
 
-    setBookingAdventureId(adventureId);
+    if (onRegisterClick?.(adventure)) {
+      return;
+    }
+
+    setBookingMode(true);
+    setBookingStatus(
+      customer ? null : { type: "info", message: bookingCopy.body }
+    );
+
+    if (!customer) {
+      window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+    }
+  }
+
+  function handleBookingBack() {
+    setBookingMode(false);
+    setBookingStatus(null);
   }
 
   async function handleBookingSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!adventure || !customer) {
-      if (adventureId !== null) {
-        pendingBookingAdventureIdRef.current = adventureId;
-      }
+    if (!adventure || !text) {
+      return;
+    }
+
+    if (!customer) {
+      setBookingStatus({ type: "info", message: bookingCopy.body });
       window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
       return;
     }
 
     const formData = new FormData(event.currentTarget);
-    const travelers = Number(formData.get("travelers") ?? 1);
-    const payload = {
-      tripSlug: adventure.slug,
-      name: String(formData.get("name") ?? "").trim(),
-      email: String(formData.get("email") ?? "").trim() || customer.email,
-      travelers: Number.isFinite(travelers) ? travelers : 1,
-      preferredDate: String(formData.get("preferredDate") ?? "").trim(),
-      message: String(formData.get("message") ?? "").trim(),
-    };
-
     setBookingSubmitting(true);
     setBookingStatus(null);
 
@@ -314,33 +375,33 @@ export function AdventureModal({ adventure, onClose }: Props) {
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          tripSlug: adventure.slug,
+          tripTitle: text.title,
+          name: String(formData.get("name") ?? "").trim(),
+          email: String(formData.get("email") ?? "").trim() || customer.email,
+          travelers: Number(formData.get("travelers") ?? 1) || 1,
+          preferredDate: String(formData.get("preferredDate") ?? "").trim(),
+          message: String(formData.get("message") ?? "").trim(),
+        }),
       });
-      const result = (await response.json()) as {
-        ok?: boolean;
-        error?: { message?: string };
-      };
+      const result = await readJsonResponse<BookingResponse>(response);
+
+      if (response.status === 401) {
+        setBookingStatus({ type: "info", message: bookingCopy.body });
+        window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+        return;
+      }
 
       if (!response.ok || !result.ok) {
-        if (response.status === 401) {
-          pendingBookingAdventureIdRef.current = adventure.id;
-          window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
-          return;
-        }
-
         throw new Error(result.error?.message ?? bookingCopy.error);
       }
 
-      setBookingStatus({
-        adventureId: adventure.id,
-        type: "success",
-        text: bookingCopy.success,
-      });
+      setBookingStatus({ type: "success", message: bookingCopy.success });
     } catch (error) {
       setBookingStatus({
-        adventureId: adventure.id,
         type: "error",
-        text: error instanceof Error ? error.message : bookingCopy.error,
+        message: error instanceof Error ? error.message : bookingCopy.error,
       });
     } finally {
       setBookingSubmitting(false);
@@ -355,7 +416,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
-          onClick={onClose}
+          onClick={handleModalClose}
           className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-sm lg:p-8"
         >
           <motion.div
@@ -367,47 +428,132 @@ export function AdventureModal({ adventure, onClose }: Props) {
             className="relative my-auto w-full max-w-6xl overflow-hidden rounded-lg bg-background shadow-2xl"
           >
             <button
-              onClick={onClose}
+              onClick={handleModalClose}
               aria-label={t.modal.close}
               className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-md bg-background/90 text-foreground shadow-lg backdrop-blur transition-colors hover:bg-accent hover:text-accent-foreground"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <div className="relative aspect-[16/9] w-full overflow-hidden lg:aspect-[21/9]">
+            <div
+              className="relative min-h-[420px] w-full overflow-hidden bg-[#050505] sm:min-h-[500px] lg:min-h-[560px]"
+            >
+              <div className="absolute inset-0 overflow-hidden">
+                {heroSlides.length > 0 ? (
+                  heroSlides.map((slide, index) => {
+                    const selected = index === heroImageIndex;
+
+                    return (
+                      <div
+                        key={`${slide.image}-${index}`}
+                        aria-hidden="true"
+                        className={[
+                          "absolute inset-0 bg-cover bg-center transition-opacity duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity,transform]",
+                          selected ? "opacity-100" : "opacity-0",
+                        ].join(" ")}
+                        style={{
+                          animation: selected
+                            ? "premiumHeroDrift 7200ms ease-out forwards"
+                            : undefined,
+                          backgroundImage: `url(${slide.image})`,
+                        }}
+                      />
+                    );
+                  })
+                ) : (
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${adventure.image})` }}
+                  />
+                )}
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-black/58 via-black/18 to-black/24" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/86 via-black/18 to-black/10" />
               <div
-                className="absolute inset-0 bg-cover bg-center transition-[background-image] duration-700"
-                style={{
-                  backgroundImage: `url(${heroImages[heroImageIndex] ?? adventure.image})`,
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white lg:p-10">
-                <h3 className="max-w-3xl text-balance font-display text-2xl leading-tight lg:text-4xl">
+                className={[
+                  "absolute left-6 right-6 z-[2] text-white sm:left-8 sm:right-8 lg:left-10 lg:right-10",
+                  heroSlides.length > 1 ? "bottom-24 sm:bottom-28 lg:bottom-32" : "bottom-8 lg:bottom-10",
+                ].join(" ")}
+              >
+                <h3 className="max-w-4xl text-balance font-display text-[clamp(1.5rem,3.4vw,3.25rem)] leading-[1.02] text-white [text-shadow:0_16px_46px_rgba(0,0,0,0.64)]">
                   {text.title}
                 </h3>
-                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-                  <span className="flex items-center gap-1.5">
-                    <Star className="h-4 w-4 fill-current" />
-                    <strong>{adventure.rating}</strong>
-                    <span className="opacity-75">
-                      ({adventure.reviews} {t.modal.reviews})
-                    </span>
-                  </span>
-                  <span className="flex items-center gap-1.5 opacity-90">
-                    <MapPin className="h-4 w-4" />
-                    {text.location}, {text.country}
-                  </span>
-                </div>
               </div>
+              {heroSlides.length > 1 ? (
+                <div className="absolute inset-x-8 bottom-6 z-[3] sm:inset-x-12 lg:inset-x-16 lg:bottom-9">
+                  <div className="flex gap-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    {heroSlides.map((slide, index) => {
+                      const selected = index === heroImageIndex;
+
+                      return (
+                        <button
+                          key={`${slide.image}-${index}`}
+                          type="button"
+                          aria-label={`${copy.morePhotos} ${index + 1}`}
+                          aria-current={selected ? "true" : undefined}
+                          onClick={() => handleHeroSlideSelect(index)}
+                          className="group flex min-w-[4.5rem] flex-1 items-center py-2 sm:min-w-[6rem] lg:min-w-0"
+                        >
+                          <span className="block h-1 w-full overflow-hidden rounded-full bg-white/28">
+                            {selected ? (
+                              <span
+                                key={`${adventureId}-${heroImageIndex}-${heroProgressKey}`}
+                                className="block h-full origin-left rounded-full bg-gradient-to-r from-cyan-200 via-white to-cyan-100"
+                                onAnimationEnd={advanceHeroImage}
+                                style={
+                                  {
+                                    animation: `premiumHeroProgress ${HERO_AUTOPLAY_MS}ms linear forwards`,
+                                  } as CSSProperties
+                                }
+                              />
+                            ) : null}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
-            <div className="grid gap-8 p-6 lg:grid-cols-[1.5fr_1fr] lg:gap-12 lg:p-10">
-              <div>
+            <div
+              className={
+                bookingMode
+                  ? "p-6 lg:p-10"
+                  : "grid gap-8 p-6 lg:grid-cols-2 lg:gap-10 lg:p-10"
+              }
+            >
+              <div className={bookingMode ? "hidden" : ""}>
                 <h4 className="mb-3 font-display text-xl">{t.modal.about}</h4>
-                <p className="leading-relaxed text-muted-foreground">
+                <p className="leading-relaxed text-[#11100b]">
                   {text.summary}
                 </p>
+
+                <div className="mt-6 rounded-lg border border-border bg-card p-5">
+                  <div className="text-xs uppercase tracking-wider text-[#11100b]">
+                    {t.modal.price}
+                  </div>
+                  {adventure.price > 0 ? (
+                    <>
+                      <div className="mt-2 font-display text-4xl">
+                        {adventure.price.toLocaleString()}
+                      </div>
+                      <div className="mt-1 text-xs text-[#11100b]">
+                        {adventure.currency}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mt-2 font-display text-3xl">
+                        {priceFallback.value}
+                      </div>
+                      <div className="mt-1 text-xs leading-relaxed text-[#11100b]">
+                        {priceFallback.detail}
+                      </div>
+                    </>
+                  )}
+                </div>
 
                 <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {[
@@ -428,7 +574,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                       className="rounded-lg border border-border bg-card p-4"
                     >
                       <stat.icon className="mb-2 h-5 w-5 text-accent" />
-                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                      <div className="text-[11px] uppercase tracking-wider text-[#11100b]">
                         {stat.label}
                       </div>
                       <div className="mt-0.5 text-sm font-semibold">
@@ -441,7 +587,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                 <h4 className="mb-4 mt-9 font-display text-2xl">
                   {copy.highlights}
                 </h4>
-                <ul className="grid gap-x-6 gap-y-3 text-sm text-foreground/80 sm:grid-cols-2 lg:grid-cols-3">
+                <ul className="grid gap-x-6 gap-y-3 text-sm text-[#11100b] sm:grid-cols-2 lg:grid-cols-3">
                   {details.highlights.map((item) => (
                     <li key={item} className="flex gap-2.5">
                       <Star className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
@@ -455,7 +601,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                     <h4 className="mb-4 font-display text-2xl">
                       {copy.included}
                     </h4>
-                    <ul className="space-y-3 text-sm text-foreground/80">
+                    <ul className="space-y-3 text-sm text-[#11100b]">
                       {details.included.map((item) => (
                         <li key={item} className="flex gap-2.5">
                           <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
@@ -469,7 +615,7 @@ export function AdventureModal({ adventure, onClose }: Props) {
                     <h4 className="mb-4 font-display text-2xl">
                       {copy.excluded}
                     </h4>
-                    <ul className="space-y-3 text-sm text-foreground/80">
+                    <ul className="space-y-3 text-sm text-[#11100b]">
                       {details.excluded.map((item) => (
                         <li key={item} className="flex gap-2.5">
                           <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
@@ -479,162 +625,163 @@ export function AdventureModal({ adventure, onClose }: Props) {
                     </ul>
                   </div>
                 </div>
-
-                <h4 className="mb-4 mt-10 font-display text-2xl">
-                  {copy.itinerary}
-                </h4>
-                <div className="space-y-3">
-                  {details.itinerary.map((step) => (
-                    <details
-                      key={`${step.day}-${step.title}`}
-                      className="group rounded-lg border border-border bg-card"
-                    >
-                      <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 [&::-webkit-details-marker]:hidden">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
-                          {step.day}
-                        </span>
-                        <span className="min-w-0 flex-1 text-sm font-bold text-foreground lg:text-base">
-                          {step.title}
-                        </span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                      </summary>
-                      <p className="px-5 pb-5 pl-[4.75rem] text-sm leading-relaxed text-muted-foreground">
-                        {step.body}
-                      </p>
-                    </details>
-                  ))}
-                </div>
               </div>
 
-              <aside className="h-fit rounded-lg border border-border bg-card p-6 lg:sticky lg:top-6">
-                {adventure.price > 0 ? (
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <div className="text-xs text-muted-foreground">
-                        {t.modal.price}
-                      </div>
-                      <div className="font-display text-4xl">
-                        {adventure.price.toLocaleString()}
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        {adventure.currency}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div
-                  className={
-                    adventure.price > 0 ? "mt-6 space-y-3" : "space-y-3"
-                  }
-                >
-                  <button
-                    type="button"
-                    onClick={handleRegisterClick}
-                    className="block w-full rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-accent-foreground transition-colors hover:bg-secondary"
-                  >
-                    {t.modal.register}
-                  </button>
-                </div>
-
-                {showBookingForm ? (
+              <aside
+                className={
+                  bookingMode
+                    ? "mx-auto w-full rounded-lg border border-border bg-card p-6 lg:p-8"
+                    : "h-fit rounded-lg border border-border bg-card p-6 lg:sticky lg:top-6"
+                }
+              >
+                {bookingMode ? (
                   <form
                     onSubmit={handleBookingSubmit}
-                    className="mt-5 space-y-3 rounded-lg border border-border bg-background/70 p-4"
+                    className="mx-auto flex w-full max-w-5xl flex-col"
                   >
-                    <div>
-                      <h5 className="font-display text-lg">
-                        {bookingCopy.title}
-                      </h5>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        {bookingCopy.body}
-                      </p>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={handleBookingBack}
+                      className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-[#11100b] transition-colors hover:text-[#11100b]"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      {contentLocale === "mn" ? "Буцах" : "Back"}
+                    </button>
 
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {bookingCopy.name}
-                      <input
-                        name="name"
-                        required
-                        minLength={2}
-                        defaultValue={customer.name ?? ""}
-                        className="mt-1 h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-ring"
-                      />
-                    </label>
+                    <p className="trip-meta-text text-xs uppercase tracking-[0.18em] text-accent">
+                      {contentLocale === "mn" ? "Баталгаажуулалт" : bookingCopy.title}
+                    </p>
+                    <h5 className="mt-2 font-display text-2xl leading-tight">
+                      {contentLocale === "mn"
+                        ? "Доорх мэдээллээр аяллын бүртгэлээ баталгаажуулна."
+                        : bookingCopy.body}
+                    </h5>
 
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {bookingCopy.email}
-                      <input
-                        name="email"
-                        type="email"
-                        required
-                        defaultValue={customer.email}
-                        className="mt-1 h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-ring"
-                      />
-                    </label>
-
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {bookingCopy.travelers}
+                    <div className="mt-8 grid gap-5 lg:grid-cols-2">
+                      <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#11100b]">
+                        {bookingCopy.name}
                         <input
-                          name="travelers"
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
                           required
-                          defaultValue={2}
-                          className="mt-1 h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-ring"
+                          name="name"
+                          minLength={2}
+                          defaultValue={customer?.name ?? ""}
+                          className="mt-2 h-12 w-full rounded-md border border-border bg-background px-4 text-base font-medium text-foreground outline-none transition-colors focus:border-foreground"
                         />
                       </label>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {bookingCopy.preferredDate}
-                        <input
-                          name="preferredDate"
-                          type="date"
-                          className="mt-1 h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-ring"
+
+                      <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#11100b]">
+                        {bookingCopy.email}
+                        <span className="relative mt-2 block">
+                          <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-accent" />
+                          <input
+                            required
+                            name="email"
+                            type="email"
+                            defaultValue={customer?.email ?? ""}
+                            className="h-12 w-full rounded-md border border-border bg-background px-11 text-base font-medium text-foreground outline-none transition-colors focus:border-foreground"
+                          />
+                        </span>
+                      </label>
+
+                      <div className="grid gap-4 sm:grid-cols-2 lg:col-span-2">
+                        <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#11100b]">
+                          {bookingCopy.travelers}
+                          <input
+                            required
+                            name="travelers"
+                            inputMode="numeric"
+                            min={1}
+                            type="number"
+                            defaultValue={2}
+                            className="mt-2 h-12 w-full rounded-md border border-border bg-background px-4 text-base font-medium text-foreground outline-none transition-colors focus:border-foreground"
+                          />
+                        </label>
+                        <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#11100b]">
+                          {bookingCopy.preferredDate}
+                          <input
+                            name="preferredDate"
+                            type="date"
+                            className="mt-2 h-12 w-full rounded-md border border-border bg-background px-4 text-base font-medium text-foreground outline-none transition-colors focus:border-foreground"
+                          />
+                        </label>
+                      </div>
+
+                      <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#11100b] lg:col-span-2">
+                        {bookingCopy.message}
+                        <textarea
+                          required
+                          name="message"
+                          minLength={10}
+                          rows={4}
+                          defaultValue={bookingCopy.defaultMessage}
+                          placeholder={bookingCopy.messagePlaceholder}
+                          className="mt-2 w-full resize-none rounded-md border border-border bg-background px-4 py-3 text-base font-medium leading-7 text-foreground outline-none transition-colors focus:border-foreground"
                         />
                       </label>
                     </div>
 
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {bookingCopy.message}
-                      <textarea
-                        name="message"
-                        required
-                        minLength={10}
-                        rows={4}
-                        placeholder={bookingCopy.messagePlaceholder}
-                        defaultValue={bookingCopy.defaultMessage}
-                        className="mt-1 min-h-28 w-full resize-y rounded-md border border-border bg-background px-3 py-3 text-sm font-medium text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring"
-                      />
-                    </label>
-
-                    {activeBookingStatus ? (
+                    {bookingStatus ? (
                       <p
-                        className={
-                          activeBookingStatus.type === "success"
-                            ? "text-sm font-semibold text-green-700"
-                            : "text-sm font-semibold text-red-600"
-                        }
+                        className={[
+                          "mt-4 rounded-md px-4 py-3 text-sm leading-6",
+                          bookingStatus.type === "success"
+                            ? "bg-green-50 text-green-700"
+                            : bookingStatus.type === "error"
+                              ? "bg-red-50 text-red-700"
+                              : "bg-accent/12 text-foreground/75",
+                        ].join(" ")}
                       >
-                        {activeBookingStatus.text}
+                        {bookingStatus.message}
                       </p>
                     ) : null}
 
                     <button
                       type="submit"
                       disabled={bookingSubmitting}
-                      className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-5 block w-full rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-accent-foreground transition-colors hover:bg-secondary disabled:cursor-wait disabled:opacity-70 lg:mt-6"
                     >
                       {bookingSubmitting
                         ? bookingCopy.sending
-                        : bookingCopy.submit}
+                        : contentLocale === "mn"
+                          ? "Баталгаажуулах"
+                          : bookingCopy.submit}
                     </button>
                   </form>
                 ) : (
-                  <p className="mt-4 text-center text-xs text-muted-foreground">
-                    {t.modal.note}
-                  </p>
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleRegisterClick}
+                      className="block w-full rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-accent-foreground transition-colors hover:bg-secondary"
+                    >
+                      {t.modal.register}
+                    </button>
+
+                    <div className="mt-6 rounded-lg border border-border bg-background/70 p-5">
+                      <h5 className="font-display text-xl">{copy.itinerary}</h5>
+                      <div className="mt-4 space-y-3">
+                        {details.itinerary.map((step) => (
+                          <details
+                            key={`${step.day}-${step.title}`}
+                            className="group rounded-lg border border-border bg-card"
+                          >
+                            <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
+                                {step.day}
+                              </span>
+                              <span className="min-w-0 flex-1 text-sm font-semibold leading-snug text-[#11100b]">
+                                {step.title}
+                              </span>
+                              <ChevronDown className="h-4 w-4 shrink-0 text-[#11100b] transition-transform group-open:rotate-180" />
+                            </summary>
+                            <p className="px-4 pb-4 pl-[3.75rem] text-sm leading-relaxed text-[#11100b]">
+                              {step.body}
+                            </p>
+                          </details>
+                        ))}
+                      </div>
+                    </div>
+                  </>
                 )}
               </aside>
             </div>

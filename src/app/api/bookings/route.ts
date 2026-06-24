@@ -29,9 +29,10 @@ export async function POST(request: Request) {
       return apiError("BAD_REQUEST", "Trip slug is required.", 400);
     }
 
+    const tripTitle = getString(asRecord(payload).tripTitle);
     const trip = (await getTrips()).find((item) => item.slug === tripSlug);
 
-    if (!trip) {
+    if (!trip && !tripTitle) {
       return apiError("BAD_REQUEST", "Сонгосон аялал олдсонгүй.", 400);
     }
 
@@ -56,8 +57,8 @@ export async function POST(request: Request) {
           status: inquiry.status,
           createdAt: inquiry.createdAt,
           trip: {
-            slug: trip.slug,
-            title: trip.title,
+            slug: trip?.slug ?? tripSlug,
+            title: trip?.title ?? tripTitle,
           },
         },
       },
