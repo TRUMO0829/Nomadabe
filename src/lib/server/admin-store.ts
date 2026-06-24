@@ -20,6 +20,7 @@ import {
   supabaseRest,
 } from "@/lib/server/supabase-rest";
 import { translateAdventure } from "@/lib/server/translate-trip";
+import { isUploadedPoster, uploadTripPoster } from "@/lib/server/storage";
 
 export type AdminStore = {
   trips: Adventure[];
@@ -158,7 +159,15 @@ export async function getAdminDashboardData() {
 
 export async function upsertTripFromForm(formData: FormData) {
   const store = await getAdminStore();
-  return upsertTrip(parseTripFromFields(formFields(formData), store.trips));
+  const parsed = parseTripFromFields(formFields(formData), store.trips);
+
+  // A newly uploaded poster file takes precedence over any existing/URL image.
+  const poster = formData.get("poster");
+  if (isUploadedPoster(poster)) {
+    parsed.image = await uploadTripPoster(poster);
+  }
+
+  return upsertTrip(parsed);
 }
 
 export async function upsertTripFromJson(payload: unknown) {
