@@ -25,6 +25,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adventures";
+import { AdminItineraryEditor } from "@/components/admin-itinerary-editor";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import type { AboutSectionSettings, TeamMember } from "@/lib/site-settings";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
@@ -912,6 +913,16 @@ function TripForm({
           <TextareaField label="Хэнд тохиромжтой / comma-аар" name="idealFor" defaultValue={trip?.idealFor.join(", ")} rows={2} />
           <TextareaField label="Багцад багтах зүйлс / comma-аар" name="includes" defaultValue={trip?.includes.join(", ")} rows={2} />
           <TextareaField label="Бизнес / expo нэмэлт дэмжлэг" name="businessSupport" defaultValue={trip?.businessSupport.join(", ")} rows={2} />
+        </div>
+      </details>
+
+      <details className="mt-4 rounded-md border border-[var(--border)] bg-white shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
+          <span className="text-sm font-black text-[var(--primary)]">Аяллын хөтөлбөр (өдөр / цаг)</span>
+          <span className="text-xs font-semibold text-[var(--muted-foreground)]">Уян хатан, оруулаагүй бол автоматаар</span>
+        </summary>
+        <div className="border-t border-[var(--border)] p-4">
+          <AdminItineraryEditor defaultValue={trip?.itinerary} />
         </div>
       </details>
 

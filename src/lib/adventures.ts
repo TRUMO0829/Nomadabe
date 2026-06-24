@@ -41,6 +41,7 @@ export type Adventure = {
   nextDeparture?: string;
   featured?: boolean;
   translations?: AdventureTranslations;
+  itinerary?: AdventureItineraryStep[];
 };
 
 export type AdventureText = {
@@ -57,10 +58,16 @@ export type AdventureText = {
   nextDeparture?: string;
 };
 
+export type AdventureItineraryItem = {
+  time?: string;
+  text: string;
+};
+
 export type AdventureItineraryStep = {
   day: string;
   title: string;
-  body: string;
+  body?: string;
+  items?: AdventureItineraryItem[];
 };
 
 export type AdventureDetailInfo = {
@@ -1805,5 +1812,11 @@ export function getAdventureDetailInfo(
     });
   }
 
-  return { highlights, included, excluded, itinerary };
+  return {
+    highlights,
+    included,
+    excluded,
+    // Admin-defined day/time itinerary takes precedence over the auto-generated one.
+    itinerary: adventure.itinerary && adventure.itinerary.length > 0 ? adventure.itinerary : itinerary,
+  };
 }
