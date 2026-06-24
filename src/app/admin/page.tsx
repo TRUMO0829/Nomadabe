@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 import {
+  AlertTriangle,
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
@@ -116,6 +117,7 @@ export default async function AdminDashboard({
   const lastInquiry = inquiries[0]?.createdAt ? formatRelativeDate(inquiries[0].createdAt) : "Идэвх байхгүй";
   const bookedPeople = inquiries.filter((inquiry) => inquiry.tripSlug).length;
   const statusMessage = (await searchParams)?.status;
+  const statusIsError = statusMessage?.startsWith("Алдаа") ?? false;
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -230,8 +232,19 @@ export default async function AdminDashboard({
 
           <div className="space-y-8 px-5 py-6 sm:px-8 lg:px-10">
             {statusMessage ? (
-              <div className="rounded-md border border-[var(--border)] bg-[var(--accent)] px-4 py-3 text-sm font-black text-[var(--accent-foreground)] shadow-sm">
-                {statusMessage}
+              <div
+                className={`sticky top-3 z-30 flex items-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-bold shadow-lg ${
+                  statusIsError
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                }`}
+              >
+                {statusIsError ? (
+                  <AlertTriangle className="h-5 w-5 shrink-0" />
+                ) : (
+                  <CheckCircle2 className="h-5 w-5 shrink-0" />
+                )}
+                <span>{statusMessage}</span>
               </div>
             ) : null}
 
