@@ -25,8 +25,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adventures";
 import { AdminItineraryEditor } from "@/components/admin-itinerary-editor";
+import { ConfirmSubmitButton } from "@/components/admin-confirm-button";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
-import type { TeamMember } from "@/lib/site-settings";
+import type { SiteSettings, TeamMember } from "@/lib/site-settings";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
   getAdminDashboardData,
@@ -40,6 +41,7 @@ import {
   logoutAdminAction,
   refreshAdminAction,
   saveServiceAction,
+  saveSiteSettingsAction,
   saveTeamMemberAction,
   saveTripAction,
   sendAdminEmailAction,
@@ -104,6 +106,8 @@ export default async function AdminDashboard({
   const featuredTrips = trips.filter((trip) => trip.featured);
   const teamMembers =
     dashboardData.status === "fulfilled" ? dashboardData.value.siteSettings.teamMembers : [];
+  const siteSettings =
+    dashboardData.status === "fulfilled" ? dashboardData.value.siteSettings : null;
   const latestInquiries = inquiries.slice(0, 12);
   const latestCustomers = customers.slice(0, 12);
   const latestEmailLogs = emailLogs.slice(0, 8);
@@ -261,6 +265,13 @@ export default async function AdminDashboard({
 
             <section className="grid gap-6 xl:grid-cols-[1fr_380px]">
               <div className="space-y-6">
+                {siteSettings ? (
+                  <section id="hero" className="scroll-mt-6 space-y-4">
+                    <SectionHeader eyebrow="Дизайн" title="Нүүр хэсгийн тохиргоо" action="Hero-д шууд нөлөөлнө" />
+                    <HeroSettingsForm settings={siteSettings} />
+                  </section>
+                ) : null}
+
                 <SectionHeader eyebrow="Удирдлага" title="Шинэ аяллын хөтөлбөр нэмэх" action="Хэрэглэгчийн веб дээр харагдана" />
                 <TripForm mode="create" categoryOptions={categoryOptions} />
 
@@ -505,16 +516,42 @@ function ServiceEditor({ service }: { service: TravelService }) {
         <ServiceForm mode="edit" service={service} />
         <form action={deleteServiceAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={service.id} />
-          <button
-            type="submit"
+          <ConfirmSubmitButton
+            message="Энэ үйлчилгээг устгах уу?"
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Үйлчилгээ устгах
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
     </details>
+  );
+}
+
+function HeroSettingsForm({ settings }: { settings: SiteSettings }) {
+  return (
+    <form
+      action={saveSiteSettingsAction}
+      className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4"
+    >
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TextField label="Badge (одны мөр)" name="heroBadge" defaultValue={settings.heroBadge} className="lg:col-span-2" />
+        <TextareaField label="Гол гарчиг" name="heroTitle" defaultValue={settings.heroTitle} rows={2} className="lg:col-span-2" />
+        <TextareaField label="Дэд гарчиг" name="heroSubtitle" defaultValue={settings.heroSubtitle} rows={2} className="lg:col-span-2" />
+        <TextField label="Арын зургийн URL" name="heroImage" defaultValue={settings.heroImage} className="lg:col-span-2" />
+        <TextField label="Онцлох өнгө (HEX)" name="accentColor" defaultValue={settings.accentColor} placeholder="#FFD400" />
+        <TextField label="Текстийн өнгө (HEX)" name="heroTextColor" defaultValue={settings.heroTextColor} placeholder="#ffffff" />
+        <TextField label="Давхар өнгөний тунгалаг (0.2 - 0.9)" name="heroOverlayOpacity" type="number" step="0.01" defaultValue={String(settings.heroOverlayOpacity)} />
+      </div>
+      <button
+        type="submit"
+        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
+      >
+        <Save className="h-4 w-4" />
+        Нүүр хэсэг хадгалах
+      </button>
+    </form>
   );
 }
 
@@ -582,13 +619,13 @@ function TeamMemberEditor({ member }: { member: TeamMember }) {
         <TeamMemberForm mode="edit" member={member} />
         <form action={deleteTeamMemberAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={member.id} />
-          <button
-            type="submit"
+          <ConfirmSubmitButton
+            message="Энэ багийн гишүүнийг устгах уу?"
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Багийн гишүүн устгах
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
     </details>
@@ -692,13 +729,13 @@ function ProgramEditor({
         <TripForm mode="edit" trip={trip} categoryOptions={categoryOptions} />
         <form action={deleteTripAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={trip.id} />
-          <button
-            type="submit"
+          <ConfirmSubmitButton
+            message="Энэ хөтөлбөрийг устгах уу?"
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Хөтөлбөр устгах
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
     </details>
