@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { AiChatbot } from "@/components/ai-chatbot";
 import { LanguageProvider } from "@/components/language-provider";
 import { PlaneCursor } from "@/components/plane-cursor";
 import "./globals.css";
+
+// Self-hosted via next/font so Cyrillic + Latin load reliably (no flaky
+// external @import). Exposed as a CSS variable consumed by --site-font.
+const siteFont = Inter({
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+  variable: "--font-site",
+});
 
 export const metadata: Metadata = {
   title: "Nomadabe",
@@ -20,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="mn" className="h-full antialiased">
+    <html lang="mn" className={`${siteFont.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <LanguageProvider>
           <PlaneCursor />
