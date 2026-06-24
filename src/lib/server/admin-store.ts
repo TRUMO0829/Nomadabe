@@ -117,7 +117,10 @@ export async function getAdminStore() {
   }
 
   if (!canUseLocalJsonStore()) {
-    throw new Error(getSupabaseConfigurationErrorMessage());
+    // Reads must never crash a public page when storage isn't configured
+    // (e.g. a Preview deploy missing Supabase env) — fall back to defaults.
+    // Saving still fails loudly via saveAdminStore.
+    return normalizeStore({});
   }
 
   try {
