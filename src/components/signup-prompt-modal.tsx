@@ -22,6 +22,8 @@ const COPY = {
     backToLogin: "Нэвтрэх хэсэг рүү буцах",
     resetCode: "6 оронтой код",
     newPassword: "Шинэ нууц үг",
+    confirmPassword: "Шинэ нууц үг давтах",
+    passwordMismatch: "Нууц үг хоорондоо таарахгүй байна.",
     sendResetCode: "Сэргээх код илгээх",
     submitReset: "Нууц үг шинэчлэх",
     resetSent: "Сэргээх код таны и-мэйл рүү илгээгдлээ.",
@@ -50,6 +52,8 @@ const COPY = {
     backToLogin: "Back to sign in",
     resetCode: "6-digit code",
     newPassword: "New password",
+    confirmPassword: "Repeat new password",
+    passwordMismatch: "Passwords do not match.",
     sendResetCode: "Send reset code",
     submitReset: "Reset password",
     resetSent: "A reset code has been sent to your email.",
@@ -78,6 +82,8 @@ const COPY = {
     backToLogin: "返回登录",
     resetCode: "6位验证码",
     newPassword: "新密码",
+    confirmPassword: "再次输入新密码",
+    passwordMismatch: "两次输入的密码不一致。",
     sendResetCode: "发送重置验证码",
     submitReset: "重置密码",
     resetSent: "重置验证码已发送到您的邮箱。",
@@ -106,6 +112,8 @@ const COPY = {
     backToLogin: "ログインに戻る",
     resetCode: "6桁コード",
     newPassword: "新しいパスワード",
+    confirmPassword: "新しいパスワード（確認）",
+    passwordMismatch: "パスワードが一致しません。",
     sendResetCode: "再設定コードを送信",
     submitReset: "パスワードを再設定",
     resetSent: "再設定コードをメールに送信しました。",
@@ -134,6 +142,8 @@ const COPY = {
     backToLogin: "로그인으로 돌아가기",
     resetCode: "6자리 코드",
     newPassword: "새 비밀번호",
+    confirmPassword: "새 비밀번호 확인",
+    passwordMismatch: "비밀번호가 일치하지 않습니다.",
     sendResetCode: "재설정 코드 보내기",
     submitReset: "비밀번호 재설정",
     resetSent: "재설정 코드를 이메일로 보냈습니다.",
@@ -229,7 +239,18 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
     const code = String(formData.get("code") ?? "").trim();
+
+    const settingNewPassword =
+      (mode === "reset" && resetStep === "confirm") ||
+      (mode === "register" && registerStep === "form");
+
+    if (settingNewPassword && password !== confirmPassword) {
+      setLoading(false);
+      setMessage(copy.passwordMismatch);
+      return;
+    }
 
     try {
       if (mode === "reset") {
@@ -456,6 +477,19 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                       type="password"
                       required
                       placeholder={mode === "reset" ? copy.newPassword : copy.password}
+                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    />
+                  </label>
+                )}
+                {((mode === "reset" && resetStep === "confirm") ||
+                  (mode === "register" && registerStep === "form")) && (
+                  <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
+                    <LockKeyhole className="h-4 w-4 text-accent" />
+                    <input
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      placeholder={copy.confirmPassword}
                       className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                     />
                   </label>
