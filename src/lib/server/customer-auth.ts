@@ -28,6 +28,16 @@ type PasswordResetCode = {
   usedAt?: string;
 };
 
+type RegistrationCode = {
+  id: string;
+  email: string;
+  name?: string;
+  code: string;
+  expiresAt: string;
+  createdAt: string;
+  usedAt?: string;
+};
+
 type CustomerSession = {
   token: string;
   customerId: string;
@@ -227,6 +237,114 @@ export async function resetCustomerPassword(payload: {
     session: {
       token: authSession.access_token,
       customerId: profile.id,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + authSession.expires_in * 1000).toISOString(),
+    },
+  };
+}
+
+export async function requestCustomerRegistrationCode(payload: {
+  name?: unknown;
+  email?: unknown;
+  password?: unknown;
+}) {
+  const email = normalizeIdentifier(payload.email);
+  const name = typeof payload.name === "string" ? payload.name.trim() : "";
+  const password = typeof payload.password === "string" ? payload.password : "";
+
+  if (!isValidIdentifier(email)) {
+    throw new Error("Зөв и-мэйл хаяг оруулна уу.");
+  }
+
+  if (password.length < 8) {
+    throw new Error("Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой.");
+  }
+
+  if (!isSupabaseConfigured()) {
+    throw new Error("Бүртгэлийн үйлчилгээ тохируулагдаагүй байна.");
+  }
+
+  const existing = await findSupabaseProfileByEmail(email);
+
+  if (existing) {
+    throw new Error("Энэ и-мэйл аль хэдийн бүртгэлтэй байна. Нэвтэрнэ үү.");
+  }
+
+  const now = new Date();
+  const record: RegistrationCode = {
+    id: randomUUID(),
+    email,
+    name: name || undefined,
+    code: String(randomInt(100000, 1000000)),
+    createdAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + CODE_TTL_MS).toISOString(),
+  };
+
+  await createSupabaseRegistrationCode(record);
+
+  await sendEmail({
+    to: email,
+    subject: "Nomadabe бүртгэл баталгаажуулах код",
+    body: `Таны Nomadabe Travel бүртгэлийг баталгаажуулах код: ${record.code}. Энэ код 10 минутын дараа хүчингүй болно.`,
+  });
+
+  return {
+    email,
+    expiresAt: record.expiresAt,
+    devCode: process.env.NODE_ENV === "production" ? undefined : record.code,
+  };
+}
+
+export async function verifyCustomerRegistrationCode(payload: {
+  name?: unknown;
+  email?: unknown;
+  code?: unknown;
+  password?: unknown;
+}) {
+  const email = normalizeIdentifier(payload.email);
+  const code = typeof payload.code === "string" ? payload.code.trim() : "";
+  const password = typeof payload.password === "string" ? payload.password : "";
+  const fallbackName = typeof payload.name === "string" ? payload.name.trim() : "";
+
+  if (!isValidIdentifier(email) || !/^\d{6}$/.test(code)) {
+    throw new Error("И-мэйл болон 6 оронтой кодоо зөв оруулна уу.");
+  }
+
+  if (password.length < 8) {
+    throw new Error("Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой.");
+  }
+
+  if (!isSupabaseConfigured()) {
+    throw new Error("Бүртгэлийн үйлчилгээ тохируулагдаагүй байна.");
+  }
+
+  const now = new Date().toISOString();
+  const match = await findSupabaseRegistrationCode(email, code, now);
+
+  if (!match) {
+    throw new Error("Код буруу эсвэл хугацаа дууссан байна.");
+  }
+
+  if (await findSupabaseProfileByEmail(email)) {
+    throw new Error("Энэ и-мэйл аль хэдийн бүртгэлтэй байна. Нэвтэрнэ үү.");
+  }
+
+  const name = match.name || fallbackName;
+  const signUpResult = await createConfirmedSupabaseUser({ email, password, name });
+  const customer = await upsertSupabaseProfile({
+    id: signUpResult.user.id,
+    email: signUpResult.user.email ?? email,
+    name,
+  });
+
+  await markSupabaseRegistrationCodeUsed(match.id, now);
+  const authSession = await signInSupabaseWithPassword({ email, password });
+
+  return {
+    customer,
+    session: {
+      token: authSession.access_token,
+      customerId: customer.id,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + authSession.expires_in * 1000).toISOString(),
     },
@@ -504,6 +622,65 @@ async function findSupabasePasswordResetCode(email: string, code: string, now: s
 async function markSupabasePasswordResetCodeUsed(id: string, usedAt: string) {
   await supabaseRest<PasswordResetCodeRow[]>(
     `/password_reset_codes?id=eq.${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: JSON.stringify({ used_at: usedAt }),
+    }
+  );
+}
+
+type RegistrationCodeRow = {
+  id: string;
+  email: string;
+  name: string | null;
+  code: string;
+  created_at: string;
+  expires_at: string;
+  used_at: string | null;
+};
+
+async function createSupabaseRegistrationCode(record: RegistrationCode) {
+  await supabaseRest<RegistrationCodeRow[]>("/registration_codes", {
+    method: "POST",
+    prefer: "return=representation",
+    body: JSON.stringify({
+      id: record.id,
+      email: record.email,
+      name: record.name ?? null,
+      code: record.code,
+      created_at: record.createdAt,
+      expires_at: record.expiresAt,
+      used_at: record.usedAt ?? null,
+    }),
+  });
+}
+
+async function findSupabaseRegistrationCode(email: string, code: string, now: string) {
+  const [row] = await supabaseRest<RegistrationCodeRow[]>(
+    `/registration_codes?select=*&email=eq.${encodeURIComponent(email)}&code=eq.${encodeURIComponent(
+      code
+    )}&used_at=is.null&expires_at=gt.${encodeURIComponent(now)}&order=created_at.desc&limit=1`
+  );
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name ?? undefined,
+    code: row.code,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    usedAt: row.used_at ?? undefined,
+  } satisfies RegistrationCode;
+}
+
+async function markSupabaseRegistrationCodeUsed(id: string, usedAt: string) {
+  await supabaseRest<RegistrationCodeRow[]>(
+    `/registration_codes?id=eq.${encodeURIComponent(id)}`,
     {
       method: "PATCH",
       prefer: "return=representation",

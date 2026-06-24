@@ -5,6 +5,7 @@ import {
   ADVENTURES,
   TRAVEL_SERVICES,
   type Adventure,
+  type AdventureItineraryStep,
   type AdventureTranslation,
   type AdventureTranslations,
   type TravelService,
@@ -116,7 +117,10 @@ export async function getAdminStore() {
   }
 
   if (!canUseLocalJsonStore()) {
-    throw new Error(getSupabaseConfigurationErrorMessage());
+    // Reads must never crash a public page when storage isn't configured
+    // (e.g. a Preview deploy missing Supabase env) — fall back to defaults.
+    // Saving still fails loudly via saveAdminStore.
+    return normalizeStore({});
   }
 
   try {
@@ -834,6 +838,7 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
       ? ["true", "on", "1", "yes"].includes(fields.get("featured").toLowerCase())
       : existing?.featured ?? false,
     translations: parseTranslationsFromFields(fields, existing?.translations),
+    itinerary: parseItineraryField(fields.get("itinerary"), existing?.itinerary),
   } satisfies Adventure;
 }
 
@@ -951,6 +956,62 @@ function getListFromString(value: string, fallback: string[]) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function parseItineraryField(
+  value: string,
+  existing?: AdventureItineraryStep[]
+): AdventureItineraryStep[] | undefined {
+  // Empty field (e.g. no JS / never edited) keeps whatever was already saved.
+  if (!value) {
+    return existing;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return existing;
+  }
+
+  if (!Array.isArray(parsed)) {
+    return existing;
+  }
+
+  const steps = parsed
+    .filter(isRecord)
+    .map((step, index) => {
+      const title = typeof step.title === "string" ? step.title.trim() : "";
+      const body = typeof step.body === "string" ? step.body.trim() : "";
+      const items = Array.isArray(step.items)
+        ? step.items
+            .filter(isRecord)
+            .map((item) => ({
+              time:
+                typeof item.time === "string" && item.time.trim() ? item.time.trim() : undefined,
+              text: typeof item.text === "string" ? item.text.trim() : "",
+            }))
+            .filter((item) => item.text)
+        : [];
+
+      const result: AdventureItineraryStep = {
+        day: typeof step.day === "string" && step.day.trim() ? step.day.trim() : `${index + 1}`,
+        title,
+      };
+
+      if (items.length > 0) {
+        result.items = items;
+      }
+
+      if (body) {
+        result.body = body;
+      }
+
+      return result;
+    })
+    .filter((step) => step.title || (step.items && step.items.length > 0));
+
+  return steps.length > 0 ? steps : undefined;
 }
 
 function getOptionalListFromString(value: string) {

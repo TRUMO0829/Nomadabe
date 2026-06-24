@@ -174,3 +174,17 @@ create table if not exists public.password_reset_codes (
 create index if not exists password_reset_codes_lookup_idx
   on public.password_reset_codes (email, code, expires_at desc)
   where used_at is null;
+
+create table if not exists public.registration_codes (
+  id uuid primary key default gen_random_uuid(),
+  email text not null,
+  code text not null,
+  name text,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now(),
+  used_at timestamptz
+);
+
+create index if not exists registration_codes_lookup_idx
+  on public.registration_codes (email, code, expires_at desc)
+  where used_at is null;

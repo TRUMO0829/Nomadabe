@@ -1,10 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 import {
+  AlertTriangle,
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
-  FileText,
   Gauge,
   Inbox,
   LayoutDashboard,
@@ -24,8 +24,10 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adventures";
+import { AdminItineraryEditor } from "@/components/admin-itinerary-editor";
+import { ConfirmSubmitButton } from "@/components/admin-confirm-button";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
-import type { AboutSectionSettings, TeamMember } from "@/lib/site-settings";
+import type { SiteSettings, TeamMember } from "@/lib/site-settings";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
   getAdminDashboardData,
@@ -63,7 +65,6 @@ const navItems = [
   { label: "Бүртгэлүүд", href: "#registrations", icon: Users },
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
-  { label: "About section", href: "#about-section", icon: FileText },
   { label: "Манай баг", href: "#team", icon: Users },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
 ];
@@ -116,6 +117,7 @@ export default async function AdminDashboard({
   const lastInquiry = inquiries[0]?.createdAt ? formatRelativeDate(inquiries[0].createdAt) : "Идэвх байхгүй";
   const bookedPeople = inquiries.filter((inquiry) => inquiry.tripSlug).length;
   const statusMessage = (await searchParams)?.status;
+  const statusIsError = statusMessage?.startsWith("Алдаа") ?? false;
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -230,8 +232,19 @@ export default async function AdminDashboard({
 
           <div className="space-y-8 px-5 py-6 sm:px-8 lg:px-10">
             {statusMessage ? (
-              <div className="rounded-md border border-[var(--border)] bg-[var(--accent)] px-4 py-3 text-sm font-black text-[var(--accent-foreground)] shadow-sm">
-                {statusMessage}
+              <div
+                className={`sticky top-3 z-30 flex items-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-bold shadow-lg ${
+                  statusIsError
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                }`}
+              >
+                {statusIsError ? (
+                  <AlertTriangle className="h-5 w-5 shrink-0" />
+                ) : (
+                  <CheckCircle2 className="h-5 w-5 shrink-0" />
+                )}
+                <span>{statusMessage}</span>
               </div>
             ) : null}
 
@@ -253,13 +266,9 @@ export default async function AdminDashboard({
             <section className="grid gap-6 xl:grid-cols-[1fr_380px]">
               <div className="space-y-6">
                 {siteSettings ? (
-                  <section id="about-section" className="scroll-mt-6 space-y-4">
-                    <SectionHeader
-                      eyebrow="About"
-                      title="About section content"
-                      action="About хуудсанд шууд нөлөөлнө"
-                    />
-                    <AboutSectionEditor aboutSection={siteSettings.aboutSection} />
+                  <section id="hero" className="scroll-mt-6 space-y-4">
+                    <SectionHeader eyebrow="Дизайн" title="Нүүр хэсгийн тохиргоо" action="Hero-д шууд нөлөөлнө" />
+                    <HeroSettingsForm settings={siteSettings} />
                   </section>
                 ) : null}
 
@@ -507,16 +516,42 @@ function ServiceEditor({ service }: { service: TravelService }) {
         <ServiceForm mode="edit" service={service} />
         <form action={deleteServiceAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={service.id} />
-          <button
-            type="submit"
+          <ConfirmSubmitButton
+            message="Энэ үйлчилгээг устгах уу?"
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Үйлчилгээ устгах
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
     </details>
+  );
+}
+
+function HeroSettingsForm({ settings }: { settings: SiteSettings }) {
+  return (
+    <form
+      action={saveSiteSettingsAction}
+      className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4"
+    >
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TextField label="Badge (одны мөр)" name="heroBadge" defaultValue={settings.heroBadge} className="lg:col-span-2" />
+        <TextareaField label="Гол гарчиг" name="heroTitle" defaultValue={settings.heroTitle} rows={2} className="lg:col-span-2" />
+        <TextareaField label="Дэд гарчиг" name="heroSubtitle" defaultValue={settings.heroSubtitle} rows={2} className="lg:col-span-2" />
+        <TextField label="Арын зургийн URL" name="heroImage" defaultValue={settings.heroImage} className="lg:col-span-2" />
+        <TextField label="Онцлох өнгө (HEX)" name="accentColor" defaultValue={settings.accentColor} placeholder="#FFD400" />
+        <TextField label="Текстийн өнгө (HEX)" name="heroTextColor" defaultValue={settings.heroTextColor} placeholder="#ffffff" />
+        <TextField label="Давхар өнгөний тунгалаг (0.2 - 0.9)" name="heroOverlayOpacity" type="number" step="0.01" defaultValue={String(settings.heroOverlayOpacity)} />
+      </div>
+      <button
+        type="submit"
+        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
+      >
+        <Save className="h-4 w-4" />
+        Нүүр хэсэг хадгалах
+      </button>
+    </form>
   );
 }
 
@@ -552,50 +587,6 @@ function ServiceForm({ mode, service }: { mode: "create" | "edit"; service?: Tra
   );
 }
 
-function AboutSectionEditor({ aboutSection }: { aboutSection: AboutSectionSettings }) {
-  return (
-    <form
-      action={saveSiteSettingsAction}
-      className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4"
-    >
-      <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <TextareaField
-          label="About section CMS JSON"
-          name="aboutSectionJson"
-          defaultValue={JSON.stringify(aboutSection, null, 2)}
-          rows={20}
-          className="min-w-0"
-        />
-        <div className="rounded-md border border-[var(--border)] bg-white p-4 text-sm leading-6 text-[var(--muted-foreground)]">
-          <p className="font-semibold text-[var(--primary)]">Засаж болох талбарууд</p>
-          <ul className="mt-3 space-y-2">
-            <li>Main label, heading, description</li>
-            <li>Tab labels, order, isVisible</li>
-            <li>Stats, values, work blocks</li>
-            <li>Gallery image URL, alt, caption</li>
-            <li>CTA label/link, FAQ title, subtitle, content</li>
-          </ul>
-          <Link
-            href="/about"
-            target="_blank"
-            rel="noreferrer"
-            className="mt-4 inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] px-3 text-sm font-semibold text-[var(--primary)] hover:border-[var(--accent)]"
-          >
-            About харах
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </div>
-      <button
-        type="submit"
-        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
-      >
-        <Save className="h-4 w-4" />
-        About section хадгалах
-      </button>
-    </form>
-  );
-}
 
 function TeamMemberEditor({ member }: { member: TeamMember }) {
   return (
@@ -628,13 +619,13 @@ function TeamMemberEditor({ member }: { member: TeamMember }) {
         <TeamMemberForm mode="edit" member={member} />
         <form action={deleteTeamMemberAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={member.id} />
-          <button
-            type="submit"
+          <ConfirmSubmitButton
+            message="Энэ багийн гишүүнийг устгах уу?"
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Багийн гишүүн устгах
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
     </details>
@@ -738,13 +729,13 @@ function ProgramEditor({
         <TripForm mode="edit" trip={trip} categoryOptions={categoryOptions} />
         <form action={deleteTripAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={trip.id} />
-          <button
-            type="submit"
+          <ConfirmSubmitButton
+            message="Энэ хөтөлбөрийг устгах уу?"
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Хөтөлбөр устгах
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
     </details>
@@ -899,6 +890,16 @@ function TripForm({
           <TextareaField label="Хэнд тохиромжтой / comma-аар" name="idealFor" defaultValue={trip?.idealFor.join(", ")} rows={2} />
           <TextareaField label="Багцад багтах зүйлс / comma-аар" name="includes" defaultValue={trip?.includes.join(", ")} rows={2} />
           <TextareaField label="Бизнес / expo нэмэлт дэмжлэг" name="businessSupport" defaultValue={trip?.businessSupport.join(", ")} rows={2} />
+        </div>
+      </details>
+
+      <details className="mt-4 rounded-md border border-[var(--border)] bg-white shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
+          <span className="text-sm font-black text-[var(--primary)]">Аяллын хөтөлбөр (өдөр / цаг)</span>
+          <span className="text-xs font-semibold text-[var(--muted-foreground)]">Уян хатан, оруулаагүй бол автоматаар</span>
+        </summary>
+        <div className="border-t border-[var(--border)] p-4">
+          <AdminItineraryEditor defaultValue={trip?.itinerary} />
         </div>
       </details>
 
