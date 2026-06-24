@@ -738,7 +738,7 @@ function TripForm({
   categoryOptions: CategoryOption[];
 }) {
   return (
-    <form action={saveTripAction} className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
+    <form action={saveTripAction} encType="multipart/form-data" className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
       {trip ? <input type="hidden" name="id" defaultValue={trip.id} /> : null}
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
         <div>
@@ -760,27 +760,35 @@ function TripForm({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <TextField label="Аяллын нэр" name="title" defaultValue={trip?.title} placeholder="Говийн аялал" required />
-        <TextField label="Байршил / хот" name="location" defaultValue={trip?.location} placeholder="Өмнөговь" />
-        <TextField label="Улс" name="country" defaultValue={trip?.country} placeholder="Mongolia" />
-        <TextField label="Хугацаа / өдөр" name="days" type="number" defaultValue={String(trip?.days ?? 5)} />
-        <TextField label="Дараагийн явах огноо" name="nextDeparture" type="date" defaultValue={getDateInputValue(trip?.nextDeparture)} />
+        <PosterField trip={trip} className="lg:col-span-3" />
         <SelectField
           label="Ангилал"
           name="category"
           defaultValue={trip?.category ?? "custom"}
           options={categoryOptions}
         />
-        <TextField label="Зургийн URL" name="image" defaultValue={trip?.image} className="lg:col-span-3" />
-        <TextareaField label="Хэрэглэгчид харагдах товч тайлбар" name="summary" defaultValue={trip?.summary} rows={3} className="lg:col-span-3" />
+        <TextField
+          label="Аяллын нэр"
+          name="title"
+          defaultValue={trip?.title}
+          placeholder="Говийн аялал"
+          required
+          className="lg:col-span-2"
+        />
       </div>
 
       <details className="mt-4 rounded-md border border-[var(--border)] bg-white shadow-sm">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
-          <span className="text-sm font-black text-[var(--primary)]">Нэмэлт тохиргоо</span>
-          <span className="text-xs font-semibold text-[var(--muted-foreground)]">Slug, үнэ, tag, багц</span>
+          <span className="text-sm font-black text-[var(--primary)]">Дэлгэрэнгүй мэдээлэл</span>
+          <span className="text-xs font-semibold text-[var(--muted-foreground)]">Байршил, хугацаа, үнэ, tag, багц</span>
         </summary>
         <div className="grid gap-4 border-t border-[var(--border)] p-4 lg:grid-cols-3">
+          <TextField label="Байршил / хот" name="location" defaultValue={trip?.location} placeholder="Өмнөговь" />
+          <TextField label="Улс" name="country" defaultValue={trip?.country} placeholder="Mongolia" />
+          <TextField label="Хугацаа / өдөр" name="days" type="number" defaultValue={String(trip?.days ?? 5)} />
+          <TextField label="Дараагийн явах огноо" name="nextDeparture" type="date" defaultValue={getDateInputValue(trip?.nextDeparture)} />
+          <TextareaField label="Хэрэглэгчид харагдах товч тайлбар" name="summary" defaultValue={trip?.summary} rows={3} className="lg:col-span-3" />
+          <TextField label="Эсвэл зургийн URL (постер оруулаагүй бол)" name="image" defaultValue={trip?.image} className="lg:col-span-3" />
           <TextField label="Slug" name="slug" defaultValue={trip?.slug} placeholder="gobi-adventure" />
           <TextField label="Шинэ ангилал нэмэх" name="categoryCustom" placeholder="Жишээ: Дотоод аялал" />
           <TextField label="Групп / хэнд зориулсан" name="groupSize" defaultValue={trip?.groupSize ?? "Flexible"} placeholder="Family / Group" />
@@ -975,6 +983,42 @@ function TextField({
         {...props}
       />
     </label>
+  );
+}
+
+function PosterField({ trip, className }: { trip?: Adventure; className?: string }) {
+  return (
+    <div className={`block ${className ?? ""}`}>
+      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+        Постер зураг
+      </span>
+      <div className="mt-2 flex flex-col gap-3 rounded-md border border-dashed border-[var(--border)] bg-white p-4 sm:flex-row sm:items-center">
+        {trip?.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={trip.image}
+            alt={trip.title ? `${trip.title} постер` : "Одоогийн постер"}
+            className="h-24 w-24 shrink-0 rounded-md object-cover ring-1 ring-[var(--border)]"
+          />
+        ) : (
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-md bg-[var(--muted)] text-xs font-semibold text-[var(--muted-foreground)]">
+            Постер алга
+          </div>
+        )}
+        <div className="flex-1">
+          <input
+            type="file"
+            name="poster"
+            accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+            className="block w-full text-sm text-[var(--foreground)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--primary)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[var(--foreground)]"
+          />
+          <p className="mt-2 text-xs font-medium leading-5 text-[var(--muted-foreground)]">
+            Зургаа сонгоно уу (JPG, PNG, WEBP — 8MB хүртэл). Постер оруулбал доорх URL-г дарж бичнэ.
+            {trip ? " Шинэ зураг оруулаагүй бол одоогийн постер хэвээр үлдэнэ." : ""}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
