@@ -71,10 +71,7 @@ export async function sendEmail(input: SendEmailInput) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from:
-          process.env.EMAIL_FROM ||
-          process.env.MAIL_FROM ||
-          "Nomadabe Travel <onboarding@resend.dev>",
+        from: resolveFromAddress(),
         to: normalized.to,
         subject: normalized.subject,
         text: normalized.body,
@@ -192,6 +189,16 @@ function assertLocalJsonStoreAllowed() {
   if (!canUseLocalJsonStore()) {
     throw new Error(getSupabaseConfigurationErrorMessage());
   }
+}
+
+const DEFAULT_FROM = "Nomadabe Travel <ariunbold@nomadabe.mn>";
+
+// Resend requires "email@domain" or "Name <email@domain>". If the configured
+// value is missing or malformed (the cause of past "Invalid `from` field"
+// failures), fall back to a known-valid sender instead of failing every email.
+function resolveFromAddress() {
+  const configured = (process.env.EMAIL_FROM || process.env.MAIL_FROM || "").trim();
+  return /[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+/.test(configured) ? configured : DEFAULT_FROM;
 }
 
 function normalizeEmail(input: SendEmailInput) {
