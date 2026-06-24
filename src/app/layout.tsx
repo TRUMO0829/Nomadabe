@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import { AiChatbot } from "@/components/ai-chatbot";
 import { LanguageProvider } from "@/components/language-provider";
 import { PlaneCursor } from "@/components/plane-cursor";
@@ -7,7 +7,9 @@ import "./globals.css";
 
 // Self-hosted via next/font so Cyrillic + Latin load reliably (no flaky
 // external @import). Exposed as a CSS variable consumed by --site-font.
-const siteFont = Inter({
+// CJK glyphs (zh/ja/ko) are not in Montserrat — system CJK fonts in the
+// --site-font fallback stack render them per-glyph (see globals.css).
+const siteFont = Montserrat({
   subsets: ["latin", "cyrillic"],
   display: "swap",
   variable: "--font-site",

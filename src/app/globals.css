@@ -14,7 +14,12 @@
   --secondary: #FFC400;
   --border: #E8DDAE;
   --ring: #FFD400;
-  --site-font: var(--font-site), "Helvetica Neue", Arial, sans-serif;
+  /* Montserrat for latin+cyrillic; system CJK fonts render zh/ja/ko glyphs
+     per-glyph so other languages never fall back to tofu / break layout. */
+  --site-font: var(--font-site), "Apple SD Gothic Neo", "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", "Malgun Gothic",
+    "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans CJK JP",
+    "Noto Sans CJK KR", "Helvetica Neue", Arial, sans-serif;
 }
 
 @theme inline {
