@@ -6,6 +6,7 @@ import { Fragment, useEffect, useState } from "react";
 import {
   ChevronDown,
   Globe,
+  LogOut,
   Menu,
   Search,
   UserRound,
@@ -30,6 +31,14 @@ const PROFILE_COPY = {
   zh: "资料",
   ja: "プロフィール",
   ko: "프로필",
+} as const;
+
+const EXIT_COPY = {
+  mn: "Exit",
+  en: "Exit",
+  zh: "Exit",
+  ja: "Exit",
+  ko: "Exit",
 } as const;
 
 type AuthCustomer = {
@@ -57,6 +66,7 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [customer, setCustomer] = useState<AuthCustomer | null>(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { contentLocale, locale, setLocale, t } = useLanguage();
   const currentLanguage =
@@ -99,9 +109,23 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
     };
   }, []);
 
+  async function handleCustomerLogout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      setCustomer(null);
+      setProfileMenuOpen(false);
+      window.dispatchEvent(new Event("nomadabe:auth-changed"));
+
+      if (window.location.pathname.startsWith("/profile")) {
+        window.location.href = "/";
+      }
+    }
+  }
+
   return (
     <header
-      className="fixed top-0 inset-x-0 z-50 bg-transparent transition-all duration-300"
+      className="site-navbar fixed top-0 inset-x-0 z-50 bg-transparent transition-all duration-300"
     >
       <div className="relative flex h-16 w-full items-center px-6 transition-all duration-300 lg:h-16 lg:items-start lg:px-8 lg:pt-2">
         <Link
@@ -175,20 +199,58 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
               className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
             />
             {customer ? (
-              <Link
-                href={customer.isAdmin ? "/admin" : "/profile"}
-                className={cn(
-                  DESKTOP_BAR_ITEM_CLASS,
-                  "max-w-56 gap-2 normal-case",
-                  "h-10 px-4 text-sm"
-                )}
-                title={customer.email}
+              <div
+                className="relative h-10"
+                onMouseEnter={() => setProfileMenuOpen(true)}
+                onMouseLeave={() => setProfileMenuOpen(false)}
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) {
+                    setProfileMenuOpen(false);
+                  }
+                }}
               >
-                <UserRound
-                  className="h-5 w-5 shrink-0 transition-all duration-300"
-                />
-                <span className="truncate">{PROFILE_COPY[contentLocale]}</span>
-              </Link>
+                <button
+                  type="button"
+                  aria-label={PROFILE_COPY[contentLocale]}
+                  aria-expanded={profileMenuOpen}
+                  onClick={() => {
+                    setLanguageOpen(false);
+                    setProfileMenuOpen((value) => !value);
+                  }}
+                  className={cn(
+                    DESKTOP_BAR_ITEM_CLASS,
+                    "h-10 w-10 px-0 text-sm"
+                  )}
+                  title={customer.email}
+                >
+                  <UserRound
+                    className="h-5 w-5 shrink-0 transition-all duration-300"
+                  />
+                </button>
+
+                {profileMenuOpen ? (
+                  <div className="absolute right-0 top-full min-w-40 pt-2">
+                    <div className="overflow-hidden rounded-lg border border-border bg-card p-1 text-foreground shadow-xl">
+                      <Link
+                        href={customer.isAdmin ? "/admin" : "/profile"}
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="nav-text flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-muted"
+                      >
+                        <UserRound className="h-4 w-4" />
+                        {PROFILE_COPY[contentLocale]}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => void handleCustomerLogout()}
+                        className="nav-text flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-muted"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        {EXIT_COPY[contentLocale]}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             ) : (
               <button
                 type="button"
@@ -375,13 +437,25 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
               {t.nav.cta}
             </Link>
             {customer ? (
-              <Link
-                href={customer.isAdmin ? "/admin" : "/profile"}
-                onClick={() => setOpen(false)}
-                className="nav-text rounded-lg border border-border bg-card px-5 py-3 text-center text-sm uppercase text-foreground"
-              >
-                {PROFILE_COPY[contentLocale]}
-              </Link>
+              <div className="grid gap-2">
+                <Link
+                  href={customer.isAdmin ? "/admin" : "/profile"}
+                  onClick={() => setOpen(false)}
+                  className="nav-text rounded-lg border border-border bg-card px-5 py-3 text-center text-sm uppercase text-foreground"
+                >
+                  {PROFILE_COPY[contentLocale]}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    void handleCustomerLogout();
+                  }}
+                  className="nav-text rounded-lg border border-border bg-card px-5 py-3 text-center text-sm uppercase text-foreground"
+                >
+                  {EXIT_COPY[contentLocale]}
+                </button>
+              </div>
             ) : (
               <button
                 type="button"

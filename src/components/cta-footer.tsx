@@ -26,7 +26,7 @@ const MINISTER_TOWER_ADDRESS =
   "Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia, Ulaanbaatar, Mongolia, 976";
 const MINISTER_TOWER_MAP_URL =
   "https://www.google.com/maps/place/Minister+Tower/@47.9153226,106.917978,425m/data=!3m2!1e3!4b1!4m6!3m5!1s0x5d9693649ea1b323:0x8bb14a35346801cd!8m2!3d47.9153226!4d106.9205583!16s%2Fg%2F11ss8zbb4r?hl=en-US&entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D";
-const OYU_INTELLIGENCE_URL = "https://www.oyu-intelligence.com/en";
+const OYU_INTELLIGENCE_URL = "https://www.oyu-intelligence.com/";
 
 const CONTACTS = [
   { type: "email", label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
@@ -116,13 +116,16 @@ const FOOTER_COPY = {
     mapTitle: "Байршил",
     links: [
       { label: "Бидний тухай", href: "/about" },
+      { label: "Түгээмэл асуултууд", href: "/faq" },
       { label: "Аяллууд", href: "/tours" },
       { label: "Төлөвлөх", href: "/plan" },
     ],
     contacts: CONTACTS,
     mapButton: "Google Maps нээх",
-    copyright: "Бүх эрх хуулиар хамгаалагдсан.",
-    legal: ["Үйлчилгээний нөхцөл", "Нууцлалын бодлого"],
+    legal: [
+      { label: "Үйлчилгээний нөхцөл", href: "/terms" },
+      { label: "Нууцлалын бодлого", href: "/privacy" },
+    ],
   },
   en: {
     tagline: "Professional travel consulting",
@@ -133,13 +136,16 @@ const FOOTER_COPY = {
     mapTitle: "Location",
     links: [
       { label: "About us", href: "/about" },
+      { label: "FAQ", href: "/faq" },
       { label: "Trips", href: "/tours" },
       { label: "Contact", href: "/plan" },
     ],
     contacts: CONTACTS,
     mapButton: "Open in Google Maps",
-    copyright: "All rights reserved.",
-    legal: ["Terms of service", "Privacy policy"],
+    legal: [
+      { label: "Terms of service", href: "/terms" },
+      { label: "Privacy policy", href: "/privacy" },
+    ],
   },
   zh: {
     tagline: "专业旅行顾问",
@@ -150,13 +156,16 @@ const FOOTER_COPY = {
     mapTitle: "位置",
     links: [
       { label: "关于我们", href: "/about" },
+      { label: "常见问题", href: "/faq" },
       { label: "旅行", href: "/tours" },
       { label: "联系", href: "/plan" },
     ],
     contacts: CONTACTS,
     mapButton: "打开 Google Maps",
-    copyright: "版权所有。",
-    legal: ["服务条款", "隐私政策"],
+    legal: [
+      { label: "服务条款", href: "/terms" },
+      { label: "隐私政策", href: "/privacy" },
+    ],
   },
   ja: {
     tagline: "旅の専門コンサルタント",
@@ -167,13 +176,16 @@ const FOOTER_COPY = {
     mapTitle: "所在地",
     links: [
       { label: "私たちについて", href: "/about" },
+      { label: "FAQ", href: "/faq" },
       { label: "ツアー", href: "/tours" },
       { label: "お問い合わせ", href: "/plan" },
     ],
     contacts: CONTACTS,
     mapButton: "Google Maps を開く",
-    copyright: "すべての権利を保有しています。",
-    legal: ["利用規約", "プライバシーポリシー"],
+    legal: [
+      { label: "利用規約", href: "/terms" },
+      { label: "プライバシーポリシー", href: "/privacy" },
+    ],
   },
   ko: {
     tagline: "전문 여행 컨설팅",
@@ -184,13 +196,16 @@ const FOOTER_COPY = {
     mapTitle: "위치",
     links: [
       { label: "회사 소개", href: "/about" },
+      { label: "FAQ", href: "/faq" },
       { label: "여행", href: "/tours" },
       { label: "연락하기", href: "/plan" },
     ],
     contacts: CONTACTS,
     mapButton: "Google Maps 열기",
-    copyright: "모든 권리 보유.",
-    legal: ["서비스 약관", "개인정보 처리방침"],
+    legal: [
+      { label: "서비스 약관", href: "/terms" },
+      { label: "개인정보 처리방침", href: "/privacy" },
+    ],
   },
 } as const;
 
@@ -527,50 +542,33 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
 
           </div>
 
-          <div className="relative mt-14 border-t border-white/10 pt-16 text-xs text-white/45">
-            <a
-              href={OYU_INTELLIGENCE_URL}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Oyu Intelligence"
-              className="absolute left-1/2 top-12 -translate-x-1/2 -translate-y-1/2 opacity-90 transition-opacity hover:opacity-100"
-            >
-              <div className="relative h-20 w-20 sm:h-24 sm:w-24">
-                <Image
-                  src="/oyu-intelligence-logo.webp"
-                  alt="OYU Intelligence"
-                  fill
-                  sizes="96px"
-                  className="absolute inset-0 h-full w-full object-contain"
-                />
-                <Image
-                  src="/oyu-intelligence-logo.webp"
-                  alt=""
-                  aria-hidden="true"
-                  fill
-                  sizes="96px"
-                  className="absolute inset-0 h-full w-full object-contain brightness-0 invert [clip-path:inset(32%_9%_38%_38%)]"
-                />
-                <Image
-                  src="/oyu-intelligence-logo.webp"
-                  alt=""
-                  aria-hidden="true"
-                  fill
-                  sizes="96px"
-                  className="absolute inset-0 h-full w-full object-contain brightness-0 invert [clip-path:inset(62%_12%_25%_14%)]"
-                />
-              </div>
-            </a>
-
+          <div className="relative mt-14 border-t border-white/10 pt-7 text-xs text-white/45">
             <div className="relative z-10 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-              <div>
-                © {new Date().getFullYear()} Nomadabe.mn — {footer.copyright}
-              </div>
+              <a
+                href={OYU_INTELLIGENCE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-fit items-center gap-3 transition-colors hover:text-accent"
+              >
+                <span>
+                  © {new Date().getFullYear()} OYU INTELLIGENCE LLC. БҮХ ЭРХ ХУУЛИАР
+                  ХАМГААЛАГДСАН.
+                </span>
+                <span className="relative h-10 w-10 shrink-0 opacity-90">
+                  <Image
+                    src="/oyu-intelligence-logo.webp"
+                    alt="OYU Intelligence"
+                    fill
+                    sizes="40px"
+                    className="object-contain"
+                  />
+                </span>
+              </a>
               <div className="flex flex-wrap gap-6">
                 {footer.legal.map((link) => (
-                  <a key={link} href="#" className="hover:text-accent">
-                    {link}
-                  </a>
+                  <Link key={link.href} href={link.href} className="hover:text-accent">
+                    {link.label}
+                  </Link>
                 ))}
               </div>
             </div>

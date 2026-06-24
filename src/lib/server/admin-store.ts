@@ -10,7 +10,19 @@ import {
   type TravelService,
 } from "@/lib/adventures";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
-import type { SiteSettings, TeamMember } from "@/lib/site-settings";
+import {
+  DEFAULT_ABOUT_SECTION,
+  type AboutFaqItem,
+  type AboutGalleryImage,
+  type AboutLocaleContent,
+  type AboutNavigationItem,
+  type AboutSectionId,
+  type AboutSectionSettings,
+  type AboutStat,
+  type AboutTextItem,
+  type SiteSettings,
+  type TeamMember,
+} from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
 import {
   getSupabaseConfigurationErrorMessage,
@@ -61,12 +73,18 @@ const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
     name: "N. Ariunbold",
     role: "Co-Founder, CEO",
     image: "",
+    imageAlt: "N. Ariunbold",
+    order: 1,
+    isVisible: true,
   },
   {
     id: "team-travel-manager",
     name: "B. Bilguun",
     role: "Co-Founder, COO",
     image: "",
+    imageAlt: "B. Bilguun",
+    order: 2,
+    isVisible: true,
   },
 ];
 
@@ -81,6 +99,7 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroTextColor: "#ffffff",
   heroOverlayOpacity: 0.72,
   teamMembers: DEFAULT_TEAM_MEMBERS,
+  aboutSection: DEFAULT_ABOUT_SECTION,
 };
 
 export async function getAdminStore() {
@@ -229,18 +248,50 @@ export async function deleteServiceById(id: string) {
 }
 
 export async function updateSiteSettingsFromForm(formData: FormData) {
-  return updateSiteSettings({
-    heroBadge: getFormString(formData, "heroBadge") || DEFAULT_SITE_SETTINGS.heroBadge,
-    heroTitle: getFormString(formData, "heroTitle") || DEFAULT_SITE_SETTINGS.heroTitle,
-    heroSubtitle: getFormString(formData, "heroSubtitle") || DEFAULT_SITE_SETTINGS.heroSubtitle,
-    heroImage: getFormString(formData, "heroImage") || DEFAULT_SITE_SETTINGS.heroImage,
-    accentColor: getFormString(formData, "accentColor") || DEFAULT_SITE_SETTINGS.accentColor,
-    heroTextColor: getFormString(formData, "heroTextColor") || DEFAULT_SITE_SETTINGS.heroTextColor,
-    heroOverlayOpacity: getNumberFromString(
+  const settings: Partial<SiteSettings> = {};
+
+  if (formData.has("heroBadge")) {
+    settings.heroBadge = getFormString(formData, "heroBadge") || DEFAULT_SITE_SETTINGS.heroBadge;
+  }
+
+  if (formData.has("heroTitle")) {
+    settings.heroTitle = getFormString(formData, "heroTitle") || DEFAULT_SITE_SETTINGS.heroTitle;
+  }
+
+  if (formData.has("heroSubtitle")) {
+    settings.heroSubtitle =
+      getFormString(formData, "heroSubtitle") || DEFAULT_SITE_SETTINGS.heroSubtitle;
+  }
+
+  if (formData.has("heroImage")) {
+    settings.heroImage = getFormString(formData, "heroImage") || DEFAULT_SITE_SETTINGS.heroImage;
+  }
+
+  if (formData.has("accentColor")) {
+    settings.accentColor =
+      getFormString(formData, "accentColor") || DEFAULT_SITE_SETTINGS.accentColor;
+  }
+
+  if (formData.has("heroTextColor")) {
+    settings.heroTextColor =
+      getFormString(formData, "heroTextColor") || DEFAULT_SITE_SETTINGS.heroTextColor;
+  }
+
+  if (formData.has("heroOverlayOpacity")) {
+    settings.heroOverlayOpacity = getNumberFromString(
       getFormString(formData, "heroOverlayOpacity"),
       DEFAULT_SITE_SETTINGS.heroOverlayOpacity
-    ),
-  });
+    );
+  }
+
+  if (formData.has("aboutSectionJson")) {
+    const rawAboutSection = getFormString(formData, "aboutSectionJson");
+    settings.aboutSection = rawAboutSection
+      ? normalizeAboutSection(JSON.parse(rawAboutSection) as unknown)
+      : DEFAULT_ABOUT_SECTION;
+  }
+
+  return updateSiteSettings(settings);
 }
 
 export async function updateSiteSettingsFromJson(payload: unknown) {
@@ -426,6 +477,9 @@ export function parseSiteSettingsFromJson(payload: unknown) {
     teamMembers: Array.isArray(payload.teamMembers)
       ? normalizeTeamMembers(payload.teamMembers)
       : undefined,
+    aboutSection: isRecord(payload.aboutSection)
+      ? normalizeAboutSection(payload.aboutSection)
+      : undefined,
   });
 }
 
@@ -438,7 +492,7 @@ function normalizeStore(store: Partial<AdminStore>): AdminStore {
   };
 }
 
-function normalizeSiteSettings(settings: Partial<SiteSettings>) {
+function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
   return {
     heroBadge: settings.heroBadge || DEFAULT_SITE_SETTINGS.heroBadge,
     heroTitle: settings.heroTitle || DEFAULT_SITE_SETTINGS.heroTitle,
@@ -451,15 +505,251 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>) {
         ? Math.min(0.9, Math.max(0.2, settings.heroOverlayOpacity))
         : DEFAULT_SITE_SETTINGS.heroOverlayOpacity,
     teamMembers: normalizeTeamMembers(settings.teamMembers),
+    aboutSection: normalizeAboutSection(settings.aboutSection),
   };
 }
 
-function normalizeTeamMembers(members: unknown) {
+function normalizeAboutSection(input: unknown): AboutSectionSettings {
+  const inputRecord = isRecord(input) ? input : {};
+  const normalized = {} as AboutSectionSettings;
+
+  for (const language of LANGUAGES) {
+    const locale = language.code;
+    const defaults = DEFAULT_ABOUT_SECTION[locale];
+    const value = isRecord(inputRecord[locale]) ? inputRecord[locale] : {};
+
+    normalized[locale] = normalizeAboutLocale(value, defaults);
+  }
+
+  return normalized;
+}
+
+function normalizeAboutLocale(
+  value: Record<string, unknown>,
+  defaults: AboutLocaleContent
+): AboutLocaleContent {
+  const who = isRecord(value.who) ? value.who : {};
+  const values = isRecord(value.values) ? value.values : {};
+  const team = isRecord(value.team) ? value.team : {};
+  const work = isRecord(value.work) ? value.work : {};
+  const cta = isRecord(value.cta) ? value.cta : {};
+  const faq = isRecord(value.faq) ? value.faq : {};
+
+  return {
+    eyebrow: stringifyPayloadValue(value.eyebrow) || defaults.eyebrow,
+    title: stringifyPayloadValue(value.title) || defaults.title,
+    body: stringifyPayloadValue(value.body) || defaults.body,
+    navigation: normalizeAboutNavigation(value.navigation, defaults.navigation),
+    who: {
+      label: stringifyPayloadValue(who.label) || defaults.who.label,
+      text: stringifyPayloadValue(who.text) || defaults.who.text,
+      order: getOptionalOrder(who.order, defaults.who.order),
+      isVisible: getOptionalBoolean(who.isVisible, defaults.who.isVisible),
+      stats: normalizeAboutStats(who.stats, defaults.who.stats),
+    },
+    values: {
+      label: stringifyPayloadValue(values.label) || defaults.values.label,
+      order: getOptionalOrder(values.order, defaults.values.order),
+      isVisible: getOptionalBoolean(values.isVisible, defaults.values.isVisible),
+      items: normalizeAboutTextItems(values.items, defaults.values.items),
+    },
+    team: {
+      label: stringifyPayloadValue(team.label) || defaults.team.label,
+      order: getOptionalOrder(team.order, defaults.team.order),
+      isVisible: getOptionalBoolean(team.isVisible, defaults.team.isVisible),
+    },
+    work: {
+      label: stringifyPayloadValue(work.label) || defaults.work.label,
+      title: stringifyPayloadValue(work.title) || defaults.work.title,
+      body: stringifyPayloadValue(work.body) || defaults.work.body,
+      order: getOptionalOrder(work.order, defaults.work.order),
+      isVisible: getOptionalBoolean(work.isVisible, defaults.work.isVisible),
+      items: normalizeAboutTextItems(work.items, defaults.work.items),
+    },
+    gallery: normalizeAboutGallery(value.gallery, defaults.gallery),
+    cta: {
+      label: stringifyPayloadValue(cta.label) || defaults.cta.label,
+      href: stringifyPayloadValue(cta.href) || defaults.cta.href,
+      isVisible: getOptionalBoolean(cta.isVisible, defaults.cta.isVisible),
+    },
+    faq: {
+      eyebrow: stringifyPayloadValue(faq.eyebrow) || defaults.faq.eyebrow,
+      title: stringifyPayloadValue(faq.title) || defaults.faq.title,
+      subtitle: stringifyPayloadValue(faq.subtitle) || defaults.faq.subtitle,
+      order: getOptionalOrder(faq.order, defaults.faq.order),
+      isVisible: getOptionalBoolean(faq.isVisible, defaults.faq.isVisible),
+      items: normalizeFaqItems(faq.items, defaults.faq.items),
+    },
+  };
+}
+
+function normalizeAboutNavigation(
+  value: unknown,
+  defaults: AboutNavigationItem[]
+): AboutNavigationItem[] {
+  const defaultById = new Map(defaults.map((item) => [item.id, item]));
+  const rawItems = Array.isArray(value) ? value : defaults;
+  const seen = new Set<AboutSectionId>();
+  const items = rawItems
+    .map((item) => {
+      if (!isRecord(item)) {
+        return null;
+      }
+
+      const id = getAboutSectionId(stringifyPayloadValue(item.id));
+      const fallback = id ? defaultById.get(id) : undefined;
+
+      if (!id || !fallback || seen.has(id)) {
+        return null;
+      }
+
+      seen.add(id);
+
+      return {
+        id,
+        label: stringifyPayloadValue(item.label) || fallback.label,
+        order: getOptionalOrder(item.order, fallback.order),
+        isVisible: getOptionalBoolean(item.isVisible, fallback.isVisible),
+      } satisfies AboutNavigationItem;
+    })
+    .filter(Boolean) as AboutNavigationItem[];
+
+  for (const fallback of defaults) {
+    if (!seen.has(fallback.id)) {
+      items.push(fallback);
+    }
+  }
+
+  return sortOrderedItems(items);
+}
+
+function normalizeAboutStats(value: unknown, defaults: AboutStat[]): AboutStat[] {
+  const rawItems = Array.isArray(value) ? value : defaults;
+  const fallback = defaults[0];
+  const items = rawItems
+    .map((item, index) => {
+      if (!isRecord(item)) {
+        return null;
+      }
+
+      const fallbackItem = defaults[index] ?? fallback;
+      const valueText = stringifyPayloadValue(item.value) || fallbackItem?.value;
+      const label = stringifyPayloadValue(item.label) || fallbackItem?.label;
+
+      if (!valueText || !label) {
+        return null;
+      }
+
+      return {
+        value: valueText,
+        label,
+        order: getOptionalOrder(item.order, fallbackItem?.order ?? index + 1),
+        isVisible: getOptionalBoolean(item.isVisible, fallbackItem?.isVisible ?? true),
+      } satisfies AboutStat;
+    })
+    .filter(Boolean) as AboutStat[];
+
+  return sortOrderedItems(items.length > 0 ? items : defaults);
+}
+
+function normalizeAboutTextItems(value: unknown, defaults: AboutTextItem[]): AboutTextItem[] {
+  const rawItems = Array.isArray(value) ? value : defaults;
+  const fallback = defaults[0];
+  const items = rawItems
+    .map((item, index) => {
+      if (!isRecord(item)) {
+        return null;
+      }
+
+      const fallbackItem = defaults[index] ?? fallback;
+      const title = stringifyPayloadValue(item.title) || fallbackItem?.title;
+      const body = stringifyPayloadValue(item.body) || fallbackItem?.body;
+
+      if (!title || !body) {
+        return null;
+      }
+
+      return {
+        title,
+        body,
+        order: getOptionalOrder(item.order, fallbackItem?.order ?? index + 1),
+        isVisible: getOptionalBoolean(item.isVisible, fallbackItem?.isVisible ?? true),
+      } satisfies AboutTextItem;
+    })
+    .filter(Boolean) as AboutTextItem[];
+
+  return sortOrderedItems(items.length > 0 ? items : defaults);
+}
+
+function normalizeAboutGallery(value: unknown, defaults: AboutGalleryImage[]): AboutGalleryImage[] {
+  const rawItems = Array.isArray(value) ? value : defaults;
+  const items = rawItems
+    .map((item, index) => {
+      if (!isRecord(item)) {
+        return null;
+      }
+
+      const fallbackItem = defaults[index];
+      const src = stringifyPayloadValue(item.src) || fallbackItem?.src;
+      const alt = stringifyPayloadValue(item.alt) || fallbackItem?.alt || "Nomadabe Travel route planning";
+      const id =
+        stringifyPayloadValue(item.id) ||
+        slugify(stringifyPayloadValue(item.caption) || alt || `about-gallery-${index + 1}`) ||
+        `about-gallery-${index + 1}`;
+
+      if (!src) {
+        return null;
+      }
+
+      return {
+        id,
+        src,
+        alt,
+        caption: stringifyPayloadValue(item.caption) || fallbackItem?.caption,
+        order: getOptionalOrder(item.order, fallbackItem?.order ?? index + 1),
+        isVisible: getOptionalBoolean(item.isVisible, fallbackItem?.isVisible ?? true),
+      } satisfies AboutGalleryImage;
+    })
+    .filter(Boolean) as AboutGalleryImage[];
+
+  return sortOrderedItems(items.length > 0 ? items : defaults);
+}
+
+function normalizeFaqItems(value: unknown, defaults: AboutFaqItem[]): AboutFaqItem[] {
+  const rawItems = Array.isArray(value) ? value : defaults;
+  const fallback = defaults[0];
+  const items = rawItems
+    .map((item, index) => {
+      if (!isRecord(item)) {
+        return null;
+      }
+
+      const fallbackItem = defaults[index] ?? fallback;
+      const question = stringifyPayloadValue(item.question) || fallbackItem?.question;
+      const answer = stringifyPayloadValue(item.answer) || fallbackItem?.answer;
+
+      if (!question || !answer) {
+        return null;
+      }
+
+      return {
+        question,
+        answer,
+        order: getOptionalOrder(item.order, fallbackItem?.order ?? index + 1),
+        isVisible: getOptionalBoolean(item.isVisible, fallbackItem?.isVisible ?? true),
+      };
+    })
+    .filter(Boolean) as AboutFaqItem[];
+
+  return sortOrderedItems(items.length > 0 ? items : defaults);
+}
+
+function normalizeTeamMembers(members: unknown): TeamMember[] {
   if (!Array.isArray(members)) {
     return DEFAULT_TEAM_MEMBERS;
   }
 
-  return members
+  const normalized = members
     .map((member) => {
       if (!isRecord(member)) {
         return null;
@@ -468,6 +758,7 @@ function normalizeTeamMembers(members: unknown) {
       const name = stringifyPayloadValue(member.name);
       const role = stringifyPayloadValue(member.role);
       const image = stringifyPayloadValue(member.image);
+      const imageAlt = stringifyPayloadValue(member.imageAlt);
       const bio = stringifyPayloadValue(member.bio);
       const id = stringifyPayloadValue(member.id) || slugify(name || role) || randomUUID();
 
@@ -480,10 +771,15 @@ function normalizeTeamMembers(members: unknown) {
         name: name || "Нэр оруулах",
         role: role || "Албан тушаал",
         image,
+        imageAlt: imageAlt || name || role || undefined,
         ...(bio ? { bio } : {}),
+        order: getOptionalOrder(member.order),
+        isVisible: getOptionalBoolean(member.isVisible, true),
       } satisfies TeamMember;
     })
-    .filter((member): member is TeamMember => Boolean(member));
+    .filter(Boolean) as TeamMember[];
+
+  return sortOrderedItems(normalized.length > 0 ? normalized : DEFAULT_TEAM_MEMBERS);
 }
 
 function getBookingStats(inquiries: InquiryRecord[]) {
@@ -616,7 +912,10 @@ function parseTeamMemberFromFields(fields: FieldReader) {
     name,
     role,
     image: fields.get("image"),
+    imageAlt: fields.get("imageAlt") || name,
     bio: fields.get("bio") || undefined,
+    order: getOptionalOrder(fields.get("order")),
+    isVisible: getOptionalBoolean(fields.get("isVisible"), true),
   } satisfies TeamMember;
 }
 
@@ -668,6 +967,53 @@ function getDifficulty(value: string): Adventure["difficulty"] {
 
 function getCategory(value: string): Adventure["category"] {
   return value.trim() || "custom";
+}
+
+function getAboutSectionId(value: string): AboutSectionId | null {
+  if (["who", "values", "team", "work"].includes(value)) {
+    return value as AboutSectionId;
+  }
+
+  return null;
+}
+
+function getOptionalOrder(value: unknown, fallback?: number) {
+  const numericValue =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value)
+        : Number.NaN;
+
+  if (Number.isFinite(numericValue)) {
+    return numericValue;
+  }
+
+  return fallback;
+}
+
+function getOptionalBoolean(value: unknown, fallback = true) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+
+    if (["true", "on", "1", "yes"].includes(normalized)) {
+      return true;
+    }
+
+    if (["false", "off", "0", "no"].includes(normalized)) {
+      return false;
+    }
+  }
+
+  return fallback;
+}
+
+function sortOrderedItems<T extends { order?: number }>(items: T[]) {
+  return [...items].sort((left, right) => (left.order ?? 999) - (right.order ?? 999));
 }
 
 function slugify(value: string) {

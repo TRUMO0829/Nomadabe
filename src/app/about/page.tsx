@@ -14,14 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default async function AboutPage() {
-  const { teamMembers } = await getSiteSettings();
+  const { aboutSection, teamMembers } = await getSiteSettings();
 
   return (
     <>
       <SignupPromptModal autoOpen={false} />
       <Navbar surface="light" />
       <main className="flex-1 bg-white">
-        <AboutShowcase teamMembers={teamMembers} />
+        <AboutShowcase aboutSection={aboutSection} teamMembers={teamMembers} />
         <CtaFooter />
       </main>
     </>

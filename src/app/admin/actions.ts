@@ -67,8 +67,10 @@ export async function saveSiteSettingsAction(formData: FormData) {
   }
 
   revalidatePath("/");
+  revalidatePath("/about");
+  revalidatePath("/faq");
   revalidatePath("/admin");
-  redirectWithStatus("Нүүр хуудасны тохиргоо хадгалагдлаа.");
+  redirectWithStatus("Вебийн тохиргоо хадгалагдлаа.");
 }
 
 export async function saveServiceAction(formData: FormData) {
