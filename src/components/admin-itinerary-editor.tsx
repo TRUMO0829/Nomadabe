@@ -8,7 +8,7 @@ type EditableItem = { time: string; text: string };
 type EditableDay = { title: string; items: EditableItem[] };
 
 function toEditable(steps?: AdventureItineraryStep[]): EditableDay[] {
-  if (!steps || steps.length === 0) {
+  if (!Array.isArray(steps) || steps.length === 0) {
     return [];
   }
 
