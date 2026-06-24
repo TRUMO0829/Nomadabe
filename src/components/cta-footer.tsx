@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent, InputHTMLAttributes } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -251,6 +251,37 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
   const { contentLocale, t } = useLanguage();
   const footer = FOOTER_COPY[contentLocale];
   const planCopy = contentLocale === "mn" ? PLAN_COPY.mn : PLAN_COPY.en;
+
+  // Prefill the planning form with the signed-in customer's email/name so they
+  // don't have to retype it. Only fills empty fields — never overwrites input.
+  useEffect(() => {
+    if (!showPlanningSection) {
+      return;
+    }
+
+    let active = true;
+
+    fetch("/api/auth/me", { credentials: "include" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        const customer = payload?.data?.customer;
+
+        if (!active || !customer?.email) {
+          return;
+        }
+
+        setPlanningForm((form) => ({
+          ...form,
+          email: form.email || customer.email,
+          name: form.name || customer.name || "",
+        }));
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, [showPlanningSection]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

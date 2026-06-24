@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400&subset=cyrillic,cyrillic-ext,latin&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&subset=cyrillic,cyrillic-ext,latin&display=swap");
 @import "tailwindcss" source("../");
 
 :root {
@@ -15,7 +15,7 @@
   --secondary: #FFC400;
   --border: #E8DDAE;
   --ring: #FFD400;
-  --site-font: "Montserrat", Arial, Helvetica, sans-serif;
+  --site-font: "Inter", "Helvetica Neue", Arial, sans-serif;
 }
 
 @theme inline {
