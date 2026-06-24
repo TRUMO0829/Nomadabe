@@ -146,8 +146,8 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 
   return (
     <>
-      <section className="relative flex min-h-[calc(92svh/var(--site-scale))] items-end overflow-hidden bg-[#f7f2e8] px-6 pb-16 pt-28 text-[#11100b] sm:px-10 lg:px-16 lg:pb-24 lg:pt-36 xl:px-20">
-        <AboutBackground />
+      <section className="relative flex min-h-[calc(92svh/var(--site-scale))] items-end overflow-hidden bg-[#120905] px-6 pb-16 pt-28 text-[#fff7ec] sm:px-10 lg:px-16 lg:pb-24 lg:pt-36 xl:px-20">
+        <AboutBackground tone="dark" />
         <div className="relative z-10 mx-auto w-full max-w-5xl text-center">
           <motion.p
             initial={{ opacity: 0, y: 14 }}
@@ -164,7 +164,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto mt-7 max-w-4xl text-balance font-display text-[clamp(2.45rem,5.6vw,5.9rem)] leading-[0.96] text-[#11100b]"
+            className="mx-auto mt-7 max-w-4xl text-balance font-display text-[clamp(2.45rem,5.6vw,5.9rem)] leading-[0.96] text-[#fff7ec]"
           >
             {copy.title}
           </motion.h1>
@@ -174,7 +174,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.68, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto mt-8 max-w-3xl text-base leading-8 text-[#39352c]/72 lg:text-xl lg:leading-9"
+            className="mx-auto mt-8 max-w-3xl text-base leading-8 text-[#f4d9b5]/78 lg:text-xl lg:leading-9"
           >
             {copy.body}
           </motion.p>
@@ -285,7 +285,47 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
   );
 }
 
-function AboutBackground() {
+function AboutBackground({ tone = "light" }: { tone?: "light" | "dark" }) {
+  if (tone === "dark") {
+    return (
+      <>
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,129,35,0.28),transparent_34%),linear-gradient(135deg,#090604_0%,#1b0c05_48%,#3a1607_100%)]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(90deg,rgba(255,169,77,0.32)_1px,transparent_1px),linear-gradient(180deg,rgba(255,169,77,0.18)_1px,transparent_1px)] [background-size:96px_96px]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 via-[#160904]/44 to-transparent"
+        />
+        <svg
+          aria-hidden="true"
+          className="absolute right-[-12%] top-12 h-[70%] w-[58%] text-[#ff9a2f]/28"
+          viewBox="0 0 620 720"
+          fill="none"
+        >
+          <path
+            d="M37 640C149 520 57 401 183 305C286 226 376 306 457 196C516 116 496 66 586 28"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="10 18"
+          />
+          <path
+            d="M96 118C208 172 259 65 363 116C466 166 417 282 540 323"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeDasharray="8 14"
+          />
+        </svg>
+      </>
+    );
+  }
+
   return (
     <>
       <div

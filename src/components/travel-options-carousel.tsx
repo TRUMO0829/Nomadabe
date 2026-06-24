@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { CalendarDays, MapPin } from "lucide-react";
 import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
@@ -68,8 +67,6 @@ type DomesticCopy = {
   body: string;
   priceFrom: string;
   details: string;
-  day: string;
-  route: string;
 };
 
 type DomesticTripCardProps = {
@@ -112,20 +109,6 @@ function DomesticTripCard({
 
       <div className="flex h-full min-w-0 items-center bg-white px-6 py-10 text-[#11100b] sm:px-10 lg:px-[clamp(3rem,5vw,6rem)]">
         <div className="min-w-0 max-w-[min(34rem,calc(50vw-7rem))]">
-          <div className="trip-meta-text mb-6 flex flex-wrap gap-2 text-xs text-[#11100b] lg:text-sm">
-            <span className="flex items-center gap-1.5 rounded-full border border-[#e4c769]/75 bg-white px-4 py-2 shadow-[0_14px_34px_rgba(17,16,11,0.07)]">
-              <MapPin className="h-3.5 w-3.5 text-[#b89422]" />
-              {text.location}
-            </span>
-            <span className="flex items-center gap-1.5 rounded-full border border-[#e4c769]/75 bg-white px-4 py-2 shadow-[0_14px_34px_rgba(17,16,11,0.07)]">
-              <CalendarDays className="h-3.5 w-3.5 text-[#b89422]" />
-              {adventure.days} {copy.day}
-            </span>
-          </div>
-
-          <p className="trip-meta-text mb-4 text-sm uppercase tracking-[0.2em] text-[#11100b]">
-            {copy.route}
-          </p>
           <h3 className="trip-header-title trip-header-title--hero domestic-trip-title max-w-[14ch] text-balance text-[#11100b]">
             {text.title}
           </h3>

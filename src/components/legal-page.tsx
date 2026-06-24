@@ -143,48 +143,27 @@ export function LegalPage({ kind }: { kind: LegalPageKind }) {
   const copy = LEGAL_COPY[contentLocale]?.[kind] ?? LEGAL_COPY.mn[kind];
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[#fffdf8] px-6 pb-20 pt-28 text-[#11100b] sm:px-10 lg:px-16 lg:pb-28 lg:pt-36">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(135deg,#fffdf8_0%,#f7f0e3_52%,#eef6f8_100%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-[0.18] [background-image:linear-gradient(90deg,rgba(143,112,32,0.14)_1px,transparent_1px),linear-gradient(180deg,rgba(143,112,32,0.1)_1px,transparent_1px)] [background-size:96px_96px]"
-      />
+    <section className="min-h-screen bg-white px-6 pb-16 pt-20 text-black sm:px-10 lg:px-16 lg:pb-24 lg:pt-24">
+      <div className="mx-auto max-w-6xl">
+        <article className="py-4 lg:py-6">
+          <h1 className="font-sans text-[clamp(2.1rem,4vw,3.25rem)] font-black leading-tight tracking-normal text-black">
+            {copy.title}
+          </h1>
 
-      <div className="relative mx-auto max-w-5xl">
-        <p className="trip-meta-text text-xs uppercase tracking-[0.16em] text-[#FFD400]">
-          {copy.eyebrow}
-        </p>
-        <h1 className="mt-5 max-w-4xl text-balance font-display text-[clamp(3rem,7vw,6.4rem)] leading-[0.94] text-[#11100b]">
-          {copy.title}
-        </h1>
-        <p className="mt-6 max-w-3xl text-base leading-8 text-[#39352c]/72 lg:text-xl lg:leading-9">
-          {copy.subtitle}
-        </p>
-        <p className="mt-5 text-sm text-[#6b604e]/70">{copy.updated}</p>
+          <div className="mt-8 space-y-6 font-sans text-[1.08rem] leading-[1.55] text-black sm:text-[1.25rem] lg:text-[1.35rem]">
+            <p>{copy.subtitle}</p>
+            <p>{copy.updated}</p>
 
-        <div className="mt-12 grid gap-4">
-          {copy.sections.map((section, index) => (
-            <article
-              key={section.title}
-              className="rounded-lg border border-[#d7bd6c]/25 bg-white/72 p-5 shadow-[0_16px_45px_rgba(92,76,45,0.06)] backdrop-blur lg:p-6"
-            >
-              <div className="flex items-start gap-4">
-                <span className="trip-meta-text mt-1 text-xs tracking-[0.14em] text-[#FFD400]">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div>
-                  <h2 className="text-2xl leading-tight text-[#11100b]">{section.title}</h2>
-                  <p className="mt-3 text-sm leading-7 text-[#39352c]/72 lg:text-base">
-                    {section.body}
-                  </p>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+            {copy.sections.map((section) => (
+              <section key={section.title} className="space-y-4">
+                <h2 className="text-[1.15rem] font-black leading-snug text-black sm:text-[1.35rem] lg:text-[1.45rem]">
+                  {section.title}
+                </h2>
+                <p>{section.body}</p>
+              </section>
+            ))}
+          </div>
+        </article>
       </div>
     </section>
   );
