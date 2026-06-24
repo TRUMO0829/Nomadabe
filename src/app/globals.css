@@ -158,6 +158,10 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
   text-transform: uppercase;
 }
 
+.site-navbar .nav-text {
+  font-weight: 200 !important;
+}
+
 .domestic-section-title {
   font-size: clamp(1.65rem, 3.4vw, 3.2rem) !important;
   line-height: 1.02 !important;

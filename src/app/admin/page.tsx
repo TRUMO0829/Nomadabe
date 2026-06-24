@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
+  FileText,
   Gauge,
   Inbox,
   LayoutDashboard,
@@ -25,7 +26,7 @@ import { redirect } from "next/navigation";
 import { AdminVisualEditor } from "@/components/admin-visual-editor";
 import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adventures";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
-import type { TeamMember } from "@/lib/site-settings";
+import type { AboutSectionSettings, TeamMember } from "@/lib/site-settings";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
   getAdminDashboardData,
@@ -39,6 +40,7 @@ import {
   logoutAdminAction,
   refreshAdminAction,
   saveServiceAction,
+  saveSiteSettingsAction,
   saveTeamMemberAction,
   saveTripAction,
   sendAdminEmailAction,
@@ -62,6 +64,7 @@ const navItems = [
   { label: "Бүртгэлүүд", href: "#registrations", icon: Users },
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
+  { label: "About section", href: "#about-section", icon: FileText },
   { label: "Манай баг", href: "#team", icon: Users },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
 ];
@@ -259,6 +262,17 @@ export default async function AdminDashboard({
                     />
                     <AdminVisualEditor settings={siteSettings} />
                   </>
+                ) : null}
+
+                {siteSettings ? (
+                  <section id="about-section" className="scroll-mt-6 space-y-4">
+                    <SectionHeader
+                      eyebrow="About"
+                      title="About section content"
+                      action="About хуудсанд шууд нөлөөлнө"
+                    />
+                    <AboutSectionEditor aboutSection={siteSettings.aboutSection} />
+                  </section>
                 ) : null}
 
                 <SectionHeader eyebrow="Удирдлага" title="Шинэ аяллын хөтөлбөр нэмэх" action="Хэрэглэгчийн веб дээр харагдана" />
@@ -539,6 +553,51 @@ function ServiceForm({ mode, service }: { mode: "create" | "edit"; service?: Tra
   );
 }
 
+function AboutSectionEditor({ aboutSection }: { aboutSection: AboutSectionSettings }) {
+  return (
+    <form
+      action={saveSiteSettingsAction}
+      className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4"
+    >
+      <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
+        <TextareaField
+          label="About section CMS JSON"
+          name="aboutSectionJson"
+          defaultValue={JSON.stringify(aboutSection, null, 2)}
+          rows={20}
+          className="min-w-0"
+        />
+        <div className="rounded-md border border-[var(--border)] bg-white p-4 text-sm leading-6 text-[var(--muted-foreground)]">
+          <p className="font-semibold text-[var(--primary)]">Засаж болох талбарууд</p>
+          <ul className="mt-3 space-y-2">
+            <li>Main label, heading, description</li>
+            <li>Tab labels, order, isVisible</li>
+            <li>Stats, values, work blocks</li>
+            <li>Gallery image URL, alt, caption</li>
+            <li>CTA label/link, FAQ title, subtitle, content</li>
+          </ul>
+          <Link
+            href="/about"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] px-3 text-sm font-semibold text-[var(--primary)] hover:border-[var(--accent)]"
+          >
+            About харах
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+      <button
+        type="submit"
+        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
+      >
+        <Save className="h-4 w-4" />
+        About section хадгалах
+      </button>
+    </form>
+  );
+}
+
 function TeamMemberEditor({ member }: { member: TeamMember }) {
   return (
     <details className="rounded-md border border-[var(--border)] bg-white shadow-sm">
@@ -557,6 +616,11 @@ function TeamMemberEditor({ member }: { member: TeamMember }) {
             <p className="mt-1 line-clamp-1 text-sm text-[var(--muted-foreground)]">
               {member.role}
             </p>
+            {member.isVisible === false ? (
+              <p className="mt-1 text-xs font-semibold text-[var(--muted-foreground)]">
+                Hidden
+              </p>
+            ) : null}
           </div>
         </div>
         <span className="text-sm text-[var(--muted-foreground)]">Засах</span>
@@ -591,6 +655,28 @@ function TeamMemberForm({ mode, member }: { mode: "create" | "edit"; member?: Te
           defaultValue={member?.image}
           className="lg:col-span-2"
           placeholder="https://..."
+        />
+        <TextField
+          label="Зургийн alt text"
+          name="imageAlt"
+          defaultValue={member?.imageAlt}
+          className="lg:col-span-2"
+          placeholder={member?.name ?? "Photo description"}
+        />
+        <TextField
+          label="Дараалал"
+          name="order"
+          type="number"
+          defaultValue={String(member?.order ?? "")}
+        />
+        <SelectField
+          label="Харагдах эсэх"
+          name="isVisible"
+          defaultValue={String(member?.isVisible ?? true)}
+          options={[
+            { value: "true", label: "Харагдана" },
+            { value: "false", label: "Нууна" },
+          ]}
         />
         <TextareaField
           label="Товч тайлбар"
