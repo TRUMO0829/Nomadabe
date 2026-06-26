@@ -1,7 +1,7 @@
 @import "tailwindcss" source("../");
 
 :root {
-  --site-scale: 0.81;
+  --site-scale: 1;
   --background: #FFFDF3;
   --foreground: #11100B;
   --card: #FFFFFF;
