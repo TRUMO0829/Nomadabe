@@ -998,12 +998,16 @@ function DestinationDragCarousel({
                 key={adventure.id}
                 data-carousel-card
                 onClick={(event) => handleCardClick(event, adventure)}
-                className="relative m-0 flex min-w-[82vw] shrink-0 snap-start cursor-pointer flex-col sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
+                className="group relative m-0 flex min-w-[82vw] shrink-0 snap-start cursor-pointer flex-col transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
               >
-                <div className="aspect-[4/4.85] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8]">
+                <div className="relative aspect-[4/4.85] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
                   <div
-                    className="h-full w-full bg-cover bg-center"
+                    className="h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
                     style={{ backgroundImage: `url(${adventure.image})` }}
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                   />
                 </div>
                 <div className="flex flex-1 flex-col px-0 pt-4 text-[#050505] sm:pt-5">
@@ -1032,10 +1036,10 @@ function DestinationDragCarousel({
                         dragRef.current.didDrag = false;
                         openAdventureDetails(adventure);
                       }}
-                      className="inline-flex min-h-10 items-center justify-center gap-2 bg-accent px-4 text-[10px] uppercase text-accent-foreground"
+                      className="group/btn inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
                     >
                       {detailsLabel}
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
                     </button>
                   </div>
                 </div>
