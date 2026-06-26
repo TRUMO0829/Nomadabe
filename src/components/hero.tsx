@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import type { SiteSettings } from "@/lib/site-settings";
 import { useLanguage } from "./language-provider";
@@ -102,17 +103,19 @@ export function Hero({ settings }: HeroProps) {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.04)_90%)]" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-1 text-center">
-        <motion.div
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex rounded-[1rem] border border-[#d7bd6c]/70 bg-[#050504]/25 px-5 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-md sm:px-6 sm:py-3.5"
-        >
-          <h1
-            className="hero-heading max-w-5xl whitespace-pre-line text-xs font-black leading-tight sm:text-base lg:text-lg xl:text-2xl"
-            style={{ color: textColor }}
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
+          <Link
+            href="/tours"
+            aria-label={heading}
+            className="group inline-flex items-center gap-2 rounded-[1rem] border border-[#d7bd6c]/70 bg-[#050504]/25 px-5 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-md transition-all duration-300 hover:scale-[1.03] hover:border-[#ffd400]/85 hover:bg-[#050504]/45 sm:px-6 sm:py-3.5"
           >
-            <span className="hero-title-mark">{heading}</span>
-          </h1>
+            <h1
+              className="hero-heading max-w-5xl whitespace-pre-line text-xs font-black leading-tight sm:text-base lg:text-lg xl:text-2xl"
+              style={{ color: textColor }}
+            >
+              <span className="hero-title-mark">{heading}</span>
+            </h1>
+          </Link>
         </motion.div>
       </div>
     </section>
