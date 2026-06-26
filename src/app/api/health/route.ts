@@ -21,10 +21,14 @@ export async function GET() {
     },
     n8n: {
       chatConfigured: Boolean(process.env.N8N_CHAT_WEBHOOK_URL),
-      verificationConfigured: Boolean(process.env.N8N_VERIFICATION_WEBHOOK_URL),
     },
     translation: {
       libreTranslateConfigured: Boolean(process.env.LIBRETRANSLATE_URL),
+    },
+    rateLimiting: {
+      upstashConfigured: Boolean(
+        process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+      ),
     },
   };
 

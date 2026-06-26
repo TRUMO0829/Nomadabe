@@ -9,7 +9,18 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
     ],
+  },
+  experimental: {
+    serverActions: {
+      // Trip poster uploads flow through the saveTripAction server action.
+      bodySizeLimit: "10mb",
+    },
   },
   turbopack: {
     root: __dirname,

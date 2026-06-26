@@ -6,7 +6,7 @@ import { saveInquiry, validateInquiry } from "@/lib/server/inquiries";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const limited = rateLimitRequest(request, "bookings", {
+  const limited = await rateLimitRequest(request, "bookings", {
     limit: 12,
     windowMs: 10 * 60 * 1000,
   });

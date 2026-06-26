@@ -92,11 +92,20 @@ function getAllowedAdminEmails() {
 }
 
 function getAdminSessionSecret() {
-  return (
-    process.env.ADMIN_SESSION_SECRET ||
-    process.env.ADMIN_PASSWORD ||
-    "nomadabe-local-admin-session-secret"
-  );
+  const secret =
+    process.env.ADMIN_SESSION_SECRET?.trim() || process.env.ADMIN_PASSWORD?.trim();
+
+  if (secret) {
+    return secret;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "ADMIN_SESSION_SECRET тохируулаагүй байна. Vercel Project Settings > Environment Variables дээр санамсаргүй урт утга нэмээд redeploy хийнэ үү."
+    );
+  }
+
+  return "nomadabe-local-admin-session-secret";
 }
 
 function base64UrlDecode(value: string) {

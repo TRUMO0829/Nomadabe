@@ -5,6 +5,7 @@ import {
   ADVENTURES,
   TRAVEL_SERVICES,
   type Adventure,
+  type AdventureItineraryStep,
   type AdventureTranslation,
   type AdventureTranslations,
   type TravelService,
@@ -32,6 +33,7 @@ import {
   supabaseRest,
 } from "@/lib/server/supabase-rest";
 import { translateAdventure } from "@/lib/server/translate-trip";
+import { isUploadedPoster, uploadTripPoster } from "@/lib/server/storage";
 
 export type AdminStore = {
   trips: Adventure[];
@@ -115,7 +117,10 @@ export async function getAdminStore() {
   }
 
   if (!canUseLocalJsonStore()) {
-    throw new Error(getSupabaseConfigurationErrorMessage());
+    // Reads must never crash a public page when storage isn't configured
+    // (e.g. a Preview deploy missing Supabase env) — fall back to defaults.
+    // Saving still fails loudly via saveAdminStore.
+    return normalizeStore({});
   }
 
   try {
@@ -177,7 +182,15 @@ export async function getAdminDashboardData() {
 
 export async function upsertTripFromForm(formData: FormData) {
   const store = await getAdminStore();
-  return upsertTrip(parseTripFromFields(formFields(formData), store.trips));
+  const parsed = parseTripFromFields(formFields(formData), store.trips);
+
+  // A newly uploaded poster file takes precedence over any existing/URL image.
+  const poster = formData.get("poster");
+  if (isUploadedPoster(poster)) {
+    parsed.image = await uploadTripPoster(poster);
+  }
+
+  return upsertTrip(parsed);
 }
 
 export async function upsertTripFromJson(payload: unknown) {
@@ -355,28 +368,41 @@ async function getSupabaseAdminStore() {
 }
 
 async function saveSupabaseAdminStore(store: AdminStore) {
+  // Upsert first so a failure never leaves the tables empty, then prune the
+  // rows that no longer exist. This avoids the data-loss window of the old
+  // delete-all-then-insert-all approach.
   await Promise.all([
-    supabaseRest<null>("/admin_trips?id=not.is.null", { method: "DELETE" }),
-    supabaseRest<null>("/admin_services?id=not.is.null", { method: "DELETE" }),
+    upsertSupabaseRows("/admin_trips", store.trips.map(toSupabaseTripRow)),
+    upsertSupabaseRows("/admin_services", store.services.map(toSupabaseServiceRow)),
     upsertSupabaseSiteSettings(store.siteSettings),
   ]);
 
   await Promise.all([
-    store.trips.length > 0
-      ? supabaseRest<AdminTripRow[]>("/admin_trips", {
-          method: "POST",
-          prefer: "return=representation",
-          body: JSON.stringify(store.trips.map(toSupabaseTripRow)),
-        })
-      : Promise.resolve([]),
-    store.services.length > 0
-      ? supabaseRest<AdminServiceRow[]>("/admin_services", {
-          method: "POST",
-          prefer: "return=representation",
-          body: JSON.stringify(store.services.map(toSupabaseServiceRow)),
-        })
-      : Promise.resolve([]),
+    deleteSupabaseRowsNotIn("/admin_trips", store.trips.map((trip) => trip.id)),
+    deleteSupabaseRowsNotIn("/admin_services", store.services.map((service) => service.id)),
   ]);
+}
+
+async function upsertSupabaseRows(path: string, rows: Array<{ id: string }>) {
+  if (rows.length === 0) {
+    return;
+  }
+
+  await supabaseRest<unknown[]>(path, {
+    method: "POST",
+    prefer: "resolution=merge-duplicates,return=minimal",
+    body: JSON.stringify(rows),
+  });
+}
+
+async function deleteSupabaseRowsNotIn(path: string, ids: string[]) {
+  if (ids.length === 0) {
+    await supabaseRest<null>(`${path}?id=not.is.null`, { method: "DELETE" });
+    return;
+  }
+
+  const list = ids.map((id) => `"${encodeURIComponent(id)}"`).join(",");
+  await supabaseRest<null>(`${path}?id=not.in.(${list})`, { method: "DELETE" });
 }
 
 async function upsertSupabaseSiteSettings(siteSettings: SiteSettings) {
@@ -812,6 +838,7 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
       ? ["true", "on", "1", "yes"].includes(fields.get("featured").toLowerCase())
       : existing?.featured ?? false,
     translations: parseTranslationsFromFields(fields, existing?.translations),
+    itinerary: parseItineraryField(fields.get("itinerary"), existing?.itinerary),
   } satisfies Adventure;
 }
 
@@ -929,6 +956,62 @@ function getListFromString(value: string, fallback: string[]) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function parseItineraryField(
+  value: string,
+  existing?: AdventureItineraryStep[]
+): AdventureItineraryStep[] | undefined {
+  // Empty field (e.g. no JS / never edited) keeps whatever was already saved.
+  if (!value) {
+    return existing;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return existing;
+  }
+
+  if (!Array.isArray(parsed)) {
+    return existing;
+  }
+
+  const steps = parsed
+    .filter(isRecord)
+    .map((step, index) => {
+      const title = typeof step.title === "string" ? step.title.trim() : "";
+      const body = typeof step.body === "string" ? step.body.trim() : "";
+      const items = Array.isArray(step.items)
+        ? step.items
+            .filter(isRecord)
+            .map((item) => ({
+              time:
+                typeof item.time === "string" && item.time.trim() ? item.time.trim() : undefined,
+              text: typeof item.text === "string" ? item.text.trim() : "",
+            }))
+            .filter((item) => item.text)
+        : [];
+
+      const result: AdventureItineraryStep = {
+        day: typeof step.day === "string" && step.day.trim() ? step.day.trim() : `${index + 1}`,
+        title,
+      };
+
+      if (items.length > 0) {
+        result.items = items;
+      }
+
+      if (body) {
+        result.body = body;
+      }
+
+      return result;
+    })
+    .filter((step) => step.title || (step.items && step.items.length > 0));
+
+  return steps.length > 0 ? steps : undefined;
 }
 
 function getOptionalListFromString(value: string) {

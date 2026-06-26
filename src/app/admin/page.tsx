@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 import {
+  AlertTriangle,
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
@@ -23,10 +24,11 @@ import {
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { AdminVisualEditor } from "@/components/admin-visual-editor";
 import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adventures";
+import { AdminItineraryEditor } from "@/components/admin-itinerary-editor";
+import { ConfirmSubmitButton } from "@/components/admin-confirm-button";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
-import type { AboutSectionSettings, TeamMember } from "@/lib/site-settings";
+import type { AboutSectionSettings, SiteSettings, TeamMember } from "@/lib/site-settings";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
   getAdminDashboardData,
@@ -54,7 +56,7 @@ export const dynamic = "force-dynamic";
 
 const defaultCategoryLabels: Record<string, string> = {
   business: "Бизнес",
-  expo: "Экспо",
+  festival: "Festival",
   leisure: "Амралт",
   custom: "Захиалгат",
 };
@@ -97,8 +99,6 @@ export default async function AdminDashboard({
           inquiries: [],
           bookingStats: [],
         };
-  const siteSettings =
-    dashboardData.status === "fulfilled" ? dashboardData.value.siteSettings : null;
   const customers = customersResult.status === "fulfilled" ? customersResult.value : [];
   const emailLogs = emailLogsResult.status === "fulfilled" ? emailLogsResult.value : [];
   const loadErrors = [dashboardData, customersResult, emailLogsResult]
@@ -108,6 +108,8 @@ export default async function AdminDashboard({
   const featuredTrips = trips.filter((trip) => trip.featured);
   const teamMembers =
     dashboardData.status === "fulfilled" ? dashboardData.value.siteSettings.teamMembers : [];
+  const siteSettings =
+    dashboardData.status === "fulfilled" ? dashboardData.value.siteSettings : null;
   const latestInquiries = inquiries.slice(0, 12);
   const latestCustomers = customers.slice(0, 12);
   const latestEmailLogs = emailLogs.slice(0, 8);
@@ -117,6 +119,7 @@ export default async function AdminDashboard({
   const lastInquiry = inquiries[0]?.createdAt ? formatRelativeDate(inquiries[0].createdAt) : "Идэвх байхгүй";
   const bookedPeople = inquiries.filter((inquiry) => inquiry.tripSlug).length;
   const statusMessage = (await searchParams)?.status;
+  const statusIsError = statusMessage?.startsWith("Алдаа") ?? false;
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -231,8 +234,19 @@ export default async function AdminDashboard({
 
           <div className="space-y-8 px-5 py-6 sm:px-8 lg:px-10">
             {statusMessage ? (
-              <div className="rounded-md border border-[var(--border)] bg-[var(--accent)] px-4 py-3 text-sm font-black text-[var(--accent-foreground)] shadow-sm">
-                {statusMessage}
+              <div
+                className={`sticky top-3 z-30 flex items-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-bold shadow-lg ${
+                  statusIsError
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                }`}
+              >
+                {statusIsError ? (
+                  <AlertTriangle className="h-5 w-5 shrink-0" />
+                ) : (
+                  <CheckCircle2 className="h-5 w-5 shrink-0" />
+                )}
+                <span>{statusMessage}</span>
               </div>
             ) : null}
 
@@ -254,14 +268,10 @@ export default async function AdminDashboard({
             <section className="grid gap-6 xl:grid-cols-[1fr_380px]">
               <div className="space-y-6">
                 {siteSettings ? (
-                  <>
-                    <SectionHeader
-                      eyebrow="Дизайн"
-                      title="Нүүр хэсгийн live editor"
-                      action="Hero хэсэгт шууд нөлөөлнө"
-                    />
-                    <AdminVisualEditor settings={siteSettings} />
-                  </>
+                  <section id="hero" className="scroll-mt-6 space-y-4">
+                    <SectionHeader eyebrow="Дизайн" title="Нүүр хэсгийн тохиргоо" action="Hero-д шууд нөлөөлнө" />
+                    <HeroSettingsForm settings={siteSettings} />
+                  </section>
                 ) : null}
 
                 {siteSettings ? (
@@ -293,13 +303,24 @@ export default async function AdminDashboard({
                   <EmailComposer />
                 </section>
 
-                <SectionHeader eyebrow="Үйлчилгээ" title="Үйлчилгээ удирдах" action={`Нийт ${services.length}`} />
-                <ServiceForm mode="create" />
-                <div className="grid gap-3 lg:grid-cols-2">
-                  {services.map((service) => (
-                    <ServiceEditor key={service.id} service={service} />
-                  ))}
-                </div>
+                <details className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
+                  <summary className="cursor-pointer list-none">
+                    <SectionHeader eyebrow="Нэмэлт тохиргоо" title="Үйлчилгээний төрлүүд" action={`Нийт ${services.length}`} />
+                    <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+                      Энэ хэсэг нь аяллын бус, компанийн санал болгодог туслах үйлчилгээний жагсаалт.
+                      Жишээ нь бизнес аялал зохион байгуулах, expo дэмжлэг, захиалгат маршрут гэх мэт.
+                      Шинэ аялал нэмэхэд энэ хэсгийг бөглөх шаардлагагүй.
+                    </p>
+                  </summary>
+                  <div className="mt-4 space-y-4">
+                    <ServiceForm mode="create" />
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      {services.map((service) => (
+                        <ServiceEditor key={service.id} service={service} />
+                      ))}
+                    </div>
+                  </div>
+                </details>
 
                 <section id="programs" className="scroll-mt-6 space-y-4">
                   <SectionHeader eyebrow="Хөтөлбөрүүд" title="Хөтөлбөр засварлах" action={`Нийт ${trips.length}`} />
@@ -508,16 +529,42 @@ function ServiceEditor({ service }: { service: TravelService }) {
         <ServiceForm mode="edit" service={service} />
         <form action={deleteServiceAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={service.id} />
-          <button
-            type="submit"
+          <ConfirmSubmitButton
+            message="Энэ үйлчилгээг устгах уу?"
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Үйлчилгээ устгах
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
     </details>
+  );
+}
+
+function HeroSettingsForm({ settings }: { settings: SiteSettings }) {
+  return (
+    <form
+      action={saveSiteSettingsAction}
+      className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4"
+    >
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TextField label="Badge (одны мөр)" name="heroBadge" defaultValue={settings.heroBadge} className="lg:col-span-2" />
+        <TextareaField label="Гол гарчиг" name="heroTitle" defaultValue={settings.heroTitle} rows={2} className="lg:col-span-2" />
+        <TextareaField label="Дэд гарчиг" name="heroSubtitle" defaultValue={settings.heroSubtitle} rows={2} className="lg:col-span-2" />
+        <TextField label="Арын зургийн URL" name="heroImage" defaultValue={settings.heroImage} className="lg:col-span-2" />
+        <TextField label="Онцлох өнгө (HEX)" name="accentColor" defaultValue={settings.accentColor} placeholder="#FFD400" />
+        <TextField label="Текстийн өнгө (HEX)" name="heroTextColor" defaultValue={settings.heroTextColor} placeholder="#ffffff" />
+        <TextField label="Давхар өнгөний тунгалаг (0.2 - 0.9)" name="heroOverlayOpacity" type="number" step="0.01" defaultValue={String(settings.heroOverlayOpacity)} />
+      </div>
+      <button
+        type="submit"
+        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
+      >
+        <Save className="h-4 w-4" />
+        Нүүр хэсэг хадгалах
+      </button>
+    </form>
   );
 }
 
@@ -629,13 +676,13 @@ function TeamMemberEditor({ member }: { member: TeamMember }) {
         <TeamMemberForm mode="edit" member={member} />
         <form action={deleteTeamMemberAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={member.id} />
-          <button
-            type="submit"
+          <ConfirmSubmitButton
+            message="Энэ багийн гишүүнийг устгах уу?"
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Багийн гишүүн устгах
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
     </details>
@@ -739,13 +786,13 @@ function ProgramEditor({
         <TripForm mode="edit" trip={trip} categoryOptions={categoryOptions} />
         <form action={deleteTripAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={trip.id} />
-          <button
-            type="submit"
+          <ConfirmSubmitButton
+            message="Энэ хөтөлбөрийг устгах уу?"
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
           >
             <Trash2 className="h-4 w-4" />
             Хөтөлбөр устгах
-          </button>
+          </ConfirmSubmitButton>
         </form>
       </div>
     </details>
@@ -827,64 +874,111 @@ function TripForm({
   categoryOptions: CategoryOption[];
 }) {
   return (
-    <form action={saveTripAction} className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
+    <form action={saveTripAction} encType="multipart/form-data" className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
       {trip ? <input type="hidden" name="id" defaultValue={trip.id} /> : null}
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
+        <div>
+          <h3 className="text-base font-black text-[var(--primary)]">
+            {mode === "create" ? "Цөөн мэдээллээр аяллаа нэмнэ" : "Гол мэдээллийг засах"}
+          </h3>
+          <p className="mt-1 max-w-2xl text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+            Нэр, байршил, хугацаа, ангилал, зураг, товч тайлбараа оруулахад хангалттай.
+            Үнэ, tag, орчуулга зэрэг нэмэлт мэдээллийг дараа нь эвхэгддэг хэсгээс нөхөж болно.
+          </p>
+        </div>
+        <button
+          type="submit"
+          className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
+        >
+          {mode === "create" ? <Plus className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+          {mode === "create" ? "Хөтөлбөр нэмэх" : "Хадгалах"}
+        </button>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-3">
-        <TextField label="Аяллын нэр" name="title" defaultValue={trip?.title} placeholder="Говийн аялал" required />
-        <TextField label="Slug" name="slug" defaultValue={trip?.slug} placeholder="gobi-adventure" />
+        <PosterField trip={trip} className="lg:col-span-3" />
         <SelectField
           label="Ангилал"
           name="category"
           defaultValue={trip?.category ?? "custom"}
           options={categoryOptions}
         />
-        <TextField label="Шинэ ангилал нэмэх" name="categoryCustom" placeholder="Жишээ: Дотоод аялал" />
-        <TextField label="Байршил / хот" name="location" defaultValue={trip?.location} placeholder="Өмнөговь" />
-        <TextField label="Улс" name="country" defaultValue={trip?.country} placeholder="Mongolia" />
-        <TextField label="Хугацаа / өдөр" name="days" type="number" defaultValue={String(trip?.days ?? 5)} />
-        <TextField label="Групп / хэнд зориулсан" name="groupSize" defaultValue={trip?.groupSize ?? "Flexible"} placeholder="Family / Group" />
-        <SelectField
-          label="Аяллын түвшин"
-          name="difficulty"
-          defaultValue={trip?.difficulty ?? "Easy"}
-          options={[
-            { value: "Easy", label: "Хялбар" },
-            { value: "Moderate", label: "Дунд" },
-            { value: "Challenging", label: "Сорилттой" },
-            { value: "Tough", label: "Хүнд" },
-          ]}
+        <TextField
+          label="Аяллын нэр"
+          name="title"
+          defaultValue={trip?.title}
+          placeholder="Говийн аялал"
+          required
+          className="lg:col-span-2"
         />
-        <TextField label="Дараагийн явах огноо" name="nextDeparture" defaultValue={trip?.nextDeparture} placeholder="2026-10" />
-        <TextField label="Үнэ / 0 бол санал авах" name="price" type="number" defaultValue={String(trip?.price ?? 0)} />
-        <TextField label="Валют" name="currency" defaultValue={trip?.currency ?? "MNT"} />
-        <TextField label="Зургийн URL / хэрэглэгчийн card" name="image" defaultValue={trip?.image} className="lg:col-span-3" />
-        <TextField label="Тагууд / comma-аар" name="tags" defaultValue={trip?.tags.join(", ")} placeholder="Domestic, Gobi, Nature" />
-        <TextField label="Үнэлгээ" name="rating" type="number" step="0.1" defaultValue={String(trip?.rating ?? 4.8)} />
-        <TextField label="Сэтгэгдлийн тоо" name="reviews" type="number" defaultValue={String(trip?.reviews ?? 0)} />
-        <TextareaField label="Хэрэглэгчид харагдах товч тайлбар" name="summary" defaultValue={trip?.summary} rows={3} className="lg:col-span-3" />
-        <TextareaField label="Хэнд тохиромжтой / comma-аар" name="idealFor" defaultValue={trip?.idealFor.join(", ")} rows={2} />
-        <TextareaField label="Багцад багтах зүйлс / comma-аар" name="includes" defaultValue={trip?.includes.join(", ")} rows={2} />
-        <TextareaField label="Бизнес / expo нэмэлт дэмжлэг" name="businessSupport" defaultValue={trip?.businessSupport.join(", ")} rows={2} />
       </div>
 
-      <div className="mt-5 space-y-3">
-        <div>
-          <h3 className="text-sm font-black uppercase tracking-[0.12em] text-[var(--primary)]">
-            Орчуулга хянах
-          </h3>
-          <p className="mt-1 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+      <details className="mt-4 rounded-md border border-[var(--border)] bg-white shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
+          <span className="text-sm font-black text-[var(--primary)]">Дэлгэрэнгүй мэдээлэл</span>
+          <span className="text-xs font-semibold text-[var(--muted-foreground)]">Байршил, хугацаа, үнэ, tag, багц</span>
+        </summary>
+        <div className="grid gap-4 border-t border-[var(--border)] p-4 lg:grid-cols-3">
+          <TextField label="Байршил / хот" name="location" defaultValue={trip?.location} placeholder="Өмнөговь" />
+          <TextField label="Улс" name="country" defaultValue={trip?.country} placeholder="Mongolia" />
+          <TextField label="Хугацаа / өдөр" name="days" type="number" defaultValue={String(trip?.days ?? 5)} />
+          <TextField label="Дараагийн явах огноо" name="nextDeparture" type="date" defaultValue={getDateInputValue(trip?.nextDeparture)} />
+          <TextareaField label="Хэрэглэгчид харагдах товч тайлбар" name="summary" defaultValue={trip?.summary} rows={3} className="lg:col-span-3" />
+          <TextField label="Эсвэл зургийн URL (постер оруулаагүй бол)" name="image" defaultValue={trip?.image} className="lg:col-span-3" />
+          <TextField label="Slug" name="slug" defaultValue={trip?.slug} placeholder="gobi-adventure" />
+          <TextField label="Шинэ ангилал нэмэх" name="categoryCustom" placeholder="Жишээ: Дотоод аялал" />
+          <TextField label="Групп / хэнд зориулсан" name="groupSize" defaultValue={trip?.groupSize ?? "Flexible"} placeholder="Family / Group" />
+          <SelectField
+            label="Аяллын түвшин"
+            name="difficulty"
+            defaultValue={trip?.difficulty ?? "Easy"}
+            options={[
+              { value: "Easy", label: "Хялбар" },
+              { value: "Moderate", label: "Дунд" },
+              { value: "Challenging", label: "Сорилттой" },
+              { value: "Tough", label: "Хүнд" },
+            ]}
+          />
+          <TextField label="Үнэ / 0 бол санал авах" name="price" type="number" defaultValue={String(trip?.price ?? 0)} />
+          <TextField label="Валют" name="currency" defaultValue={trip?.currency ?? "MNT"} />
+          <TextField label="Тагууд / comma-аар" name="tags" defaultValue={trip?.tags.join(", ")} placeholder="Domestic, Gobi, Nature" />
+          <TextField label="Үнэлгээ" name="rating" type="number" step="0.1" defaultValue={String(trip?.rating ?? 4.8)} />
+          <TextField label="Сэтгэгдлийн тоо" name="reviews" type="number" defaultValue={String(trip?.reviews ?? 0)} />
+          <TextareaField label="Хэнд тохиромжтой / comma-аар" name="idealFor" defaultValue={trip?.idealFor.join(", ")} rows={2} />
+          <TextareaField label="Багцад багтах зүйлс / comma-аар" name="includes" defaultValue={trip?.includes.join(", ")} rows={2} />
+          <TextareaField label="Бизнес / expo нэмэлт дэмжлэг" name="businessSupport" defaultValue={trip?.businessSupport.join(", ")} rows={2} />
+        </div>
+      </details>
+
+      <details className="mt-4 rounded-md border border-[var(--border)] bg-white shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
+          <span className="text-sm font-black text-[var(--primary)]">Аяллын хөтөлбөр (өдөр / цаг)</span>
+          <span className="text-xs font-semibold text-[var(--muted-foreground)]">Уян хатан, оруулаагүй бол автоматаар</span>
+        </summary>
+        <div className="border-t border-[var(--border)] p-4">
+          <AdminItineraryEditor defaultValue={trip?.itinerary} />
+        </div>
+      </details>
+
+      <details className="mt-4 rounded-md border border-[var(--border)] bg-white shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
+          <span className="text-sm font-black text-[var(--primary)]">Орчуулга хянах</span>
+          <span className="text-xs font-semibold text-[var(--muted-foreground)]">Сонголттой</span>
+        </summary>
+        <div className="space-y-3 border-t border-[var(--border)] p-4">
+          <p className="text-sm font-medium leading-6 text-[var(--muted-foreground)]">
             Автомат орчуулга энд харагдана. Та засаж хадгалбал дараагийн автомат орчуулга тухайн засварыг дарж бичихгүй.
           </p>
+          {translationLanguages.map((language) => (
+            <TranslationEditor
+              key={language.code}
+              locale={language.code}
+              label={language.label}
+              translation={trip?.translations?.[language.code]}
+            />
+          ))}
         </div>
-        {translationLanguages.map((language) => (
-          <TranslationEditor
-            key={language.code}
-            locale={language.code}
-            label={language.label}
-            translation={trip?.translations?.[language.code]}
-          />
-        ))}
-      </div>
+      </details>
 
       <label className="mt-4 flex w-fit items-center gap-2 text-sm font-semibold text-[var(--primary)]">
         <input type="checkbox" name="featured" defaultChecked={trip?.featured ?? false} className="h-4 w-4 accent-[var(--accent)]" />
@@ -986,6 +1080,18 @@ function TranslationEditor({
   );
 }
 
+function getDateInputValue(value?: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  if (/^\d{4}-\d{2}$/.test(value)) {
+    return `${value}-01`;
+  }
+
+  return value;
+}
+
 function translationFieldName(locale: Exclude<CopyLocale, "mn">, key: keyof AdventureTranslation) {
   return `translation_${locale}_${key}`;
 }
@@ -1023,6 +1129,42 @@ function TextField({
         {...props}
       />
     </label>
+  );
+}
+
+function PosterField({ trip, className }: { trip?: Adventure; className?: string }) {
+  return (
+    <div className={`block ${className ?? ""}`}>
+      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+        Постер зураг
+      </span>
+      <div className="mt-2 flex flex-col gap-3 rounded-md border border-dashed border-[var(--border)] bg-white p-4 sm:flex-row sm:items-center">
+        {trip?.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={trip.image}
+            alt={trip.title ? `${trip.title} постер` : "Одоогийн постер"}
+            className="h-24 w-24 shrink-0 rounded-md object-cover ring-1 ring-[var(--border)]"
+          />
+        ) : (
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-md bg-[var(--muted)] text-xs font-semibold text-[var(--muted-foreground)]">
+            Постер алга
+          </div>
+        )}
+        <div className="flex-1">
+          <input
+            type="file"
+            name="poster"
+            accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+            className="block w-full text-sm text-[var(--foreground)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--primary)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[var(--foreground)]"
+          />
+          <p className="mt-2 text-xs font-medium leading-5 text-[var(--muted-foreground)]">
+            Зургаа сонгоно уу (JPG, PNG, WEBP — 8MB хүртэл). Постер оруулбал доорх URL-г дарж бичнэ.
+            {trip ? " Шинэ зураг оруулаагүй бол одоогийн постер хэвээр үлдэнэ." : ""}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1206,6 +1348,7 @@ function formatStatusLabel(value: string) {
     failed: "Амжилтгүй",
     trip: "Аялал",
     business: "Бизнес",
+    festival: "Festival",
     expo: "Экспо",
     custom: "Захиалгат",
     general: "Ерөнхий",

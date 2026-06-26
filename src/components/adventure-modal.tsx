@@ -774,9 +774,25 @@ export function AdventureModal({ adventure, onClose, onRegisterClick }: Props) {
                               </span>
                               <ChevronDown className="h-4 w-4 shrink-0 text-[#11100b] transition-transform group-open:rotate-180" />
                             </summary>
-                            <p className="px-4 pb-4 pl-[3.75rem] text-sm leading-relaxed text-[#11100b]">
-                              {step.body}
-                            </p>
+                            <div className="px-4 pb-4 pl-[3.75rem] text-sm leading-relaxed text-[#11100b]">
+                              {step.body ? (
+                                <p className="whitespace-pre-line">{step.body}</p>
+                              ) : null}
+                              {step.items && step.items.length > 0 ? (
+                                <ul className="mt-1 space-y-2">
+                                  {step.items.map((item, index) => (
+                                    <li key={index} className="flex gap-3">
+                                      {item.time ? (
+                                        <span className="shrink-0 font-semibold tabular-nums text-accent-foreground">
+                                          {item.time}
+                                        </span>
+                                      ) : null}
+                                      <span className="min-w-0">{item.text}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : null}
+                            </div>
                           </details>
                         ))}
                       </div>

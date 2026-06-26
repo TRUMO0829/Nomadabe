@@ -22,6 +22,8 @@ const COPY = {
     backToLogin: "Нэвтрэх хэсэг рүү буцах",
     resetCode: "6 оронтой код",
     newPassword: "Шинэ нууц үг",
+    confirmPassword: "Шинэ нууц үг давтах",
+    passwordMismatch: "Нууц үг хоорондоо таарахгүй байна.",
     sendResetCode: "Сэргээх код илгээх",
     submitReset: "Нууц үг шинэчлэх",
     resetSent: "Сэргээх код таны и-мэйл рүү илгээгдлээ.",
@@ -32,6 +34,7 @@ const COPY = {
     success: "Баярлалаа. Та аяллаа үргэлжлүүлэн үзэж болно.",
     codeSent: "Амжилттай нэвтэрлээ.",
     verificationSent: "Баталгаажуулах холбоос таны и-мэйл рүү илгээгдлээ.",
+    registerCodeSent: "Баталгаажуулах 6 оронтой код таны и-мэйл рүү илгээгдлээ.",
     error: "Илгээж чадсангүй. Мэдээллээ шалгаад дахин оролдоно уу.",
   },
   en: {
@@ -49,6 +52,8 @@ const COPY = {
     backToLogin: "Back to sign in",
     resetCode: "6-digit code",
     newPassword: "New password",
+    confirmPassword: "Repeat new password",
+    passwordMismatch: "Passwords do not match.",
     sendResetCode: "Send reset code",
     submitReset: "Reset password",
     resetSent: "A reset code has been sent to your email.",
@@ -59,6 +64,7 @@ const COPY = {
     success: "Thanks. You can continue browsing trips.",
     codeSent: "Signed in successfully.",
     verificationSent: "A verification link has been sent to your email.",
+    registerCodeSent: "A 6-digit verification code has been sent to your email.",
     error: "Could not send. Please check your details and try again.",
   },
   zh: {
@@ -76,6 +82,8 @@ const COPY = {
     backToLogin: "返回登录",
     resetCode: "6位验证码",
     newPassword: "新密码",
+    confirmPassword: "再次输入新密码",
+    passwordMismatch: "两次输入的密码不一致。",
     sendResetCode: "发送重置验证码",
     submitReset: "重置密码",
     resetSent: "重置验证码已发送到您的邮箱。",
@@ -86,6 +94,7 @@ const COPY = {
     success: "谢谢。您可以继续浏览旅行。",
     codeSent: "登录成功。",
     verificationSent: "验证链接已发送到您的邮箱。",
+    registerCodeSent: "6位验证码已发送到您的邮箱。",
     error: "无法发送。请检查您的信息后重试。",
   },
   ja: {
@@ -103,6 +112,8 @@ const COPY = {
     backToLogin: "ログインに戻る",
     resetCode: "6桁コード",
     newPassword: "新しいパスワード",
+    confirmPassword: "新しいパスワード（確認）",
+    passwordMismatch: "パスワードが一致しません。",
     sendResetCode: "再設定コードを送信",
     submitReset: "パスワードを再設定",
     resetSent: "再設定コードをメールに送信しました。",
@@ -113,6 +124,7 @@ const COPY = {
     success: "ありがとうございます。引き続きツアーをご覧いただけます。",
     codeSent: "ログインしました。",
     verificationSent: "確認リンクをメールに送信しました。",
+    registerCodeSent: "6桁の確認コードをメールに送信しました。",
     error: "送信できませんでした。入力内容を確認してもう一度お試しください。",
   },
   ko: {
@@ -130,6 +142,8 @@ const COPY = {
     backToLogin: "로그인으로 돌아가기",
     resetCode: "6자리 코드",
     newPassword: "새 비밀번호",
+    confirmPassword: "새 비밀번호 확인",
+    passwordMismatch: "비밀번호가 일치하지 않습니다.",
     sendResetCode: "재설정 코드 보내기",
     submitReset: "비밀번호 재설정",
     resetSent: "재설정 코드를 이메일로 보냈습니다.",
@@ -140,6 +154,7 @@ const COPY = {
     success: "감사합니다. 계속 여행을 둘러보실 수 있습니다.",
     codeSent: "로그인되었습니다.",
     verificationSent: "인증 링크를 이메일로 보냈습니다.",
+    registerCodeSent: "6자리 인증 코드를 이메일로 보냈습니다.",
     error: "전송할 수 없습니다. 정보를 확인한 뒤 다시 시도해 주세요.",
   },
 } as const;
@@ -182,6 +197,10 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
   const [mode, setMode] = useState<"login" | "register" | "reset">("login");
   const [resetStep, setResetStep] = useState<"request" | "confirm">("request");
   const [resetEmail, setResetEmail] = useState("");
+  const [registerStep, setRegisterStep] = useState<"form" | "code">("form");
+  const [registerData, setRegisterData] = useState<{ name: string; email: string; password: string }>(
+    { name: "", email: "", password: "" }
+  );
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -220,7 +239,18 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
     const code = String(formData.get("code") ?? "").trim();
+
+    const settingNewPassword =
+      (mode === "reset" && resetStep === "confirm") ||
+      (mode === "register" && registerStep === "form");
+
+    if (settingNewPassword && password !== confirmPassword) {
+      setLoading(false);
+      setMessage(copy.passwordMismatch);
+      return;
+    }
 
     try {
       if (mode === "reset") {
@@ -260,10 +290,39 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
         return;
       }
 
-      const response = await fetch(mode === "register" ? "/api/auth/register" : "/api/auth/login", {
+      if (mode === "register" && registerStep === "form") {
+        const response = await fetch("/api/auth/register/request-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
+        });
+        const result = await readAuthActionResult(response, copy.error);
+
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error?.message ?? copy.error);
+        }
+
+        setRegisterData({ name, email, password });
+        setRegisterStep("code");
+        setSubmitted(false);
+        setMessage(copy.registerCodeSent);
+        return;
+      }
+
+      const endpoint = mode === "register" ? "/api/auth/register/verify" : "/api/auth/login";
+      const body =
+        mode === "register"
+          ? {
+              name: registerData.name,
+              email: registerData.email,
+              password: registerData.password,
+              code,
+            }
+          : { name, email, password };
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify(body),
       });
       const result = await readAuthActionResult(response, copy.error);
 
@@ -279,17 +338,12 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
       }
 
       setSubmitted(true);
-      setMessage(
-        mode === "register" && result.data?.emailVerificationRequired
-          ? copy.verificationSent
-          : copy.codeSent
-      );
-
-      if (!(mode === "register" && result.data?.emailVerificationRequired)) {
-        setOpen(false);
-        setSubmitted(false);
-        setMessage("");
-      }
+      setMessage(copy.codeSent);
+      setOpen(false);
+      setSubmitted(false);
+      setRegisterStep("form");
+      setRegisterData({ name: "", email: "", password: "" });
+      setMessage("");
     } catch (error) {
       setSubmitted(false);
       setMessage(error instanceof Error ? error.message : copy.error);
@@ -349,6 +403,8 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                       setMode(item.key as "login" | "register");
                       setResetStep("request");
                       setResetEmail("");
+                      setRegisterStep("form");
+                      setRegisterData({ name: "", email: "", password: "" });
                       setSubmitted(false);
                       setMessage("");
                     }}
@@ -365,7 +421,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
               </div>
 
               <form className="space-y-3" onSubmit={handleSubmit}>
-                {mode === "register" && (
+                {mode === "register" && registerStep === "form" && (
                   <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
                     <UserRound className="h-4 w-4 text-accent" />
                     <input
@@ -378,17 +434,27 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                 <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
                   <Mail className="h-4 w-4 text-accent" />
                   <input
-                    key={`${mode}-${resetStep}-${resetEmail}`}
+                    key={`${mode}-${resetStep}-${registerStep}-${resetEmail}-${registerData.email}`}
                     name="email"
                     type="email"
-                    defaultValue={mode === "reset" && resetStep === "confirm" ? resetEmail : undefined}
-                    readOnly={mode === "reset" && resetStep === "confirm"}
+                    defaultValue={
+                      mode === "reset" && resetStep === "confirm"
+                        ? resetEmail
+                        : mode === "register" && registerStep === "code"
+                          ? registerData.email
+                          : undefined
+                    }
+                    readOnly={
+                      (mode === "reset" && resetStep === "confirm") ||
+                      (mode === "register" && registerStep === "code")
+                    }
                     required
                     placeholder={copy.email}
                     className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                   />
                 </label>
-                {mode === "reset" && resetStep === "confirm" && (
+                {((mode === "reset" && resetStep === "confirm") ||
+                  (mode === "register" && registerStep === "code")) && (
                   <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
                     <Mail className="h-4 w-4 text-accent" />
                     <input
@@ -401,7 +467,9 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                     />
                   </label>
                 )}
-                {(mode !== "reset" || resetStep === "confirm") && (
+                {(mode === "login" ||
+                  (mode === "reset" && resetStep === "confirm") ||
+                  (mode === "register" && registerStep === "form")) && (
                   <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
                     <LockKeyhole className="h-4 w-4 text-accent" />
                     <input
@@ -409,6 +477,19 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                       type="password"
                       required
                       placeholder={mode === "reset" ? copy.newPassword : copy.password}
+                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    />
+                  </label>
+                )}
+                {((mode === "reset" && resetStep === "confirm") ||
+                  (mode === "register" && registerStep === "form")) && (
+                  <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
+                    <LockKeyhole className="h-4 w-4 text-accent" />
+                    <input
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      placeholder={copy.confirmPassword}
                       className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                     />
                   </label>
@@ -437,6 +518,8 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                   setMode(mode === "reset" ? "login" : "reset");
                   setResetStep("request");
                   setResetEmail("");
+                  setRegisterStep("form");
+                  setRegisterData({ name: "", email: "", password: "" });
                   setSubmitted(false);
                   setMessage("");
                 }}

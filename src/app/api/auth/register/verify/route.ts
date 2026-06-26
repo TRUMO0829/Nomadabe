@@ -8,14 +8,14 @@ import {
 } from "@/lib/server/admin-auth";
 import {
   CUSTOMER_SESSION_COOKIE,
-  loginCustomerWithPassword,
+  verifyCustomerRegistrationCode,
 } from "@/lib/server/customer-auth";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const limited = await rateLimitRequest(request, "auth-login", {
-    limit: 10,
+  const limited = await rateLimitRequest(request, "auth-register-verify", {
+    limit: 8,
     windowMs: 10 * 60 * 1000,
   });
 
@@ -25,13 +25,16 @@ export async function POST(request: Request) {
 
   try {
     const payload = (await request.json()) as {
+      name?: unknown;
       email?: unknown;
+      code?: unknown;
       password?: unknown;
     };
-    const { customer, session } = await loginCustomerWithPassword(payload);
-    const adminSession = isAllowedAdminEmail(customer.email)
-      ? createAdminSession(customer.email)
-      : null;
+    const { customer, session } = await verifyCustomerRegistrationCode(payload);
+    const adminSession =
+      customer && isAllowedAdminEmail(customer.email)
+        ? createAdminSession(customer.email)
+        : null;
     const response = NextResponse.json({
       ok: true,
       data: { customer, adminRedirect: Boolean(adminSession) },
@@ -62,21 +65,9 @@ export async function POST(request: Request) {
 function getErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : "";
 
-  if (/invalid login credentials/i.test(message)) {
-    return "И-мэйл эсвэл нууц үг буруу байна.";
+  if (/already registered|already exists|user already/i.test(message)) {
+    return "Энэ и-мэйлээр бүртгэл үүссэн байна. Нэвтрэх хэсгээр орно уу.";
   }
 
-  if (/email not confirmed/i.test(message)) {
-    return "И-мэйл баталгаажаагүй байна. И-мэйлээ шалгаад дахин оролдоно уу.";
-  }
-
-  if (/valid email and password/i.test(message)) {
-    return "И-мэйл болон нууц үгээ зөв оруулна уу.";
-  }
-
-  if (/supabase/i.test(message)) {
-    return "Нэвтрэх үйлчилгээ түр алдаатай байна. Дахин оролдоно уу.";
-  }
-
-  return message || "Нэвтэрч чадсангүй. Мэдээллээ шалгаад дахин оролдоно уу.";
+  return message || "Бүртгэл баталгаажуулж чадсангүй. Мэдээллээ шалгаад дахин оролдоно уу.";
 }
