@@ -409,7 +409,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 
 function Band({ children, bg }: { children: React.ReactNode; bg?: string }) {
   return (
-    <div className="relative overflow-hidden border-t border-white/[0.07]">
+    <div className="relative overflow-hidden">
       {bg && (
         <>
           <div
@@ -428,6 +428,11 @@ function Band({ children, bg }: { children: React.ReactNode; bg?: string }) {
         </>
       )}
       <div className="relative mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+        {/* content-width hairline divider — aligns with the section content */}
+        <div
+          aria-hidden="true"
+          className="absolute left-5 right-5 top-0 h-px bg-white/10 sm:left-8 sm:right-8 lg:left-12 lg:right-12"
+        />
         {children}
       </div>
     </div>

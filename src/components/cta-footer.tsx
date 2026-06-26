@@ -517,7 +517,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
       )}
 
       <footer className="bg-[#141414] text-white">
-        <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
           <div className="grid gap-10 lg:grid-cols-[1.15fr_0.65fr_1fr]">
             <div>
               <Link href="/#home" className="inline-flex items-center gap-3">
