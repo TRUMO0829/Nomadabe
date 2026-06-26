@@ -134,6 +134,23 @@ textarea {
   font-family: var(--site-font) !important;
 }
 
+/* Press feedback on every button (login, admin, everywhere). */
+button:not(:disabled) {
+  transition: transform 0.14s ease, opacity 0.14s ease, box-shadow 0.14s ease;
+}
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+button:not(:disabled):active {
+  transform: scale(0.95);
+}
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):hover,
+  button:not(:disabled):active {
+    transform: none;
+  }
+}
+
 body *,
 body *::before,
 body *::after {
