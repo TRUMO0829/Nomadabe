@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import {
   type FormEvent,
   type MouseEvent as ReactMouseEvent,
@@ -30,6 +29,7 @@ import {
   type AdventureTranslations,
 } from "@/lib/adventures";
 import { cn } from "@/lib/utils";
+import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 import { OUTBOUND_OPTIONS } from "./outbound-trips-carousel";
 
@@ -216,10 +216,6 @@ function getAdventureSearchText(adventure: Adventure) {
       ...localizedParts,
     ].join(" ")
   );
-}
-
-function getAdventureDetailsHref(adventure: Adventure) {
-  return `/tours/${encodeURIComponent(adventure.slug)}`;
 }
 
 const SECTION_COPY = {
@@ -720,6 +716,7 @@ function DestinationDragCarousel({
   locale,
   dayLabel,
   detailsLabel,
+  onSelect,
 }: {
   id: string;
   title: string;
@@ -728,8 +725,8 @@ function DestinationDragCarousel({
   locale: keyof typeof SECTION_COPY;
   dayLabel: string;
   detailsLabel: string;
+  onSelect: (adventure: Adventure) => void;
 }) {
-  const router = useRouter();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef({
@@ -943,7 +940,7 @@ function DestinationDragCarousel({
 
   function openAdventureDetails(adventure: Adventure) {
     stopMomentum();
-    router.push(getAdventureDetailsHref(adventure));
+    onSelect(adventure);
   }
 
   function handleCardClick(
@@ -1055,6 +1052,7 @@ export function FeaturedAdventures({
   adventures = ADVENTURES,
   beforeList,
 }: FeaturedAdventuresProps) {
+  const [selected, setSelected] = useState<Adventure | null>(null);
   const [scope, setScope] = useState<TripScope>("all");
   const [sortMode] = useState<SortMode>("recommended");
   const [query, setQuery] = useState("");
@@ -1627,6 +1625,7 @@ export function FeaturedAdventures({
               locale={contentLocale}
               dayLabel={t.featured.days}
               detailsLabel={t.featured.details}
+              onSelect={setSelected}
             />
           ))
         ) : (
@@ -1639,6 +1638,8 @@ export function FeaturedAdventures({
       </div>
 
       {beforeList}
+
+      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
     </section>
   );
 }
