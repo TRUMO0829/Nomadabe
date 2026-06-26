@@ -14,6 +14,7 @@ export function PlaneCursor() {
     scale: 1,
   });
   const pressScaleRef = useRef(1);
+  const hoverScaleRef = useRef(1);
   const frameRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export function PlaneCursor() {
       const pageScale = getPageScale();
       const correctedX = x / pageScale;
       const correctedY = y / pageScale;
-      const finalScale = scale * pressScaleRef.current;
+      const finalScale = scale * pressScaleRef.current * hoverScaleRef.current;
 
       cursor.style.transform = `translate3d(${correctedX}px, ${correctedY}px, 0) translate(-50%, -50%) rotate(${angle}deg) scale(${finalScale})`;
       frameRef.current = null;
@@ -84,6 +85,14 @@ export function PlaneCursor() {
         scale: 1,
       };
       cursor.style.opacity = "1";
+
+      // Grow the plane over clickable elements so it "senses" pressables.
+      const target = event.target as Element | null;
+      const overClickable = Boolean(
+        target?.closest?.('button:not(:disabled), a[href], [role="button"], summary')
+      );
+      hoverScaleRef.current = overClickable ? 1.55 : 1;
+
       requestRender();
     };
 
