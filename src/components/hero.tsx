@@ -16,8 +16,37 @@ type HeroProps = {
   settings?: SiteSettings;
 };
 
+function getLocalizedHeroTitle(
+  title: string | undefined,
+  locale: string,
+  fallback: string
+) {
+  const cleanedTitle = title?.trim();
+
+  if (!cleanedTitle) {
+    return fallback;
+  }
+
+  const titleLines = cleanedTitle
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const hasTravelElevated = titleLines.some(
+    (line) => line.toLowerCase() === "travel elevated"
+  );
+  const mongolianTitle = titleLines.find(
+    (line) => line === "Дараагийн түвшинд аял"
+  );
+
+  if (hasTravelElevated && mongolianTitle) {
+    return locale === "mn" ? mongolianTitle : "Travel Elevated";
+  }
+
+  return cleanedTitle;
+}
+
 export function Hero({ settings }: HeroProps) {
-  const { t } = useLanguage();
+  const { contentLocale, t } = useLanguage();
   const [activeImage, setActiveImage] = useState(0);
   const heroImages = [
     settings?.heroImage,
@@ -25,9 +54,15 @@ export function Hero({ settings }: HeroProps) {
   ].filter((image, index, images): image is string =>
     Boolean(image && images.indexOf(image) === index)
   );
-  const heading = settings?.heroTitle?.trim()
-    ? settings.heroTitle
-    : `${t.hero.headingLine1} ${t.hero.headingEmphasis} ${t.hero.headingLine2}`;
+  const heading = getLocalizedHeroTitle(
+    settings?.heroTitle,
+    contentLocale,
+    `${t.hero.headingLine1} ${t.hero.headingEmphasis} ${t.hero.headingLine2}`
+  );
+  const headingSizeClass =
+    contentLocale === "mn"
+      ? "text-xl sm:text-3xl lg:text-4xl xl:text-5xl"
+      : "text-2xl sm:text-4xl lg:text-5xl xl:text-6xl";
   const textColor = settings?.heroTextColor || "#ffffff";
   const overlayOpacity = settings?.heroOverlayOpacity ?? 0.36;
 
@@ -78,7 +113,7 @@ export function Hero({ settings }: HeroProps) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.1 }}
-          className="hero-heading max-w-5xl whitespace-pre-line text-2xl font-black leading-tight sm:text-4xl lg:text-5xl xl:text-6xl"
+          className={`hero-heading max-w-5xl whitespace-pre-line font-black leading-tight ${headingSizeClass}`}
           style={{ color: textColor }}
         >
           <span className="hero-title-mark">{heading}</span>

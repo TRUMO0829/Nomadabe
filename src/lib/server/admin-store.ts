@@ -91,7 +91,7 @@ const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
 
 const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroBadge: "★★★★★ 1,200+ аялагчийн үнэлгээ",
-  heroTitle: "Аяллаа\nнүүдэлчин хэмнэлээр",
+  heroTitle: "Travel Elevated\nДараагийн түвшинд аял",
   heroSubtitle:
     "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг төлөвлөн зохион байгуулна.",
   heroImage:
