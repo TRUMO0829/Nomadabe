@@ -105,10 +105,10 @@ export function Hero({ settings }: HeroProps) {
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex rounded-[1.3rem] border border-[#d7bd6c]/70 bg-[#050504]/25 px-7 py-5 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-md sm:px-10 sm:py-6"
+          className="inline-flex rounded-[1rem] border border-[#d7bd6c]/70 bg-[#050504]/25 px-5 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-md sm:px-6 sm:py-3.5"
         >
           <h1
-            className="hero-heading max-w-5xl whitespace-pre-line text-xl font-black leading-tight sm:text-3xl lg:text-4xl xl:text-5xl"
+            className="hero-heading max-w-5xl whitespace-pre-line text-xs font-black leading-tight sm:text-base lg:text-lg xl:text-2xl"
             style={{ color: textColor }}
           >
             <span className="hero-title-mark">{heading}</span>
