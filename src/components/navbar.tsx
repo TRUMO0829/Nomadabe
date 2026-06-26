@@ -131,12 +131,7 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
         <Link
           href="/#home"
           aria-label="Nomadabe Travel"
-          className={cn(
-            "order-1 flex shrink-0 items-center rounded-[1.05rem] border px-4 py-2 backdrop-blur transition-all duration-300 lg:absolute lg:left-4 lg:top-4",
-            useLightHeader
-              ? "border-[#d7bd6c]/65 bg-[#050504]/20 shadow-[0_18px_45px_rgba(17,16,11,0.06)]"
-              : "border-[#d7bd6c]/80 bg-[#050504]/20 shadow-[0_18px_50px_rgba(0,0,0,0.12)]"
-          )}
+          className="order-1 flex shrink-0 items-center lg:absolute lg:left-4 lg:top-4"
         >
           <Image
             src="/nomadabe-logo-cropped.webp"
@@ -144,10 +139,10 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
             width={574}
             height={615}
             priority
-            sizes="(min-width: 1024px) 96px, 80px"
+            sizes="(min-width: 1024px) 160px, 128px"
             className={cn(
               "w-auto object-contain transition-all duration-300",
-              "h-10 lg:h-12",
+              "h-24 lg:h-28",
               useLightHeader
                 ? "drop-shadow-[0_2px_12px_rgba(0,0,0,0.88)]"
                 : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"

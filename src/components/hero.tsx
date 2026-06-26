@@ -17,14 +17,16 @@ type HeroProps = {
 };
 
 export function Hero({ settings }: HeroProps) {
-  const { t } = useLanguage();
+  const { contentLocale } = useLanguage();
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const [active, setActive] = useState(0);
   const [ready, setReady] = useState(false);
 
   const heading = settings?.heroTitle?.trim()
     ? settings.heroTitle
-    : `${t.hero.headingLine1} ${t.hero.headingEmphasis} ${t.hero.headingLine2}`;
+    : contentLocale === "mn"
+      ? "Дараагийн түвшинд аял."
+      : "Travel, elevated.";
   const textColor = settings?.heroTextColor || "#ffffff";
   const overlayOpacity = settings?.heroOverlayOpacity ?? 0.36;
   const poster = settings?.heroImage || "/nomadabe-hero-panorama.webp";
@@ -100,15 +102,18 @@ export function Hero({ settings }: HeroProps) {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.04)_90%)]" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-1 text-center">
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
+        <motion.div
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.1 }}
-          className="hero-heading max-w-5xl whitespace-pre-line text-xl font-black leading-tight sm:text-3xl lg:text-4xl xl:text-5xl"
-          style={{ color: textColor }}
+          className="inline-flex rounded-[1.3rem] border border-[#d7bd6c]/70 bg-[#050504]/25 px-7 py-5 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-md sm:px-10 sm:py-6"
         >
-          <span className="hero-title-mark">{heading}</span>
-        </motion.h1>
+          <h1
+            className="hero-heading max-w-5xl whitespace-pre-line text-xl font-black leading-tight sm:text-3xl lg:text-4xl xl:text-5xl"
+            style={{ color: textColor }}
+          >
+            <span className="hero-title-mark">{heading}</span>
+          </h1>
+        </motion.div>
       </div>
     </section>
   );
