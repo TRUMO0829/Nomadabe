@@ -1000,7 +1000,7 @@ function DestinationDragCarousel({
                 onClick={(event) => handleCardClick(event, adventure)}
                 className="relative m-0 flex min-w-[82vw] shrink-0 snap-start cursor-pointer flex-col sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
               >
-                <div className="aspect-[4/4.85] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8]">
+                <div className="aspect-[4/4.85] overflow-hidden rounded-[1.5rem] bg-[#e8e8e8]">
                   <div
                     className="h-full w-full bg-cover bg-center"
                     style={{ backgroundImage: `url(${adventure.image})` }}
@@ -1027,6 +1027,10 @@ function DestinationDragCarousel({
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <button
                       type="button"
+                      onPointerDown={(event) => {
+                        event.stopPropagation();
+                        dragRef.current.didDrag = false;
+                      }}
                       onClick={(event) => {
                         event.stopPropagation();
                         dragRef.current.didDrag = false;
