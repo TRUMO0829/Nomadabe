@@ -2,9 +2,9 @@
 
 import { useLanguage } from "./language-provider";
 
-type LegalPageKind = "terms" | "privacy";
+export type LegalPageKind = "terms" | "privacy";
 
-type LegalCopy = {
+export type LegalCopy = {
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -15,7 +15,7 @@ type LegalCopy = {
   }>;
 };
 
-const LEGAL_COPY: Record<string, Record<LegalPageKind, LegalCopy>> = {
+export const LEGAL_COPY: Record<string, Record<LegalPageKind, LegalCopy>> = {
   mn: {
     terms: {
       eyebrow: "Nomadabe Travel",

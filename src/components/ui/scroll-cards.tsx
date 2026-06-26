@@ -22,7 +22,6 @@ interface iCardProps extends iCardItem {
 const Card: FC<iCardProps> = ({
   title,
   description,
-  tag,
   src,
   link,
   color,
@@ -45,19 +44,19 @@ const Card: FC<iCardProps> = ({
           sizes="100vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/26 to-black/10" />
-        <div className="absolute inset-x-0 bottom-0 z-10">
-          <div className="mx-auto max-w-7xl p-6 pb-10 sm:p-8 sm:pb-14 lg:p-10 lg:pb-16">
-            {tag ? (
-              <div className="trip-meta-text mb-4 inline-flex rounded-md bg-accent px-3 py-1.5 text-xs uppercase text-accent-foreground">
-                {tag}
-              </div>
-            ) : null}
-            <h3 className="trip-header-title max-w-3xl text-balance !text-[clamp(1.65rem,3.5vw,3.35rem)] !leading-[1.02] text-white">
+        <div className="absolute inset-0 bg-gradient-to-r from-black/62 via-black/22 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/18 via-transparent to-black/12" />
+        <div className="absolute bottom-[clamp(3rem,9vh,6rem)] left-[clamp(1.5rem,8vw,8rem)] right-[clamp(1.5rem,12vw,16rem)] z-10">
+          <div className="max-w-[min(58rem,78vw)] text-white drop-shadow-[0_10px_28px_rgba(0,0,0,0.48)]">
+            <h3
+              className="max-w-[15ch] text-balance text-[clamp(2.6rem,5vw,4.8rem)] leading-[0.98] text-white"
+              style={{ textTransform: "none" }}
+            >
               {title}
             </h3>
+            <div className="mt-2 h-px w-full max-w-[min(46rem,78vw)] bg-white/88" />
             {description ? (
-              <p className="trip-copy-text mt-4 max-w-2xl text-sm leading-6 text-white sm:text-base lg:leading-7">
+              <p className="trip-copy-text mt-6 max-w-[46rem] text-sm leading-6 text-white sm:text-base lg:text-lg lg:leading-7">
                 {description}
               </p>
             ) : null}
@@ -65,14 +64,16 @@ const Card: FC<iCardProps> = ({
               <button
                 type="button"
                 onClick={onSelect}
-                className="mt-6 inline-flex rounded-md bg-accent px-5 py-3 text-sm text-accent-foreground transition-colors hover:bg-white hover:text-primary"
+                className="trip-meta-text mt-7 inline-flex text-base text-accent transition-colors hover:text-white lg:text-lg"
+                style={{ textTransform: "none" }}
               >
                 {actionLabel}
               </button>
             ) : (
               <a
                 href={link}
-                className="mt-6 inline-flex rounded-md bg-accent px-5 py-3 text-sm text-accent-foreground transition-colors hover:bg-white hover:text-primary"
+                className="trip-meta-text mt-7 inline-flex text-base text-accent transition-colors hover:text-white lg:text-lg"
+                style={{ textTransform: "none" }}
               >
                 {actionLabel}
               </a>

@@ -131,7 +131,7 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
         <Link
           href="/#home"
           aria-label="Nomadabe Travel"
-          className="order-1 flex shrink-0 items-center lg:absolute lg:left-8 lg:top-1/2 lg:-translate-y-1/2"
+          className="order-1 flex shrink-0 items-center lg:absolute lg:left-4 lg:top-4"
         >
           <Image
             src="/nomadabe-logo-cropped.webp"
