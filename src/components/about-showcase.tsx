@@ -302,36 +302,32 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
       {showWork && (
         <Band bg="/hero-winter.webp">
           <Kicker>{copy.work.label}</Kicker>
-          <div className="mt-6 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
-            <div>
-              <h2 className="text-3xl leading-tight sm:text-4xl">{copy.work.title}</h2>
-              <p className="mt-5 text-base leading-relaxed text-[#B8B2A2]">{copy.work.body}</p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {work.map((item, index) => {
-                const Icon = WORK_ICONS[index % WORK_ICONS.length];
-                return (
-                  <motion.div
-                    key={item.title}
-                    initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: true, amount: 0.3 }}
-                    variants={fadeUp}
-                    transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
-                    className="group rounded-3xl border border-white/10 bg-[#0B0A07]/75 p-6 backdrop-blur-md transition-colors hover:border-[rgba(255,106,26,0.5)]"
+          <h2 className="mt-5 max-w-3xl text-3xl leading-tight sm:text-4xl">{copy.work.title}</h2>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#B8B2A2]">{copy.work.body}</p>
+          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 sm:grid-cols-2">
+            {work.map((item, index) => {
+              const Icon = WORK_ICONS[index % WORK_ICONS.length];
+              return (
+                <motion.div
+                  key={item.title}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.3 }}
+                  variants={fadeUp}
+                  transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
+                  className="bg-[#0B0A07]/85 p-7 backdrop-blur-md sm:p-9"
+                >
+                  <span
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full"
+                    style={{ background: "rgba(255,106,26,0.14)" }}
                   >
-                    <span
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full"
-                      style={{ background: "rgba(255,106,26,0.14)" }}
-                    >
-                      <Icon className="h-5 w-5" style={{ color: ACCENT }} />
-                    </span>
-                    <h3 className="mt-5 text-lg leading-snug">{item.title}</h3>
-                    <p className="mt-2.5 text-sm leading-relaxed text-[#B8B2A2]">{item.body}</p>
-                  </motion.div>
-                );
-              })}
-            </div>
+                    <Icon className="h-5 w-5" style={{ color: ACCENT }} />
+                  </span>
+                  <h3 className="mt-5 text-xl leading-snug sm:text-2xl">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-[#B8B2A2]">{item.body}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </Band>
       )}
