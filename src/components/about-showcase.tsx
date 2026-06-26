@@ -77,8 +77,28 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
       />
 
       {/* ───────────────────────── HERO ───────────────────────── */}
-      <div className="relative mx-auto w-full max-w-7xl px-5 pt-28 pb-16 sm:px-8 sm:pt-32 lg:px-12 lg:pt-40 lg:pb-24">
-        <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+      <div className="relative">
+        {/* nature backdrop */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/hero-autumn.webp')" }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(11,10,7,0.93) 0%, rgba(11,10,7,0.74) 48%, rgba(11,10,7,0.5) 100%)",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-48"
+          style={{ background: "linear-gradient(to bottom, rgba(11,10,7,0), #0B0A07)" }}
+        />
+        <div className="relative mx-auto w-full max-w-7xl px-5 pt-28 pb-20 sm:px-8 sm:pt-32 lg:px-12 lg:pt-40 lg:pb-28">
+          <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           {/* left column */}
           <motion.div
             initial="hidden"
@@ -248,6 +268,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
               </div>
             </div>
           </motion.div>
+          </div>
         </div>
       </div>
 
