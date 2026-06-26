@@ -481,9 +481,9 @@ export function parseSiteSettingsFromJson(payload: unknown) {
     teamMembers: Array.isArray(payload.teamMembers)
       ? normalizeTeamMembers(payload.teamMembers)
       : undefined,
-    aboutSection: isRecord(payload.aboutSection)
-      ? normalizeAboutSection(payload.aboutSection)
-      : undefined,
+    // About content is code-managed (the CMS editor was removed), so any legacy
+    // value stored in Supabase is ignored — always fall back to DEFAULT_ABOUT_SECTION.
+    aboutSection: undefined,
   });
 }
 
