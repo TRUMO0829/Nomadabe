@@ -1,25 +1,23 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  AnimatePresence,
-  motion,
-  useMotionValueEvent,
-  useScroll,
-} from "framer-motion";
+import { useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   ArrowUpRight,
   CalendarCheck,
   Compass,
+  Globe,
   Handshake,
+  Mail,
+  MapPin,
+  Minus,
+  Phone,
+  Plus,
   Route,
-  ShieldCheck,
 } from "lucide-react";
 import type {
-  AboutLocaleContent,
-  AboutNavigationItem,
-  AboutSectionId,
   AboutSectionSettings,
   TeamMember,
 } from "@/lib/site-settings";
@@ -32,555 +30,420 @@ type AboutShowcaseProps = {
 
 const WORK_ICONS = [Compass, CalendarCheck, Route, Handshake] as const;
 
+const ACCENT = "#FF6A1A";
+
+const CONTACT = {
+  phones: ["+976 9910 3258", "+976 9918 9317"],
+  email: "info@nomadabe.mn",
+  address: "Minister Tower, Olympic Street 15, Ulaanbaatar",
+  mapHref:
+    "https://www.google.com/maps/place/Minister+Tower/@47.9153226,106.917978,425m/data=!3m2!1e3!4b1!4m6!3m5!1s0x5d9693649ea1b323:0x8bb14a35346801cd!8m2!3d47.9153226!4d106.9205583!16s%2Fg%2F11ss8zbb4r?hl=en-US",
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 26 },
+  show: { opacity: 1, y: 0 },
+};
+
 export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps) {
-  const sectionRef = useRef<HTMLElement>(null);
   const { contentLocale } = useLanguage();
   const copy = aboutSection[contentLocale] ?? aboutSection.mn;
-  const team = useMemo(() => getVisibleOrderedItems(teamMembers), [teamMembers]);
-  const sections = useMemo(() => getVisibleSections(copy, team.length), [copy, team.length]);
-  const firstSection = sections[0]?.id ?? "who";
-  const [selectedSection, setSelectedSection] = useState<AboutSectionId>(firstSection);
-  const activeSection = sections.some((section) => section.id === selectedSection)
-    ? selectedSection
-    : firstSection;
-  const activeIndex = Math.max(0, sections.findIndex((section) => section.id === activeSection));
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
+  const isMn = contentLocale === "mn";
+  const L = (mn: string, en: string) => (isMn ? mn : en);
 
-  const setActiveSectionByProgress = useCallback(
-    (progress: number) => {
-      const nextIndex = getSectionIndexFromProgress(progress, sections.length);
-      const nextSection = sections[nextIndex]?.id ?? firstSection;
+  const team = useMemo(() => visibleOrdered(teamMembers), [teamMembers]);
+  const stats = useMemo(() => visibleOrdered(copy.who.stats), [copy]);
+  const values = useMemo(() => visibleOrdered(copy.values.items), [copy]);
+  const work = useMemo(() => visibleOrdered(copy.work.items), [copy]);
+  const faqItems = useMemo(() => visibleOrdered(copy.faq.items), [copy]);
 
-      setSelectedSection((current) => (current === nextSection ? current : nextSection));
-    },
-    [firstSection, sections]
-  );
-
-  const syncActiveSectionFromScroll = useCallback(() => {
-    const section = sectionRef.current;
-
-    if (!section || typeof window === "undefined") {
-      return;
-    }
-
-    if (!window.matchMedia("(min-width: 1024px)").matches) {
-      const mobilePanels = Array.from(
-        section.querySelectorAll<HTMLElement>("[data-about-mobile-panel]")
-      );
-
-      if (mobilePanels.length === 0) {
-        return;
-      }
-
-      const viewportMarker = window.innerHeight * 0.38;
-      const nextPanel = mobilePanels.reduce((closest, panel) => {
-        const closestDistance = Math.abs(closest.getBoundingClientRect().top - viewportMarker);
-        const panelDistance = Math.abs(panel.getBoundingClientRect().top - viewportMarker);
-
-        return panelDistance < closestDistance ? panel : closest;
-      }, mobilePanels[0]);
-      const nextSection = nextPanel.dataset.aboutSection as AboutSectionId | undefined;
-
-      if (nextSection) {
-        setSelectedSection((current) => (current === nextSection ? current : nextSection));
-      }
-
-      return;
-    }
-
-    const sectionTop = section.getBoundingClientRect().top + window.scrollY;
-    const scrollLength = Math.max(1, section.offsetHeight - window.innerHeight);
-    const progress = (window.scrollY - sectionTop) / scrollLength;
-
-    setActiveSectionByProgress(progress);
-  }, [setActiveSectionByProgress]);
-
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (typeof window !== "undefined" && !window.matchMedia("(min-width: 1024px)").matches) {
-      return;
-    }
-
-    setActiveSectionByProgress(latest);
-  });
-
-  useEffect(() => {
-    syncActiveSectionFromScroll();
-    window.addEventListener("scroll", syncActiveSectionFromScroll, { passive: true });
-    window.addEventListener("resize", syncActiveSectionFromScroll);
-
-    return () => {
-      window.removeEventListener("scroll", syncActiveSectionFromScroll);
-      window.removeEventListener("resize", syncActiveSectionFromScroll);
-    };
-  }, [syncActiveSectionFromScroll]);
-
-  const scrollToSection = (id: AboutSectionId) => {
-    setSelectedSection(id);
-
-    const section = sectionRef.current;
-    if (!section || typeof window === "undefined") {
-      return;
-    }
-
-    if (window.matchMedia("(min-width: 1024px)").matches) {
-      return;
-    }
-
-    section
-      .querySelector<HTMLElement>(`[data-about-section="${id}"]`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const sectionStyle = {
-    "--about-scroll-height": `${Math.max(6.6, sections.length * 2.2) * 100}svh`,
-  } as CSSProperties;
+  const showValues = copy.values.isVisible !== false && values.length > 0;
+  const showWork = copy.work.isVisible !== false && work.length > 0;
+  const showTeam = copy.team.isVisible !== false && team.length > 0;
+  const showFaq = copy.faq.isVisible !== false && faqItems.length > 0;
 
   return (
-    <>
-      <section className="relative flex min-h-[calc(100svh/var(--site-scale))] items-center overflow-hidden bg-[#f7f7f5] px-6 pb-12 pt-24 text-[#11100b] sm:px-10 lg:px-16 lg:pb-16 lg:pt-28 xl:px-20">
-        <AboutBackground tone="dark" />
-        <div className="relative z-10 mx-auto w-full max-w-5xl text-center">
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="trip-meta-text text-xs uppercase tracking-[0.16em] text-[#11100b]/58"
-          >
-            {copy.eyebrow}
-          </motion.p>
+    <section className="relative overflow-hidden bg-[#0B0A07] text-[#FFFDF3]">
+      {/* ambient orange glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-32 right-[-10%] h-[420px] w-[420px] rounded-full blur-[120px]"
+        style={{ background: "rgba(255,106,26,0.22)" }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-0 left-[-12%] h-[360px] w-[360px] rounded-full blur-[120px]"
+        style={{ background: "rgba(255,106,26,0.12)" }}
+      />
 
-          <motion.h1
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto mt-7 max-w-4xl text-balance font-display text-[clamp(2rem,4.4vw,4.75rem)] leading-[0.98] text-[#11100b]"
+      {/* ───────────────────────── HERO ───────────────────────── */}
+      <div className="relative mx-auto w-full max-w-7xl px-5 pt-28 pb-16 sm:px-8 sm:pt-32 lg:px-12 lg:pt-40 lg:pb-24">
+        <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+          {/* left column */}
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.12 } },
+            }}
           >
-            {copy.title}
-          </motion.h1>
+            <motion.span
+              variants={fadeUp}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] tracking-[0.28em] text-[#FFD9BF]"
+              style={{ borderColor: "rgba(255,106,26,0.4)", background: "rgba(255,106,26,0.08)" }}
+            >
+              <MapPin className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+              {L("УЛААНБААТАР · МОНГОЛ · TRAVEL", "ULAANBAATAR · MONGOLIA · TRAVEL")}
+            </motion.span>
 
-          <motion.p
-            initial={{ opacity: 0, y: 18 }}
+            <motion.p
+              variants={fadeUp}
+              transition={{ duration: 0.6 }}
+              className="mt-7 text-xs tracking-[0.34em]"
+              style={{ color: ACCENT }}
+            >
+              {copy.eyebrow}
+            </motion.p>
+
+            <motion.h1
+              variants={fadeUp}
+              transition={{ duration: 0.7 }}
+              className="mt-4 text-4xl leading-[1.02] sm:text-5xl lg:text-6xl xl:text-7xl"
+            >
+              {copy.title}
+            </motion.h1>
+
+            <motion.p
+              variants={fadeUp}
+              transition={{ duration: 0.7 }}
+              className="mt-6 max-w-xl text-base leading-relaxed text-[#D8D2C2] sm:text-lg"
+            >
+              {copy.body}
+            </motion.p>
+
+            <motion.div
+              variants={fadeUp}
+              transition={{ duration: 0.7 }}
+              className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center"
+            >
+              <Link
+                href="/plan"
+                className="group inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium text-[#11100B] transition-transform duration-200 hover:scale-[1.03]"
+                style={{ background: ACCENT }}
+              >
+                {L("Аялал төлөвлөх", "Plan a trip")}
+                <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 px-7 py-3.5 text-sm font-medium text-[#FFFDF3] transition-colors duration-200 hover:border-white/50 hover:bg-white/5"
+              >
+                {L("Аяллууд үзэх", "Explore tours")}
+              </Link>
+            </motion.div>
+          </motion.div>
+
+          {/* right column — info card */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.68, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto mt-8 max-w-3xl text-base leading-8 text-[#39352c]/72 lg:text-xl lg:leading-9"
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="rounded-[28px] border border-white/10 bg-white/[0.04] p-3 backdrop-blur-sm"
           >
-            {copy.body}
-          </motion.p>
+            <div className="relative overflow-hidden rounded-[20px]">
+              <Image
+                src="/nomadabe-hero-panorama.webp"
+                alt="Nomadabe Travel"
+                width={760}
+                height={520}
+                className="h-56 w-full object-cover sm:h-64 lg:h-72"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+              <span
+                className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[10px] tracking-[0.22em] text-[#11100B]"
+                style={{ background: ACCENT }}
+              >
+                <Compass className="h-3.5 w-3.5" />
+                NOMADABE TRAVEL TEAM
+              </span>
+            </div>
+
+            <p className="px-3 pt-5 text-sm leading-relaxed text-[#CFC9B9]">
+              {copy.who.text}
+            </p>
+
+            {/* stats */}
+            {stats.length > 0 && (
+              <div className="mt-5 grid grid-cols-3 gap-2 px-1">
+                {stats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-4 text-center"
+                  >
+                    <div className="text-2xl sm:text-3xl" style={{ color: ACCENT }}>
+                      {stat.value}
+                    </div>
+                    <div className="mt-1 text-[11px] leading-tight text-[#A9A491]">
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* contact grid */}
+            <div className="mt-3 grid grid-cols-1 gap-2 px-1 pb-2 sm:grid-cols-2">
+              <a
+                href={CONTACT.mapHref}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5 transition-colors hover:border-white/25"
+              >
+                <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
+                  <MapPin className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+                  {L("БАЙРШИЛ", "LOCATION")}
+                </div>
+                <div className="mt-1.5 text-[13px] leading-snug text-[#E7E2D4]">
+                  {CONTACT.address}
+                </div>
+              </a>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5">
+                <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
+                  <Phone className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+                  {L("ХОЛБОО", "CONTACT")}
+                </div>
+                <div className="mt-1.5 space-y-0.5 text-[13px] leading-snug text-[#E7E2D4]">
+                  {CONTACT.phones.map((p) => (
+                    <a key={p} href={`tel:${p.replace(/\s/g, "")}`} className="block hover:underline">
+                      {p}
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5">
+                <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
+                  <Mail className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+                  {L("И-МЭЙЛ", "EMAIL")}
+                </div>
+                <a
+                  href={`mailto:${CONTACT.email}`}
+                  className="mt-1.5 block text-[13px] leading-snug text-[#E7E2D4] hover:underline"
+                >
+                  {CONTACT.email}
+                </a>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5">
+                <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
+                  <Globe className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+                  {L("ХЭЛ", "LANGUAGES")}
+                </div>
+                <div className="mt-1.5 text-[13px] leading-snug text-[#E7E2D4]">
+                  {L("Монгол · Англи · Хятад", "Mongolian · English · Chinese")}
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </section>
+      </div>
 
-      <section
-        ref={sectionRef}
-        className="relative min-h-screen overflow-hidden bg-[#f7f2e8] text-[#11100b] lg:h-[calc(var(--about-scroll-height)/var(--site-scale))] lg:overflow-clip"
-        style={sectionStyle}
-      >
-        <AboutBackground />
+      {/* ───────────────────────── VALUES ───────────────────────── */}
+      {showValues && (
+        <Band>
+          <Kicker>{copy.values.label}</Kicker>
+          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 sm:grid-cols-2">
+            {values.map((item, index) => (
+              <motion.div
+                key={item.title}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.3 }}
+                variants={fadeUp}
+                transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
+                className="bg-[#0B0A07] p-7 sm:p-9"
+              >
+                <span className="text-sm tracking-[0.2em]" style={{ color: ACCENT }}>
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3 className="mt-4 text-xl leading-snug sm:text-2xl">{item.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-[#B8B2A2]">{item.body}</p>
+              </motion.div>
+            ))}
+          </div>
+        </Band>
+      )}
 
-        <div className="relative z-10 grid min-h-screen lg:sticky lg:top-0 lg:h-[calc(100svh/var(--site-scale))] lg:grid-cols-[0.72fr_1px_1.28fr]">
-          <div className="flex min-h-[calc(100svh/var(--site-scale))] flex-col justify-center px-6 py-16 sm:px-10 lg:px-16 xl:px-20">
-            <nav className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:max-w-[460px]">
-              {sections.map((section, index) => {
-                const selected = activeSection === section.id;
-
+      {/* ───────────────────────── WORK ───────────────────────── */}
+      {showWork && (
+        <Band>
+          <Kicker>{copy.work.label}</Kicker>
+          <div className="mt-6 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
+            <div>
+              <h2 className="text-3xl leading-tight sm:text-4xl">{copy.work.title}</h2>
+              <p className="mt-5 text-base leading-relaxed text-[#B8B2A2]">{copy.work.body}</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {work.map((item, index) => {
+                const Icon = WORK_ICONS[index % WORK_ICONS.length];
                 return (
-                  <button
-                    key={section.id}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => scrollToSection(section.id)}
-                    className={[
-                      "group relative flex min-h-14 items-center gap-4 rounded-lg border px-4 py-3 text-left transition-all duration-300",
-                      selected
-                        ? "border-[#d7bd6c]/70 bg-white/72 text-[#11100b] shadow-[0_16px_45px_rgba(92,76,45,0.08)]"
-                        : "border-[#d7bd6c]/25 bg-white/36 text-[#4f483c]/68 hover:border-[#d7bd6c]/55 hover:bg-white/62",
-                    ].join(" ")}
+                  <motion.div
+                    key={item.title}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.3 }}
+                    variants={fadeUp}
+                    transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
+                    className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-[rgba(255,106,26,0.5)]"
                   >
                     <span
-                      className={[
-                        "h-2 w-2 rounded-full transition-colors",
-                        selected ? "bg-[#b99631]" : "bg-[#d7bd6c]/35",
-                      ].join(" ")}
-                      aria-hidden="true"
-                    />
-                    <span className="text-[11px] text-[#FFD400]/80">
-                      {String(index + 1).padStart(2, "0")}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full"
+                      style={{ background: "rgba(255,106,26,0.14)" }}
+                    >
+                      <Icon className="h-5 w-5" style={{ color: ACCENT }} />
                     </span>
-                    <span className="min-w-0 flex-1 text-sm uppercase leading-snug tracking-normal">
-                      {section.label}
-                    </span>
-                  </button>
+                    <h3 className="mt-5 text-lg leading-snug">{item.title}</h3>
+                    <p className="mt-2.5 text-sm leading-relaxed text-[#B8B2A2]">{item.body}</p>
+                  </motion.div>
                 );
               })}
-            </nav>
-
-            {copy.cta.isVisible && copy.cta.label && copy.cta.href ? (
-              <a
-                href={copy.cta.href}
-                className="mt-6 inline-flex h-11 w-fit items-center gap-2 rounded-lg border border-[#d7bd6c]/45 bg-white/72 px-4 text-sm text-[#11100b] shadow-[0_16px_40px_rgba(92,76,45,0.08)] transition-colors hover:border-[#b99631]"
-              >
-                {copy.cta.label}
-                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-              </a>
-            ) : null}
-          </div>
-
-          <div className="relative hidden bg-[#c9b16b]/35 lg:block">
-            <motion.div
-              aria-hidden="true"
-              className="absolute left-1/2 top-[16%] h-20 w-px -translate-x-1/2 bg-[#8f7020]/28"
-              animate={{ y: `${activeIndex * 58}px` }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            />
-          </div>
-
-          <div className="relative hidden min-h-[calc(100svh/var(--site-scale))] items-center px-6 py-8 sm:px-10 lg:flex lg:overflow-hidden lg:px-10 xl:px-14">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSection}
-                initial={{ opacity: 0, y: -42 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 56 }}
-                transition={{ duration: 0.64, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-[700px]"
-              >
-                <AboutPanel section={activeSection} copy={copy} team={team} />
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-
-        <div className="relative z-10 space-y-12 px-6 pb-16 sm:px-10 lg:hidden">
-          {sections.map((section, index) => (
-            <section
-              key={section.id}
-              data-about-mobile-panel
-              data-about-section={section.id}
-              className="scroll-mt-24 border-t border-[#d7bd6c]/35 pt-8"
-            >
-              <div className="mb-5 flex items-center gap-3 text-[#11100b]">
-                <span className="h-2 w-2 rounded-full bg-[#b99631]" aria-hidden="true" />
-                <span className="trip-meta-text text-xs uppercase tracking-[0.16em]">
-                  {section.label}
-                </span>
-                <span className="ml-auto text-xs text-[#6b604e]/50">{index + 1}</span>
-              </div>
-              <AboutPanel section={section.id} copy={copy} team={team} />
-            </section>
-          ))}
-        </div>
-      </section>
-    </>
-  );
-}
-
-function AboutBackground({ tone = "light" }: { tone?: "light" | "dark" }) {
-  if (tone === "dark") {
-    return (
-      <>
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-[#f7f7f5]"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute right-[7%] top-[-4%] h-[min(48vw,430px)] w-[min(48vw,430px)] rounded-full bg-[linear-gradient(135deg,#f1f1f1_0%,#c8c8c8_100%)] opacity-95"
-        />
-        <svg
-          aria-hidden="true"
-          className="absolute inset-y-[-16%] right-[7%] h-[132%] w-[58%] min-w-[420px] text-black/78 max-sm:right-[-40%] max-sm:min-w-[520px]"
-          viewBox="0 0 620 860"
-          fill="none"
-          preserveAspectRatio="none"
-        >
-          {Array.from({ length: 18 }).map((_, index) => {
-            const offset = index * 9;
-            const topControl = 206 + offset * 0.32;
-            const midControl = 414 + offset * 0.12;
-            const lowerControl = 662 - offset * 0.18;
-
-            return (
-              <path
-                key={index}
-                d={`M${360 + offset * 0.55} -30 C ${390 + offset} ${topControl}, ${594 - offset * 0.72} ${topControl + 34}, ${468 - offset * 0.18} ${midControl} C ${330 - offset * 0.48} ${574 + offset * 0.18}, ${166 + offset * 0.42} ${500 + offset * 0.22}, ${150 + offset * 0.24} ${lowerControl} C ${132 + offset * 0.3} ${760 - offset * 0.2}, ${350 - offset * 0.54} 796, ${430 - offset * 0.28} 900`}
-                stroke="currentColor"
-                strokeWidth="1"
-                strokeLinecap="round"
-              />
-            );
-          })}
-        </svg>
-        <div
-          aria-hidden="true"
-          className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-[#f7f7f5] via-[#f7f7f5]/86 to-transparent"
-        />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(135deg,#fffdf8_0%,#f7f0e3_48%,#edf4f6_100%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-[0.22] [background-image:linear-gradient(90deg,rgba(143,112,32,0.16)_1px,transparent_1px),linear-gradient(180deg,rgba(143,112,32,0.1)_1px,transparent_1px)] [background-size:96px_96px]"
-      />
-      <svg
-        aria-hidden="true"
-        className="absolute right-[-12%] top-12 h-[70%] w-[58%] text-[#b99631]/20"
-        viewBox="0 0 620 720"
-        fill="none"
-      >
-        <path
-          d="M37 640C149 520 57 401 183 305C286 226 376 306 457 196C516 116 496 66 586 28"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeDasharray="10 18"
-        />
-        <path
-          d="M96 118C208 172 259 65 363 116C466 166 417 282 540 323"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeDasharray="8 14"
-        />
-      </svg>
-    </>
-  );
-}
-
-function AboutPanel({
-  section,
-  copy,
-  team,
-}: {
-  section: AboutSectionId;
-  copy: AboutLocaleContent;
-  team: TeamMember[];
-}) {
-  if (section === "who") {
-    return <WhoPanel copy={copy} />;
-  }
-
-  if (section === "values") {
-    return <ValuesPanel copy={copy} />;
-  }
-
-  if (section === "team") {
-    return <TeamPanel copy={copy} team={team} />;
-  }
-
-  return <WorkPanel copy={copy} />;
-}
-
-function WhoPanel({ copy }: { copy: AboutLocaleContent }) {
-  const stats = getVisibleOrderedItems(copy.who.stats);
-
-  return (
-    <div>
-      <div>
-        <p className="trip-meta-text text-sm uppercase tracking-[0.16em] text-[#FFD400]">
-          {copy.who.label}
-        </p>
-        <motion.p
-          initial={{ opacity: 0, y: 22 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.58, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-4 max-w-xl text-sm leading-7 text-[#39352c]/74 lg:text-base lg:leading-8"
-        >
-          {copy.who.text}
-        </motion.p>
-        <div className="mt-8 grid gap-0">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={`${stat.value}-${stat.label}`}
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.48, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
-              className="grid grid-cols-[minmax(120px,0.58fr)_minmax(0,0.42fr)] items-center gap-5 border-b border-[#d7bd6c]/25 py-5 first:pt-0 last:border-b-0 last:pb-0"
-            >
-              <div className="font-display text-[clamp(4.5rem,8.2vw,7.5rem)] leading-[0.84] text-[#11100b]">
-                {stat.value}
-              </div>
-              <p className="justify-self-end text-right text-sm leading-6 text-[#11100b] lg:max-w-[190px] lg:text-lg lg:leading-7">
-                {stat.label}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ValuesPanel({ copy }: { copy: AboutLocaleContent }) {
-  const values = getVisibleOrderedItems(copy.values.items);
-
-  return (
-    <div>
-      <p className="trip-meta-text text-sm uppercase tracking-[0.16em] text-[#FFD400]">
-        {copy.values.label}
-      </p>
-      <div className="mt-5 grid gap-2.5">
-        <div className="grid gap-2.5">
-          {values.map((value, index) => (
-            <motion.article
-              key={value.title}
-              initial={{ opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
-              className="rounded-lg border border-[#d7bd6c]/25 bg-white/68 p-3.5 shadow-[0_12px_30px_rgba(92,76,45,0.055)] backdrop-blur lg:p-4"
-            >
-              <div className="flex items-center justify-between gap-4 text-[#FFD400]">
-                <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="trip-meta-text text-[11px] tracking-[0.14em]">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-              </div>
-              <h2 className="mt-2.5 text-lg leading-tight text-[#11100b] lg:text-xl">
-                {value.title}
-              </h2>
-              <p className="mt-1.5 max-w-2xl text-xs leading-5 text-[#39352c]/68 lg:text-sm lg:leading-6">
-                {value.body}
-              </p>
-            </motion.article>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TeamPanel({ copy, team }: { copy: AboutLocaleContent; team: TeamMember[] }) {
-  return (
-    <div>
-      <p className="trip-meta-text text-sm uppercase tracking-[0.16em] text-[#FFD400]">
-        {copy.team.label}
-      </p>
-      <div className="mt-7 grid gap-5 xl:grid-cols-2">
-        {team.map((member, index) => (
-          <motion.article
-            key={member.id}
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
-            className="group relative min-h-[390px] overflow-hidden rounded-lg border border-white/70 bg-white shadow-[0_20px_60px_rgba(92,76,45,0.1)]"
-          >
-            {member.image ? (
-              <div
-                role="img"
-                aria-label={member.imageAlt || member.name}
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.03]"
-                style={{ backgroundImage: `url('${member.image}')` }}
-              />
-            ) : (
-              <div className="absolute inset-0 bg-[linear-gradient(145deg,#fffdf8,#e8dcc5)]" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/12 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 text-white lg:p-7">
-              <p className="text-2xl leading-tight lg:text-3xl">{member.name}</p>
-              <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#f6d36c]">
-                {member.role}
-              </p>
-              {member.bio ? (
-                <p className="mt-4 text-sm leading-7 text-white/76">{member.bio}</p>
-              ) : null}
             </div>
-            {!member.image ? (
-              <div className="absolute left-6 top-6 text-[clamp(4rem,7vw,7rem)] leading-none text-[#b99631]/26">
-                {String(index + 1).padStart(2, "0")}
-              </div>
-            ) : null}
-          </motion.article>
-        ))}
-      </div>
-    </div>
+          </div>
+        </Band>
+      )}
+
+      {/* ───────────────────────── TEAM ───────────────────────── */}
+      {showTeam && (
+        <Band>
+          <Kicker>{copy.team.label}</Kicker>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {team.map((member, index) => (
+              <motion.div
+                key={member.id}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.3 }}
+                variants={fadeUp}
+                transition={{ duration: 0.5, delay: (index % 3) * 0.08 }}
+                className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]"
+              >
+                <div className="relative aspect-[4/5] w-full overflow-hidden">
+                  {member.image ? (
+                    <Image
+                      src={member.image}
+                      alt={member.imageAlt || member.name}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="flex h-full w-full items-center justify-center text-5xl"
+                      style={{ background: "rgba(255,106,26,0.12)", color: ACCENT }}
+                    >
+                      {member.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg">{member.name}</h3>
+                  <p className="mt-1 text-sm" style={{ color: ACCENT }}>
+                    {member.role}
+                  </p>
+                  {member.bio && (
+                    <p className="mt-2.5 text-sm leading-relaxed text-[#B8B2A2]">{member.bio}</p>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </Band>
+      )}
+
+      {/* ───────────────────────── FAQ ───────────────────────── */}
+      {showFaq && (
+        <Band>
+          <Kicker>{copy.faq.eyebrow}</Kicker>
+          <h2 className="mt-5 text-3xl leading-tight sm:text-4xl">{copy.faq.title}</h2>
+          {copy.faq.subtitle && (
+            <p className="mt-3 text-base text-[#B8B2A2]">{copy.faq.subtitle}</p>
+          )}
+          <div className="mt-9 divide-y divide-white/10 overflow-hidden rounded-3xl border border-white/10">
+            {faqItems.map((item, index) => (
+              <FaqRow key={item.question} item={item} defaultOpen={index === 0} />
+            ))}
+          </div>
+        </Band>
+      )}
+    </section>
   );
 }
 
-function WorkPanel({ copy }: { copy: AboutLocaleContent }) {
-  const workItems = getVisibleOrderedItems(copy.work.items);
-
+function Band({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      <p className="trip-meta-text text-sm uppercase tracking-[0.16em] text-[#FFD400]">
-        {copy.work.label}
-      </p>
-      <h2 className="mt-3 max-w-2xl text-balance font-display text-2xl leading-tight text-[#11100b] lg:text-3xl">
-        {copy.work.title}
-      </h2>
-      <motion.p
-        initial={{ opacity: 0, y: 22 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.58, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-        className="mt-3 max-w-xl text-xs leading-6 text-[#39352c]/68 lg:text-sm"
-      >
-        {copy.work.body}
-      </motion.p>
-      <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
-        {workItems.map((item, index) => {
-          const Icon = WORK_ICONS[index % WORK_ICONS.length];
-
-          return (
-            <motion.article
-              key={item.title}
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.48, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
-              className="min-h-28 rounded-lg border border-[#d7bd6c]/25 bg-white/68 p-3.5 shadow-[0_12px_30px_rgba(92,76,45,0.055)] backdrop-blur"
-            >
-              <div className="flex items-center justify-between text-[#FFD400]">
-                <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="trip-meta-text text-[11px] tracking-[0.14em]">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-              </div>
-              <h3 className="mt-3 text-base leading-tight text-[#11100b] lg:text-lg">
-                {item.title}
-              </h3>
-              <p className="mt-1.5 text-xs leading-5 text-[#39352c]/68 lg:text-sm">
-                {item.body}
-              </p>
-            </motion.article>
-          );
-        })}
+    <div className="relative border-t border-white/[0.07]">
+      <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+        {children}
       </div>
     </div>
   );
 }
 
-function getVisibleSections(copy: AboutLocaleContent, teamCount: number): AboutNavigationItem[] {
-  const sectionVisibility: Record<AboutSectionId, boolean> = {
-    who: copy.who.isVisible !== false,
-    values: copy.values.isVisible !== false && getVisibleOrderedItems(copy.values.items).length > 0,
-    team: copy.team.isVisible !== false && teamCount > 0,
-    work: copy.work.isVisible !== false && getVisibleOrderedItems(copy.work.items).length > 0,
-  };
-
-  return getVisibleOrderedItems(copy.navigation).filter((section) => sectionVisibility[section.id]);
+function Kicker({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      className="inline-flex items-center gap-2.5 text-xs tracking-[0.3em]"
+      style={{ color: ACCENT }}
+    >
+      <span className="h-px w-8" style={{ background: ACCENT }} />
+      {children}
+    </span>
+  );
 }
 
-function getSectionIndexFromProgress(progress: number, sectionCount: number) {
-  if (sectionCount <= 1) {
-    return 0;
-  }
-
-  const clampedProgress = Math.min(0.999, Math.max(0, progress));
-  const segmentSize = 1 / (sectionCount + 0.8);
-
-  return Math.min(sectionCount - 1, Math.floor(clampedProgress / segmentSize));
+function FaqRow({
+  item,
+  defaultOpen,
+}: {
+  item: { question: string; answer: string };
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(Boolean(defaultOpen));
+  return (
+    <div className="bg-[#0B0A07]">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left transition-colors hover:bg-white/[0.02]"
+      >
+        <span className="text-base sm:text-lg">{item.question}</span>
+        <span
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+          style={{ background: "rgba(255,106,26,0.14)" }}
+        >
+          {open ? (
+            <Minus className="h-4 w-4" style={{ color: ACCENT }} />
+          ) : (
+            <Plus className="h-4 w-4" style={{ color: ACCENT }} />
+          )}
+        </span>
+      </button>
+      <motion.div
+        initial={false}
+        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="overflow-hidden"
+      >
+        <p className="px-6 pb-6 text-sm leading-relaxed text-[#B8B2A2]">{item.answer}</p>
+      </motion.div>
+    </div>
+  );
 }
 
-function getVisibleOrderedItems<T extends { order?: number; isVisible?: boolean }>(items: T[]) {
+function visibleOrdered<T extends { order?: number; isVisible?: boolean }>(items: T[]) {
   return [...items]
     .filter((item) => item.isVisible !== false)
     .sort((left, right) => (left.order ?? 999) - (right.order ?? 999));
