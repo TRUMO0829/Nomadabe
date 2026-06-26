@@ -139,10 +139,10 @@ export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps
             width={574}
             height={615}
             priority
-            sizes="(min-width: 1024px) 80px, 64px"
+            sizes="(min-width: 1024px) 160px, 128px"
             className={cn(
               "w-auto object-contain transition-all duration-300",
-              "h-12 lg:h-14",
+              "h-24 lg:h-28",
               useLightHeader
                 ? "drop-shadow-[0_2px_12px_rgba(0,0,0,0.88)]"
                 : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"

@@ -18,7 +18,7 @@ type HeroProps = {
 
 export function Hero({ settings }: HeroProps) {
   const { t } = useLanguage();
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const [active, setActive] = useState(0);
   const [ready, setReady] = useState(false);
 
@@ -29,17 +29,22 @@ export function Hero({ settings }: HeroProps) {
   const overlayOpacity = settings?.heroOverlayOpacity ?? 0.36;
   const poster = settings?.heroImage || "/nomadabe-hero-panorama.webp";
 
-  // Load + autoplay the next clip whenever the active index changes; the
-  // clips cycle in order and loop. Muted autoplay is allowed by browsers.
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) {
-      return;
-    }
+  const total = HERO_VIDEOS.length;
+  const nextIndex = (active + 1) % total;
 
-    video.load();
-    const tryPlay = () => video.play().catch(() => {});
-    tryPlay();
+  // Play the active clip from the start; pause/rewind the others. The next clip
+  // is already preloaded (see `preload` below) so the crossfade never goes dark.
+  useEffect(() => {
+    setReady(false);
+    videoRefs.current.forEach((video, index) => {
+      if (!video) return;
+      if (index === active) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
   }, [active]);
 
   return (
@@ -49,28 +54,42 @@ export function Hero({ settings }: HeroProps) {
     >
       <span id="home" className="absolute left-0 top-0" aria-hidden="true" />
 
-      {/* Poster shows instantly on entry, then the video fades in once it can play. */}
+      {/* Poster bridges the brief moment before the active clip can play — a
+          bright image, never a black frame. */}
       <div
         aria-hidden="true"
         className="absolute inset-0 scale-105 bg-cover bg-center"
         style={{ backgroundImage: `url('${poster}')` }}
       />
-      <motion.video
-        ref={videoRef}
-        aria-hidden="true"
-        autoPlay
-        muted
-        playsInline
-        preload="auto"
-        poster={poster}
-        src={HERO_VIDEOS[active]}
-        onCanPlay={() => setReady(true)}
-        onEnded={() => setActive((index) => (index + 1) % HERO_VIDEOS.length)}
-        initial={false}
-        animate={{ opacity: ready ? 1 : 0 }}
-        transition={{ duration: 1.1, ease: "easeInOut" }}
-        className="absolute inset-0 h-full w-full scale-105 object-cover"
-      />
+
+      {/* All clips are stacked; only the active one is visible. The next clip is
+          preloaded so it is already buffered before it fades in. */}
+      {HERO_VIDEOS.map((src, index) => {
+        const isActive = index === active;
+        return (
+          <video
+            key={src}
+            ref={(element) => {
+              videoRefs.current[index] = element;
+            }}
+            aria-hidden="true"
+            muted
+            playsInline
+            autoPlay={index === 0}
+            preload={index === active || index === nextIndex ? "auto" : "metadata"}
+            poster={poster}
+            src={src}
+            onCanPlay={() => {
+              if (isActive) setReady(true);
+            }}
+            onEnded={() => {
+              if (isActive) setActive((current) => (current + 1) % total);
+            }}
+            className="absolute inset-0 h-full w-full scale-105 object-cover transition-opacity duration-1000 ease-in-out"
+            style={{ opacity: isActive && ready ? 1 : 0 }}
+          />
+        );
+      })}
 
       <div
         className="absolute inset-0"
@@ -85,7 +104,7 @@ export function Hero({ settings }: HeroProps) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.1 }}
-          className="hero-heading max-w-5xl whitespace-pre-line text-2xl font-black leading-tight sm:text-4xl lg:text-5xl xl:text-6xl"
+          className="hero-heading max-w-5xl whitespace-pre-line text-xl font-black leading-tight sm:text-3xl lg:text-4xl xl:text-5xl"
           style={{ color: textColor }}
         >
           <span className="hero-title-mark">{heading}</span>
