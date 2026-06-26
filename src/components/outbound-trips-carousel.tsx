@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CardsParallax, type iCardItem } from "@/components/ui/scroll-cards";
+import Image from "next/image";
+import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react";
 import { getAdventureText, type Adventure } from "@/lib/adventures";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
-import { TravelSectionIntro } from "./travel-section-intro";
+
+const ACCENT = "#FF6A1A";
 
 const COPY = {
   mn: {
@@ -246,37 +248,110 @@ export function OutboundTripsCarousel({
           businessSupport: [],
           nextDeparture: "",
         };
-    const card: iCardItem = {
-      title,
-      description: adventureForModal.summary,
-      tag: country,
-      src: option.image,
-      link: "#",
-      color: "#11100B",
-      textColor: "#FFFDF3",
-      actionLabel: copy.details,
-    };
-
-    return { adventure: adventureForModal, card };
+    return adventureForModal;
   });
 
   return (
-    <>
-      <TravelSectionIntro
-        title={copy.eyebrow}
-        titleClassName="domestic-section-title"
-        variant="plain"
+    <section className="relative overflow-hidden bg-[#0B0A07] text-[#FFFDF3]">
+      {/* ambient orange glow (matches the About section) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 right-[-8%] h-[420px] w-[420px] rounded-full blur-[130px]"
+        style={{ background: "rgba(255,106,26,0.18)" }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-0 left-[-10%] h-[360px] w-[360px] rounded-full blur-[130px]"
+        style={{ background: "rgba(255,106,26,0.1)" }}
       />
 
-      <section className="bg-card">
-        <CardsParallax
-          items={cardRows.map((row) => row.card)}
-          onItemSelect={(_, index) => {
-            setSelected(cardRows[index]?.adventure ?? null);
-          }}
-        />
-        <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
-      </section>
-    </>
+      <div className="relative mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
+        <span
+          className="inline-flex items-center gap-2.5 text-xs tracking-[0.3em]"
+          style={{ color: ACCENT }}
+        >
+          <span className="h-px w-8" style={{ background: ACCENT }} />
+          {copy.eyebrow}
+        </span>
+        <h2 className="mt-5 max-w-2xl text-3xl leading-tight sm:text-4xl lg:text-5xl">
+          {copy.title}
+        </h2>
+
+        <div className="mt-12 grid gap-5 lg:grid-cols-2">
+          {cardRows.map((adventure, index) => {
+            const text = getAdventureText(adventure, contentLocale);
+            const featured = index === 0;
+            const price =
+              adventure.price > 0
+                ? `${adventure.price.toLocaleString()} ${adventure.currency}`
+                : null;
+
+            return (
+              <button
+                key={adventure.id}
+                type="button"
+                onClick={() => setSelected(adventure)}
+                className={[
+                  "group relative block overflow-hidden rounded-[28px] border border-white/10 text-left transition-colors hover:border-[rgba(255,106,26,0.5)]",
+                  featured
+                    ? "h-[clamp(20rem,40vw,30rem)] lg:col-span-2"
+                    : "h-[clamp(18rem,30vw,26rem)]",
+                ].join(" ")}
+              >
+                <Image
+                  src={adventure.image}
+                  alt={text.title}
+                  fill
+                  sizes={featured ? "100vw" : "(max-width: 1024px) 100vw, 50vw"}
+                  className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />
+
+                {price ? (
+                  <span className="trip-meta-text absolute right-5 top-5 rounded-full bg-white/95 px-4 py-2 text-xs text-[#11100b] backdrop-blur">
+                    {price}
+                  </span>
+                ) : null}
+
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+                  <div className="trip-meta-text flex items-center gap-3 text-xs uppercase tracking-[0.22em] text-white/80">
+                    <span style={{ color: ACCENT }}>{text.country}</span>
+                  </div>
+                  <h3
+                    className="mt-3 max-w-[20ch] text-balance text-2xl leading-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.5)] sm:text-3xl"
+                    style={{ textTransform: "none" }}
+                  >
+                    {text.title}
+                  </h3>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2.5">
+                    <span className="trip-meta-text inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs text-white backdrop-blur">
+                      <CalendarDays className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+                      {adventure.days} {copy.day}
+                    </span>
+                    {text.location ? (
+                      <span className="trip-meta-text inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs text-white backdrop-blur">
+                        <MapPin className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+                        {text.location}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <span
+                    className="trip-meta-text mt-5 inline-flex items-center gap-2 text-sm"
+                    style={{ color: ACCENT, textTransform: "none" }}
+                  >
+                    {copy.details}
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
+    </section>
   );
 }
