@@ -248,8 +248,8 @@ export function OutboundTripsCarousel({
         };
     const card: iCardItem = {
       title,
-      description: "",
-      tag: "",
+      description: adventureForModal.summary,
+      tag: country,
       src: option.image,
       link: "#",
       color: "#11100B",

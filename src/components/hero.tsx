@@ -45,6 +45,13 @@ export function Hero({ settings }: HeroProps) {
       className="home-hero-screen relative flex items-center justify-center overflow-hidden bg-primary px-5 py-24 sm:px-8 lg:px-12"
     >
       <span id="home" className="absolute left-0 top-0" aria-hidden="true" />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 scale-105 bg-cover bg-center"
+        style={{
+          backgroundImage: `url('${heroImages[0]}')`,
+        }}
+      />
       {heroImages.map((image, index) => (
         <motion.div
           key={image}
@@ -61,7 +68,7 @@ export function Hero({ settings }: HeroProps) {
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(to bottom, rgba(0,0,0,${overlayOpacity * 0.16}), rgba(0,0,0,${overlayOpacity * 0.06}), rgba(0,0,0,${overlayOpacity * 0.36}))`,
+          background: `linear-gradient(to bottom, rgba(0,0,0,${overlayOpacity * 0.34}), rgba(0,0,0,${overlayOpacity * 0.16}), rgba(0,0,0,${overlayOpacity * 0.46}))`,
         }}
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.04)_90%)]" />

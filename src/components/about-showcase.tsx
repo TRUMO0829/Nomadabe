@@ -117,7 +117,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
     };
   }, [syncActiveSectionFromScroll]);
 
-  const scrollToSection = (index: number, id: AboutSectionId) => {
+  const scrollToSection = (id: AboutSectionId) => {
     setSelectedSection(id);
 
     const section = sectionRef.current;
@@ -125,19 +125,13 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
       return;
     }
 
-    if (!window.matchMedia("(min-width: 1024px)").matches) {
-      section
-        .querySelector<HTMLElement>(`[data-about-section="${id}"]`)
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (window.matchMedia("(min-width: 1024px)").matches) {
       return;
     }
 
-    const sectionTop = section.getBoundingClientRect().top + window.scrollY;
-    const availableScroll = Math.max(0, section.offsetHeight - window.innerHeight);
-    const targetProgress = getSectionTargetProgress(index, sections.length);
-    const targetScroll = sectionTop + availableScroll * targetProgress;
-
-    window.scrollTo({ top: targetScroll, behavior: "smooth" });
+    section
+      .querySelector<HTMLElement>(`[data-about-section="${id}"]`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const sectionStyle = {
@@ -146,7 +140,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 
   return (
     <>
-      <section className="relative flex min-h-[calc(92svh/var(--site-scale))] items-end overflow-hidden bg-[#120905] px-6 pb-16 pt-28 text-[#fff7ec] sm:px-10 lg:px-16 lg:pb-24 lg:pt-36 xl:px-20">
+      <section className="relative flex min-h-[calc(100svh/var(--site-scale))] items-center overflow-hidden bg-[#f7f7f5] px-6 pb-12 pt-24 text-[#11100b] sm:px-10 lg:px-16 lg:pb-16 lg:pt-28 xl:px-20">
         <AboutBackground tone="dark" />
         <div className="relative z-10 mx-auto w-full max-w-5xl text-center">
           <motion.p
@@ -154,7 +148,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="trip-meta-text text-xs uppercase tracking-[0.16em] text-[#FFD400]"
+            className="trip-meta-text text-xs uppercase tracking-[0.16em] text-[#11100b]/58"
           >
             {copy.eyebrow}
           </motion.p>
@@ -164,7 +158,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto mt-7 max-w-4xl text-balance font-display text-[clamp(2.45rem,5.6vw,5.9rem)] leading-[0.96] text-[#fff7ec]"
+            className="mx-auto mt-7 max-w-4xl text-balance font-display text-[clamp(2rem,4.4vw,4.75rem)] leading-[0.98] text-[#11100b]"
           >
             {copy.title}
           </motion.h1>
@@ -174,7 +168,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.68, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto mt-8 max-w-3xl text-base leading-8 text-[#f4d9b5]/78 lg:text-xl lg:leading-9"
+            className="mx-auto mt-8 max-w-3xl text-base leading-8 text-[#39352c]/72 lg:text-xl lg:leading-9"
           >
             {copy.body}
           </motion.p>
@@ -199,7 +193,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                     key={section.id}
                     type="button"
                     aria-pressed={selected}
-                    onClick={() => scrollToSection(index, section.id)}
+                    onClick={() => scrollToSection(section.id)}
                     className={[
                       "group relative flex min-h-14 items-center gap-4 rounded-lg border px-4 py-3 text-left transition-all duration-300",
                       selected
@@ -291,37 +285,40 @@ function AboutBackground({ tone = "light" }: { tone?: "light" | "dark" }) {
       <>
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,129,35,0.28),transparent_34%),linear-gradient(135deg,#090604_0%,#1b0c05_48%,#3a1607_100%)]"
+          className="absolute inset-0 bg-[#f7f7f5]"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(90deg,rgba(255,169,77,0.32)_1px,transparent_1px),linear-gradient(180deg,rgba(255,169,77,0.18)_1px,transparent_1px)] [background-size:96px_96px]"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 via-[#160904]/44 to-transparent"
+          className="absolute right-[7%] top-[-4%] h-[min(48vw,430px)] w-[min(48vw,430px)] rounded-full bg-[linear-gradient(135deg,#f1f1f1_0%,#c8c8c8_100%)] opacity-95"
         />
         <svg
           aria-hidden="true"
-          className="absolute right-[-12%] top-12 h-[70%] w-[58%] text-[#ff9a2f]/28"
-          viewBox="0 0 620 720"
+          className="absolute inset-y-[-16%] right-[7%] h-[132%] w-[58%] min-w-[420px] text-black/78 max-sm:right-[-40%] max-sm:min-w-[520px]"
+          viewBox="0 0 620 860"
           fill="none"
+          preserveAspectRatio="none"
         >
-          <path
-            d="M37 640C149 520 57 401 183 305C286 226 376 306 457 196C516 116 496 66 586 28"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeDasharray="10 18"
-          />
-          <path
-            d="M96 118C208 172 259 65 363 116C466 166 417 282 540 323"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeDasharray="8 14"
-          />
+          {Array.from({ length: 18 }).map((_, index) => {
+            const offset = index * 9;
+            const topControl = 206 + offset * 0.32;
+            const midControl = 414 + offset * 0.12;
+            const lowerControl = 662 - offset * 0.18;
+
+            return (
+              <path
+                key={index}
+                d={`M${360 + offset * 0.55} -30 C ${390 + offset} ${topControl}, ${594 - offset * 0.72} ${topControl + 34}, ${468 - offset * 0.18} ${midControl} C ${330 - offset * 0.48} ${574 + offset * 0.18}, ${166 + offset * 0.42} ${500 + offset * 0.22}, ${150 + offset * 0.24} ${lowerControl} C ${132 + offset * 0.3} ${760 - offset * 0.2}, ${350 - offset * 0.54} 796, ${430 - offset * 0.28} 900`}
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinecap="round"
+              />
+            );
+          })}
         </svg>
+        <div
+          aria-hidden="true"
+          className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-[#f7f7f5] via-[#f7f7f5]/86 to-transparent"
+        />
       </>
     );
   }
@@ -581,16 +578,6 @@ function getSectionIndexFromProgress(progress: number, sectionCount: number) {
   const segmentSize = 1 / (sectionCount + 0.8);
 
   return Math.min(sectionCount - 1, Math.floor(clampedProgress / segmentSize));
-}
-
-function getSectionTargetProgress(index: number, sectionCount: number) {
-  if (sectionCount <= 1) {
-    return 0;
-  }
-
-  const segmentSize = 1 / (sectionCount + 0.8);
-
-  return Math.min(0.92, Math.max(0, index * segmentSize));
 }
 
 function getVisibleOrderedItems<T extends { order?: number; isVisible?: boolean }>(items: T[]) {

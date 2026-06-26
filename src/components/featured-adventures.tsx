@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   type FormEvent,
   type MouseEvent as ReactMouseEvent,
@@ -29,7 +30,6 @@ import {
   type AdventureTranslations,
 } from "@/lib/adventures";
 import { cn } from "@/lib/utils";
-import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 import { OUTBOUND_OPTIONS } from "./outbound-trips-carousel";
 
@@ -216,6 +216,10 @@ function getAdventureSearchText(adventure: Adventure) {
       ...localizedParts,
     ].join(" ")
   );
+}
+
+function getAdventureDetailsHref(adventure: Adventure) {
+  return `/tours/${encodeURIComponent(adventure.slug)}`;
 }
 
 const SECTION_COPY = {
@@ -713,22 +717,19 @@ function DestinationDragCarousel({
   title,
   resultLabel,
   adventures,
-  isSearchActive,
   locale,
   dayLabel,
   detailsLabel,
-  onSelect,
 }: {
   id: string;
   title: string;
   resultLabel: string;
   adventures: Adventure[];
-  isSearchActive: boolean;
   locale: keyof typeof SECTION_COPY;
   dayLabel: string;
   detailsLabel: string;
-  onSelect: (adventure: Adventure) => void;
 }) {
+  const router = useRouter();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef({
@@ -826,9 +827,13 @@ function DestinationDragCarousel({
     }
 
     let velocity = dragRef.current.velocity;
-    let lastTime = performance.now();
+    let lastTime = 0;
 
     const step = (time: number) => {
+      if (lastTime === 0) {
+        lastTime = time;
+      }
+
       const elapsed = time - lastTime;
       lastTime = time;
 
@@ -866,7 +871,7 @@ function DestinationDragCarousel({
     dragRef.current.active = true;
     dragRef.current.startX = event.clientX;
     dragRef.current.lastX = event.clientX;
-    dragRef.current.lastTime = performance.now();
+    dragRef.current.lastTime = event.timeStamp;
     dragRef.current.velocity = 0;
     dragRef.current.didDrag = false;
     setIsDragging(true);
@@ -882,7 +887,7 @@ function DestinationDragCarousel({
       return;
     }
 
-    const now = performance.now();
+    const now = event.timeStamp;
     const deltaX = event.clientX - dragRef.current.lastX;
     const elapsed = Math.max(1, now - dragRef.current.lastTime);
     const deltaScroll = -deltaX;
@@ -936,6 +941,11 @@ function DestinationDragCarousel({
     scroller.scrollLeft = nextScroll;
   }
 
+  function openAdventureDetails(adventure: Adventure) {
+    stopMomentum();
+    router.push(getAdventureDetailsHref(adventure));
+  }
+
   function handleCardClick(
     event: ReactMouseEvent<HTMLElement>,
     adventure: Adventure
@@ -947,7 +957,7 @@ function DestinationDragCarousel({
       return;
     }
 
-    onSelect(adventure);
+    openAdventureDetails(adventure);
   }
 
   if (adventureCount === 0) {
@@ -960,7 +970,7 @@ function DestinationDragCarousel({
       className="overflow-hidden bg-white py-10 lg:py-12"
     >
       <div className="text-[#050505]">
-        <div className="tours-list-copy mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
+        <div className="tours-list-copy mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
           <h2 className="section-header-title tours-list-title max-w-[13ch] text-balance text-black">
             {title}
           </h2>
@@ -972,8 +982,7 @@ function DestinationDragCarousel({
         <div
           ref={scrollerRef}
           className={cn(
-            "mt-8 flex w-full cursor-grab snap-x snap-mandatory gap-4 overflow-x-auto pb-4 active:cursor-grabbing sm:gap-5 lg:mt-10 lg:gap-6",
-            isSearchActive && "mx-auto max-w-7xl px-6 sm:px-8 lg:px-10",
+            "mx-auto mt-8 flex w-full max-w-[1500px] cursor-grab snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 active:cursor-grabbing sm:scroll-px-6 sm:gap-5 sm:px-6 lg:mt-10 lg:scroll-px-8 lg:gap-6 lg:px-8",
             "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
             "[-webkit-overflow-scrolling:touch] [touch-action:pan-x]",
             isDragging && "cursor-grabbing select-none"
@@ -1024,7 +1033,7 @@ function DestinationDragCarousel({
                       onClick={(event) => {
                         event.stopPropagation();
                         dragRef.current.didDrag = false;
-                        onSelect(adventure);
+                        openAdventureDetails(adventure);
                       }}
                       className="inline-flex min-h-10 items-center justify-center gap-2 bg-accent px-4 text-[10px] uppercase text-accent-foreground"
                     >
@@ -1046,7 +1055,6 @@ export function FeaturedAdventures({
   adventures = ADVENTURES,
   beforeList,
 }: FeaturedAdventuresProps) {
-  const [selected, setSelected] = useState<Adventure | null>(null);
   const [scope, setScope] = useState<TripScope>("all");
   const [sortMode] = useState<SortMode>("recommended");
   const [query, setQuery] = useState("");
@@ -1276,7 +1284,6 @@ export function FeaturedAdventures({
       },
     ].filter((group) => group.adventures.length > 0);
   }, [filteredAdventures, sectionCopy.domestic, sectionCopy.outbound]);
-  const isSearchActive = query.trim().length > 0;
   const today = useMemo(() => startOfDay(new Date()), []);
   const calendarStartMonth = useMemo(() => startOfMonth(new Date()), []);
   const visibleCalendarMonth = useMemo(
@@ -1617,11 +1624,9 @@ export function FeaturedAdventures({
               title={group.title}
               resultLabel={sectionCopy.result}
               adventures={group.adventures}
-              isSearchActive={isSearchActive}
               locale={contentLocale}
               dayLabel={t.featured.days}
               detailsLabel={t.featured.details}
-              onSelect={setSelected}
             />
           ))
         ) : (
@@ -1634,8 +1639,6 @@ export function FeaturedAdventures({
       </div>
 
       {beforeList}
-
-      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
     </section>
   );
 }

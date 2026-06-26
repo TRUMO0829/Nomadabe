@@ -78,7 +78,52 @@ type DomesticTripCardProps = {
 const PANEL_GAP_VW = 0;
 const PANEL_SCROLL_VH_PER_CARD = 180;
 const PANEL_END_BUFFER_VH = 280;
-const PANEL_FULLY_VISIBLE_HOLD_VH = 180;
+const PANEL_FULLY_VISIBLE_HOLD_RATIO = 0.42;
+
+function getPanelXOffset(panelIndex: number) {
+  if (panelIndex === 0) {
+    return "calc(0vw / var(--site-scale))";
+  }
+
+  return `calc(${-panelIndex * (100 + PANEL_GAP_VW)}vw / var(--site-scale))`;
+}
+
+function buildPanelTrackStops(panelCount: number) {
+  if (panelCount <= 1) {
+    return {
+      inputRange: [0, 1],
+      outputRange: [
+        "calc(0vw / var(--site-scale))",
+        "calc(0vw / var(--site-scale))",
+      ],
+    };
+  }
+
+  const inputRange = [0];
+  const outputRange = [getPanelXOffset(0)];
+  const segmentSize = 1 / panelCount;
+
+  for (let index = 0; index < panelCount; index += 1) {
+    const panelOffset = getPanelXOffset(index);
+    const holdEnd =
+      index === panelCount - 1
+        ? 1
+        : index * segmentSize +
+          segmentSize * PANEL_FULLY_VISIBLE_HOLD_RATIO;
+
+    inputRange.push(holdEnd);
+    outputRange.push(panelOffset);
+
+    if (index < panelCount - 1) {
+      const nextPanelStart = (index + 1) * segmentSize;
+
+      inputRange.push(nextPanelStart);
+      outputRange.push(getPanelXOffset(index + 1));
+    }
+  }
+
+  return { inputRange, outputRange };
+}
 
 function DomesticTripCard({
   adventure,
@@ -108,18 +153,23 @@ function DomesticTripCard({
       </div>
 
       <div className="flex h-full min-w-0 items-center bg-white px-6 py-10 text-[#11100b] sm:px-10 lg:px-[clamp(3rem,5vw,6rem)]">
-        <div className="min-w-0 max-w-[min(34rem,calc(50vw-7rem))]">
-          <h3 className="trip-header-title trip-header-title--hero domestic-trip-title max-w-[14ch] text-balance text-[#11100b]">
+        <div className="min-w-0 max-w-[min(35rem,calc(50vw-7rem))]">
+          <h3
+            className="max-w-[15ch] text-balance text-[clamp(2rem,3.15vw,3.05rem)] leading-[1.12] text-[#11100b]"
+            style={{ textTransform: "none" }}
+          >
             {text.title}
           </h3>
-          <p className="trip-copy-text mt-5 max-w-full text-sm leading-7 text-[#11100b] sm:text-base lg:text-lg">
+          <div className="mt-3 h-px w-full max-w-[24rem] bg-[#11100b]/72" />
+          <p className="trip-copy-text mt-6 max-w-full text-sm leading-7 text-[#11100b] sm:text-base lg:text-lg">
             {text.summary}
           </p>
 
           <button
             type="button"
             onClick={() => onSelect(adventure)}
-            className="trip-meta-text mt-8 inline-flex min-h-12 items-center justify-center rounded-full border border-accent bg-accent px-7 text-sm uppercase text-accent-foreground transition-colors hover:bg-white hover:text-[#11100b]"
+            className="trip-meta-text mt-7 inline-flex items-center text-base text-accent transition-colors hover:text-[#11100b]"
+            style={{ textTransform: "none" }}
           >
             {copy.details}
           </button>
@@ -144,24 +194,13 @@ export function TravelOptionsCarousel({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
-  const maxDesktopShiftVw =
-    Math.max(0, domesticOptions.length - 1) * (100 + PANEL_GAP_VW);
-  const desktopScrollDistanceVh = Math.max(
-    1,
-    domesticOptions.length * PANEL_SCROLL_VH_PER_CARD + PANEL_END_BUFFER_VH - 100
-  );
-  const desktopTrackSettleProgress = Math.max(
-    0.5,
-    Math.min(0.9, 1 - PANEL_FULLY_VISIBLE_HOLD_VH / desktopScrollDistanceVh)
+  const { inputRange, outputRange } = buildPanelTrackStops(
+    domesticOptions.length
   );
   const desktopTrackX = useTransform(
     scrollYProgress,
-    [0, desktopTrackSettleProgress, 1],
-    [
-      "calc(0vw / var(--site-scale))",
-      `calc(${-maxDesktopShiftVw}vw / var(--site-scale))`,
-      `calc(${-maxDesktopShiftVw}vw / var(--site-scale))`,
-    ],
+    inputRange,
+    outputRange,
   );
 
   if (domesticOptions.length === 0) {

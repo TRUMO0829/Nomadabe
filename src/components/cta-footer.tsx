@@ -1,11 +1,23 @@
 "use client";
 
 import type { FormEvent, InputHTMLAttributes } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { LEGAL_COPY, type LegalPageKind } from "@/components/legal-page";
 import { useLanguage } from "./language-provider";
 
 const SOCIALS = [
@@ -206,6 +218,34 @@ const FOOTER_COPY = {
       { label: "서비스 약관", href: "/terms" },
       { label: "개인정보 처리방침", href: "/privacy" },
     ],
+  },
+} as const;
+
+const LEGAL_DIALOG_COPY = {
+  mn: {
+    close: "Хаах",
+    agree: "Зөвшөөрөх",
+    readAll: "Зөвшөөрөхөөс өмнө бүх нөхцөлийг уншина уу.",
+  },
+  en: {
+    close: "Cancel",
+    agree: "I agree",
+    readAll: "Read all terms before accepting.",
+  },
+  zh: {
+    close: "关闭",
+    agree: "同意",
+    readAll: "接受前请阅读全部内容。",
+  },
+  ja: {
+    close: "閉じる",
+    agree: "同意する",
+    readAll: "同意する前にすべてお読みください。",
+  },
+  ko: {
+    close: "닫기",
+    agree: "동의",
+    readAll: "동의하기 전에 전체 내용을 읽어 주세요.",
   },
 } as const;
 
@@ -566,9 +606,12 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               </a>
               <div className="flex flex-wrap gap-6">
                 {footer.legal.map((link) => (
-                  <Link key={link.href} href={link.href} className="hover:text-accent">
-                    {link.label}
-                  </Link>
+                  <LegalDialogLink
+                    key={link.href}
+                    href={link.href}
+                    label={link.label}
+                    locale={contentLocale}
+                  />
                 ))}
               </div>
             </div>
@@ -576,6 +619,103 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
         </div>
       </footer>
     </>
+  );
+}
+
+function LegalDialogLink({
+  href,
+  label,
+  locale,
+}: {
+  href: string;
+  label: string;
+  locale: keyof typeof LEGAL_DIALOG_COPY;
+}) {
+  const [hasReadToBottom, setHasReadToBottom] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const kind: LegalPageKind = href === "/privacy" ? "privacy" : "terms";
+  const copy = LEGAL_COPY[locale]?.[kind] ?? LEGAL_COPY.mn[kind];
+  const dialogCopy = LEGAL_DIALOG_COPY[locale] ?? LEGAL_DIALOG_COPY.mn;
+
+  const handleScroll = () => {
+    const content = contentRef.current;
+
+    if (!content) {
+      return;
+    }
+
+    const maxScroll = content.scrollHeight - content.clientHeight;
+    const scrollPercentage = maxScroll <= 0 ? 1 : content.scrollTop / maxScroll;
+
+    if (scrollPercentage >= 0.99 && !hasReadToBottom) {
+      setHasReadToBottom(true);
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      return;
+    }
+
+    setHasReadToBottom(false);
+    window.setTimeout(handleScroll, 0);
+  };
+
+  return (
+    <Dialog onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          className="text-left transition-colors hover:text-accent"
+        >
+          {label}
+        </button>
+      </DialogTrigger>
+      <DialogContent className="flex max-h-[min(700px,86vh)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl [&>button:last-child]:top-3.5">
+        <DialogHeader className="contents space-y-0 text-left">
+          <DialogTitle className="border-b border-border px-6 py-4 text-base">
+            {copy.title}
+          </DialogTitle>
+          <div
+            ref={contentRef}
+            onScroll={handleScroll}
+            className="overflow-y-auto"
+          >
+            <DialogDescription asChild>
+              <div className="px-6 py-4">
+                <p className="text-sm leading-6 text-foreground/72">{copy.subtitle}</p>
+                <p className="mt-3 text-xs leading-5 text-muted-foreground">{copy.updated}</p>
+                <div className="mt-6 space-y-5 text-sm leading-6 text-foreground/78">
+                  {copy.sections.map((section) => (
+                    <section key={section.title} className="space-y-1.5">
+                      <p className="font-semibold text-foreground">{section.title}</p>
+                      <p>{section.body}</p>
+                    </section>
+                  ))}
+                </div>
+              </div>
+            </DialogDescription>
+          </div>
+        </DialogHeader>
+        <DialogFooter className="border-t border-border px-6 py-4 sm:items-center">
+          {!hasReadToBottom ? (
+            <span className="grow text-xs text-muted-foreground max-sm:text-center">
+              {dialogCopy.readAll}
+            </span>
+          ) : null}
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              {dialogCopy.close}
+            </Button>
+          </DialogClose>
+          <DialogClose asChild>
+            <Button type="button" disabled={!hasReadToBottom}>
+              {dialogCopy.agree}
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
