@@ -274,7 +274,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 
       {/* ───────────────────────── VALUES ───────────────────────── */}
       {showValues && (
-        <Band>
+        <Band bg="/hero-spring.webp">
           <Kicker>{copy.values.label}</Kicker>
           <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 sm:grid-cols-2">
             {values.map((item, index) => (
@@ -285,7 +285,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 viewport={{ once: true, amount: 0.3 }}
                 variants={fadeUp}
                 transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
-                className="bg-[#0B0A07] p-7 sm:p-9"
+                className="bg-[#0B0A07]/85 p-7 backdrop-blur-md sm:p-9"
               >
                 <span className="text-sm tracking-[0.2em]" style={{ color: ACCENT }}>
                   {String(index + 1).padStart(2, "0")}
@@ -300,7 +300,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 
       {/* ───────────────────────── WORK ───────────────────────── */}
       {showWork && (
-        <Band>
+        <Band bg="/hero-winter.webp">
           <Kicker>{copy.work.label}</Kicker>
           <div className="mt-6 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
             <div>
@@ -318,7 +318,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                     viewport={{ once: true, amount: 0.3 }}
                     variants={fadeUp}
                     transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
-                    className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-[rgba(255,106,26,0.5)]"
+                    className="group rounded-3xl border border-white/10 bg-[#0B0A07]/75 p-6 backdrop-blur-md transition-colors hover:border-[rgba(255,106,26,0.5)]"
                   >
                     <span
                       className="inline-flex h-11 w-11 items-center justify-center rounded-full"
@@ -338,7 +338,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 
       {/* ───────────────────────── TEAM ───────────────────────── */}
       {showTeam && (
-        <Band>
+        <Band bg="/nomadabe-hero-panorama.webp">
           <Kicker>{copy.team.label}</Kicker>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {team.map((member, index) => (
@@ -349,7 +349,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 viewport={{ once: true, amount: 0.3 }}
                 variants={fadeUp}
                 transition={{ duration: 0.5, delay: (index % 3) * 0.08 }}
-                className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]"
+                className="overflow-hidden rounded-3xl border border-white/10 bg-[#0B0A07]/70 backdrop-blur-md"
               >
                 <div className="relative aspect-[4/5] w-full overflow-hidden">
                   {member.image ? (
@@ -361,11 +361,19 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                       className="object-cover"
                     />
                   ) : (
-                    <div
-                      className="flex h-full w-full items-center justify-center text-5xl"
-                      style={{ background: "rgba(255,106,26,0.12)", color: ACCENT }}
-                    >
-                      {member.name.charAt(0)}
+                    <div className="relative flex h-full w-full items-center justify-center">
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: "url('/hero-spring.webp')" }}
+                      />
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-gradient-to-t from-[#0B0A07] via-[#0B0A07]/55 to-[#0B0A07]/25"
+                      />
+                      <span className="relative text-6xl" style={{ color: ACCENT }}>
+                        {member.name.charAt(0)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -386,7 +394,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 
       {/* ───────────────────────── FAQ ───────────────────────── */}
       {showFaq && (
-        <Band>
+        <Band bg="/hero-autumn.webp">
           <Kicker>{copy.faq.eyebrow}</Kicker>
           <h2 className="mt-5 text-3xl leading-tight sm:text-4xl">{copy.faq.title}</h2>
           {copy.faq.subtitle && (
@@ -403,10 +411,27 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
   );
 }
 
-function Band({ children }: { children: React.ReactNode }) {
+function Band({ children, bg }: { children: React.ReactNode; bg?: string }) {
   return (
-    <div className="relative border-t border-white/[0.07]">
-      <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+    <div className="relative overflow-hidden border-t border-white/[0.07]">
+      {bg && (
+        <>
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url('${bg}')` }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(11,10,7,0.95) 0%, rgba(11,10,7,0.8) 50%, rgba(11,10,7,0.95) 100%)",
+            }}
+          />
+        </>
+      )}
+      <div className="relative mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
         {children}
       </div>
     </div>
@@ -434,7 +459,7 @@ function FaqRow({
 }) {
   const [open, setOpen] = useState(Boolean(defaultOpen));
   return (
-    <div className="bg-[#0B0A07]">
+    <div className="bg-[#0B0A07]/82 backdrop-blur-md">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
