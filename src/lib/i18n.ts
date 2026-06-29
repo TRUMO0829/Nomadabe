@@ -48,9 +48,9 @@ export const UI_COPY = {
     hero: {
       rating: "5 одтой үнэлгээтэй, 1,200+ аялагч",
       established: "2025 оноос - Улаанбаатар",
-      headingLine1: "Аяллаа",
-      headingEmphasis: "нүүдэлчин",
-      headingLine2: "хэмнэлээр",
+      headingLine1: "Дараагийн",
+      headingEmphasis: "түвшинд",
+      headingLine2: "аял.",
       body:
         "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг эхнээс нь дуустал зохион байгуулна.",
       quick: [

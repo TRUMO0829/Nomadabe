@@ -13,6 +13,14 @@ const HERO_VIDEOS = [
   "/hero/hero4.mp4",
 ];
 
+const DEFAULT_HERO_HEADING = "Дараагийн түвшинд аял.";
+const LEGACY_HERO_HEADINGS = new Set([
+  "Аяллаа нүүдэлчин хэмнэлээр.",
+  "Аяллаа\nнүүдэлчин хэмнэлээр.",
+  "Аяллаа нүүдэлчин хэмнэлээр",
+  "Аяллаа\nнүүдэлчин хэмнэлээр",
+]);
+
 type HeroProps = {
   settings?: SiteSettings;
 };
@@ -23,11 +31,13 @@ export function Hero({ settings }: HeroProps) {
   const [active, setActive] = useState(0);
   const [ready, setReady] = useState(false);
 
-  const heading = settings?.heroTitle?.trim()
-    ? settings.heroTitle
-    : contentLocale === "mn"
-      ? "Дараагийн түвшинд аял."
-      : "Travel, elevated.";
+  const savedHeading = settings?.heroTitle?.trim() ?? "";
+  const heading =
+    savedHeading && !LEGACY_HERO_HEADINGS.has(savedHeading)
+      ? settings?.heroTitle ?? savedHeading
+      : contentLocale === "mn"
+        ? DEFAULT_HERO_HEADING
+        : "Travel, elevated.";
   const textColor = settings?.heroTextColor || "#ffffff";
   const overlayOpacity = settings?.heroOverlayOpacity ?? 0.36;
   const poster = settings?.heroImage || "/nomadabe-hero-panorama.webp";
