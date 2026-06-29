@@ -20,6 +20,7 @@ import {
   getAdventureText,
   type Adventure,
 } from "@/lib/adventures";
+import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { getTrips } from "@/lib/server/admin-store";
 
 export const dynamic = "force-dynamic";
@@ -47,7 +48,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 8,
     price: 2990000,
     image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "shanghai",
@@ -56,7 +57,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 6,
     price: 3390000,
     image:
-      "https://images.unsplash.com/photo-1548919973-5cef591cdbc9?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1548919973-5cef591cdbc9?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "japan",
@@ -65,7 +66,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 5,
     price: 4990000,
     image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "jeju",
@@ -74,7 +75,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 5,
     price: 4290000,
     image:
-      "https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "turkey",
@@ -83,7 +84,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 8,
     price: 4690000,
     image:
-      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "taiwan",
@@ -92,7 +93,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 7,
     price: 6790000,
     image:
-      "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=3200&q=90&auto=format&fit=crop",
   },
 ];
 
@@ -189,7 +190,10 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
 
   const text = getAdventureText(adventure, "mn");
   const details = getAdventureDetailInfo(adventure, "mn");
-  const galleryImages = getAdventureGalleryImages(adventure).slice(0, 4);
+  const heroImage = getHighResolutionImageUrl(adventure.image);
+  const galleryImages = getAdventureGalleryImages(adventure)
+    .slice(0, 4)
+    .map((image) => getHighResolutionImageUrl(image));
   const planHref = `/plan?trip=${encodeURIComponent(adventure.slug)}`;
 
   return (
@@ -200,7 +204,7 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
         <section
           className="relative flex min-h-screen items-end overflow-hidden px-4 pb-12 pt-28 sm:px-6 lg:px-10"
           style={{
-            backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.72)), url(${adventure.image})`,
+            backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.72)), url(${heroImage})`,
             backgroundPosition: "center",
             backgroundSize: "cover",
           }}

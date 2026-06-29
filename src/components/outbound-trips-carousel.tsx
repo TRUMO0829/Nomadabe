@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react";
 import { getAdventureText, type Adventure } from "@/lib/adventures";
+import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 
@@ -70,7 +71,7 @@ export const OUTBOUND_OPTIONS = [
     days: 8,
     price: "2,990,000₮",
     image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "shanghai",
@@ -87,7 +88,7 @@ export const OUTBOUND_OPTIONS = [
     days: 6,
     price: "3,390,000₮",
     image:
-      "https://images.unsplash.com/photo-1548919973-5cef591cdbc9?w=900&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1548919973-5cef591cdbc9?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "japan",
@@ -104,7 +105,7 @@ export const OUTBOUND_OPTIONS = [
     days: 5,
     price: "4,990,000₮",
     image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=900&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "jeju",
@@ -121,7 +122,7 @@ export const OUTBOUND_OPTIONS = [
     days: 5,
     price: "4,290,000₮",
     image:
-      "https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?w=900&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "turkey",
@@ -138,7 +139,7 @@ export const OUTBOUND_OPTIONS = [
     days: 8,
     price: "4,690,000₮",
     image:
-      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=900&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "taiwan",
@@ -155,7 +156,7 @@ export const OUTBOUND_OPTIONS = [
     days: 7,
     price: "6,790,000₮",
     image:
-      "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=900&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=2400&q=90&auto=format&fit=crop",
   },
 ];
 
@@ -285,6 +286,7 @@ export function OutboundTripsCarousel({
               adventure.price > 0
                 ? `${adventure.price.toLocaleString()} ${adventure.currency}`
                 : null;
+            const image = getHighResolutionImageUrl(adventure.image);
 
             return (
               <button
@@ -299,10 +301,11 @@ export function OutboundTripsCarousel({
                 ].join(" ")}
               >
                 <Image
-                  src={adventure.image}
+                  src={image}
                   alt={text.title}
                   fill
                   sizes={featured ? "100vw" : "(max-width: 1024px) 100vw, 50vw"}
+                  quality={90}
                   className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />

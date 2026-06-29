@@ -383,7 +383,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             className="absolute inset-0 bg-cover bg-center opacity-80"
             style={{
               backgroundImage:
-                "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2000&q=80&fit=crop&fm=webp')",
+                "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=3200&q=90&fit=crop&fm=webp')",
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-black/34 to-black/12" />

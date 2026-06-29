@@ -28,6 +28,7 @@ import {
   type Adventure,
   type AdventureTranslations,
 } from "@/lib/adventures";
+import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { cn } from "@/lib/utils";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
@@ -1003,7 +1004,7 @@ function DestinationDragCarousel({
                 <div className="relative aspect-[4/4.85] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
                   <div
                     className="h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
-                    style={{ backgroundImage: `url(${adventure.image})` }}
+                    style={{ backgroundImage: `url(${getHighResolutionImageUrl(adventure.image)})` }}
                   />
                   <div
                     aria-hidden="true"
@@ -1340,7 +1341,7 @@ export function FeaturedAdventures({
               animate={{ opacity: activeHeroImage === index ? 1 : 0 }}
               transition={{ duration: 1.1, ease: "easeInOut" }}
               className="absolute inset-0 scale-105 bg-cover bg-center"
-              style={{ backgroundImage: `url('${image}')` }}
+              style={{ backgroundImage: `url('${getHighResolutionImageUrl(image)}')` }}
             />
           ))}
           <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/38 to-primary/82" />

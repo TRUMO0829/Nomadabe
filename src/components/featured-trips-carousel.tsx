@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { CalendarDays, MapPin } from "lucide-react";
 import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
+import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 import ParticleText from "./ui/particle-text-canvas";
@@ -93,6 +94,7 @@ function FeaturedTripScrollPanel({
   const { contentLocale } = useLanguage();
   const panelRef = useRef<HTMLElement>(null);
   const text = getAdventureText(adventure, contentLocale);
+  const image = getHighResolutionImageUrl(adventure.image);
   const imageOnRight = index % 2 === 1;
   const { scrollYProgress } = useScroll({
     target: panelRef,
@@ -182,11 +184,12 @@ function FeaturedTripScrollPanel({
         >
           <motion.div className="relative h-full w-full" style={{ scale: imageScale }}>
             <Image
-              src={adventure.image}
+              src={image}
               alt={text.title}
               fill
               priority={index === 0}
               sizes="100vw"
+              quality={90}
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/44 via-black/10 to-transparent" />
@@ -290,6 +293,7 @@ function FeaturedTripsScrollStack({
       <div className="space-y-5 bg-white px-4 py-8 sm:px-6 lg:hidden">
         {featuredTrips.map((adventure) => {
           const text = getAdventureText(adventure, contentLocale);
+          const image = getHighResolutionImageUrl(adventure.image);
 
           return (
             <article
@@ -298,10 +302,11 @@ function FeaturedTripsScrollStack({
             >
               <div className="relative aspect-[4/5] overflow-hidden">
                 <Image
-                  src={adventure.image}
+                  src={image}
                   alt={text.title}
                   fill
                   sizes="100vw"
+                  quality={90}
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/18 to-transparent" />
@@ -376,6 +381,7 @@ function FeaturedTripsGrid({
               contentLocale === "mn" && isFestivalCard
                 ? "Наадам, хотын соёлын арга хэмжээ, үндэсний хоол, музей болон өдөр бүрийн уян хатан хөтөлбөртэй festival аялал."
                 : text.summary;
+            const image = getHighResolutionImageUrl(adventure.image);
 
             return (
               <motion.article
@@ -388,11 +394,12 @@ function FeaturedTripsGrid({
               >
                 <div className="absolute inset-0 overflow-hidden bg-[#11100b]">
                   <Image
-                    src={adventure.image}
+                    src={image}
                     alt={title}
                     fill
                     priority={index === 0}
-                    sizes="(max-width: 768px) 100vw, 560px"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    quality={90}
                     className="object-cover object-center opacity-85 transition duration-700 ease-out group-hover:scale-[1.035]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-br from-black/48 via-black/18 to-black/4" />

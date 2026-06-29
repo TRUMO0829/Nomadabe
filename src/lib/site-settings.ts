@@ -191,14 +191,14 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     gallery: [
       {
         id: "about-route-planning",
-        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 1,
         isVisible: true,
       },
       {
         id: "about-mongolia-landscape",
-        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 2,
         isVisible: true,
@@ -342,14 +342,14 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     gallery: [
       {
         id: "about-route-planning",
-        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 1,
         isVisible: true,
       },
       {
         id: "about-mongolia-landscape",
-        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 2,
         isVisible: true,
@@ -444,14 +444,14 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     gallery: [
       {
         id: "about-route-planning",
-        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 1,
         isVisible: true,
       },
       {
         id: "about-mongolia-landscape",
-        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 2,
         isVisible: true,
@@ -521,14 +521,14 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     gallery: [
       {
         id: "about-route-planning",
-        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 1,
         isVisible: true,
       },
       {
         id: "about-mongolia-landscape",
-        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 2,
         isVisible: true,
@@ -598,14 +598,14 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     gallery: [
       {
         id: "about-route-planning",
-        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 1,
         isVisible: true,
       },
       {
         id: "about-mongolia-landscape",
-        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=1600&q=80&fit=crop&fm=webp",
+        src: "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?w=2400&q=90&fit=crop&fm=webp",
         alt: "Nomadabe Travel route planning",
         order: 2,
         isVisible: true,

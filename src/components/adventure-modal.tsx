@@ -27,6 +27,7 @@ import {
   getAdventureText,
   type Adventure,
 } from "@/lib/adventures";
+import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { useLanguage } from "./language-provider";
 
 type Props = {
@@ -455,7 +456,7 @@ export function AdventureModal({ adventure, onClose, onRegisterClick }: Props) {
                           animation: selected
                             ? "premiumHeroDrift 7200ms ease-out forwards"
                             : undefined,
-                          backgroundImage: `url(${slide.image})`,
+                          backgroundImage: `url(${getHighResolutionImageUrl(slide.image)})`,
                         }}
                       />
                     );
@@ -464,7 +465,7 @@ export function AdventureModal({ adventure, onClose, onRegisterClick }: Props) {
                   <div
                     aria-hidden="true"
                     className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${adventure.image})` }}
+                    style={{ backgroundImage: `url(${getHighResolutionImageUrl(adventure.image)})` }}
                   />
                 )}
               </div>

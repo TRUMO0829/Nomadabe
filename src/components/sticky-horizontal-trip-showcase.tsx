@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { CalendarDays, MapPin } from "lucide-react";
 import { getAdventureText, type Adventure } from "@/lib/adventures";
+import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { useLanguage } from "./language-provider";
 
 type StickyTripCopy = {
@@ -37,6 +38,7 @@ function TripPanel({
   const { contentLocale } = useLanguage();
   const panelRef = useRef<HTMLElement>(null);
   const text = getAdventureText(adventure, contentLocale);
+  const image = getHighResolutionImageUrl(adventure.image);
   const { scrollYProgress } = useScroll({
     target: panelRef,
     offset: ["start end", "end start"],
@@ -93,7 +95,7 @@ function TripPanel({
             >
               <div
                 className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${adventure.image})` }}
+                style={{ backgroundImage: `url(${image})` }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/76 via-black/24 to-black/14" />
               <div className="absolute inset-y-0 right-0 w-2/3 bg-gradient-to-l from-black/78 via-black/36 to-transparent" />
@@ -146,7 +148,7 @@ function TripPanel({
       <div className="relative aspect-[5/4] overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-[1400ms] ease-out hover:scale-[1.025]"
-          style={{ backgroundImage: `url(${adventure.image})` }}
+          style={{ backgroundImage: `url(${image})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-tr from-black/18 via-transparent to-black/8" />
       </div>

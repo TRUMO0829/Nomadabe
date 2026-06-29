@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, CalendarDays, MapPin } from "lucide-react";
 import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
+import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 import { TravelSectionIntro } from "./travel-section-intro";
@@ -138,6 +139,7 @@ function DomesticTripCard({
 }: DomesticTripCardProps) {
   const { contentLocale } = useLanguage();
   const text = getAdventureText(adventure, contentLocale);
+  const image = getHighResolutionImageUrl(adventure.image);
   const price =
     adventure.price > 0
       ? `${adventure.price.toLocaleString()} ${adventure.currency}`
@@ -150,7 +152,7 @@ function DomesticTripCard({
       {/* full-bleed image */}
       <div
         className="absolute inset-0 scale-105 bg-cover bg-center transition-transform duration-[3200ms] ease-out group-hover:scale-110"
-        style={{ backgroundImage: `url(${adventure.image})` }}
+        style={{ backgroundImage: `url(${image})` }}
       />
       {/* cinematic gradients — darken bottom + left for text legibility,
           keep the top + right of the image bright so it shines */}
