@@ -7,10 +7,10 @@ import type { SiteSettings } from "@/lib/site-settings";
 import { useLanguage } from "./language-provider";
 
 const HERO_VIDEOS = [
-  "/hero/hero1.mp4",
-  "/hero/hero2.mp4",
-  "/hero/hero3.mp4",
-  "/hero/hero4.mp4",
+  "/hero/hero1-2160.mp4",
+  "/hero/hero2-2160.mp4",
+  "/hero/hero3-2160.mp4",
+  "/hero/hero4-2160.mp4",
 ];
 
 const DEFAULT_HERO_HEADING = "Дараагийн түвшинд аял.";
@@ -43,10 +43,9 @@ export function Hero({ settings }: HeroProps) {
   const poster = settings?.heroImage || "/nomadabe-hero-panorama.webp";
 
   const total = HERO_VIDEOS.length;
-  const nextIndex = (active + 1) % total;
 
-  // Play the active clip from the start; pause/rewind the others. The next clip
-  // is already preloaded (see `preload` below) so the crossfade never goes dark.
+  // Play the active clip from the start; all 2160p clips preload to keep the
+  // crossfade from falling back to older cached media.
   useEffect(() => {
     setReady(false);
     videoRefs.current.forEach((video, index) => {
@@ -75,8 +74,7 @@ export function Hero({ settings }: HeroProps) {
         style={{ backgroundImage: `url('${poster}')` }}
       />
 
-      {/* All clips are stacked; only the active one is visible. The next clip is
-          preloaded so it is already buffered before it fades in. */}
+      {/* All clips are stacked; only the active one is visible. */}
       {HERO_VIDEOS.map((src, index) => {
         const isActive = index === active;
         return (
@@ -89,9 +87,11 @@ export function Hero({ settings }: HeroProps) {
             muted
             playsInline
             autoPlay={index === 0}
-            preload={index === active || index === nextIndex ? "auto" : "metadata"}
+            preload="auto"
             poster={poster}
             src={src}
+            width={3840}
+            height={2160}
             onCanPlay={() => {
               if (isActive) setReady(true);
             }}
