@@ -6,11 +6,9 @@ import {
   CalendarDays,
   CheckCircle2,
   Gauge,
-  Image as ImageIcon,
   Inbox,
   LayoutDashboard,
   Mail,
-  Palette,
   Plane,
   Plus,
   RefreshCw,
@@ -29,7 +27,7 @@ import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adven
 import { AdminItineraryEditor } from "@/components/admin-itinerary-editor";
 import { ConfirmSubmitButton } from "@/components/admin-confirm-button";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
-import type { SiteSettings, TeamMember } from "@/lib/site-settings";
+import type { TeamMember } from "@/lib/site-settings";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
   getAdminDashboardData,
@@ -43,7 +41,6 @@ import {
   logoutAdminAction,
   refreshAdminAction,
   saveServiceAction,
-  saveSiteSettingsAction,
   saveTeamMemberAction,
   saveTripAction,
   sendAdminEmailAction,
@@ -64,7 +61,6 @@ const defaultCategoryLabels: Record<string, string> = {
 
 const navItems = [
   { label: "Ерөнхий", href: "#overview", icon: LayoutDashboard },
-  { label: "Дизайн", href: "#hero", icon: ImageIcon },
   { label: "Бүртгэлүүд", href: "#registrations", icon: Users },
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
@@ -76,49 +72,6 @@ const translationLanguages = LANGUAGES.filter(
   (language): language is typeof language & { code: Exclude<CopyLocale, "mn"> } =>
     language.code !== "mn"
 );
-
-const heroImagePresets = [
-  {
-    label: "Gobi dunes",
-    value: "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=90&fit=crop&fm=webp",
-    tone: "Элсэн манхан",
-  },
-  {
-    label: "Nomadabe panorama",
-    value: "/nomadabe-hero-panorama.webp",
-    tone: "Монгол панорама",
-  },
-  {
-    label: "Winter route",
-    value: "/hero-winter.webp",
-    tone: "Өвлийн аялал",
-  },
-  {
-    label: "Spring steppe",
-    value: "/hero-spring.webp",
-    tone: "Хаврын тал",
-  },
-  {
-    label: "Autumn road",
-    value: "/hero-autumn.webp",
-    tone: "Намрын маршрут",
-  },
-  {
-    label: "Desert travel",
-    value: "https://images.unsplash.com/photo-1542662565-7e4b66bae529?w=2400&q=90&fit=crop&fm=webp",
-    tone: "Adventure feel",
-  },
-];
-
-const legacyHeroTitles = new Set([
-  "аяллаа нүүдэлчин хэмнэлээр.",
-  "аяллаа нүүдэлчин хэмнэлээр",
-]);
-
-function getHeroTitleFormValue(value: string) {
-  const normalized = value.trim().replace(/\s+/g, " ").toLocaleLowerCase("mn-MN");
-  return legacyHeroTitles.has(normalized) ? "Дараагийн түвшинд аял." : value;
-}
 
 export default async function AdminDashboard({
   searchParams,
@@ -152,8 +105,6 @@ export default async function AdminDashboard({
   const featuredTrips = trips.filter((trip) => trip.featured);
   const teamMembers =
     dashboardData.status === "fulfilled" ? dashboardData.value.siteSettings.teamMembers : [];
-  const siteSettings =
-    dashboardData.status === "fulfilled" ? dashboardData.value.siteSettings : null;
   const latestInquiries = inquiries.slice(0, 12);
   const latestCustomers = customers.slice(0, 12);
   const latestEmailLogs = emailLogs.slice(0, 8);
@@ -311,13 +262,6 @@ export default async function AdminDashboard({
 
             <section className="grid gap-6 xl:grid-cols-[1fr_380px]">
               <div className="space-y-6">
-                {siteSettings ? (
-                  <section id="hero" className="scroll-mt-6 space-y-4">
-                    <SectionHeader eyebrow="Дизайн" title="Нүүр хэсгийн тохиргоо" action="Hero-д шууд нөлөөлнө" />
-                    <HeroSettingsForm settings={siteSettings} />
-                  </section>
-                ) : null}
-
                 <SectionHeader eyebrow="Удирдлага" title="Шинэ аяллын хөтөлбөр нэмэх" action="Хэрэглэгчийн веб дээр харагдана" />
                 <TripForm mode="create" categoryOptions={categoryOptions} />
 
@@ -572,183 +516,6 @@ function ServiceEditor({ service }: { service: TravelService }) {
         </form>
       </div>
     </details>
-  );
-}
-
-function HeroSettingsForm({ settings }: { settings: SiteSettings }) {
-  const selectedPreset = heroImagePresets.find((preset) => preset.value === settings.heroImage);
-  const customHeroImage = selectedPreset ? "" : settings.heroImage;
-  const heroTitle = getHeroTitleFormValue(settings.heroTitle);
-
-  return (
-    <form
-      action={saveSiteSettingsAction}
-      className="overflow-hidden rounded-md border border-[var(--border)] bg-white shadow-sm"
-    >
-      <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="space-y-5 p-4 sm:p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)]/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--primary)]">
-                <ImageIcon className="h-3.5 w-3.5" />
-                Hero studio
-              </div>
-              <h3 className="mt-3 text-xl font-black tracking-tight text-[var(--primary)]">
-                Нүүр хуудасны зураг ба гарчиг
-              </h3>
-              <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--muted-foreground)]">
-                Доорх preset зургаас сонгоод хадгална. Custom URL оруулбал preset сонголтоос түрүүлж хадгалагдана.
-              </p>
-            </div>
-            <button
-              type="submit"
-              className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
-            >
-              <Save className="h-4 w-4" />
-              Хадгалах
-            </button>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {heroImagePresets.map((preset) => {
-              const isSelected = settings.heroImage === preset.value;
-
-              return (
-                <label
-                  key={preset.value}
-                  className={`group relative min-h-36 cursor-pointer overflow-hidden rounded-md border bg-[#11100b] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
-                    isSelected
-                      ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/35"
-                      : "border-[var(--border)]"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="heroImagePreset"
-                    value={preset.value}
-                    defaultChecked={isSelected}
-                    className="peer sr-only"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                    style={{ backgroundImage: `url('${preset.value}')` }}
-                  />
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
-                  <span className="absolute left-3 top-3 inline-flex rounded-full border border-white/25 bg-black/30 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur">
-                    {preset.tone}
-                  </span>
-                  <span className="absolute inset-x-3 bottom-3 flex items-end justify-between gap-3">
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-black text-white">
-                        {preset.label}
-                      </span>
-                      <span className="mt-1 block truncate text-xs font-medium text-white/65">
-                        {preset.value.startsWith("/") ? "Nomadabe asset" : "Unsplash"}
-                      </span>
-                    </span>
-                    <span
-                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${
-                        isSelected
-                          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-foreground)]"
-                          : "border-white/40 bg-white/10 text-white"
-                      }`}
-                    >
-                      {isSelected ? "✓" : ""}
-                    </span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            <TextField label="Custom зургийн URL" name="heroImageCustom" defaultValue={customHeroImage} placeholder="https://..." className="lg:col-span-2" />
-            <TextField label="Badge (одны мөр)" name="heroBadge" defaultValue={settings.heroBadge} className="lg:col-span-2" />
-            <TextareaField label="Гол гарчиг" name="heroTitle" defaultValue={heroTitle} rows={2} className="lg:col-span-2" />
-            <TextareaField label="Дэд гарчиг" name="heroSubtitle" defaultValue={settings.heroSubtitle} rows={2} className="lg:col-span-2" />
-          </div>
-        </div>
-
-        <aside className="border-t border-[var(--border)] bg-[var(--primary)] p-4 text-white sm:p-5 xl:border-l xl:border-t-0">
-          <div
-            className="relative flex min-h-[430px] overflow-hidden rounded-md border border-white/15 bg-black shadow-[0_24px_70px_rgba(0,0,0,0.28)]"
-          >
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 scale-105 bg-cover bg-center"
-              style={{ backgroundImage: `url('${settings.heroImage}')` }}
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0"
-              style={{
-                background: `linear-gradient(to bottom, rgba(0,0,0,${settings.heroOverlayOpacity * 0.34}), rgba(0,0,0,${settings.heroOverlayOpacity * 0.16}), rgba(0,0,0,${settings.heroOverlayOpacity * 0.46}))`,
-              }}
-            />
-            <div className="relative z-10 mt-auto w-full p-5">
-              <div className="max-w-sm rounded-md border border-white/20 bg-black/30 p-4 backdrop-blur-md">
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">
-                  {settings.heroBadge}
-                </p>
-                <h4
-                  className="mt-3 whitespace-pre-line text-2xl font-black leading-tight"
-                  style={{ color: settings.heroTextColor }}
-                >
-                  {heroTitle}
-                </h4>
-                <p className="mt-3 line-clamp-3 text-sm leading-6 text-white/75">
-                  {settings.heroSubtitle}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <label className="rounded-md border border-white/10 bg-white/5 p-3">
-              <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-white/70">
-                <Palette className="h-3.5 w-3.5 text-[var(--accent)]" />
-                Accent
-              </span>
-              <input
-                name="accentColor"
-                type="color"
-                defaultValue={settings.accentColor}
-                className="mt-3 h-10 w-full cursor-pointer rounded-md border border-white/15 bg-transparent"
-              />
-            </label>
-            <label className="rounded-md border border-white/10 bg-white/5 p-3">
-              <span className="text-xs font-bold uppercase tracking-[0.12em] text-white/70">
-                Текст
-              </span>
-              <input
-                name="heroTextColor"
-                type="color"
-                defaultValue={settings.heroTextColor}
-                className="mt-3 h-10 w-full cursor-pointer rounded-md border border-white/15 bg-transparent"
-              />
-            </label>
-            <label className="rounded-md border border-white/10 bg-white/5 p-3">
-              <span className="text-xs font-bold uppercase tracking-[0.12em] text-white/70">
-                Overlay
-              </span>
-              <input
-                name="heroOverlayOpacity"
-                type="range"
-                min="0.2"
-                max="0.9"
-                step="0.01"
-                defaultValue={String(settings.heroOverlayOpacity)}
-                className="mt-4 w-full accent-[var(--accent)]"
-              />
-              <span className="mt-2 block text-xs font-semibold text-white/55">
-                Одоогийн: {Math.round(settings.heroOverlayOpacity * 100)}%
-              </span>
-            </label>
-          </div>
-        </aside>
-      </div>
-    </form>
   );
 }
 
