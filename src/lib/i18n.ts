@@ -219,9 +219,9 @@ export const UI_COPY = {
     hero: {
       rating: "5-star rated by 1,200+ travellers",
       established: "Est. 2025 - Ulaanbaatar",
-      headingLine1: "Travel the",
-      headingEmphasis: "nomad",
-      headingLine2: "way",
+      headingLine1: "Travel",
+      headingEmphasis: "at the next",
+      headingLine2: "level.",
       body:
         "Small-group, business, expo, and leisure trips across Mongolia and beyond, planned end to end by a local team.",
       quick: ["Canton Fair", "Solar energy", "Food expo", "Custom trip", "Family holiday"],
@@ -384,9 +384,9 @@ export const UI_COPY = {
     hero: {
       rating: "5星评价，1,200+ 位旅行者",
       established: "2025年起 - 乌兰巴托",
-      headingLine1: "以",
-      headingEmphasis: "游牧",
-      headingLine2: "方式旅行。",
+      headingLine1: "开启",
+      headingEmphasis: "下一层级",
+      headingLine2: "的旅行。",
       body:
         "我们为蒙古及全球目的地提供小团、商务、展会和休闲旅行，由熟悉当地的团队从开始到结束全程安排。",
       quick: ["广交会", "太阳能", "食品展", "定制旅行", "家庭度假"],
@@ -550,8 +550,8 @@ export const UI_COPY = {
       rating: "5つ星評価、1,200人以上の旅行者",
       established: "2025年より - ウランバートル",
       headingLine1: "旅を",
-      headingEmphasis: "遊牧民",
-      headingLine2: "のリズムで。",
+      headingEmphasis: "次のレベル",
+      headingLine2: "へ。",
       body:
         "モンゴル国内外の小グループ、ビジネス、展示会、レジャー旅行を、現地に詳しいチームが最初から最後まで手配します。",
       quick: ["広州交易会", "太陽光エネルギー", "食品展示会", "カスタム旅行", "家族旅行"],
@@ -715,8 +715,8 @@ export const UI_COPY = {
       rating: "5성급 평가, 1,200명+ 여행자",
       established: "2025년부터 - 울란바토르",
       headingLine1: "여행을",
-      headingEmphasis: "유목민",
-      headingLine2: "의 방식으로.",
+      headingEmphasis: "다음 단계",
+      headingLine2: "로.",
       body:
         "몽골과 전 세계 목적지의 소규모 그룹, 비즈니스, 엑스포, 휴양 여행을 현지 지식이 있는 팀이 처음부터 끝까지 준비합니다.",
       quick: ["캔톤페어", "태양광 에너지", "식품 엑스포", "맞춤 여행", "가족 휴가"],

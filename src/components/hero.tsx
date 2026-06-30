@@ -13,12 +13,10 @@ const HERO_VIDEOS = [
   "/hero/hero4-2160.mp4",
 ];
 
-const DEFAULT_HERO_HEADING = "Дараагийн түвшинд аял.";
 const LEGACY_HERO_HEADINGS = new Set([
-  "Аяллаа нүүдэлчин хэмнэлээр.",
-  "Аяллаа\nнүүдэлчин хэмнэлээр.",
-  "Аяллаа нүүдэлчин хэмнэлээр",
-  "Аяллаа\nнүүдэлчин хэмнэлээр",
+  "аяллаа нүүдэлчин хэмнэлээр.",
+  "аяллаа нүүдэлчин хэмнэлээр",
+  "дараагийн түвшинд аял.",
 ]);
 
 type HeroProps = {
@@ -26,18 +24,20 @@ type HeroProps = {
 };
 
 export function Hero({ settings }: HeroProps) {
-  const { contentLocale } = useLanguage();
+  const { t } = useLanguage();
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const [active, setActive] = useState(0);
   const [ready, setReady] = useState(false);
 
+  const localizedHeading = `${t.hero.headingLine1} ${t.hero.headingEmphasis} ${t.hero.headingLine2}`;
   const savedHeading = settings?.heroTitle?.trim() ?? "";
+  const normalizedSavedHeading = savedHeading
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("mn-MN");
   const heading =
-    savedHeading && !LEGACY_HERO_HEADINGS.has(savedHeading)
+    savedHeading && !LEGACY_HERO_HEADINGS.has(normalizedSavedHeading)
       ? settings?.heroTitle ?? savedHeading
-      : contentLocale === "mn"
-        ? DEFAULT_HERO_HEADING
-        : "Travel, elevated.";
+      : localizedHeading;
   const textColor = settings?.heroTextColor || "#ffffff";
   const overlayOpacity = settings?.heroOverlayOpacity ?? 0.36;
   const poster = settings?.heroImage || "/nomadabe-hero-panorama.webp";
