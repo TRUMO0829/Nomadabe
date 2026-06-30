@@ -259,7 +259,8 @@ export async function updateSiteSettingsFromForm(formData: FormData) {
   }
 
   if (formData.has("heroTitle")) {
-    settings.heroTitle = getFormString(formData, "heroTitle") || DEFAULT_SITE_SETTINGS.heroTitle;
+    settings.heroTitle =
+      normalizeHeroTitle(getFormString(formData, "heroTitle")) || DEFAULT_SITE_SETTINGS.heroTitle;
   }
 
   if (formData.has("heroSubtitle")) {
@@ -267,8 +268,16 @@ export async function updateSiteSettingsFromForm(formData: FormData) {
       getFormString(formData, "heroSubtitle") || DEFAULT_SITE_SETTINGS.heroSubtitle;
   }
 
-  if (formData.has("heroImage")) {
-    settings.heroImage = getFormString(formData, "heroImage") || DEFAULT_SITE_SETTINGS.heroImage;
+  if (
+    formData.has("heroImage") ||
+    formData.has("heroImagePreset") ||
+    formData.has("heroImageCustom")
+  ) {
+    settings.heroImage =
+      getFormString(formData, "heroImageCustom") ||
+      getFormString(formData, "heroImagePreset") ||
+      getFormString(formData, "heroImage") ||
+      DEFAULT_SITE_SETTINGS.heroImage;
   }
 
   if (formData.has("accentColor")) {
@@ -499,7 +508,7 @@ function normalizeStore(store: Partial<AdminStore>): AdminStore {
 function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
   return {
     heroBadge: settings.heroBadge || DEFAULT_SITE_SETTINGS.heroBadge,
-    heroTitle: settings.heroTitle || DEFAULT_SITE_SETTINGS.heroTitle,
+    heroTitle: normalizeHeroTitle(settings.heroTitle || DEFAULT_SITE_SETTINGS.heroTitle),
     heroSubtitle: settings.heroSubtitle || DEFAULT_SITE_SETTINGS.heroSubtitle,
     heroImage: settings.heroImage || DEFAULT_SITE_SETTINGS.heroImage,
     accentColor: settings.accentColor || DEFAULT_SITE_SETTINGS.accentColor,
@@ -940,6 +949,16 @@ function simpleFormFields(formData: FormData): FieldReader {
 function getFormString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeHeroTitle(value: string) {
+  const normalized = value.replace(/\s+/g, " ").toLocaleLowerCase("mn-MN");
+
+  if (normalized === "аяллаа нүүдэлчин хэмнэлээр." || normalized === "аяллаа нүүдэлчин хэмнэлээр") {
+    return DEFAULT_SITE_SETTINGS.heroTitle;
+  }
+
+  return value;
 }
 
 function getNumberFromString(value: string, fallback: number) {
