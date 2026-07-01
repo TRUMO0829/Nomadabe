@@ -22,7 +22,7 @@ import {
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { Adventure, AdventureTranslation, TravelService } from "@/lib/adventures";
+import type { Adventure, AdventureTranslation } from "@/lib/adventures";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
@@ -30,12 +30,10 @@ import {
   getBookingCount,
 } from "@/lib/server/admin-store";
 import {
-  deleteServiceAction,
   deleteTripAction,
   emailLatestInquiryAction,
   logoutAdminAction,
   refreshAdminAction,
-  saveServiceAction,
   saveTripAction,
   sendAdminEmailAction,
   updateInquiryStatusAction,
@@ -80,12 +78,11 @@ export default async function AdminDashboard({
 
   const [dashboardData, customersResult, emailLogsResult] =
     await Promise.allSettled([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
-  const { trips, services, inquiries, bookingStats } =
+  const { trips, inquiries, bookingStats } =
     dashboardData.status === "fulfilled"
       ? dashboardData.value
       : {
           trips: [],
-          services: [],
           inquiries: [],
           bookingStats: [],
         };
@@ -167,7 +164,7 @@ export default async function AdminDashboard({
           <header id="overview" className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--primary)] px-5 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
             <div
               aria-hidden="true"
-              className="absolute inset-0 bg-[url('/nomadabe-hero-panorama.webp')] bg-cover bg-center opacity-25"
+              className="absolute inset-0 bg-[url('/hero-autumn.webp')] bg-cover bg-center opacity-25"
             />
             <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/35 via-[var(--primary)]/85 to-[var(--primary)]" />
             <div className="relative flex flex-col justify-between gap-5 xl:flex-row xl:items-center">
@@ -181,7 +178,7 @@ export default async function AdminDashboard({
                   Веб удирдлагын төв
                 </h1>
                 <p className="mt-4 max-w-2xl text-sm leading-6 text-white/70 sm:text-base">
-                  Nomadabe-ийн аялал, бүртгэл, үйлчилгээ, нүүр хуудасны дизайныг нэг дороос удирдана.
+                  Nomadabe-ийн хөтөлбөр, бүртгэл, хэрэглэгчийн мэдээлэл, мэйлийн ажлыг нэг дороос удирдана.
                 </p>
               </div>
 
@@ -248,25 +245,6 @@ export default async function AdminDashboard({
                   <SectionHeader eyebrow="Автоматжуулалт" title="Мэйл илгээх" action="Гараар болон автоматаар" />
                   <EmailComposer />
                 </section>
-
-                <details className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
-                  <summary className="cursor-pointer list-none">
-                    <SectionHeader eyebrow="Нэмэлт тохиргоо" title="Үйлчилгээний төрлүүд" action={`Нийт ${services.length}`} />
-                    <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-[var(--muted-foreground)]">
-                      Энэ хэсэг нь аяллын бус, компанийн санал болгодог туслах үйлчилгээний жагсаалт.
-                      Жишээ нь бизнес аялал зохион байгуулах, expo дэмжлэг, захиалгат маршрут гэх мэт.
-                      Шинэ аялал нэмэхэд энэ хэсгийг бөглөх шаардлагагүй.
-                    </p>
-                  </summary>
-                  <div className="mt-4 space-y-4">
-                    <ServiceForm mode="create" />
-                    <div className="grid gap-3 lg:grid-cols-2">
-                      {services.map((service) => (
-                        <ServiceEditor key={service.id} service={service} />
-                      ))}
-                    </div>
-                  </div>
-                </details>
 
                 <section id="programs" className="scroll-mt-6 space-y-4">
                   <SectionHeader eyebrow="Хөтөлбөрүүд" title="Хөтөлбөр засварлах" action={`Нийт ${trips.length}`} />
@@ -458,65 +436,6 @@ export default async function AdminDashboard({
         </section>
       </div>
     </main>
-  );
-}
-
-function ServiceEditor({ service }: { service: TravelService }) {
-  return (
-    <details className="rounded-md border border-[var(--border)] bg-white shadow-sm">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
-        <div className="min-w-0">
-          <TypePill label="Үйлчилгээ" />
-          <h3 className="mt-2 truncate text-base font-semibold text-[var(--primary)]">{service.title}</h3>
-        </div>
-        <span className="text-sm text-[var(--muted-foreground)]">Засах</span>
-      </summary>
-      <div className="border-t border-[var(--border)] p-4">
-        <ServiceForm mode="edit" service={service} />
-        <form action={deleteServiceAction} className="mt-3">
-          <input type="hidden" name="id" defaultValue={service.id} />
-          <button
-            type="submit"
-            className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
-          >
-            <Trash2 className="h-4 w-4" />
-            Үйлчилгээ устгах
-          </button>
-        </form>
-      </div>
-    </details>
-  );
-}
-
-function ServiceForm({ mode, service }: { mode: "create" | "edit"; service?: TravelService }) {
-  return (
-    <form action={saveServiceAction} className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <TextField label="Үйлчилгээний ID" name="id" defaultValue={service?.id} placeholder="business-travel" />
-        <TextField label="Гарчиг" name="title" defaultValue={service?.title} required />
-        <TextareaField
-          label="Тайлбар"
-          name="description"
-          defaultValue={service?.description}
-          rows={3}
-          className="lg:col-span-2"
-        />
-        <TextareaField
-          label="Онцлох зүйлс"
-          name="highlights"
-          defaultValue={service?.highlights.join(", ")}
-          rows={2}
-          className="lg:col-span-2"
-        />
-      </div>
-      <button
-        type="submit"
-        className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
-      >
-        {mode === "create" ? <Plus className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-        {mode === "create" ? "Үйлчилгээ нэмэх" : "Үйлчилгээ хадгалах"}
-      </button>
-    </form>
   );
 }
 

@@ -13,6 +13,11 @@ const DEFAULT_HERO_BACKGROUNDS = [
   "/hero-autumn.webp",
 ];
 
+const LOCALIZED_HERO_TITLE_OVERRIDES = new Set([
+  "аяллаа нүүдэлчин хэмнэлээр.",
+  "дараагийн түвшинд аял.",
+]);
+
 type HeroProps = {
   settings?: SiteSettings;
 };
@@ -26,9 +31,13 @@ export function Hero({ settings }: HeroProps) {
   ].filter((image, index, images): image is string =>
     Boolean(image && images.indexOf(image) === index)
   );
-  const heading = settings?.heroTitle?.trim()
-    ? settings.heroTitle
-    : `${t.hero.headingLine1} ${t.hero.headingEmphasis} ${t.hero.headingLine2}`;
+  const localizedHeading = `${t.hero.headingLine1} ${t.hero.headingEmphasis} ${t.hero.headingLine2}`;
+  const settingsHeroTitle = settings?.heroTitle?.trim();
+  const normalizedSettingsHeroTitle = settingsHeroTitle?.replace(/\s+/g, " ").toLocaleLowerCase("mn-MN");
+  const heading =
+    settingsHeroTitle && !LOCALIZED_HERO_TITLE_OVERRIDES.has(normalizedSettingsHeroTitle ?? "")
+      ? settingsHeroTitle
+      : localizedHeading;
   const body = settings?.heroSubtitle?.trim() || t.hero.body;
   const badge = settings?.heroBadge?.trim();
   const textColor = settings?.heroTextColor || "#ffffff";
