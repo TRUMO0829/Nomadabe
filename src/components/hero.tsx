@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronDown, Globe2, Phone } from "lucide-react";
+import { ChevronDown, Globe2 } from "lucide-react";
 import { LANGUAGES } from "@/lib/i18n";
 import type { SiteSettings } from "@/lib/site-settings";
 import { cn } from "@/lib/utils";
@@ -167,71 +167,18 @@ export function Hero({ settings }: HeroProps) {
         </Link>
       </div>
 
-      <div
-        className="absolute left-5 top-5 z-30 flex items-center gap-2 sm:left-8 sm:top-7"
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setLanguageOpen(false);
-          }
-        }}
-      >
-        <button
-          type="button"
-          aria-label={t.nav.language}
-          aria-expanded={languageOpen}
-          onClick={() => setLanguageOpen((value) => !value)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/12 text-white shadow-[0_14px_42px_rgba(0,0,0,0.14)] backdrop-blur-md transition-colors hover:border-accent hover:bg-black/20"
-        >
-          <Globe2 className="h-4 w-4" />
-          <ChevronDown
-            className={cn(
-              "absolute -right-1 -bottom-1 h-4 w-4 rounded-full bg-black/30 p-0.5 transition-transform",
-              languageOpen && "rotate-180"
-            )}
-          />
-        </button>
-        <a
-          href="tel:+97699103258"
-          className="inline-flex h-11 items-center gap-2 rounded-full border border-white/40 bg-black/12 px-4 text-xs text-white shadow-[0_14px_42px_rgba(0,0,0,0.14)] backdrop-blur-md transition-colors hover:border-accent hover:bg-black/20"
-        >
-          <Phone className="h-4 w-4" />
-          <span className="hidden whitespace-nowrap sm:inline">+976 9910 3258</span>
-        </a>
-
-        {languageOpen ? (
-          <div className="absolute left-0 top-[calc(100%+0.5rem)] min-w-40 overflow-hidden rounded-xl border border-white/20 bg-black/70 p-1 text-white shadow-xl backdrop-blur-md">
-            {LANGUAGES.map((language) => (
-              <button
-                key={language.code}
-                type="button"
-                aria-pressed={locale === language.code}
-                title={language.label}
-                onClick={() => {
-                  setLocale(language.code);
-                  setLanguageOpen(false);
-                }}
-                className={cn(
-                  "nav-text flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors",
-                  locale === language.code
-                    ? "bg-accent text-accent-foreground"
-                    : "hover:bg-white/12"
-                )}
-              >
-                <span>{language.label}</span>
-                <span>{language.short}</span>
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
-
       <div className="absolute inset-x-0 bottom-[30vh] z-10 flex justify-center px-5 sm:bottom-[32vh]">
         <motion.nav
           aria-label="Hero navigation"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.15 }}
-          className="flex max-w-[92vw] flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-xl border border-white/20 bg-white/18 px-5 py-2.5 text-white shadow-[0_18px_50px_rgba(0,0,0,0.16)] backdrop-blur-md sm:gap-x-4 sm:px-8"
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) {
+              setLanguageOpen(false);
+            }
+          }}
+          className="relative flex max-w-[92vw] flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-xl bg-white/18 px-5 py-2.5 text-white shadow-[0_18px_50px_rgba(0,0,0,0.16)] backdrop-blur-md sm:gap-x-4 sm:px-8"
         >
           {navItems.map((item) => (
             <span key={item.href} className="inline-flex items-center gap-x-3 sm:gap-x-4">
@@ -262,6 +209,52 @@ export function Hero({ settings }: HeroProps) {
           >
             {copy.search}
           </Link>
+          <span aria-hidden="true" className="text-white/72">
+            |
+          </span>
+          <div className="relative inline-flex">
+            <button
+              type="button"
+              aria-label={t.nav.language}
+              aria-expanded={languageOpen}
+              onClick={() => setLanguageOpen((value) => !value)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors hover:text-accent"
+            >
+              <Globe2 className="h-4 w-4" />
+              <ChevronDown
+                className={cn(
+                  "absolute -right-1 top-1/2 h-3 w-3 -translate-y-1/2 transition-transform",
+                  languageOpen && "rotate-180"
+                )}
+              />
+            </button>
+
+            {languageOpen ? (
+              <div className="absolute right-0 top-[calc(100%+0.55rem)] min-w-40 overflow-hidden rounded-xl bg-black/70 p-1 text-white shadow-xl backdrop-blur-md">
+                {LANGUAGES.map((language) => (
+                  <button
+                    key={language.code}
+                    type="button"
+                    aria-pressed={locale === language.code}
+                    title={language.label}
+                    onClick={() => {
+                      setLocale(language.code);
+                      setLanguageOpen(false);
+                    }}
+                    className={cn(
+                      "nav-text flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors",
+                      locale === language.code
+                        ? "bg-accent text-accent-foreground"
+                        : "hover:bg-white/12"
+                    )}
+                  >
+                    <span>{language.label}</span>
+                    <span>{language.short}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </motion.nav>
       </div>
     </section>
