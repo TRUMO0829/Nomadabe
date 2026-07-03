@@ -13,6 +13,7 @@ import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import type { SiteSettings } from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
 import {
+  getErrorMessage,
   getSupabaseConfigurationErrorMessage,
   getMissingSupabaseSchemaMessage,
   isSupabaseConfigured,
