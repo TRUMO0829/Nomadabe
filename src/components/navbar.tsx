@@ -60,14 +60,9 @@ function openSignupPrompt() {
 type NavbarProps = {
   showHomeSearch?: boolean;
   surface?: "auto" | "light";
-  logoPlacement?: "left" | "center";
 };
 
-export function Navbar({
-  showHomeSearch = false,
-  surface = "auto",
-  logoPlacement = "left",
-}: NavbarProps) {
+export function Navbar({ showHomeSearch = false, surface = "auto" }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [customer, setCustomer] = useState<AuthCustomer | null>(null);
@@ -136,12 +131,7 @@ export function Navbar({
         <Link
           href="/#home"
           aria-label="Nomadabe Travel"
-          className={cn(
-            "order-1 flex shrink-0 items-center lg:absolute",
-            logoPlacement === "center"
-              ? "lg:left-1/2 lg:top-5 lg:-translate-x-1/2"
-              : "lg:left-4 lg:top-4"
-          )}
+          className="order-1 flex shrink-0 items-center lg:absolute lg:left-4 lg:top-4"
         >
           <Image
             src="/nomadabe-logo-cropped.webp"

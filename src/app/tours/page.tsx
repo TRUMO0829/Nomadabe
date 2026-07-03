@@ -19,7 +19,7 @@ export default async function ToursPage() {
   return (
     <>
       <SignupPromptModal autoOpen={false} />
-      <Navbar logoPlacement="center" />
+      <Navbar />
       <main className="flex-1">
         <ToursExperience adventures={adventures} />
         <CtaFooter />

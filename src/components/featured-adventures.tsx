@@ -16,10 +16,12 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   CalendarDays,
+  Globe2,
   Minus,
   MapPinned,
   Plus,
   Search,
+  SlidersHorizontal,
   Star,
   Send,
 } from "lucide-react";
@@ -1151,10 +1153,8 @@ export function FeaturedAdventures({
   adventures = ADVENTURES,
   beforeList,
 }: FeaturedAdventuresProps) {
-  const { contentLocale, t } = useLanguage();
-  const defaultScope = contentLocale === "mn" ? "outbound" : "domestic";
   const [selected, setSelected] = useState<Adventure | null>(null);
-  const [scope, setScope] = useState<TripScope>(defaultScope);
+  const [scope, setScope] = useState<TripScope>("all");
   const [sortMode] = useState<SortMode>("recommended");
   const [query, setQuery] = useState("");
   const [activeSearchPanel, setActiveSearchPanel] =
@@ -1171,7 +1171,7 @@ export function FeaturedAdventures({
   const [activeHeroImage, setActiveHeroImage] = useState(0);
   const gallerySectionRef = useRef<HTMLDivElement>(null);
   const searchFormRef = useRef<HTMLFormElement>(null);
-  const hasScopeOverrideRef = useRef(false);
+  const { contentLocale, t } = useLanguage();
   const sectionCopy = SECTION_COPY[contentLocale];
   const searchCopy = TRIP_SEARCH_COPY[contentLocale];
   const localeTag = LOCALE_TAGS[contentLocale];
@@ -1214,6 +1214,36 @@ export function FeaturedAdventures({
     () => [...staticOutboundAdventures, ...adventures],
     [adventures, staticOutboundAdventures]
   );
+  const outboundCount = useMemo(
+    () =>
+      allAdventures.filter((adventure) => adventure.country !== "Mongolia").length,
+    [allAdventures]
+  );
+  const domesticCount = useMemo(
+    () =>
+      allAdventures.filter((adventure) => adventure.country === "Mongolia").length,
+    [allAdventures]
+  );
+  const scopeOptions = [
+    {
+      key: "all" as const,
+      label: sectionCopy.all,
+      count: allAdventures.length,
+      icon: SlidersHorizontal,
+    },
+    {
+      key: "outbound" as const,
+      label: sectionCopy.outbound,
+      count: outboundCount,
+      icon: Globe2,
+    },
+    {
+      key: "domestic" as const,
+      label: sectionCopy.domestic,
+      count: domesticCount,
+      icon: MapPinned,
+    },
+  ];
 
   const destinationOptions = useMemo(() => {
     const options = new Map<
@@ -1266,12 +1296,6 @@ export function FeaturedAdventures({
   }, []);
 
   useEffect(() => {
-    if (!hasScopeOverrideRef.current) {
-      setScope(defaultScope);
-    }
-  }, [defaultScope]);
-
-  useEffect(() => {
     if (!activeSearchPanel) {
       return;
     }
@@ -1310,7 +1334,6 @@ export function FeaturedAdventures({
 
     const timerId = window.setTimeout(() => {
       if (nextScope) {
-        hasScopeOverrideRef.current = true;
         setScope(nextScope);
       }
 
@@ -1452,16 +1475,16 @@ export function FeaturedAdventures({
           <div className="absolute inset-0 bg-primary/10" />
         </div>
 
-        <div className="absolute inset-x-0 top-[42vh] z-30 px-6 sm:top-[44vh] lg:px-10">
+        <div className="absolute inset-x-0 top-[300px] z-30 px-6 sm:top-[330px] lg:top-[390px] lg:px-10">
           <form
             ref={searchFormRef}
             onSubmit={handleTripSearchSubmit}
-            className="relative mx-auto max-w-3xl text-white"
+            className="relative mx-auto max-w-4xl text-white"
           >
-            <div className="grid overflow-hidden rounded-[1.75rem] border border-white/50 bg-white/10 shadow-[0_24px_80px_rgba(17,16,11,0.18)] backdrop-blur-[1px] sm:rounded-full lg:grid-cols-[1fr_auto]">
+            <div className="grid overflow-hidden rounded-[2rem] border border-white/50 bg-white/10 shadow-[0_24px_80px_rgba(17,16,11,0.18)] backdrop-blur-[1px] sm:rounded-full lg:grid-cols-[1fr_auto]">
               <div
                 className={cn(
-                  "flex min-h-[60px] flex-col justify-center border-b border-white/24 px-5 py-3 transition-colors sm:border-b-0 lg:border-r",
+                  "flex min-h-[76px] flex-col justify-center border-b border-white/24 px-6 py-4 transition-colors sm:border-b-0 lg:border-r",
                   activeSearchPanel === "where" && "bg-white/14"
                 )}
                 onClick={() => setActiveSearchPanel("where")}
@@ -1481,14 +1504,14 @@ export function FeaturedAdventures({
                     setActiveSearchPanel("where");
                   }}
                   placeholder={searchCopy.wherePlaceholder}
-                  className="mt-1 min-w-0 appearance-none border-0 bg-transparent p-0 text-sm text-white shadow-none outline-none [background:transparent] placeholder:text-white/62 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-lg"
+                  className="mt-1 min-w-0 appearance-none border-0 bg-transparent p-0 text-base text-white shadow-none outline-none [background:transparent] placeholder:text-white/62 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-xl"
                 />
               </div>
 
-              <div className="flex items-center justify-end px-2.5 pb-2.5 sm:pb-2.5 lg:p-2.5">
+              <div className="flex items-center justify-end px-3 pb-3 sm:pb-3 lg:p-3">
                 <button
                   type="submit"
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-6 text-xs uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-7 text-sm uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
                 >
                   <Search className="h-5 w-5" />
                   <span>{searchCopy.search}</span>
@@ -1706,6 +1729,26 @@ export function FeaturedAdventures({
                 ) : null}
               </div>
             ) : null}
+
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {scopeOptions.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setScope(item.key)}
+                  className={cn(
+                    "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border px-4 text-[10px] font-black uppercase text-white backdrop-blur transition-colors",
+                    scope === item.key
+                      ? "border-accent bg-accent text-accent-foreground"
+                      : "border-white/45 bg-black/14 hover:border-accent hover:bg-white/10"
+                  )}
+                >
+                  <item.icon className="h-3.5 w-3.5" />
+                  <span>{item.count}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
           </form>
         </div>
       </div>
