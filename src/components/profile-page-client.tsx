@@ -10,6 +10,7 @@ import {
   Mail,
   Plane,
   RefreshCw,
+  Trash2,
   UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -46,21 +47,23 @@ type ProfileData = {
   };
 };
 
+type InquiryFilter = "all" | "active" | "traveled";
+
 const statusCopy: Record<Inquiry["status"], { label: string; className: string }> = {
   new: {
-    label: "Шинэ",
+    label: "Хүлээгдэж буй",
     className: "bg-white text-[var(--foreground)] ring-1 ring-[var(--border)]",
   },
   contacted: {
-    label: "Холбогдсон",
+    label: "Хүлээгдэж буй",
     className: "bg-[var(--muted)] text-[var(--foreground)]",
   },
   confirmed: {
-    label: "Баталгаажсан",
+    label: "Явсан",
     className: "bg-emerald-600 text-white",
   },
   closed: {
-    label: "Хаагдсан",
+    label: "Явсан",
     className: "bg-[var(--primary)] text-white",
   },
 };
@@ -69,7 +72,32 @@ export function ProfilePageClient() {
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [filter, setFilter] = useState<InquiryFilter>("all");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState("");
   const initials = useMemo(() => getInitials(data?.customer), [data?.customer]);
+  const profileMetrics = useMemo(() => {
+    const inquiries = data?.inquiries ?? [];
+
+    return {
+      total: inquiries.length,
+      active: inquiries.filter((inquiry) => isActiveInquiry(inquiry)).length,
+      traveled: inquiries.filter((inquiry) => isTraveledInquiry(inquiry)).length,
+    };
+  }, [data?.inquiries]);
+  const filteredInquiries = useMemo(() => {
+    const inquiries = data?.inquiries ?? [];
+
+    if (filter === "active") {
+      return inquiries.filter((inquiry) => isActiveInquiry(inquiry));
+    }
+
+    if (filter === "traveled") {
+      return inquiries.filter((inquiry) => isTraveledInquiry(inquiry));
+    }
+
+    return inquiries;
+  }, [data?.inquiries, filter]);
 
   useEffect(() => {
     void loadProfile();
@@ -104,6 +132,47 @@ export function ProfilePageClient() {
     await fetch("/api/auth/logout", { method: "POST" });
     window.dispatchEvent(new Event("nomadabe:auth-changed"));
     window.location.href = "/";
+  }
+
+  async function handleDeleteInquiry(id: string) {
+    setDeletingId(id);
+    setDeleteError("");
+
+    try {
+      const response = await fetch(`/api/profile/inquiries/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      const result = (await response.json()) as {
+        ok?: boolean;
+        error?: { message?: string };
+      };
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error?.message ?? "Could not delete pending trip.");
+      }
+
+      setData((current) => {
+        if (!current) {
+          return current;
+        }
+
+        const inquiries = current.inquiries.filter((inquiry) => inquiry.id !== id);
+
+        return {
+          ...current,
+          inquiries,
+          stats: {
+            totalInquiries: inquiries.length,
+            confirmed: inquiries.filter((inquiry) => isTraveledInquiry(inquiry)).length,
+            active: inquiries.filter((inquiry) => isActiveInquiry(inquiry)).length,
+          },
+        };
+      });
+    } catch (caught) {
+      setDeleteError(caught instanceof Error ? caught.message : "Could not delete pending trip.");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   if (loading) {
@@ -170,9 +239,24 @@ export function ProfilePageClient() {
             </div>
 
             <div className="mt-6 grid grid-cols-3 gap-2">
-              <ProfileMetric label="Нийт" value={data.stats.totalInquiries} />
-              <ProfileMetric label="Идэвхтэй" value={data.stats.active} />
-              <ProfileMetric label="Бат." value={data.stats.confirmed} />
+              <ProfileMetric
+                label="Нийт"
+                value={profileMetrics.total}
+                active={filter === "all"}
+                onClick={() => setFilter("all")}
+              />
+              <ProfileMetric
+                label="Идэвхтэй"
+                value={profileMetrics.active}
+                active={filter === "active"}
+                onClick={() => setFilter("active")}
+              />
+              <ProfileMetric
+                label="Явсан"
+                value={profileMetrics.traveled}
+                active={filter === "traveled"}
+                onClick={() => setFilter("traveled")}
+              />
             </div>
 
             <div className="mt-6 space-y-2">
@@ -220,13 +304,31 @@ export function ProfilePageClient() {
                   Та аялал сонгоод бүртгүүлэхэд энд статус болон мэдээлэл нь харагдана.
                 </p>
               </div>
+            ) : filteredInquiries.length === 0 ? (
+              <div className="mt-6 rounded-md border border-dashed border-[var(--border)] bg-[var(--background)] p-8 text-center">
+                <Plane className="mx-auto h-9 w-9 text-[var(--muted-foreground)]" />
+                <h3 className="mt-4 text-lg font-black uppercase">
+                  Энэ ангилалд аялал алга
+                </h3>
+                <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+                  Өөр ангилал сонгоод бүртгэлийн түүхээ харна уу.
+                </p>
+              </div>
             ) : (
               <div className="mt-6 grid gap-3">
-                {data.inquiries.map((inquiry) => (
-                  <InquiryCard key={inquiry.id} inquiry={inquiry} />
+                {filteredInquiries.map((inquiry) => (
+                  <InquiryCard
+                    key={inquiry.id}
+                    inquiry={inquiry}
+                    deleting={deletingId === inquiry.id}
+                    onDelete={handleDeleteInquiry}
+                  />
                 ))}
               </div>
             )}
+            {deleteError ? (
+              <p className="mt-4 text-sm font-semibold text-red-600">{deleteError}</p>
+            ) : null}
           </section>
         </section>
       </div>
@@ -234,19 +336,53 @@ export function ProfilePageClient() {
   );
 }
 
-function ProfileMetric({ label, value }: { label: string; value: number }) {
+function ProfileMetric({
+  label,
+  value,
+  active,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
-    <div className="rounded-md border border-[var(--border)] bg-[var(--background)] p-3 text-center">
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={cn(
+        "rounded-md border p-3 text-center transition-colors",
+        active
+          ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+          : "border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)]"
+      )}
+    >
       <div className="text-xl font-black">{value}</div>
-      <div className="mt-1 text-[11px] font-bold uppercase text-[var(--muted-foreground)]">
+      <div
+        className={cn(
+          "mt-1 text-[11px] font-bold uppercase",
+          active ? "text-white/75" : "text-[var(--muted-foreground)]"
+        )}
+      >
         {label}
       </div>
-    </div>
+    </button>
   );
 }
 
-function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
+function InquiryCard({
+  inquiry,
+  deleting,
+  onDelete,
+}: {
+  inquiry: Inquiry;
+  deleting: boolean;
+  onDelete: (id: string) => void;
+}) {
   const status = statusCopy[inquiry.status];
+  const canDelete = isActiveInquiry(inquiry);
 
   return (
     <article className="grid gap-4 rounded-md border border-[var(--border)] bg-[var(--background)] p-4 sm:grid-cols-[112px_1fr]">
@@ -263,19 +399,32 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
               {inquiry.tripLocation || getInquiryTypeLabel(inquiry.inquiryType)}
             </p>
           </div>
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1 rounded-md px-3 py-1.5 text-xs font-black uppercase",
-              status.className
-            )}
-          >
-            {inquiry.status === "confirmed" ? (
-              <CheckCircle2 className="h-3.5 w-3.5" />
-            ) : (
-              <Clock3 className="h-3.5 w-3.5" />
-            )}
-            {status.label}
-          </span>
+          <div className="flex shrink-0 items-center gap-2">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-black uppercase",
+                status.className
+              )}
+            >
+              {isTraveledInquiry(inquiry) ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <Clock3 className="h-3.5 w-3.5" />
+              )}
+              {status.label}
+            </span>
+            {canDelete ? (
+              <button
+                type="button"
+                aria-label="Delete pending trip"
+                disabled={deleting}
+                onClick={() => onDelete(inquiry.id)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-foreground)] transition-colors hover:bg-white disabled:cursor-wait disabled:opacity-60"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold uppercase text-[var(--muted-foreground)]">
@@ -301,6 +450,14 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
       </div>
     </article>
   );
+}
+
+function isActiveInquiry(inquiry: Inquiry) {
+  return inquiry.status === "new" || inquiry.status === "contacted";
+}
+
+function isTraveledInquiry(inquiry: Inquiry) {
+  return inquiry.status === "confirmed" || inquiry.status === "closed";
 }
 
 function getInitials(customer: Customer | undefined) {

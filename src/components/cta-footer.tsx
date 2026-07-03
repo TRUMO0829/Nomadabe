@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
 import { useLanguage } from "./language-provider";
 
 const SOCIALS = [
@@ -26,8 +26,7 @@ const MINISTER_TOWER_ADDRESS =
   "Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia, Ulaanbaatar, Mongolia, 976";
 const MINISTER_TOWER_MAP_URL =
   "https://www.google.com/maps/place/Minister+Tower/@47.9153226,106.917978,425m/data=!3m2!1e3!4b1!4m6!3m5!1s0x5d9693649ea1b323:0x8bb14a35346801cd!8m2!3d47.9153226!4d106.9205583!16s%2Fg%2F11ss8zbb4r?hl=en-US&entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D";
-const MINISTER_TOWER_EMBED_URL =
-  "https://maps.google.com/maps?q=47.9153226,106.9205583&z=17&ie=UTF8&iwloc=&output=embed";
+const OYU_INTELLIGENCE_URL = "https://www.oyu-intelligence.com/en";
 
 const CONTACTS = [
   { type: "email", label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
@@ -50,7 +49,7 @@ const INQUIRY_MESSAGE = {
 
 const PLAN_COPY = {
   mn: {
-    eyebrow: "Аялал төлөвлөх",
+    eyebrow: "Хүсэлт",
     name: "Нэр",
     email: "И-мэйл",
     destination: "Чиглэл",
@@ -78,7 +77,7 @@ const PLAN_COPY = {
     ],
   },
   en: {
-    eyebrow: "Plan a trip",
+    eyebrow: "Request",
     name: "Name",
     email: "Email",
     destination: "Destination",
@@ -116,9 +115,8 @@ const FOOTER_COPY = {
     contactTitle: "Холбоо барих",
     mapTitle: "Байршил",
     links: [
-      { label: "Бидний тухай", href: "/#about" },
+      { label: "Бидний тухай", href: "/about" },
       { label: "Аяллууд", href: "/tours" },
-      { label: "Сэтгэл ханамж", href: "/#journal" },
       { label: "Холбоо барих", href: "/plan" },
     ],
     contacts: CONTACTS,
@@ -134,9 +132,8 @@ const FOOTER_COPY = {
     contactTitle: "Contact",
     mapTitle: "Location",
     links: [
-      { label: "About us", href: "/#about" },
+      { label: "About us", href: "/about" },
       { label: "Trips", href: "/tours" },
-      { label: "Satisfaction", href: "/#journal" },
       { label: "Contact", href: "/plan" },
     ],
     contacts: CONTACTS,
@@ -152,9 +149,8 @@ const FOOTER_COPY = {
     contactTitle: "联系方式",
     mapTitle: "位置",
     links: [
-      { label: "关于我们", href: "/#about" },
+      { label: "关于我们", href: "/about" },
       { label: "旅行", href: "/tours" },
-      { label: "满意度", href: "/#journal" },
       { label: "联系", href: "/plan" },
     ],
     contacts: CONTACTS,
@@ -170,9 +166,8 @@ const FOOTER_COPY = {
     contactTitle: "お問い合わせ",
     mapTitle: "所在地",
     links: [
-      { label: "私たちについて", href: "/#about" },
+      { label: "私たちについて", href: "/about" },
       { label: "ツアー", href: "/tours" },
-      { label: "満足度", href: "/#journal" },
       { label: "お問い合わせ", href: "/plan" },
     ],
     contacts: CONTACTS,
@@ -188,9 +183,8 @@ const FOOTER_COPY = {
     contactTitle: "연락처",
     mapTitle: "위치",
     links: [
-      { label: "회사 소개", href: "/#about" },
+      { label: "회사 소개", href: "/about" },
       { label: "여행", href: "/tours" },
-      { label: "만족도", href: "/#journal" },
       { label: "연락하기", href: "/plan" },
     ],
     contacts: CONTACTS,
@@ -300,13 +294,14 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
           className="relative overflow-hidden bg-primary px-6 pb-24 pt-32 text-primary-foreground lg:px-10 lg:pb-32 lg:pt-40"
         >
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-30"
+            className="absolute inset-0 bg-cover bg-center opacity-80"
             style={{
               backgroundImage:
                 "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2000&q=80&fit=crop&fm=webp')",
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/85 to-primary/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-black/34 to-black/12" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.20),transparent_32%,transparent_68%,rgba(0,0,0,0.22))]" />
 
           <div className="relative mx-auto max-w-5xl text-center">
             <motion.h1
@@ -324,7 +319,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </p>
 
             <form
-              className="mx-auto mt-10 grid max-w-4xl gap-4 rounded-md border border-white/15 bg-white/10 p-4 text-left backdrop-blur sm:grid-cols-2 lg:p-6"
+              className="mx-auto mt-10 grid max-w-4xl gap-4 rounded-md border border-white/35 bg-black/30 p-4 text-left shadow-[0_24px_90px_rgba(0,0,0,0.34)] backdrop-blur-[2px] sm:grid-cols-2 lg:p-6"
               onSubmit={handleSubmit}
             >
               <div className="sm:col-span-2">
@@ -437,7 +432,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
 
       <footer className="bg-[#141414] text-white">
         <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-20">
-          <div className="grid gap-10 lg:grid-cols-[1.15fr_0.65fr_1fr_0.95fr]">
+          <div className="grid gap-10 lg:grid-cols-[1.15fr_0.65fr_1fr]">
             <div>
               <Link href="/#home" className="inline-flex items-center gap-3">
                 <span
@@ -530,53 +525,42 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               </ul>
             </div>
 
-            <div className="pt-4 lg:pt-0">
-              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-accent">
-                {footer.mapTitle}
-              </h3>
-              <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
-                <iframe
-                  title={footer.mapTitle}
-                  src={MINISTER_TOWER_EMBED_URL}
-                  className="h-52 w-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-              <a
-                href={MINISTER_TOWER_MAP_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-white/65 transition-colors hover:text-accent"
-              >
-                {footer.mapButton}
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            </div>
           </div>
 
           <div className="relative mt-14 border-t border-white/10 pt-16 text-xs text-white/45">
-            <div className="pointer-events-none absolute left-1/2 top-12 -translate-x-1/2 -translate-y-1/2 opacity-90">
+            <a
+              href={OYU_INTELLIGENCE_URL}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Oyu Intelligence"
+              className="absolute left-1/2 top-12 -translate-x-1/2 -translate-y-1/2 opacity-90 transition-opacity hover:opacity-100"
+            >
               <div className="relative h-20 w-20 sm:h-24 sm:w-24">
-                <img
+                <Image
                   src="/oyu-intelligence-logo.webp"
                   alt="OYU Intelligence"
+                  fill
+                  sizes="96px"
                   className="absolute inset-0 h-full w-full object-contain"
                 />
-                <img
+                <Image
                   src="/oyu-intelligence-logo.webp"
                   alt=""
                   aria-hidden="true"
+                  fill
+                  sizes="96px"
                   className="absolute inset-0 h-full w-full object-contain brightness-0 invert [clip-path:inset(32%_9%_38%_38%)]"
                 />
-                <img
+                <Image
                   src="/oyu-intelligence-logo.webp"
                   alt=""
                   aria-hidden="true"
+                  fill
+                  sizes="96px"
                   className="absolute inset-0 h-full w-full object-contain brightness-0 invert [clip-path:inset(62%_12%_25%_14%)]"
                 />
               </div>
-            </div>
+            </a>
 
             <div className="relative z-10 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
               <div>

@@ -10,7 +10,7 @@ import {
   type TravelService,
 } from "@/lib/adventures";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
-import type { SiteSettings } from "@/lib/site-settings";
+import type { SiteSettings, TeamMember } from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
 import {
   getSupabaseConfigurationErrorMessage,
@@ -54,9 +54,24 @@ type SiteSettingsRow = {
 const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_FILE = path.join(DATA_DIR, "admin-store.json");
 
+const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
+  {
+    id: "team-founder",
+    name: "N. Ariunbold",
+    role: "Co-Founder, CEO",
+    image: "",
+  },
+  {
+    id: "team-travel-manager",
+    name: "B. Bilguun",
+    role: "Co-Founder, COO",
+    image: "",
+  },
+];
+
 const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroBadge: "★★★★★ 1,200+ аялагчийн үнэлгээ",
-  heroTitle: "Аяллаа\nнүүдэлчин хэмнэлээр.",
+  heroTitle: "Аяллаа\nнүүдэлчин хэмнэлээр",
   heroSubtitle:
     "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг төлөвлөн зохион байгуулна.",
   heroImage:
@@ -64,6 +79,7 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   accentColor: "#e85d2c",
   heroTextColor: "#ffffff",
   heroOverlayOpacity: 0.72,
+  teamMembers: DEFAULT_TEAM_MEMBERS,
 };
 
 export async function getAdminStore() {
@@ -124,6 +140,10 @@ export async function getServices() {
 
 export async function getSiteSettings() {
   return (await getAdminStore()).siteSettings;
+}
+
+export async function getTeamMembers() {
+  return (await getAdminStore()).siteSettings.teamMembers;
 }
 
 export async function getAdminDashboardData() {
@@ -218,14 +238,52 @@ export async function updateSiteSettingsFromJson(payload: unknown) {
   return updateSiteSettings(parseSiteSettingsFromJson(payload));
 }
 
-export async function updateSiteSettings(siteSettings: SiteSettings) {
+export async function updateSiteSettings(siteSettings: Partial<SiteSettings>) {
   const store = await getAdminStore();
-  const normalized = normalizeSiteSettings(siteSettings);
+  const normalized = normalizeSiteSettings({
+    ...store.siteSettings,
+    ...siteSettings,
+    teamMembers: siteSettings.teamMembers ?? store.siteSettings.teamMembers,
+  });
   await saveAdminStore({
     ...store,
     siteSettings: normalized,
   });
   return normalized;
+}
+
+export async function upsertTeamMemberFromForm(formData: FormData) {
+  return upsertTeamMember(parseTeamMemberFromFields(simpleFormFields(formData)));
+}
+
+export async function upsertTeamMember(input: TeamMember) {
+  const store = await getAdminStore();
+  const existing = store.siteSettings.teamMembers.some((member) => member.id === input.id);
+
+  await saveAdminStore({
+    ...store,
+    siteSettings: normalizeSiteSettings({
+      ...store.siteSettings,
+      teamMembers: existing
+        ? store.siteSettings.teamMembers.map((member) =>
+            member.id === input.id ? input : member
+          )
+        : [...store.siteSettings.teamMembers, input],
+    }),
+  });
+
+  return input;
+}
+
+export async function deleteTeamMemberById(id: string) {
+  const store = await getAdminStore();
+  await saveAdminStore({
+    ...store,
+    siteSettings: normalizeSiteSettings({
+      ...store.siteSettings,
+      teamMembers: store.siteSettings.teamMembers.filter((member) => member.id !== id),
+    }),
+  });
 }
 
 async function getSupabaseAdminStore() {
@@ -356,6 +414,9 @@ export function parseSiteSettingsFromJson(payload: unknown) {
       stringifyPayloadValue(payload.heroOverlayOpacity),
       DEFAULT_SITE_SETTINGS.heroOverlayOpacity
     ),
+    teamMembers: Array.isArray(payload.teamMembers)
+      ? normalizeTeamMembers(payload.teamMembers)
+      : undefined,
   });
 }
 
@@ -380,7 +441,40 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>) {
       typeof settings.heroOverlayOpacity === "number"
         ? Math.min(0.9, Math.max(0.2, settings.heroOverlayOpacity))
         : DEFAULT_SITE_SETTINGS.heroOverlayOpacity,
+    teamMembers: normalizeTeamMembers(settings.teamMembers),
   };
+}
+
+function normalizeTeamMembers(members: unknown) {
+  if (!Array.isArray(members)) {
+    return DEFAULT_TEAM_MEMBERS;
+  }
+
+  return members
+    .map((member) => {
+      if (!isRecord(member)) {
+        return null;
+      }
+
+      const name = stringifyPayloadValue(member.name);
+      const role = stringifyPayloadValue(member.role);
+      const image = stringifyPayloadValue(member.image);
+      const bio = stringifyPayloadValue(member.bio);
+      const id = stringifyPayloadValue(member.id) || slugify(name || role) || randomUUID();
+
+      if (!name && !role && !image) {
+        return null;
+      }
+
+      return {
+        id,
+        name: name || "Нэр оруулах",
+        role: role || "Албан тушаал",
+        image,
+        ...(bio ? { bio } : {}),
+      } satisfies TeamMember;
+    })
+    .filter((member): member is TeamMember => Boolean(member));
 }
 
 function getBookingStats(inquiries: InquiryRecord[]) {
@@ -498,6 +592,23 @@ function parseServiceFromFields(fields: FieldReader) {
     description: fields.get("description"),
     highlights: getListFromString(fields.get("highlights"), []),
   } satisfies TravelService;
+}
+
+function parseTeamMemberFromFields(fields: FieldReader) {
+  const name = fields.get("name");
+  const role = fields.get("role");
+
+  if (!name || !role) {
+    throw new Error("Team member name and role are required.");
+  }
+
+  return {
+    id: fields.get("id") || slugify(name) || randomUUID(),
+    name,
+    role,
+    image: fields.get("image"),
+    bio: fields.get("bio") || undefined,
+  } satisfies TeamMember;
 }
 
 function formFields(formData: FormData): FieldReader {

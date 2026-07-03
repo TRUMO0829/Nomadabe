@@ -239,7 +239,7 @@ export function OutboundTripsCarousel({
         adventure,
       };
     });
-  const options = [...OUTBOUND_OPTIONS, ...backendOptions].slice(0, 3);
+  const options = [...OUTBOUND_OPTIONS, ...backendOptions].slice(0, 4);
   const cardRows = options.map((option, idx) => {
     const title = {
       mn: option.titleMn,
@@ -288,7 +288,7 @@ export function OutboundTripsCarousel({
     const card: iCardItem = {
       title,
       description: `${country} - ${option.days} ${copy.day}`,
-      tag: "",
+      tag: option.price,
       src: option.image,
       link: "#",
       color: "#11100B",
@@ -301,7 +301,7 @@ export function OutboundTripsCarousel({
 
   return (
     <>
-      <TravelSectionIntro title={copy.eyebrow} variant="plain" />
+      <TravelSectionIntro title={copy.eyebrow} />
 
       <section className="bg-card">
         <CardsParallax

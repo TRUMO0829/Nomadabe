@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Calendar,
@@ -19,9 +19,6 @@ import {
   getAdventureText,
   type Adventure,
 } from "@/lib/adventures";
-import InteractiveBentoGallery, {
-  type MediaItemType,
-} from "@/components/ui/interactive-bento-gallery";
 import { useLanguage } from "./language-provider";
 
 type Props = {
@@ -29,7 +26,10 @@ type Props = {
   onClose: () => void;
 };
 
-const GALLERY_ITEM_COUNT = 7;
+type AuthCustomer = {
+  email: string;
+  name?: string;
+};
 
 const DETAIL_COPY = {
   mn: {
@@ -69,43 +69,192 @@ const DETAIL_COPY = {
   },
 } as const;
 
+const BOOKING_COPY = {
+  mn: {
+    title: "Холбогдох мэдээлэл",
+    body: "Манай баг энэ мэдээллээр аяллын боломжит хугацаа, хүний тоо, дараагийн алхмыг баталгаажуулна.",
+    name: "Нэр",
+    email: "И-мэйл",
+    travelers: "Явах хүний тоо",
+    preferredDate: "Явах огноо",
+    message: "Нэмэлт хүсэлт",
+    messagePlaceholder: "Жишээ: хүүхэдтэй эсэх, буудлын түвшин, хоол, нислэгийн хэрэгцээ гэх мэт",
+    defaultMessage: "Энэ аяллын талаар дэлгэрэнгүй мэдээлэл авмаар байна.",
+    submit: "Хүсэлт илгээх",
+    sending: "Илгээж байна...",
+    success: "Хүсэлт илгээгдлээ. Манай баг удахгүй холбогдоно.",
+    error: "Хүсэлт илгээхэд алдаа гарлаа. Мэдээллээ шалгаад дахин оролдоно уу.",
+  },
+  en: {
+    title: "Contact details",
+    body: "Our team will use this to confirm timing, group size, and next steps.",
+    name: "Name",
+    email: "Email",
+    travelers: "Travelers",
+    preferredDate: "Travel date",
+    message: "Extra request",
+    messagePlaceholder: "Example: children, hotel level, meals, flight needs, or other notes",
+    defaultMessage: "I would like to receive more details about this trip.",
+    submit: "Send request",
+    sending: "Sending...",
+    success: "Request sent. Our team will contact you soon.",
+    error: "Could not send the request. Please check the fields and try again.",
+  },
+  zh: {
+    title: "联系信息",
+    body: "我们将根据这些信息确认出行时间、人数和下一步安排。",
+    name: "姓名",
+    email: "邮箱",
+    travelers: "人数",
+    preferredDate: "出行日期",
+    message: "其他需求",
+    messagePlaceholder: "例如：是否有儿童、酒店标准、餐饮、航班需求等",
+    defaultMessage: "我想了解更多关于这个行程的信息。",
+    submit: "发送请求",
+    sending: "发送中...",
+    success: "请求已发送。我们的团队会尽快联系您。",
+    error: "请求发送失败。请检查信息后重试。",
+  },
+  ja: {
+    title: "連絡先情報",
+    body: "日程、人数、次のステップを確認するために使用します。",
+    name: "名前",
+    email: "メール",
+    travelers: "人数",
+    preferredDate: "出発日",
+    message: "追加リクエスト",
+    messagePlaceholder: "例：お子様の有無、ホテル希望、食事、航空券の希望など",
+    defaultMessage: "この旅行について詳しい情報を知りたいです。",
+    submit: "リクエスト送信",
+    sending: "送信中...",
+    success: "リクエストを送信しました。担当者よりご連絡します。",
+    error: "送信できませんでした。内容を確認して再度お試しください。",
+  },
+  ko: {
+    title: "연락 정보",
+    body: "일정, 인원, 다음 단계를 확인하기 위해 사용합니다.",
+    name: "이름",
+    email: "이메일",
+    travelers: "여행 인원",
+    preferredDate: "출발일",
+    message: "추가 요청",
+    messagePlaceholder: "예: 어린이 동반, 호텔 수준, 식사, 항공권 요청 등",
+    defaultMessage: "이 여행에 대해 자세한 정보를 받고 싶습니다.",
+    submit: "요청 보내기",
+    sending: "보내는 중...",
+    success: "요청이 전송되었습니다. 담당자가 곧 연락드립니다.",
+    error: "요청을 보낼 수 없습니다. 정보를 확인한 뒤 다시 시도해 주세요.",
+  },
+} as const;
+
 export function AdventureModal({ adventure, onClose }: Props) {
+  const [heroImageState, setHeroImageState] = useState<{
+    adventureId: Adventure["id"] | null;
+    index: number;
+  }>({ adventureId: null, index: 0 });
+  const [customer, setCustomer] = useState<AuthCustomer | null>(null);
+  const [bookingAdventureId, setBookingAdventureId] = useState<
+    Adventure["id"] | null
+  >(null);
+  const [bookingStatus, setBookingStatus] = useState<{
+    adventureId: Adventure["id"];
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const pendingBookingAdventureIdRef = useRef<Adventure["id"] | null>(null);
   const { contentLocale, t } = useLanguage();
   const copy = DETAIL_COPY[contentLocale];
+  const bookingCopy = BOOKING_COPY[contentLocale];
   const text = adventure ? getAdventureText(adventure, contentLocale) : null;
   const details = adventure
     ? getAdventureDetailInfo(adventure, contentLocale)
     : null;
-  const gallerySourceImages = adventure
-    ? getAdventureGalleryImages(adventure).filter((image) => image.length > 0)
-    : [];
-  const additionalImages =
-    gallerySourceImages.length > 0
-      ? Array.from(
-          { length: GALLERY_ITEM_COUNT },
-          (_, index) => gallerySourceImages[index % gallerySourceImages.length]
+  const adventureId = adventure?.id ?? null;
+  const heroImages = useMemo(() => {
+    if (!adventure) {
+      return [];
+    }
+
+    return Array.from(
+      new Set(
+        [adventure.image, ...getAdventureGalleryImages(adventure)].filter(
+          (image) => image.length > 0
         )
-      : [];
-  const gallerySpans = [
-    "row-span-2 sm:col-span-1 sm:row-span-2 md:col-span-1 md:row-span-3",
-    "row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-2 md:row-span-2",
-    "row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-1 md:row-span-3",
-    "row-span-2 sm:col-span-1 sm:row-span-2 md:col-span-2 md:row-span-2",
-    "row-span-2 sm:col-span-1 sm:row-span-2 md:col-span-1 md:row-span-2",
-    "row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-2 md:row-span-2",
-    "row-span-2 sm:col-span-1 sm:row-span-2 md:col-span-1 md:row-span-2",
-  ];
-  const galleryMediaItems: MediaItemType[] =
-    adventure && text
-      ? additionalImages.map((image, index) => ({
-          id: index + 1,
-          type: "image",
-          title: `${text.title} ${index + 1}`,
-          desc: `${text.location}, ${text.country}`,
-          url: image,
-          span: gallerySpans[index % gallerySpans.length],
-        }))
-      : [];
+      )
+    );
+  }, [adventure]);
+  const heroImageIndex =
+    adventureId !== null && heroImageState.adventureId === adventureId
+      ? heroImageState.index
+      : 0;
+  const showBookingForm =
+    adventureId !== null &&
+    bookingAdventureId === adventureId &&
+    customer !== null;
+  const activeBookingStatus =
+    adventureId !== null && bookingStatus?.adventureId === adventureId
+      ? bookingStatus
+      : null;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCustomer() {
+      try {
+        const response = await fetch("/api/auth/me", { cache: "no-store" });
+        const result = (await response.json()) as {
+          ok?: boolean;
+          data?: { customer?: AuthCustomer | null };
+        };
+        const loadedCustomer =
+          response.ok && result.ok ? (result.data?.customer ?? null) : null;
+
+        if (cancelled) {
+          return;
+        }
+
+        setCustomer(loadedCustomer);
+
+        if (loadedCustomer && pendingBookingAdventureIdRef.current !== null) {
+          setBookingAdventureId(pendingBookingAdventureIdRef.current);
+          pendingBookingAdventureIdRef.current = null;
+        }
+      } catch {
+        if (!cancelled) {
+          setCustomer(null);
+        }
+      }
+    }
+
+    void loadCustomer();
+    window.addEventListener("nomadabe:auth-changed", loadCustomer);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("nomadabe:auth-changed", loadCustomer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (adventureId === null || heroImages.length <= 1) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setHeroImageState((current) => {
+        const currentIndex =
+          current.adventureId === adventureId ? current.index : 0;
+
+        return {
+          adventureId,
+          index: (currentIndex + 1) % heroImages.length,
+        };
+      });
+    }, 2000);
+
+    return () => window.clearInterval(intervalId);
+  }, [adventureId, heroImages.length]);
 
   useEffect(() => {
     if (!adventure) return;
@@ -119,6 +268,84 @@ export function AdventureModal({ adventure, onClose }: Props) {
       document.body.style.overflow = "";
     };
   }, [adventure, onClose]);
+
+  function handleRegisterClick() {
+    if (adventureId === null) {
+      return;
+    }
+
+    setBookingStatus(null);
+
+    if (!customer) {
+      pendingBookingAdventureIdRef.current = adventureId;
+      window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+      return;
+    }
+
+    setBookingAdventureId(adventureId);
+  }
+
+  async function handleBookingSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!adventure || !customer) {
+      if (adventureId !== null) {
+        pendingBookingAdventureIdRef.current = adventureId;
+      }
+      window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const travelers = Number(formData.get("travelers") ?? 1);
+    const payload = {
+      tripSlug: adventure.slug,
+      name: String(formData.get("name") ?? "").trim(),
+      email: String(formData.get("email") ?? "").trim() || customer.email,
+      travelers: Number.isFinite(travelers) ? travelers : 1,
+      preferredDate: String(formData.get("preferredDate") ?? "").trim(),
+      message: String(formData.get("message") ?? "").trim(),
+    };
+
+    setBookingSubmitting(true);
+    setBookingStatus(null);
+
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = (await response.json()) as {
+        ok?: boolean;
+        error?: { message?: string };
+      };
+
+      if (!response.ok || !result.ok) {
+        if (response.status === 401) {
+          pendingBookingAdventureIdRef.current = adventure.id;
+          window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+          return;
+        }
+
+        throw new Error(result.error?.message ?? bookingCopy.error);
+      }
+
+      setBookingStatus({
+        adventureId: adventure.id,
+        type: "success",
+        text: bookingCopy.success,
+      });
+    } catch (error) {
+      setBookingStatus({
+        adventureId: adventure.id,
+        type: "error",
+        text: error instanceof Error ? error.message : bookingCopy.error,
+      });
+    } finally {
+      setBookingSubmitting(false);
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -149,24 +376,13 @@ export function AdventureModal({ adventure, onClose }: Props) {
 
             <div className="relative aspect-[16/9] w-full overflow-hidden lg:aspect-[21/9]">
               <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${adventure.image})` }}
+                className="absolute inset-0 bg-cover bg-center transition-[background-image] duration-700"
+                style={{
+                  backgroundImage: `url(${heroImages[heroImageIndex] ?? adventure.image})`,
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white lg:p-10">
-                <div className="mb-4 flex flex-wrap gap-2">
-                  <span className="rounded-md bg-accent px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-accent-foreground">
-                    {text.difficulty}
-                  </span>
-                  {text.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-md bg-white/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-foreground"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
                 <h3 className="max-w-3xl text-balance font-display text-2xl leading-tight lg:text-4xl">
                   {text.title}
                 </h3>
@@ -185,17 +401,6 @@ export function AdventureModal({ adventure, onClose }: Props) {
                 </div>
               </div>
             </div>
-
-            {galleryMediaItems.length > 0 && (
-              <div className="px-6 pt-8 lg:px-10 lg:pt-10">
-                <InteractiveBentoGallery
-                  key={adventure.id}
-                  mediaItems={galleryMediaItems}
-                  title={copy.morePhotos}
-                  description={text.title}
-                />
-              </div>
-            )}
 
             <div className="grid gap-8 p-6 lg:grid-cols-[1.5fr_1fr] lg:gap-12 lg:p-10">
               <div>
@@ -323,23 +528,114 @@ export function AdventureModal({ adventure, onClose }: Props) {
                     adventure.price > 0 ? "mt-6 space-y-3" : "space-y-3"
                   }
                 >
-                  <a
-                    href={`/plan?trip=${encodeURIComponent(adventure.slug)}&title=${encodeURIComponent(text.title)}`}
+                  <button
+                    type="button"
+                    onClick={handleRegisterClick}
                     className="block w-full rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-accent-foreground transition-colors hover:bg-secondary"
                   >
                     {t.modal.register}
-                  </a>
-                  <a
-                    href={`#enquiry-${adventure.slug}`}
-                    className="block w-full rounded-lg border border-foreground/15 px-6 py-3.5 text-center font-semibold text-foreground transition-colors hover:border-accent"
-                  >
-                    {t.modal.ask}
-                  </a>
+                  </button>
                 </div>
 
-                <p className="mt-4 text-center text-xs text-muted-foreground">
-                  {t.modal.note}
-                </p>
+                {showBookingForm ? (
+                  <form
+                    onSubmit={handleBookingSubmit}
+                    className="mt-5 space-y-3 rounded-lg border border-border bg-background/70 p-4"
+                  >
+                    <div>
+                      <h5 className="font-display text-lg">
+                        {bookingCopy.title}
+                      </h5>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {bookingCopy.body}
+                      </p>
+                    </div>
+
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {bookingCopy.name}
+                      <input
+                        name="name"
+                        required
+                        minLength={2}
+                        defaultValue={customer.name ?? ""}
+                        className="mt-1 h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-ring"
+                      />
+                    </label>
+
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {bookingCopy.email}
+                      <input
+                        name="email"
+                        type="email"
+                        required
+                        defaultValue={customer.email}
+                        className="mt-1 h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-ring"
+                      />
+                    </label>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {bookingCopy.travelers}
+                        <input
+                          name="travelers"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          required
+                          defaultValue={2}
+                          className="mt-1 h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-ring"
+                        />
+                      </label>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {bookingCopy.preferredDate}
+                        <input
+                          name="preferredDate"
+                          type="date"
+                          className="mt-1 h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-ring"
+                        />
+                      </label>
+                    </div>
+
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {bookingCopy.message}
+                      <textarea
+                        name="message"
+                        required
+                        minLength={10}
+                        rows={4}
+                        placeholder={bookingCopy.messagePlaceholder}
+                        defaultValue={bookingCopy.defaultMessage}
+                        className="mt-1 min-h-28 w-full resize-y rounded-md border border-border bg-background px-3 py-3 text-sm font-medium text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring"
+                      />
+                    </label>
+
+                    {activeBookingStatus ? (
+                      <p
+                        className={
+                          activeBookingStatus.type === "success"
+                            ? "text-sm font-semibold text-green-700"
+                            : "text-sm font-semibold text-red-600"
+                        }
+                      >
+                        {activeBookingStatus.text}
+                      </p>
+                    ) : null}
+
+                    <button
+                      type="submit"
+                      disabled={bookingSubmitting}
+                      className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {bookingSubmitting
+                        ? bookingCopy.sending
+                        : bookingCopy.submit}
+                    </button>
+                  </form>
+                ) : (
+                  <p className="mt-4 text-center text-xs text-muted-foreground">
+                    {t.modal.note}
+                  </p>
+                )}
               </aside>
             </div>
           </motion.div>

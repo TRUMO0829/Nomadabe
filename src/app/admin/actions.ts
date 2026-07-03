@@ -7,7 +7,9 @@ import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-aut
 import {
   deleteTripById,
   deleteServiceById,
+  deleteTeamMemberById,
   updateSiteSettingsFromForm,
+  upsertTeamMemberFromForm,
   upsertServiceFromForm,
   upsertTripFromForm,
 } from "@/lib/server/admin-store";
@@ -25,7 +27,9 @@ export async function saveTripAction(formData: FormData) {
   }
 
   revalidatePath("/");
+  revalidatePath("/tours");
   revalidatePath("/admin");
+  revalidatePath("/api/trips");
   redirectWithStatus(
     isTripTranslationConfigured()
       ? "Хөтөлбөр хадгалагдаж, орчуулгууд шинэчлэгдлээ."
@@ -48,7 +52,9 @@ export async function deleteTripAction(formData: FormData) {
   }
 
   revalidatePath("/");
+  revalidatePath("/tours");
   revalidatePath("/admin");
+  revalidatePath("/api/trips");
   redirectWithStatus("Хөтөлбөр устгагдлаа.");
 }
 
@@ -97,6 +103,38 @@ export async function deleteServiceAction(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/api/services");
   redirectWithStatus("Үйлчилгээ устгагдлаа.");
+}
+
+export async function saveTeamMemberAction(formData: FormData) {
+  await assertAdminAction();
+  const error = await getActionError(() => upsertTeamMemberFromForm(formData));
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
+  revalidatePath("/about");
+  revalidatePath("/admin");
+  redirectWithStatus("Багийн гишүүн хадгалагдлаа.");
+}
+
+export async function deleteTeamMemberAction(formData: FormData) {
+  await assertAdminAction();
+  const error = await getActionError(async () => {
+    const id = formData.get("id");
+
+    if (typeof id === "string" && id) {
+      await deleteTeamMemberById(id);
+    }
+  });
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
+  revalidatePath("/about");
+  revalidatePath("/admin");
+  redirectWithStatus("Багийн гишүүн устгагдлаа.");
 }
 
 export async function updateInquiryStatusAction(formData: FormData) {

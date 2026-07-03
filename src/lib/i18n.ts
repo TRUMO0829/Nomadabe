@@ -38,9 +38,9 @@ export const UI_COPY = {
       items: [
         { label: "Аяллууд", href: "/tours" },
         { label: "Сэтгэгдэл", href: "/#journal" },
-        { label: "Бидний тухай", href: "/#about" },
+        { label: "Бидний тухай", href: "/about" },
       ],
-      cta: "Аялал төлөвлөх",
+      cta: "Хүсэлт",
       language: "Хэл сонгох",
       openMenu: "Цэс нээх",
       closeMenu: "Цэс хаах",
@@ -48,9 +48,9 @@ export const UI_COPY = {
     hero: {
       rating: "5 одтой үнэлгээтэй, 1,200+ аялагч",
       established: "2025 оноос - Улаанбаатар",
-      headingLine1: "Дараагийн",
-      headingEmphasis: "түвшинд",
-      headingLine2: "аял.",
+      headingLine1: "Аяллаа",
+      headingEmphasis: "нүүдэлчин",
+      headingLine2: "хэмнэлээр",
       body:
         "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг эхнээс нь дуустал зохион байгуулна.",
       quick: [
@@ -179,7 +179,7 @@ export const UI_COPY = {
         },
         {
           title: "Тусламж",
-          links: ["Асуулт хариулт", "Захиалгын нөхцөл", "Даатгал", "Холбоо барих", "Нэвтрэх"],
+          links: ["Захиалгын нөхцөл", "Даатгал", "Холбоо барих", "Нэвтрэх"],
         },
       ],
       copyright: "Nomadabe LLC - Улаанбаатар, Монгол",
@@ -209,9 +209,9 @@ export const UI_COPY = {
       items: [
         { label: "Adventures", href: "/tours" },
         { label: "Reviews", href: "/#journal" },
-        { label: "About", href: "/#about" },
+        { label: "About", href: "/about" },
       ],
-      cta: "Plan your trip",
+      cta: "Request",
       language: "Choose language",
       openMenu: "Open menu",
       closeMenu: "Close menu",
@@ -219,9 +219,9 @@ export const UI_COPY = {
     hero: {
       rating: "5-star rated by 1,200+ travellers",
       established: "Est. 2025 - Ulaanbaatar",
-      headingLine1: "Travel",
-      headingEmphasis: "at the next",
-      headingLine2: "level.",
+      headingLine1: "Travel the",
+      headingEmphasis: "nomad",
+      headingLine2: "way",
       body:
         "Small-group, business, expo, and leisure trips across Mongolia and beyond, planned end to end by a local team.",
       quick: ["Canton Fair", "Solar energy", "Food expo", "Custom trip", "Family holiday"],
@@ -344,7 +344,7 @@ export const UI_COPY = {
         },
         {
           title: "Help",
-          links: ["FAQ", "Booking terms", "Insurance", "Contact", "Login"],
+          links: ["Booking terms", "Insurance", "Contact", "Login"],
         },
       ],
       copyright: "Nomadabe LLC - Ulaanbaatar, Mongolia",
@@ -374,9 +374,9 @@ export const UI_COPY = {
       items: [
         { label: "旅游", href: "/tours" },
         { label: "评价", href: "/#journal" },
-        { label: "关于我们", href: "/#about" },
+        { label: "关于我们", href: "/about" },
       ],
-      cta: "规划行程",
+      cta: "提交请求",
       language: "选择语言",
       openMenu: "打开菜单",
       closeMenu: "关闭菜单",
@@ -384,9 +384,9 @@ export const UI_COPY = {
     hero: {
       rating: "5星评价，1,200+ 位旅行者",
       established: "2025年起 - 乌兰巴托",
-      headingLine1: "开启",
-      headingEmphasis: "下一层级",
-      headingLine2: "的旅行。",
+      headingLine1: "以",
+      headingEmphasis: "游牧",
+      headingLine2: "方式旅行。",
       body:
         "我们为蒙古及全球目的地提供小团、商务、展会和休闲旅行，由熟悉当地的团队从开始到结束全程安排。",
       quick: ["广交会", "太阳能", "食品展", "定制旅行", "家庭度假"],
@@ -509,7 +509,7 @@ export const UI_COPY = {
         },
         {
           title: "帮助",
-          links: ["常见问题", "预订条款", "保险", "联系", "登录"],
+          links: ["预订条款", "保险", "联系", "登录"],
         },
       ],
       copyright: "Nomadabe LLC - 乌兰巴托，蒙古",
@@ -539,9 +539,9 @@ export const UI_COPY = {
       items: [
         { label: "ツアー", href: "/tours" },
         { label: "レビュー", href: "/#journal" },
-        { label: "私たちについて", href: "/#about" },
+        { label: "私たちについて", href: "/about" },
       ],
-      cta: "旅を計画する",
+      cta: "リクエスト",
       language: "言語を選択",
       openMenu: "メニューを開く",
       closeMenu: "メニューを閉じる",
@@ -550,8 +550,8 @@ export const UI_COPY = {
       rating: "5つ星評価、1,200人以上の旅行者",
       established: "2025年より - ウランバートル",
       headingLine1: "旅を",
-      headingEmphasis: "次のレベル",
-      headingLine2: "へ。",
+      headingEmphasis: "遊牧民",
+      headingLine2: "のリズムで。",
       body:
         "モンゴル国内外の小グループ、ビジネス、展示会、レジャー旅行を、現地に詳しいチームが最初から最後まで手配します。",
       quick: ["広州交易会", "太陽光エネルギー", "食品展示会", "カスタム旅行", "家族旅行"],
@@ -674,7 +674,7 @@ export const UI_COPY = {
         },
         {
           title: "ヘルプ",
-          links: ["FAQ", "予約条件", "保険", "お問い合わせ", "ログイン"],
+          links: ["予約条件", "保険", "お問い合わせ", "ログイン"],
         },
       ],
       copyright: "Nomadabe LLC - ウランバートル、モンゴル",
@@ -704,9 +704,9 @@ export const UI_COPY = {
       items: [
         { label: "여행", href: "/tours" },
         { label: "후기", href: "/#journal" },
-        { label: "회사 소개", href: "/#about" },
+        { label: "회사 소개", href: "/about" },
       ],
-      cta: "여행 계획하기",
+      cta: "요청하기",
       language: "언어 선택",
       openMenu: "메뉴 열기",
       closeMenu: "메뉴 닫기",
@@ -715,8 +715,8 @@ export const UI_COPY = {
       rating: "5성급 평가, 1,200명+ 여행자",
       established: "2025년부터 - 울란바토르",
       headingLine1: "여행을",
-      headingEmphasis: "다음 단계",
-      headingLine2: "로.",
+      headingEmphasis: "유목민",
+      headingLine2: "의 방식으로.",
       body:
         "몽골과 전 세계 목적지의 소규모 그룹, 비즈니스, 엑스포, 휴양 여행을 현지 지식이 있는 팀이 처음부터 끝까지 준비합니다.",
       quick: ["캔톤페어", "태양광 에너지", "식품 엑스포", "맞춤 여행", "가족 휴가"],
@@ -839,7 +839,7 @@ export const UI_COPY = {
         },
         {
           title: "도움말",
-          links: ["FAQ", "예약 조건", "보험", "연락처", "로그인"],
+          links: ["예약 조건", "보험", "연락처", "로그인"],
         },
       ],
       copyright: "Nomadabe LLC - 울란바토르, 몽골",

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { SiteSettings } from "@/lib/site-settings";
@@ -13,17 +12,12 @@ const DEFAULT_HERO_BACKGROUNDS = [
   "/hero-autumn.webp",
 ];
 
-const LOCALIZED_HERO_TITLE_OVERRIDES = new Set([
-  "аяллаа нүүдэлчин хэмнэлээр.",
-  "дараагийн түвшинд аял.",
-]);
-
 type HeroProps = {
   settings?: SiteSettings;
 };
 
 export function Hero({ settings }: HeroProps) {
-  const { contentLocale, t } = useLanguage();
+  const { t } = useLanguage();
   const [activeImage, setActiveImage] = useState(0);
   const heroImages = [
     settings?.heroImage,
@@ -31,25 +25,11 @@ export function Hero({ settings }: HeroProps) {
   ].filter((image, index, images): image is string =>
     Boolean(image && images.indexOf(image) === index)
   );
-  const localizedHeading = `${t.hero.headingLine1} ${t.hero.headingEmphasis} ${t.hero.headingLine2}`;
-  const settingsHeroTitle = settings?.heroTitle?.trim();
-  const normalizedSettingsHeroTitle = settingsHeroTitle?.replace(/\s+/g, " ").toLocaleLowerCase("mn-MN");
-  const heading =
-    settingsHeroTitle && !LOCALIZED_HERO_TITLE_OVERRIDES.has(normalizedSettingsHeroTitle ?? "")
-      ? settingsHeroTitle
-      : localizedHeading;
-  const body = settings?.heroSubtitle?.trim() || t.hero.body;
-  const badge = settings?.heroBadge?.trim();
+  const heading = settings?.heroTitle?.trim()
+    ? settings.heroTitle
+    : `${t.hero.headingLine1} ${t.hero.headingEmphasis} ${t.hero.headingLine2}`;
   const textColor = settings?.heroTextColor || "#ffffff";
-  const accentColor = settings?.accentColor || "#FFD400";
   const overlayOpacity = settings?.heroOverlayOpacity ?? 0.36;
-  const ctaCopy = {
-    mn: { trips: "Аяллууд харах", plan: "Аялал төлөвлөх" },
-    en: { trips: "View trips", plan: "Plan a trip" },
-    zh: { trips: "查看旅行", plan: "规划旅行" },
-    ja: { trips: "ツアーを見る", plan: "旅行を計画" },
-    ko: { trips: "여행 보기", plan: "여행 계획" },
-  }[contentLocale];
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -88,16 +68,6 @@ export function Hero({ settings }: HeroProps) {
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/70 to-transparent" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-1 text-center">
-        {badge ? (
-          <motion.p
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.75 }}
-            className="mb-4 max-w-full rounded-full border border-white/35 bg-black/24 px-4 py-2 text-[11px] font-black uppercase text-white shadow-[0_12px_30px_rgba(0,0,0,0.22)] backdrop-blur"
-          >
-            {badge}
-          </motion.p>
-        ) : null}
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -109,38 +79,6 @@ export function Hero({ settings }: HeroProps) {
             {heading}
           </span>
         </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.25 }}
-          className="mt-5 max-w-2xl text-sm font-bold leading-7 drop-shadow-[0_3px_14px_rgba(0,0,0,0.58)] sm:text-base lg:text-lg"
-          style={{ color: textColor }}
-        >
-          {body}
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.38 }}
-          className="mt-8 flex flex-wrap items-center justify-center gap-3"
-        >
-          <Link
-            href="/tours"
-            className="inline-flex min-h-12 items-center justify-center rounded-lg border border-accent bg-accent px-6 text-sm font-black uppercase text-accent-foreground shadow-[0_18px_44px_rgba(17,16,11,0.22)] transition-colors hover:bg-white"
-            style={{
-              backgroundColor: accentColor,
-              borderColor: accentColor,
-            }}
-          >
-            {ctaCopy.trips}
-          </Link>
-          <Link
-            href="/plan"
-            className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/55 bg-black/28 px-6 text-sm font-black uppercase text-white shadow-[0_18px_44px_rgba(17,16,11,0.18)] backdrop-blur transition-colors hover:border-accent hover:bg-accent hover:text-accent-foreground"
-          >
-            {ctaCopy.plan}
-          </Link>
-        </motion.div>
       </div>
     </section>
   );

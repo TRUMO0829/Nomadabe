@@ -263,7 +263,7 @@ function FeaturedTripsScrollStack({
           particleGap={3}
           particleSize={1.35}
           mouseRadius={170}
-          className="h-[clamp(8rem,18vw,16rem)] w-full max-w-6xl"
+          className="h-[clamp(5rem,11vw,9rem)] w-full max-w-5xl"
           canvasClassName="pointer-events-auto"
         />
       </div>
@@ -346,16 +346,10 @@ function FeaturedTripsGrid({
   return (
     <section id="trips" className="bg-white px-6 py-16 text-black lg:px-10 lg:py-24">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-10 max-w-2xl">
-          <p className="trip-meta-text mb-3 text-sm uppercase tracking-[0.2em] text-[#b89422]">
-            {copy.eyebrow}
-          </p>
-          <h2 className="trip-header-title max-w-[12ch] text-balance text-[#11100b]">
+        <div className="mb-10 text-center">
+          <h2 className="section-header-title mx-auto max-w-none whitespace-nowrap text-center text-[#11100b]">
             {copy.title}
           </h2>
-          <p className="trip-copy-text mt-4 max-w-xl text-sm leading-7 text-[#4b4538] sm:text-base">
-            {copy.body}
-          </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">

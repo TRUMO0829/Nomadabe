@@ -135,70 +135,108 @@ export function WhyUs() {
   return (
     <section
       id="about"
-      className="relative overflow-hidden bg-white py-20 text-[#11100b] lg:py-28"
+      className="relative overflow-hidden bg-white py-24 text-[#11100b] lg:py-32"
     >
-      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(circle_at_1px_1px,rgba(17,16,11,0.16)_1px,transparent_0)] [background-size:22px_22px]" />
-      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.2] [background-image:linear-gradient(rgba(184,148,34,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(184,148,34,0.10)_1px,transparent_1px)] [background-size:42px_42px]" />
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.14]"
+        viewBox="0 0 1200 800"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M80 210 C240 145 330 290 475 230 C620 165 690 120 835 178 C980 235 1040 175 1160 105"
+          fill="none"
+          stroke="rgba(184,148,34,0.44)"
+          strokeDasharray="14 18"
+          strokeWidth="2"
+        />
+      </svg>
+      <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[0.85fr_1.35fr] lg:px-10">
         <motion.div
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end"
+          className="lg:sticky lg:top-28 lg:self-start"
         >
-          <div>
-            <p className="mb-4 inline-flex rounded-full border border-[#d8bb72]/45 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#8f7020] shadow-sm">
-              {t.why.eyebrow}
-            </p>
-            <h2
-              data-plane-landing
-              className="max-w-3xl text-balance font-display text-3xl font-semibold leading-tight text-[#11100b] sm:text-4xl lg:text-5xl"
-            >
-              {t.why.titleStart}{" "}
-              <span className="inline-block text-[#11100b]">
-                {t.why.titleEmphasis}
-              </span>{" "}
-              {t.why.titleEnd}
-            </h2>
-          </div>
-          <p className="max-w-2xl text-base font-medium leading-relaxed text-[#11100b]/68 lg:text-lg">
+          <p className="mb-5 inline-flex rounded-lg border border-[#eadfac] bg-[#fffdf3] px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-[#8f7020] shadow-sm">
+            {t.why.eyebrow}
+          </p>
+          <h2
+            data-plane-landing
+            className="max-w-xl text-balance font-display text-3xl leading-tight text-[#11100b] sm:text-4xl lg:text-5xl"
+          >
+            {t.why.titleStart}{" "}
+            <span className="inline-block text-[#8f7020]">
+              {t.why.titleEmphasis}
+            </span>{" "}
+            {t.why.titleEnd}
+          </h2>
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-[#4b4538] lg:text-lg">
             {copy.headline}
           </p>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="flex items-center gap-3 rounded-lg border border-[#eadfac] bg-white p-4 shadow-[0_16px_42px_rgba(17,16,11,0.05)]">
+              <MapPinned className="h-5 w-5 text-[#b89422]" />
+              <span className="text-sm font-medium text-[#4b4538]">
+                {copy.summary[0]}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 rounded-lg border border-[#eadfac] bg-white p-4 shadow-[0_16px_42px_rgba(17,16,11,0.05)]">
+              <Globe2 className="h-5 w-5 text-[#b89422]" />
+              <span className="text-sm font-medium text-[#4b4538]">
+                {copy.summary[1]}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 rounded-lg border border-[#eadfac] bg-white p-4 shadow-[0_16px_42px_rgba(17,16,11,0.05)]">
+              <Handshake className="h-5 w-5 text-[#b89422]" />
+              <span className="text-sm font-medium text-[#4b4538]">
+                {copy.summary[2]}
+              </span>
+            </div>
+          </div>
         </motion.div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="space-y-5">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.5 }}
-            className="rounded-lg border border-[#eadfac] bg-white p-6 text-[#11100b] shadow-[0_18px_46px_rgba(17,16,11,0.08)] lg:p-8"
+            className="relative overflow-hidden rounded-lg border border-[#d8bd59] bg-[#11100b] p-6 text-white shadow-[0_28px_80px_rgba(17,16,11,0.16)] md:p-8"
           >
-            <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-md bg-[#ffd400] text-[#11100b] shadow-sm">
-              <PlaneTakeoff className="h-7 w-7" />
-            </div>
-            <p className="text-xs font-black uppercase text-[#8f7020]">
-              {copy.label}
-            </p>
-            <h3 className="mt-4 text-balance font-display text-3xl leading-tight lg:text-4xl">
-              {copy.proofTitle}
-            </h3>
-            <p className="mt-5 text-sm leading-relaxed text-[#11100b]/76 lg:text-base">
-              {copy.body}
-            </p>
-            <div className="mt-7 flex flex-wrap gap-2">
-              {copy.chips.map((chip) => (
-                <span
-                  key={chip}
-                  className="rounded-full border border-[#11100b]/15 bg-[#fff8ea] px-3 py-1.5 text-xs font-bold text-[#11100b]"
-                >
-                  {chip}
-                </span>
-              ))}
+            <div className="pointer-events-none absolute inset-0 opacity-[0.13] [background-image:linear-gradient(rgba(255,255,255,0.25)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:34px_34px]" />
+            <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-start">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#ffd400] text-[#11100b] shadow-[0_16px_34px_rgba(0,0,0,0.18)]">
+                <PlaneTakeoff className="h-7 w-7" />
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#ffd400]">
+                  {copy.label}
+                </p>
+                <h3 className="mt-3 text-balance font-display text-2xl leading-tight text-white lg:text-3xl">
+                  {copy.proofTitle}
+                </h3>
+                <p className="mt-4 max-w-4xl text-sm leading-relaxed text-white/76 lg:text-base">
+                  {copy.body}
+                </p>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {copy.chips.map((chip) => (
+                    <span
+                      key={chip}
+                      className="rounded-full border border-white/18 bg-white/8 px-3 py-1.5 text-xs font-medium text-white/82"
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             {facts.map((fact, idx) => {
               const Icon = FACT_ICONS[idx];
 
@@ -209,15 +247,20 @@ export function WhyUs() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
                   transition={{ duration: 0.5, delay: idx * 0.06 }}
-                  className="rounded-lg border border-[#d8bb72]/28 bg-white p-5 shadow-[0_16px_40px_rgba(17,16,11,0.06)] transition-all hover:border-[#d8bb72]/65 hover:bg-[#fff9df] lg:p-6"
+                  className="group min-h-[220px] rounded-lg border border-[#eadfac] bg-[#fffdf3]/92 p-6 shadow-[0_20px_58px_rgba(17,16,11,0.07)] backdrop-blur transition-all hover:-translate-y-1 hover:border-[#b89422]/70 hover:bg-white"
                 >
-                  <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-md bg-[#d8bb72]/16 text-[#8f7020]">
-                    <Icon className="h-5 w-5" />
+                  <div className="mb-7 flex items-center justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-[#b89422] shadow-[0_12px_30px_rgba(17,16,11,0.08)] transition-colors group-hover:bg-[#ffd400] group-hover:text-[#11100b]">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <span className="trip-meta-text text-xs uppercase tracking-[0.2em] text-[#b89422]">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
                   </div>
-                  <h3 className="font-display text-xl font-semibold leading-snug text-[#11100b] lg:text-2xl">
+                  <h3 className="text-balance font-display text-xl leading-snug text-[#11100b]">
                     {fact.title}
                   </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-[#11100b]/62">
+                  <p className="mt-3 text-sm leading-relaxed text-[#4b4538]">
                     {fact.body}
                   </p>
                 </motion.article>
@@ -225,27 +268,6 @@ export function WhyUs() {
             })}
           </div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.55 }}
-          className="mt-6 grid gap-3 rounded-lg border border-[#d8bb72]/28 bg-white p-4 shadow-[0_16px_40px_rgba(17,16,11,0.06)] sm:grid-cols-3"
-        >
-          <div className="flex items-center gap-3 rounded-md bg-[#fff9df] p-4">
-            <MapPinned className="h-5 w-5 text-[#8f7020]" />
-            <span className="text-sm font-bold text-[#11100b]">{copy.summary[0]}</span>
-          </div>
-          <div className="flex items-center gap-3 rounded-md bg-[#fff9df] p-4">
-            <Globe2 className="h-5 w-5 text-[#8f7020]" />
-            <span className="text-sm font-bold text-[#11100b]">{copy.summary[1]}</span>
-          </div>
-          <div className="flex items-center gap-3 rounded-md bg-[#fff9df] p-4">
-            <Handshake className="h-5 w-5 text-[#8f7020]" />
-            <span className="text-sm font-bold text-[#11100b]">{copy.summary[2]}</span>
-          </div>
-        </motion.div>
       </div>
     </section>
   );

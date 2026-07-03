@@ -19,7 +19,9 @@ import {
   ArrowRight,
   CalendarDays,
   Globe2,
+  Minus,
   MapPinned,
+  Plus,
   Search,
   SlidersHorizontal,
   Star,
@@ -38,6 +40,9 @@ type SortMode =
   | "price-high"
   | "days-low"
   | "days-high";
+type SearchPanel = "where" | "when" | "who";
+type GuestKey = "adults" | "children" | "infants" | "pets";
+type GuestCounts = Record<GuestKey, number>;
 
 type FeaturedAdventuresProps = {
   adventures?: Adventure[];
@@ -185,7 +190,6 @@ const STEPPED_GALLERY_SLOTS = [
   { offset: 1, left: 103, top: 1.25, width: 39, opacity: 0, zIndex: 60 },
 ] satisfies readonly SteppedGallerySlot[];
 
-const STEPPED_GALLERY_UNIT = "calc(1vw / var(--site-scale))";
 const STEPPED_GALLERY_GROUP_WIDTH = 100;
 const STEPPED_GALLERY_HEIGHT = 50;
 const STEPPED_GALLERY_VISIBLE_COUNT = 5;
@@ -336,48 +340,165 @@ const SECTION_COPY = {
   },
 } as const;
 
-const SORT_COPY = {
+const TRIP_SEARCH_COPY = {
   mn: {
-    filterToggle: "Шүүлтүүр нээх",
-    recommended: "Санал болгосноор",
-    priceLow: "Үнэ багаас их",
-    priceHigh: "Үнэ ихээс бага",
-    daysLow: "Хугацаа богиноос урт",
-    daysHigh: "Хугацаа уртаас богино",
+    where: "Хаашаа",
+    wherePlaceholder: "Чиглэл хайх",
+    whereHint: "Манай аяллын чиглэлүүд",
+    when: "Хэзээ",
+    whenPlaceholder: "Огноо нэмэх",
+    who: "Хэн",
+    whoPlaceholder: "Зочид нэмэх",
+    search: "Хайх",
+    dates: "Огноо",
+    flexible: "Уян хатан",
+    suggestionsEmpty: "Ийм чиглэл олдсонгүй",
+    guests: "зочид",
+    adults: "Том хүн",
+    adultsHint: "13 ба түүнээс дээш",
+    children: "Хүүхэд",
+    childrenHint: "2-12 нас",
+    infants: "Нярай",
+    infantsHint: "2-оос доош",
+    pets: "Амьтан",
+    petsHint: "Үйлчилгээний амьтан авч явах уу?",
   },
   en: {
-    filterToggle: "Open trip filters",
-    recommended: "Recommended",
-    priceLow: "Price low to high",
-    priceHigh: "Price high to low",
-    daysLow: "Duration short to long",
-    daysHigh: "Duration long to short",
+    where: "Where",
+    wherePlaceholder: "Search destinations",
+    whereHint: "Available trip destinations",
+    when: "When",
+    whenPlaceholder: "Add dates",
+    who: "Who",
+    whoPlaceholder: "Add guests",
+    search: "Search",
+    dates: "Dates",
+    flexible: "Flexible",
+    suggestionsEmpty: "No destinations found",
+    guests: "guests",
+    adults: "Adults",
+    adultsHint: "Ages 13 or above",
+    children: "Children",
+    childrenHint: "Ages 2-12",
+    infants: "Infants",
+    infantsHint: "Under 2",
+    pets: "Pets",
+    petsHint: "Bringing a service animal?",
   },
   zh: {
-    filterToggle: "打开行程筛选",
-    recommended: "推荐排序",
-    priceLow: "价格从低到高",
-    priceHigh: "价格从高到低",
-    daysLow: "行程从短到长",
-    daysHigh: "行程从长到短",
+    where: "地点",
+    wherePlaceholder: "搜索目的地",
+    whereHint: "可选旅行目的地",
+    when: "时间",
+    whenPlaceholder: "添加日期",
+    who: "人数",
+    whoPlaceholder: "添加客人",
+    search: "搜索",
+    dates: "日期",
+    flexible: "灵活",
+    suggestionsEmpty: "未找到目的地",
+    guests: "位客人",
+    adults: "成人",
+    adultsHint: "13岁及以上",
+    children: "儿童",
+    childrenHint: "2-12岁",
+    infants: "婴儿",
+    infantsHint: "2岁以下",
+    pets: "宠物",
+    petsHint: "携带服务动物？",
   },
   ja: {
-    filterToggle: "ツアーフィルターを開く",
-    recommended: "おすすめ順",
-    priceLow: "料金が低い順",
-    priceHigh: "料金が高い順",
-    daysLow: "短い日程順",
-    daysHigh: "長い日程順",
+    where: "行き先",
+    wherePlaceholder: "目的地を検索",
+    whereHint: "選べる旅行先",
+    when: "日程",
+    whenPlaceholder: "日付を追加",
+    who: "人数",
+    whoPlaceholder: "ゲストを追加",
+    search: "検索",
+    dates: "日付",
+    flexible: "柔軟に探す",
+    suggestionsEmpty: "目的地が見つかりません",
+    guests: "名",
+    adults: "大人",
+    adultsHint: "13歳以上",
+    children: "子ども",
+    childrenHint: "2-12歳",
+    infants: "乳幼児",
+    infantsHint: "2歳未満",
+    pets: "ペット",
+    petsHint: "サービス動物を同伴しますか？",
   },
   ko: {
-    filterToggle: "여행 필터 열기",
-    recommended: "추천순",
-    priceLow: "낮은 가격순",
-    priceHigh: "높은 가격순",
-    daysLow: "짧은 일정순",
-    daysHigh: "긴 일정순",
+    where: "어디로",
+    wherePlaceholder: "목적지 검색",
+    whereHint: "가능한 여행 목적지",
+    when: "언제",
+    whenPlaceholder: "날짜 추가",
+    who: "누구와",
+    whoPlaceholder: "게스트 추가",
+    search: "검색",
+    dates: "날짜",
+    flexible: "유연한 일정",
+    suggestionsEmpty: "목적지를 찾을 수 없습니다",
+    guests: "명",
+    adults: "성인",
+    adultsHint: "13세 이상",
+    children: "어린이",
+    childrenHint: "2-12세",
+    infants: "유아",
+    infantsHint: "2세 미만",
+    pets: "반려동물",
+    petsHint: "서비스 동물을 동반하시나요?",
   },
 } as const;
+
+const LOCALE_TAGS = {
+  mn: "mn-MN",
+  en: "en-US",
+  zh: "zh-CN",
+  ja: "ja-JP",
+  ko: "ko-KR",
+} as const;
+
+const WEEKDAY_LABELS = {
+  mn: ["Н", "Д", "М", "Л", "П", "Б", "Б"],
+  en: ["S", "M", "T", "W", "T", "F", "S"],
+  zh: ["日", "一", "二", "三", "四", "五", "六"],
+  ja: ["日", "月", "火", "水", "木", "金", "土"],
+  ko: ["일", "월", "화", "수", "목", "금", "토"],
+} as const;
+
+const GUEST_ROWS = ["adults", "children", "infants", "pets"] as const;
+
+function startOfDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addMonths(date: Date, amount: number) {
+  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
+}
+
+function getMonthDays(month: Date) {
+  const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
+  const dayCount = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const leadingBlanks = firstDay.getDay();
+
+  return [
+    ...Array.from({ length: leadingBlanks }, () => null),
+    ...Array.from({ length: dayCount }, (_, index) =>
+      new Date(month.getFullYear(), month.getMonth(), index + 1)
+    ),
+  ];
+}
+
+function getDateKey(date: Date) {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
 
 const RATING_COPY = {
   mn: {
@@ -717,7 +838,7 @@ function SteppedTripTile({
         style={{ opacity: activeShadeOpacity }}
       />
       <motion.div
-        className="absolute inset-x-0 bottom-[clamp(2.25rem,6vh,4.75rem)] z-30 p-4 text-white sm:p-5 lg:p-6"
+        className="absolute inset-x-0 bottom-[clamp(4.75rem,10vh,7.25rem)] z-30 p-4 text-white sm:p-5 lg:px-6 lg:py-5"
         style={{ opacity: detailsOpacity, y: detailsY }}
       >
         <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase text-white/70">
@@ -731,13 +852,13 @@ function SteppedTripTile({
             {adventure.days} {dayLabel}
           </span>
         </p>
-        <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[14ch] text-balance text-white">
+        <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[14ch] text-balance !text-[clamp(1.45rem,2.55vw,2.65rem)] !leading-[1.04] text-white">
           {text.title}
         </h3>
-        <p className="trip-copy-text mt-3 line-clamp-2 max-w-sm text-xs leading-5 text-white/75 sm:text-sm">
+        <p className="trip-copy-text mt-2 line-clamp-2 max-w-sm text-xs leading-5 text-white/78 sm:text-sm">
           {text.summary}
         </p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className="mt-3 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={(event) => {
@@ -761,15 +882,24 @@ export function FeaturedAdventures({
 }: FeaturedAdventuresProps) {
   const [selected, setSelected] = useState<Adventure | null>(null);
   const [scope, setScope] = useState<TripScope>("all");
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [sortMode, setSortMode] = useState<SortMode>("recommended");
+  const [sortMode] = useState<SortMode>("recommended");
   const [query, setQuery] = useState("");
+  const [activeSearchPanel, setActiveSearchPanel] =
+    useState<SearchPanel | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [calendarOffset, setCalendarOffset] = useState(0);
+  const [guestCounts, setGuestCounts] = useState<GuestCounts>({
+    adults: 0,
+    children: 0,
+    infants: 0,
+    pets: 0,
+  });
   const [activeHeroImage, setActiveHeroImage] = useState(0);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const gallerySectionRef = useRef<HTMLDivElement>(null);
   const { contentLocale, t } = useLanguage();
   const sectionCopy = SECTION_COPY[contentLocale];
-  const sortCopy = SORT_COPY[contentLocale];
+  const searchCopy = TRIP_SEARCH_COPY[contentLocale];
+  const localeTag = LOCALE_TAGS[contentLocale];
   const { scrollYProgress: galleryScrollYProgress } = useScroll({
     target: gallerySectionRef,
     offset: ["start start", "end end"],
@@ -816,6 +946,97 @@ export function FeaturedAdventures({
     () => [...staticOutboundAdventures, ...adventures],
     [adventures, staticOutboundAdventures]
   );
+  const outboundCount = useMemo(
+    () =>
+      allAdventures.filter((adventure) => adventure.country !== "Mongolia").length,
+    [allAdventures]
+  );
+  const domesticCount = useMemo(
+    () =>
+      allAdventures.filter((adventure) => adventure.country === "Mongolia").length,
+    [allAdventures]
+  );
+  const scopeOptions = [
+    {
+      key: "all" as const,
+      label: sectionCopy.all,
+      count: allAdventures.length,
+      icon: SlidersHorizontal,
+    },
+    {
+      key: "outbound" as const,
+      label: sectionCopy.outbound,
+      count: outboundCount,
+      icon: Globe2,
+    },
+    {
+      key: "domestic" as const,
+      label: sectionCopy.domestic,
+      count: domesticCount,
+      icon: MapPinned,
+    },
+  ];
+
+  const destinationOptions = useMemo(() => {
+    const options = new Map<string, { label: string; count: number }>();
+
+    allAdventures.forEach((adventure) => {
+      const text = getAdventureText(adventure, contentLocale);
+      const label = text.country.trim();
+
+      if (!label) {
+        return;
+      }
+
+      const key = label.toLowerCase();
+      const current = options.get(key);
+      options.set(key, {
+        label,
+        count: (current?.count ?? 0) + 1,
+      });
+    });
+
+    return Array.from(options.values()).sort((left, right) =>
+      left.label.localeCompare(right.label, localeTag)
+    );
+  }, [allAdventures, contentLocale, localeTag]);
+
+  const visibleDestinationOptions = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return destinationOptions
+      .filter((option) =>
+        normalizedQuery
+          ? option.label.toLowerCase().includes(normalizedQuery)
+          : true
+      )
+      .slice(0, 8);
+  }, [destinationOptions, query]);
+
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const calendarStartMonth = useMemo(() => startOfMonth(new Date()), []);
+  const visibleCalendarMonths = useMemo(
+    () => [
+      addMonths(calendarStartMonth, calendarOffset),
+      addMonths(calendarStartMonth, calendarOffset + 1),
+    ],
+    [calendarOffset, calendarStartMonth]
+  );
+  const selectedDateKey = selectedDate ? getDateKey(selectedDate) : null;
+  const selectedDateLabel = selectedDate
+    ? new Intl.DateTimeFormat(localeTag, {
+        month: "short",
+        day: "numeric",
+      }).format(selectedDate)
+    : searchCopy.whenPlaceholder;
+  const guestTotal = Object.values(guestCounts).reduce(
+    (total, count) => total + count,
+    0
+  );
+  const guestLabel =
+    guestTotal > 0
+      ? `${guestTotal} ${searchCopy.guests}`
+      : searchCopy.whoPlaceholder;
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -853,17 +1074,6 @@ export function FeaturedAdventures({
     return () => window.clearTimeout(timerId);
   }, []);
 
-  const outboundCount = useMemo(
-    () =>
-      allAdventures.filter((adventure) => adventure.country !== "Mongolia").length,
-    [allAdventures]
-  );
-  const domesticCount = useMemo(
-    () =>
-      allAdventures.filter((adventure) => adventure.country === "Mongolia").length,
-    [allAdventures]
-  );
-
   const filteredAdventures = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -875,6 +1085,8 @@ export function FeaturedAdventures({
         text.location,
         text.country,
         text.summary,
+        adventure.location,
+        adventure.country,
         adventure.category,
         ...text.tags,
         ...text.idealFor,
@@ -936,41 +1148,25 @@ export function FeaturedAdventures({
   const galleryScrollHeight =
     Math.max(1, galleryAdventureCount) * 96 + 52;
 
-  const scopeOptions = [
-    {
-      key: "all" as const,
-      label: sectionCopy.all,
-      count: allAdventures.length,
-      icon: SlidersHorizontal,
-    },
-    {
-      key: "outbound" as const,
-      label: sectionCopy.outbound,
-      count: outboundCount,
-      icon: Globe2,
-    },
-    {
-      key: "domestic" as const,
-      label: sectionCopy.domestic,
-      count: domesticCount,
-      icon: MapPinned,
-    },
-  ];
+  function handleTripSearchSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setActiveSearchPanel(null);
+    gallerySectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
 
-  const sortOptions = [
-    { key: "price-low" as const, label: sortCopy.priceLow },
-    { key: "price-high" as const, label: sortCopy.priceHigh },
-    { key: "days-low" as const, label: sortCopy.daysLow },
-    { key: "days-high" as const, label: sortCopy.daysHigh },
-  ];
-
-  function handleFilterToggle() {
-    setFiltersOpen((value) => !value);
+  function updateGuestCount(key: GuestKey, amount: number) {
+    setGuestCounts((current) => ({
+      ...current,
+      [key]: Math.max(0, current[key] + amount),
+    }));
   }
 
   return (
     <section id="adventures" className="bg-background">
-      <div className="relative min-h-[560px] overflow-hidden bg-primary text-primary-foreground lg:min-h-[660px]">
+      <div className="relative min-h-[560px] overflow-x-clip bg-primary text-primary-foreground lg:min-h-[660px]">
         {TOURS_BACKGROUNDS.map((image, index) => (
           <motion.div
             key={image}
@@ -985,82 +1181,281 @@ export function FeaturedAdventures({
         <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/38 to-primary/82" />
         <div className="absolute inset-0 bg-primary/10" />
 
-        <div className="absolute inset-x-0 top-[300px] z-10 px-6 sm:top-[330px] lg:top-[390px] lg:px-10">
-          <div className="mx-auto max-w-4xl text-foreground">
-              <label className="flex items-center gap-4 rounded-full border border-white/35 bg-[#fff8e4]/38 px-5 py-4">
-                <Search className="h-6 w-6 shrink-0 text-muted-foreground" />
-                <input
-                  ref={searchInputRef}
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder={sectionCopy.search}
-                  className="trip-copy-text min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground lg:text-xl"
-                />
-                <button
-                  type="button"
-                  aria-expanded={filtersOpen}
-                  aria-label={sortCopy.filterToggle}
-                  onClick={handleFilterToggle}
-                  className={cn(
-                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-                    filtersOpen || sortMode !== "recommended"
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <SlidersHorizontal className="h-5 w-5" />
-                </button>
-              </label>
-
+        <div className="absolute inset-x-0 top-[300px] z-30 px-6 sm:top-[330px] lg:top-[390px] lg:px-10">
+          <form
+            onSubmit={handleTripSearchSubmit}
+            className="relative mx-auto max-w-5xl text-[#11100b]"
+          >
+            <div className="grid overflow-hidden rounded-[2rem] border border-white/55 bg-white/68 shadow-[0_24px_80px_rgba(17,16,11,0.28)] backdrop-blur-xl sm:rounded-full lg:grid-cols-[1.12fr_0.9fr_0.86fr_auto]">
               <div
-                className="trip-marquee mt-4"
-                style={{ "--marquee-duration": "18s" } as CSSProperties}
+                className={cn(
+                  "flex min-h-[76px] flex-col justify-center border-b border-[#11100b]/10 px-6 py-4 transition-colors sm:border-b-0 lg:border-r",
+                  activeSearchPanel === "where" && "bg-white/90"
+                )}
+                onClick={() => setActiveSearchPanel("where")}
               >
-                <div className="trip-marquee-track gap-3">
-                  {[...scopeOptions, ...scopeOptions, ...scopeOptions].map(
-                    (item, index) => (
-                      <button
-                        key={`${item.key}-${index}`}
-                        type="button"
-                        onClick={() => setScope(item.key)}
-                        className={cn(
-                          "inline-flex min-w-[168px] items-center justify-center gap-2 rounded-full border px-4 py-3 text-xs font-black uppercase text-white shadow-sm backdrop-blur transition-colors",
-                          scope === item.key
-                            ? "border-accent bg-accent text-accent-foreground"
-                            : "border-white/45 bg-black/18 hover:border-accent hover:bg-accent hover:text-accent-foreground"
-                        )}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.count}</span>
-                        <span>{item.label}</span>
-                      </button>
-                    )
-                  )}
-                </div>
+                <label
+                  htmlFor="trip-where-search"
+                  className="trip-meta-text text-xs uppercase tracking-[0.14em] text-[#11100b]"
+                >
+                  {searchCopy.where}
+                </label>
+                <input
+                  id="trip-where-search"
+                  value={query}
+                  onFocus={() => setActiveSearchPanel("where")}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setActiveSearchPanel("where");
+                  }}
+                  placeholder={searchCopy.wherePlaceholder}
+                  className="mt-1 min-w-0 bg-transparent text-base text-[#4b4538] outline-none placeholder:text-[#4b4538]/82 lg:text-xl"
+                />
               </div>
 
-              {filtersOpen && (
-                <div className="mt-3 rounded-lg border border-white/35 bg-[#fff8e4]/44 p-3">
-                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                    {sortOptions.map((option) => (
-                      <button
-                        key={option.key}
-                        type="button"
-                        onClick={() => setSortMode(option.key)}
-                        className={cn(
-                          "rounded-md border px-3 py-2 text-xs transition-colors",
-                          sortMode === option.key
-                            ? "border-accent bg-accent text-accent-foreground"
-                            : "border-border bg-background text-foreground hover:border-accent"
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
+              <button
+                type="button"
+                onClick={() => setActiveSearchPanel("when")}
+                className={cn(
+                  "flex min-h-[76px] flex-col justify-center border-b border-[#11100b]/10 px-6 py-4 text-left transition-colors sm:border-b-0 lg:border-r",
+                  activeSearchPanel === "when" && "bg-white/90"
+                )}
+              >
+                <span className="trip-meta-text text-xs uppercase tracking-[0.14em] text-[#11100b]">
+                  {searchCopy.when}
+                </span>
+                <span className="mt-1 truncate text-base text-[#4b4538] lg:text-xl">
+                  {selectedDateLabel}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveSearchPanel("who")}
+                className={cn(
+                  "flex min-h-[76px] flex-col justify-center px-6 py-4 text-left transition-colors lg:border-r lg:border-[#11100b]/10",
+                  activeSearchPanel === "who" && "bg-white/90"
+                )}
+              >
+                <span className="trip-meta-text text-xs uppercase tracking-[0.14em] text-[#11100b]">
+                  {searchCopy.who}
+                </span>
+                <span className="mt-1 truncate text-base text-[#4b4538] lg:text-xl">
+                  {guestLabel}
+                </span>
+              </button>
+
+              <div className="flex items-center justify-end px-3 pb-3 sm:pb-3 lg:p-3">
+                <button
+                  type="submit"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-accent px-7 text-sm uppercase text-accent-foreground shadow-[0_12px_34px_rgba(17,16,11,0.22)] transition-transform hover:scale-[1.02] lg:w-auto"
+                >
+                  <Search className="h-5 w-5" />
+                  <span>{searchCopy.search}</span>
+                </button>
+              </div>
+            </div>
+
+            {activeSearchPanel ? (
+              <div className="absolute left-0 right-0 top-[calc(100%+0.85rem)] z-40 rounded-[2rem] border border-black/10 bg-white p-6 text-[#11100b] shadow-[0_30px_90px_rgba(17,16,11,0.22)]">
+                {activeSearchPanel === "where" ? (
+                  <div>
+                    <p className="trip-meta-text text-xs uppercase tracking-[0.16em] text-[#8f7020]">
+                      {searchCopy.whereHint}
+                    </p>
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                      {visibleDestinationOptions.length > 0 ? (
+                        visibleDestinationOptions.map((option) => (
+                          <button
+                            key={option.label}
+                            type="button"
+                            onClick={() => {
+                              setQuery(option.label);
+                              setActiveSearchPanel(null);
+                            }}
+                            className="rounded-xl border border-[#eadfac] bg-[#fffdf3] px-4 py-3 text-left transition-colors hover:border-accent hover:bg-accent/15"
+                          >
+                            <span className="block text-base text-[#11100b]">
+                              {option.label}
+                            </span>
+                            <span className="mt-1 block text-xs text-[#6d6352]">
+                              {option.count} {sectionCopy.result}
+                            </span>
+                          </button>
+                        ))
+                      ) : (
+                        <p className="rounded-xl border border-[#eadfac] bg-[#fffdf3] px-4 py-5 text-sm text-[#6d6352] sm:col-span-2 lg:col-span-4">
+                          {searchCopy.suggestionsEmpty}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-          </div>
+                ) : null}
+
+                {activeSearchPanel === "when" ? (
+                  <div>
+                    <div className="mx-auto mb-6 grid max-w-md grid-cols-2 rounded-full bg-[#f1f1f1] p-1 text-center text-sm">
+                      <span className="rounded-full bg-white px-5 py-3 shadow-sm">
+                        {searchCopy.dates}
+                      </span>
+                      <span className="px-5 py-3 text-[#4b4538]">
+                        {searchCopy.flexible}
+                      </span>
+                    </div>
+                    <div className="mb-4 flex items-center justify-between">
+                      <button
+                        type="button"
+                        disabled={calendarOffset === 0}
+                        onClick={() =>
+                          setCalendarOffset((offset) => Math.max(0, offset - 1))
+                        }
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-[#eadfac] text-xl disabled:opacity-30"
+                        aria-label="Previous month"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCalendarOffset((offset) => offset + 1)}
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-[#eadfac] text-xl"
+                        aria-label="Next month"
+                      >
+                        ›
+                      </button>
+                    </div>
+                    <div className="grid gap-8 lg:grid-cols-2">
+                      {visibleCalendarMonths.map((month) => (
+                        <div key={month.toISOString()}>
+                          <h3 className="mb-5 text-center text-xl text-[#11100b]">
+                            {new Intl.DateTimeFormat(localeTag, {
+                              month: "long",
+                              year: "numeric",
+                            }).format(month)}
+                          </h3>
+                          <div className="grid grid-cols-7 gap-2 text-center text-xs text-[#6d6352]">
+                            {WEEKDAY_LABELS[contentLocale].map((day) => (
+                              <span key={day} className="py-1">
+                                {day}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="mt-3 grid grid-cols-7 gap-2">
+                            {getMonthDays(month).map((day, index) => {
+                              if (!day) {
+                                return <span key={`blank-${index}`} />;
+                              }
+
+                              const isDisabled = day < today;
+                              const isSelected =
+                                selectedDateKey === getDateKey(day);
+
+                              return (
+                                <button
+                                  key={day.toISOString()}
+                                  type="button"
+                                  disabled={isDisabled}
+                                  onClick={() => {
+                                    setSelectedDate(day);
+                                    setActiveSearchPanel(null);
+                                  }}
+                                  className={cn(
+                                    "flex aspect-square items-center justify-center rounded-full text-sm transition-colors",
+                                    isSelected
+                                      ? "bg-[#11100b] text-white"
+                                      : "hover:bg-[#f4edcf]",
+                                    isDisabled &&
+                                      "cursor-not-allowed text-[#11100b]/22 hover:bg-transparent"
+                                  )}
+                                >
+                                  {day.getDate()}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {activeSearchPanel === "who" ? (
+                  <div className="mx-auto max-w-2xl">
+                    {GUEST_ROWS.map((key, index) => {
+                      const hintKey = `${key}Hint` as const;
+
+                      return (
+                        <div
+                          key={key}
+                          className={cn(
+                            "flex items-center justify-between gap-6 py-6",
+                            index > 0 && "border-t border-[#eadfac]"
+                          )}
+                        >
+                          <div>
+                            <h3 className="text-xl text-[#11100b]">
+                              {searchCopy[key]}
+                            </h3>
+                            <p className="mt-1 text-sm text-[#6d6352]">
+                              {searchCopy[hintKey]}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              disabled={guestCounts[key] === 0}
+                              onClick={() => updateGuestCount(key, -1)}
+                              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f1f1f1] text-[#11100b] disabled:opacity-35"
+                              aria-label={`Decrease ${key}`}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </button>
+                            <span className="min-w-6 text-center text-xl">
+                              {guestCounts[key]}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateGuestCount(key, 1)}
+                              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f1f1f1] text-[#11100b]"
+                              aria-label={`Increase ${key}`}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            <div
+              className="trip-marquee mt-4"
+              style={{ "--marquee-duration": "18s" } as CSSProperties}
+            >
+              <div className="trip-marquee-track gap-3">
+                {[...scopeOptions, ...scopeOptions, ...scopeOptions].map(
+                  (item, index) => (
+                    <button
+                      key={`${item.key}-${index}`}
+                      type="button"
+                      onClick={() => setScope(item.key)}
+                      className={cn(
+                        "inline-flex min-w-[168px] items-center justify-center gap-2 rounded-full border px-4 py-3 text-xs font-black uppercase text-white shadow-sm backdrop-blur transition-colors",
+                        scope === item.key
+                          ? "border-accent bg-accent text-accent-foreground"
+                          : "border-white/45 bg-black/18 hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.count}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+          </form>
         </div>
       </div>
 
@@ -1079,7 +1474,7 @@ export function FeaturedAdventures({
         {filteredAdventures.length > 0 ? (
           <div className="flow-frame sticky top-0 bg-white text-[#050505]">
             <div className="tours-list-copy absolute left-0 top-[8vh] z-20 w-[min(620px,88vw)] px-6 sm:px-8 lg:top-[10vh] lg:px-10">
-              <h2 className="tours-list-title max-w-[13ch] text-balance text-[clamp(1.55rem,3.6vw,3.35rem)] uppercase leading-[0.96] text-black">
+              <h2 className="section-header-title tours-list-title max-w-[13ch] text-balance text-black">
                 {sectionCopy.listTitle}
               </h2>
               <div className="mt-4 max-w-xs">
@@ -1093,10 +1488,9 @@ export function FeaturedAdventures({
             </div>
 
             <div
-              className="absolute bottom-0 left-0 z-10 overflow-visible"
+              className="absolute bottom-0 left-0 z-10 overflow-visible [--gallery-unit:calc(1.32vw/var(--site-scale))] sm:[--gallery-unit:calc(1.14vw/var(--site-scale))] lg:[--gallery-unit:calc(1vw/var(--site-scale))]"
               style={
                 {
-                  "--gallery-unit": STEPPED_GALLERY_UNIT,
                   width: `calc(var(--gallery-unit) * ${STEPPED_GALLERY_GROUP_WIDTH})`,
                   height: `calc(var(--gallery-unit) * ${STEPPED_GALLERY_HEIGHT})`,
                 } as CSSProperties

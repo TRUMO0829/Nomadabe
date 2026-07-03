@@ -228,6 +228,43 @@ export async function updateInquiryStatus(id: string, status: InquiryStatus) {
   return updated;
 }
 
+export async function deleteCustomerInquiry({
+  id,
+  customerId,
+  email,
+}: {
+  id: string;
+  customerId: string;
+  email: string;
+}) {
+  const customerInquiries = await getCustomerInquiries({ customerId, email });
+  const inquiry = customerInquiries.find((item) => item.id === id);
+
+  if (!inquiry) {
+    throw new Error("Inquiry was not found.");
+  }
+
+  if (!["new", "contacted"].includes(inquiry.status)) {
+    throw new Error("Only pending inquiries can be deleted.");
+  }
+
+  if (isSupabaseConfigured()) {
+    const [deleted] = await supabaseRest<SupabaseInquiry[]>(
+      `/inquiries?id=eq.${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+        prefer: "return=representation",
+      }
+    );
+
+    return deleted ? fromSupabaseInquiry(deleted) : inquiry;
+  }
+
+  const inquiries = await getInquiries();
+  await writeInquiries(inquiries.filter((item) => item.id !== id));
+  return inquiry;
+}
+
 export function isInquiryStatus(value: string): value is InquiryStatus {
   return ["new", "contacted", "confirmed", "closed"].includes(value);
 }

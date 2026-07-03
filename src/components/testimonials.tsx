@@ -60,12 +60,9 @@ export function Testimonials() {
           viewport={{ once: true }}
           className="mx-auto flex max-w-[520px] flex-col items-center justify-center text-center"
         >
-          <h2 className="text-balance text-4xl font-black leading-none text-foreground sm:text-5xl lg:text-6xl">
+          <h2 className="text-balance text-2xl font-semibold leading-tight text-foreground sm:text-3xl lg:text-4xl">
             {copy.eyebrow}
           </h2>
-          <p className="mt-3 text-center text-xs font-semibold text-muted-foreground opacity-90 sm:text-sm">
-            {copy.rating}
-          </p>
         </motion.div>
 
         <div className="mx-auto mt-8 grid max-h-[430px] w-full max-w-5xl grid-cols-1 gap-4 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_16%,black_84%,transparent)] md:grid-cols-3">
