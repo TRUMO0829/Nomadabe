@@ -147,7 +147,7 @@ export const OUTBOUND_OPTIONS = [
     countryEn: "Taiwan",
     countryZh: "台湾",
     countryJa: "台湾",
-    countryKo: "대만",   
+    countryKo: "대만",
     titleMn: "Тайвань Тайбэй аялал",
     titleEn: "Taiwan Taipei trip",
     titleZh: "台湾台北之旅",
@@ -167,6 +167,47 @@ type OutboundTripsCarouselProps = {
 function parseMntPrice(price: string) {
   const numericPrice = Number(price.replace(/[^\d]/g, ""));
   return Number.isFinite(numericPrice) ? numericPrice : 0;
+}
+
+function getStaticOutboundDetails(
+  option: (typeof OUTBOUND_OPTIONS)[number],
+  country: string,
+  locale: keyof typeof COPY
+) {
+  const isMn = locale === "mn";
+
+  return {
+    summary: isMn
+      ? `${country} чиглэлийн ${option.days} хоногийн аялал. Хотын үзвэр, амралт, зураг авах цэг, өдөр бүрийн маршрут, буудал болон тээврийн зохион байгуулалтыг Nomadabe баг төлөвлөнө.`
+      : `${option.days}-day ${country} travel package with daily routing, city highlights, leisure time, photo spots, accommodation guidance, and transport planning by the Nomadabe team.`,
+    idealFor: isMn
+      ? ["Гэр бүл", "Найз нөхөд", "Жижиг групп", "Анх удаа аялагч"]
+      : ["Families", "Friends", "Small groups", "First-time visitors"],
+    includes: isMn
+      ? [
+          "Өдөр бүрийн маршрут",
+          "Буудал, тээврийн чиглүүлэг",
+          "Аяллын зөвлөгөө",
+          "Хөтөч/орчуулгын мэдээлэл",
+          "eSIM, даатгалын зөвлөмж",
+        ]
+      : [
+          "Daily itinerary planning",
+          "Hotel and transport guidance",
+          "Travel consulting",
+          "Guide and interpreter options",
+          "eSIM and insurance guidance",
+        ],
+    businessSupport: isMn
+      ? [
+          "Бизнес уулзалт, expo эсвэл бүтээгдэхүүн судалгааны зорилготой бол тусгай хөтөлбөр нэмэх боломжтой.",
+          "Нийлүүлэгч, худалдан авалт, логистикийн анхан шатны зөвлөгөөг аяллын төлөвлөгөөнд уялдуулна.",
+        ]
+      : [
+          "Business meetings, expo visits, or product research can be added as a custom track.",
+          "Supplier, purchasing, and logistics guidance can be aligned with the travel plan.",
+        ],
+  };
 }
 
 export function OutboundTripsCarousel({
@@ -218,6 +259,11 @@ export function OutboundTripsCarousel({
       ko: option.countryKo,
     }[contentLocale];
     const backendAdventure = (option as { adventure?: Adventure }).adventure;
+    const staticDetails = getStaticOutboundDetails(
+      option,
+      country,
+      contentLocale
+    );
     const adventureForModal: Adventure = backendAdventure
       ? backendAdventure
       : {
@@ -236,17 +282,10 @@ export function OutboundTripsCarousel({
           rating: 4.8,
           reviews: 18 + idx * 4,
           category: "outbound",
-          summary:
-            contentLocale === "mn"
-              ? `${country} чиглэлийн ${option.days} хоногийн гадаад аяллын багц.`
-              : `${option.days}-day outbound travel package for ${country}.`,
-          idealFor: ["Гэр бүл", "Жижиг групп", "Амралт"],
-          includes: [
-            "Маршрут төлөвлөлт",
-            "Аяллын зөвлөгөө",
-            "Зохион байгуулалт",
-          ],
-          businessSupport: [],
+          summary: staticDetails.summary,
+          idealFor: staticDetails.idealFor,
+          includes: staticDetails.includes,
+          businessSupport: staticDetails.businessSupport,
           nextDeparture: "",
         };
     return adventureForModal;

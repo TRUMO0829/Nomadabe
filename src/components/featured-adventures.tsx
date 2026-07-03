@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type CSSProperties,
   type FormEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
@@ -15,10 +16,12 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   CalendarDays,
+  Globe2,
   Minus,
   MapPinned,
   Plus,
   Search,
+  SlidersHorizontal,
   Star,
   Send,
 } from "lucide-react";
@@ -148,14 +151,48 @@ function getOutboundOptionSummary(
 
   switch (locale) {
     case "mn":
-      return `${country} чиглэлийн ${option.days} хоногийн гадаад аяллын багц.`;
+      return `${country} чиглэлийн ${option.days} хоногийн аялал. Хотын үзвэр, амралт, зураг авах цэг, өдөр бүрийн маршрут, буудал болон тээврийн зохион байгуулалтыг Nomadabe баг төлөвлөнө.`;
     case "zh":
     case "ja":
     case "ko":
     case "en":
     default:
-      return `${option.days}-day outbound travel package for ${country}.`;
+      return `${option.days}-day ${country} travel package with daily routing, city highlights, leisure time, photo spots, accommodation guidance, and transport planning by the Nomadabe team.`;
   }
+}
+
+function getOutboundOptionDetails(locale: (typeof SEARCH_LOCALES)[number]) {
+  const isMn = locale === "mn";
+
+  return {
+    idealFor: isMn
+      ? ["Гэр бүл", "Найз нөхөд", "Жижиг групп", "Анх удаа аялагч"]
+      : ["Families", "Friends", "Small groups", "First-time visitors"],
+    includes: isMn
+      ? [
+          "Өдөр бүрийн маршрут",
+          "Буудал, тээврийн чиглүүлэг",
+          "Аяллын зөвлөгөө",
+          "Хөтөч/орчуулгын мэдээлэл",
+          "eSIM, даатгалын зөвлөмж",
+        ]
+      : [
+          "Daily itinerary planning",
+          "Hotel and transport guidance",
+          "Travel consulting",
+          "Guide and interpreter options",
+          "eSIM and insurance guidance",
+        ],
+    businessSupport: isMn
+      ? [
+          "Бизнес уулзалт, expo эсвэл бүтээгдэхүүн судалгааны зорилготой бол тусгай хөтөлбөр нэмэх боломжтой.",
+          "Нийлүүлэгч, худалдан авалт, логистикийн анхан шатны зөвлөгөөг аяллын төлөвлөгөөнд уялдуулна.",
+        ]
+      : [
+          "Business meetings, expo visits, or product research can be added as a custom track.",
+          "Supplier, purchasing, and logistics guidance can be aligned with the travel plan.",
+        ],
+  };
 }
 
 function getOutboundOptionTranslations(
@@ -175,9 +212,7 @@ function getOutboundOptionTranslations(
       groupSize: "Small group",
       tags: ["Outbound", country],
       summary: getOutboundOptionSummary(option, locale),
-      idealFor: ["Families", "Small groups", "Leisure"],
-      includes: ["Route planning", "Travel consulting", "Organization"],
-      businessSupport: [],
+      ...getOutboundOptionDetails(locale),
     };
 
     return translations;
@@ -1085,6 +1120,7 @@ export function FeaturedAdventures({
       OUTBOUND_OPTIONS.map((option, index) => {
         const title = getOutboundOptionTitle(option, "mn");
         const country = getOutboundOptionCountry(option, "mn");
+        const modalDetails = getOutboundOptionDetails("mn");
 
         return {
           id: `static-outbound-${option.id}`,
@@ -1103,9 +1139,9 @@ export function FeaturedAdventures({
           reviews: 18 + index * 4,
           category: "outbound",
           summary: getOutboundOptionSummary(option, "mn"),
-          idealFor: ["Гэр бүл", "Жижиг групп", "Амралт"],
-          includes: ["Маршрут төлөвлөлт", "Аяллын зөвлөгөө", "Зохион байгуулалт"],
-          businessSupport: [],
+          idealFor: modalDetails.idealFor,
+          includes: modalDetails.includes,
+          businessSupport: modalDetails.businessSupport,
           nextDeparture: sectionCopy.flexible,
           translations: getOutboundOptionTranslations(option),
         };
@@ -1117,6 +1153,36 @@ export function FeaturedAdventures({
     () => [...staticOutboundAdventures, ...adventures],
     [adventures, staticOutboundAdventures]
   );
+  const outboundCount = useMemo(
+    () =>
+      allAdventures.filter((adventure) => adventure.country !== "Mongolia").length,
+    [allAdventures]
+  );
+  const domesticCount = useMemo(
+    () =>
+      allAdventures.filter((adventure) => adventure.country === "Mongolia").length,
+    [allAdventures]
+  );
+  const scopeOptions = [
+    {
+      key: "all" as const,
+      label: sectionCopy.all,
+      count: allAdventures.length,
+      icon: SlidersHorizontal,
+    },
+    {
+      key: "outbound" as const,
+      label: sectionCopy.outbound,
+      count: outboundCount,
+      icon: Globe2,
+    },
+    {
+      key: "domestic" as const,
+      label: sectionCopy.domestic,
+      count: domesticCount,
+      icon: MapPinned,
+    },
+  ];
 
   const destinationOptions = useMemo(() => {
     const options = new Map<
@@ -1346,14 +1412,6 @@ export function FeaturedAdventures({
           ))}
           <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/38 to-primary/82" />
           <div className="absolute inset-0 bg-primary/10" />
-        </div>
-
-        <div className="relative z-10 mx-auto max-w-7xl px-6 pt-24 lg:px-10 lg:pt-32">
-          <div className="max-w-xl">
-            <h1 className="trip-header-title max-w-xl text-balance font-sans text-white">
-              {sectionCopy.title}
-            </h1>
-          </div>
         </div>
 
         <div className="absolute inset-x-0 top-[300px] z-30 px-6 sm:top-[330px] lg:top-[390px] lg:px-10">
@@ -1610,6 +1668,33 @@ export function FeaturedAdventures({
                 ) : null}
               </div>
             ) : null}
+
+            <div
+              className="trip-marquee mt-4"
+              style={{ "--marquee-duration": "18s" } as CSSProperties}
+            >
+              <div className="trip-marquee-track gap-3">
+                {[...scopeOptions, ...scopeOptions, ...scopeOptions].map(
+                  (item, index) => (
+                    <button
+                      key={`${item.key}-${index}`}
+                      type="button"
+                      onClick={() => setScope(item.key)}
+                      className={cn(
+                        "inline-flex min-w-[168px] items-center justify-center gap-2 rounded-full border px-4 py-3 text-xs font-black uppercase text-white shadow-sm backdrop-blur transition-colors",
+                        scope === item.key
+                          ? "border-accent bg-accent text-accent-foreground"
+                          : "border-white/45 bg-black/18 hover:border-accent hover:bg-accent hover:text-accent-foreground"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.count}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
           </form>
         </div>
       </div>

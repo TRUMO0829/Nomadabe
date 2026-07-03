@@ -556,7 +556,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={social.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-transparent text-white transition-[border-color,transform] hover:scale-105 hover:border-accent"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-accent bg-transparent text-white shadow-sm transition-colors hover:bg-accent hover:text-primary"
                   >
                     <SocialIcon icon={social.icon} />
                   </a>
@@ -593,7 +593,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       href={contact.href}
                       className="group flex gap-3 text-sm leading-6 text-white/72"
                     >
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent bg-transparent text-white transition-colors group-hover:bg-accent group-hover:text-primary">
                         {contact.type === "phone" ? (
                           <Phone className="h-4 w-4" />
                         ) : contact.type === "address" ? (
