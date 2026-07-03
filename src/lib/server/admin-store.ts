@@ -13,6 +13,7 @@ import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import type { SiteSettings, TeamMember } from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
 import {
+  getErrorMessage,
   getSupabaseConfigurationErrorMessage,
   getMissingSupabaseSchemaMessage,
   isMissingSupabaseTableError,
@@ -87,16 +88,20 @@ export async function getAdminStore() {
     try {
       return await getSupabaseAdminStore();
     } catch (error) {
-      if (isMissingSupabaseTableError(error)) {
-        return normalizeStore({});
-      }
-
-      throw error;
+      console.error(
+        "[admin-store] Supabase read failed. Rendering fallback store.",
+        getErrorMessage(error)
+      );
+      return normalizeStore({});
     }
   }
 
   if (!canUseLocalJsonStore()) {
-    throw new Error(getSupabaseConfigurationErrorMessage());
+    console.error(
+      "[admin-store] Supabase is not configured. Rendering fallback store.",
+      getSupabaseConfigurationErrorMessage()
+    );
+    return normalizeStore({});
   }
 
   try {
