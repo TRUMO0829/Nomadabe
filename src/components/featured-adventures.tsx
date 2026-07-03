@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  type CSSProperties,
   type FormEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
@@ -12,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -765,6 +765,7 @@ function DestinationDragCarousel({
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [autoPaused, setAutoPaused] = useState(false);
   const dragRef = useRef({
     active: false,
     startX: 0,
@@ -808,6 +809,48 @@ function DestinationDragCarousel({
     setIsDragging(false);
     scroller.scrollLeft = 0;
   }, [adventureSignature]);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+
+    if (!scroller || adventureCount <= 1 || isDragging || autoPaused) {
+      return;
+    }
+
+    scroller.classList.add("snap-none");
+    scroller.classList.remove("snap-x", "snap-mandatory");
+
+    let frame = 0;
+    let lastTime = 0;
+
+    const step = (time: number) => {
+      if (!scrollerRef.current) {
+        return;
+      }
+
+      if (lastTime === 0) {
+        lastTime = time;
+      }
+
+      const elapsed = time - lastTime;
+      lastTime = time;
+      const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+
+      if (maxScroll > 0 && !dragRef.current.active) {
+        scroller.scrollLeft += elapsed * 0.034;
+
+        if (scroller.scrollLeft >= maxScroll - 1) {
+          scroller.scrollLeft = 0;
+        }
+      }
+
+      frame = window.requestAnimationFrame(step);
+    };
+
+    frame = window.requestAnimationFrame(step);
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [adventureCount, adventureSignature, autoPaused, isDragging]);
 
   function stopMomentum() {
     if (dragRef.current.frame) {
@@ -1015,11 +1058,15 @@ function DestinationDragCarousel({
         <div
           ref={scrollerRef}
           className={cn(
-            "mx-auto mt-8 flex w-full max-w-[1500px] cursor-grab snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 active:cursor-grabbing sm:scroll-px-6 sm:gap-5 sm:px-6 lg:mt-10 lg:scroll-px-8 lg:gap-6 lg:px-8",
+            "mx-auto mt-8 flex w-full max-w-[1500px] cursor-grab scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 active:cursor-grabbing sm:scroll-px-6 sm:gap-5 sm:px-6 lg:mt-10 lg:scroll-px-8 lg:gap-6 lg:px-8",
             "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
             "[-webkit-overflow-scrolling:touch] [touch-action:pan-x]",
             isDragging && "cursor-grabbing select-none"
           )}
+          onMouseEnter={() => setAutoPaused(true)}
+          onMouseLeave={() => setAutoPaused(false)}
+          onFocus={() => setAutoPaused(true)}
+          onBlur={() => setAutoPaused(false)}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={endPointerDrag}
@@ -1034,7 +1081,7 @@ function DestinationDragCarousel({
                 key={adventure.id}
                 data-carousel-card
                 onClick={(event) => handleCardClick(event, adventure)}
-                className="group relative m-0 flex min-w-[82vw] shrink-0 snap-start cursor-pointer flex-col transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
+                className="group relative m-0 flex min-w-[82vw] shrink-0 cursor-pointer flex-col transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
               >
                 <div className="relative aspect-[4/4.85] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
                   <div
@@ -1065,18 +1112,23 @@ function DestinationDragCarousel({
                     {text.summary}
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
+                    <Link
+                      href={`/tours/${adventure.slug}`}
                       onClick={(event) => {
                         event.stopPropagation();
+                        if (dragRef.current.didDrag) {
+                          event.preventDefault();
+                          dragRef.current.didDrag = false;
+                          return;
+                        }
                         dragRef.current.didDrag = false;
-                        openAdventureDetails(adventure);
+                        stopMomentum();
                       }}
                       className="group/btn inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
                     >
                       {detailsLabel}
                       <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </article>
@@ -1669,31 +1721,24 @@ export function FeaturedAdventures({
               </div>
             ) : null}
 
-            <div
-              className="trip-marquee mt-4"
-              style={{ "--marquee-duration": "18s" } as CSSProperties}
-            >
-              <div className="trip-marquee-track gap-3">
-                {[...scopeOptions, ...scopeOptions, ...scopeOptions].map(
-                  (item, index) => (
-                    <button
-                      key={`${item.key}-${index}`}
-                      type="button"
-                      onClick={() => setScope(item.key)}
-                      className={cn(
-                        "inline-flex min-w-[168px] items-center justify-center gap-2 rounded-full border px-4 py-3 text-xs font-black uppercase text-white shadow-sm backdrop-blur transition-colors",
-                        scope === item.key
-                          ? "border-accent bg-accent text-accent-foreground"
-                          : "border-white/45 bg-black/18 hover:border-accent hover:bg-accent hover:text-accent-foreground"
-                      )}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.count}</span>
-                      <span>{item.label}</span>
-                    </button>
-                  )
-                )}
-              </div>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {scopeOptions.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setScope(item.key)}
+                  className={cn(
+                    "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border px-4 text-[10px] font-black uppercase text-white backdrop-blur transition-colors",
+                    scope === item.key
+                      ? "border-accent bg-accent text-accent-foreground"
+                      : "border-white/45 bg-black/14 hover:border-accent hover:bg-white/10"
+                  )}
+                >
+                  <item.icon className="h-3.5 w-3.5" />
+                  <span>{item.count}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
             </div>
           </form>
         </div>
