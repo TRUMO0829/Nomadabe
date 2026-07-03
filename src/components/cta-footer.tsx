@@ -475,7 +475,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={social.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white text-xs font-black shadow-sm transition-transform hover:scale-105"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-accent bg-transparent text-white shadow-sm transition-colors hover:bg-accent hover:text-primary"
                   >
                     <SocialIcon icon={social.icon} />
                   </a>
@@ -512,7 +512,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       href={contact.href}
                       className="group flex gap-3 text-sm leading-6 text-white/72"
                     >
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent bg-transparent text-white transition-colors group-hover:bg-accent group-hover:text-primary">
                         {contact.type === "phone" ? (
                           <Phone className="h-4 w-4" />
                         ) : contact.type === "address" ? (
@@ -606,7 +606,7 @@ function SocialIcon({ icon }: { icon: (typeof SOCIALS)[number]["icon"] }) {
         className="h-5 w-5"
       >
         <path
-          fill="#1877F2"
+          fill="currentColor"
           d="M14 8.1h2.4V4.2c-.4-.1-1.8-.2-3.4-.2-3.4 0-5.7 2.1-5.7 6v3.3H3.5v4.4h3.8V24h4.7v-6.3h3.7l.6-4.4H12v-2.9c0-1.3.3-2.3 2-2.3Z"
         />
       </svg>
@@ -617,19 +617,11 @@ function SocialIcon({ icon }: { icon: (typeof SOCIALS)[number]["icon"] }) {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className="h-5 w-5 fill-none stroke-[2]"
+      className="h-5 w-5 fill-none stroke-[2] text-white"
     >
-      <defs>
-        <linearGradient id="instagram-logo-gradient" x1="3" y1="21" x2="21" y2="3">
-          <stop offset="0%" stopColor="#F58529" />
-          <stop offset="35%" stopColor="#DD2A7B" />
-          <stop offset="70%" stopColor="#8134AF" />
-          <stop offset="100%" stopColor="#515BD4" />
-        </linearGradient>
-      </defs>
-      <rect x="3" y="3" width="18" height="18" rx="5" stroke="url(#instagram-logo-gradient)" />
-      <circle cx="12" cy="12" r="4" stroke="url(#instagram-logo-gradient)" />
-      <circle cx="17.5" cy="6.5" r="1.1" fill="#DD2A7B" className="stroke-none" />
+      <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" />
+      <circle cx="12" cy="12" r="4" stroke="currentColor" />
+      <circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" className="stroke-none" />
     </svg>
   );
 }
