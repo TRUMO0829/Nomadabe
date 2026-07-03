@@ -16,6 +16,7 @@ import {
   getErrorMessage,
   getSupabaseConfigurationErrorMessage,
   getMissingSupabaseSchemaMessage,
+  isMissingSupabaseTableError,
   isSupabaseConfigured,
   supabaseRest,
 } from "@/lib/server/supabase-rest";
