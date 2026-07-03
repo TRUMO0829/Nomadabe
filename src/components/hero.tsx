@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronDown, Globe2 } from "lucide-react";
+import { ChevronDown, Globe2, Phone } from "lucide-react";
 import { LANGUAGES } from "@/lib/i18n";
 import type { SiteSettings } from "@/lib/site-settings";
 import { cn } from "@/lib/utils";
@@ -148,8 +149,26 @@ export function Hero({ settings }: HeroProps) {
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.08)_100%)]" />
 
+      <div className="pointer-events-none absolute inset-x-0 top-[7vh] z-20 flex justify-center px-6">
+        <Link
+          href="/#home"
+          aria-label="Nomadabe Travel"
+          className="pointer-events-auto inline-flex items-center justify-center"
+        >
+          <Image
+            src="/nomadabe-logo-cropped.webp"
+            alt="Nomadabe Travel"
+            width={574}
+            height={615}
+            priority
+            sizes="112px"
+            className="h-[104px] w-auto object-contain brightness-0 invert drop-shadow-[0_8px_24px_rgba(0,0,0,0.28)] sm:h-[122px]"
+          />
+        </Link>
+      </div>
+
       <div
-        className="absolute left-5 top-5 z-20 sm:left-8 sm:top-7"
+        className="absolute left-5 top-5 z-30 flex items-center gap-2 sm:left-8 sm:top-7"
         onBlur={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget)) {
             setLanguageOpen(false);
@@ -171,9 +190,16 @@ export function Hero({ settings }: HeroProps) {
             )}
           />
         </button>
+        <a
+          href="tel:+97699103258"
+          className="inline-flex h-11 items-center gap-2 rounded-full border border-white/40 bg-black/12 px-4 text-xs text-white shadow-[0_14px_42px_rgba(0,0,0,0.14)] backdrop-blur-md transition-colors hover:border-accent hover:bg-black/20"
+        >
+          <Phone className="h-4 w-4" />
+          <span className="hidden whitespace-nowrap sm:inline">+976 9910 3258</span>
+        </a>
 
         {languageOpen ? (
-          <div className="mt-2 min-w-40 overflow-hidden rounded-xl border border-white/20 bg-black/70 p-1 text-white shadow-xl backdrop-blur-md">
+          <div className="absolute left-0 top-[calc(100%+0.5rem)] min-w-40 overflow-hidden rounded-xl border border-white/20 bg-black/70 p-1 text-white shadow-xl backdrop-blur-md">
             {LANGUAGES.map((language) => (
               <button
                 key={language.code}
