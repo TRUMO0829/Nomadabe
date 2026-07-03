@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { Testimonials } from "@/components/testimonials";
 import { CtaFooter } from "@/components/cta-footer";
@@ -16,7 +15,6 @@ export default async function Home() {
   return (
     <>
       <SignupPromptModal autoOpen={false} />
-      <Navbar />
       <main className="flex-1">
         <Hero settings={siteSettings} />
         <TravelOptionsCarousel adventures={adventures} />
