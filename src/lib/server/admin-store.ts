@@ -13,9 +13,9 @@ import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import type { SiteSettings } from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
 import {
-  getErrorMessage,
   getSupabaseConfigurationErrorMessage,
   getMissingSupabaseSchemaMessage,
+  isMissingSupabaseTableError,
   isSupabaseConfigured,
   supabaseRest,
 } from "@/lib/server/supabase-rest";
@@ -71,20 +71,16 @@ export async function getAdminStore() {
     try {
       return await getSupabaseAdminStore();
     } catch (error) {
-      console.error(
-        "[admin-store] Supabase read failed. Rendering fallback store.",
-        getErrorMessage(error)
-      );
-      return normalizeStore({});
+      if (isMissingSupabaseTableError(error)) {
+        return normalizeStore({});
+      }
+
+      throw error;
     }
   }
 
   if (!canUseLocalJsonStore()) {
-    console.error(
-      "[admin-store] Supabase is not configured. Rendering fallback store.",
-      getSupabaseConfigurationErrorMessage()
-    );
-    return normalizeStore({});
+    throw new Error(getSupabaseConfigurationErrorMessage());
   }
 
   try {
