@@ -16,12 +16,8 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   CalendarDays,
-  Globe2,
-  Minus,
   MapPinned,
-  Plus,
   Search,
-  SlidersHorizontal,
   Star,
   Send,
 } from "lucide-react";
@@ -44,9 +40,6 @@ type SortMode =
   | "price-high"
   | "days-low"
   | "days-high";
-type SearchPanel = "where" | "when" | "who";
-type GuestKey = "adults" | "children" | "infants" | "pets";
-type GuestCounts = Record<GuestKey, number>;
 
 type FeaturedAdventuresProps = {
   adventures?: Adventure[];
@@ -449,65 +442,6 @@ const TRIP_SEARCH_COPY = {
     petsHint: "서비스 동물을 동반하시나요?",
   },
 } as const;
-
-const LOCALE_TAGS = {
-  mn: "mn-MN",
-  en: "en-US",
-  zh: "zh-CN",
-  ja: "ja-JP",
-  ko: "ko-KR",
-} as const;
-
-const WEEKDAY_LABELS = {
-  mn: ["Н", "Д", "М", "Л", "П", "Б", "Б"],
-  en: ["S", "M", "T", "W", "T", "F", "S"],
-  zh: ["日", "一", "二", "三", "四", "五", "六"],
-  ja: ["日", "月", "火", "水", "木", "金", "土"],
-  ko: ["일", "월", "화", "수", "목", "금", "토"],
-} as const;
-
-const GUEST_ROWS = ["adults", "children", "infants", "pets"] as const;
-
-function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function startOfMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-function addMonths(date: Date, amount: number) {
-  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
-}
-
-function getMonthDays(month: Date) {
-  const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
-  const dayCount = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  const leadingBlanks = firstDay.getDay();
-
-  return [
-    ...Array.from({ length: leadingBlanks }, () => null),
-    ...Array.from({ length: dayCount }, (_, index) =>
-      new Date(month.getFullYear(), month.getMonth(), index + 1)
-    ),
-  ];
-}
-
-function getDateKey(date: Date) {
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-}
-
-function isDateInRange(date: Date, start: Date | null, end: Date | null) {
-  if (!start || !end) {
-    return false;
-  }
-
-  const time = startOfDay(date).getTime();
-  const startTime = startOfDay(start).getTime();
-  const endTime = startOfDay(end).getTime();
-
-  return time > Math.min(startTime, endTime) && time < Math.max(startTime, endTime);
-}
 
 const RATING_COPY = {
   mn: {
@@ -1157,24 +1091,11 @@ export function FeaturedAdventures({
   const [scope, setScope] = useState<TripScope>("all");
   const [sortMode] = useState<SortMode>("recommended");
   const [query, setQuery] = useState("");
-  const [activeSearchPanel, setActiveSearchPanel] =
-    useState<SearchPanel | null>(null);
-  const [selectedStartDate, setSelectedStartDate] = useState<Date | null>(null);
-  const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(null);
-  const [calendarOffset, setCalendarOffset] = useState(0);
-  const [guestCounts, setGuestCounts] = useState<GuestCounts>({
-    adults: 0,
-    children: 0,
-    infants: 0,
-    pets: 0,
-  });
   const [activeHeroImage, setActiveHeroImage] = useState(0);
   const gallerySectionRef = useRef<HTMLDivElement>(null);
-  const searchFormRef = useRef<HTMLFormElement>(null);
   const { contentLocale, t } = useLanguage();
   const sectionCopy = SECTION_COPY[contentLocale];
   const searchCopy = TRIP_SEARCH_COPY[contentLocale];
-  const localeTag = LOCALE_TAGS[contentLocale];
 
   const staticOutboundAdventures = useMemo<Adventure[]>(
     () =>
@@ -1214,79 +1135,6 @@ export function FeaturedAdventures({
     () => [...staticOutboundAdventures, ...adventures],
     [adventures, staticOutboundAdventures]
   );
-  const outboundCount = useMemo(
-    () =>
-      allAdventures.filter((adventure) => adventure.country !== "Mongolia").length,
-    [allAdventures]
-  );
-  const domesticCount = useMemo(
-    () =>
-      allAdventures.filter((adventure) => adventure.country === "Mongolia").length,
-    [allAdventures]
-  );
-  const scopeOptions = [
-    {
-      key: "all" as const,
-      label: sectionCopy.all,
-      count: allAdventures.length,
-      icon: SlidersHorizontal,
-    },
-    {
-      key: "outbound" as const,
-      label: sectionCopy.outbound,
-      count: outboundCount,
-      icon: Globe2,
-    },
-    {
-      key: "domestic" as const,
-      label: sectionCopy.domestic,
-      count: domesticCount,
-      icon: MapPinned,
-    },
-  ];
-
-  const destinationOptions = useMemo(() => {
-    const options = new Map<
-      string,
-      { label: string; count: number; searchText: string }
-    >();
-
-    allAdventures.forEach((adventure) => {
-      const text = getAdventureText(adventure, contentLocale);
-      const label = text.country.trim();
-
-      if (!label) {
-        return;
-      }
-
-      const key = label.toLowerCase();
-      const current = options.get(key);
-      options.set(key, {
-        label,
-        count: (current?.count ?? 0) + 1,
-        searchText: current
-          ? `${current.searchText} ${getAdventureSearchText(adventure)}`
-          : getAdventureSearchText(adventure),
-      });
-    });
-
-    return Array.from(options.values()).sort((left, right) =>
-      left.label.localeCompare(right.label, localeTag)
-    );
-  }, [allAdventures, contentLocale, localeTag]);
-
-  const visibleDestinationOptions = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(query.trim());
-
-    return destinationOptions
-      .filter((option) =>
-        normalizedQuery
-          ? normalizeSearchText(option.searchText).includes(normalizedQuery)
-          : true
-      )
-      .slice(0, 8);
-  }, [destinationOptions, query]);
-
   useEffect(() => {
     const interval = window.setInterval(() => {
       setActiveHeroImage((current) => (current + 1) % TOURS_BACKGROUNDS.length);
@@ -1294,28 +1142,6 @@ export function FeaturedAdventures({
 
     return () => window.clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    if (!activeSearchPanel) {
-      return;
-    }
-
-    function handlePointerDown(event: PointerEvent) {
-      const target = event.target;
-
-      if (
-        target instanceof Node &&
-        searchFormRef.current?.contains(target)
-      ) {
-        return;
-      }
-
-      setActiveSearchPanel(null);
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [activeSearchPanel]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1414,47 +1240,12 @@ export function FeaturedAdventures({
       },
     ].filter((group) => group.adventures.length > 0);
   }, [filteredAdventures, sectionCopy.domestic, sectionCopy.outbound]);
-  const today = useMemo(() => startOfDay(new Date()), []);
-  const calendarStartMonth = useMemo(() => startOfMonth(new Date()), []);
-  const visibleCalendarMonth = useMemo(
-    () => addMonths(calendarStartMonth, calendarOffset),
-    [calendarOffset, calendarStartMonth]
-  );
-  const selectedStartDateKey = selectedStartDate ? getDateKey(selectedStartDate) : null;
-  const selectedEndDateKey = selectedEndDate ? getDateKey(selectedEndDate) : null;
-
   function handleTripSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setActiveSearchPanel(null);
     gallerySectionRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
-  }
-
-  function selectRangeDate(day: Date) {
-    if (!selectedStartDate || selectedEndDate) {
-      setSelectedStartDate(day);
-      setSelectedEndDate(null);
-      return;
-    }
-
-    if (day < selectedStartDate) {
-      setSelectedStartDate(day);
-      setSelectedEndDate(selectedStartDate);
-      setActiveSearchPanel(null);
-      return;
-    }
-
-    setSelectedEndDate(day);
-    setActiveSearchPanel(null);
-  }
-
-  function updateGuestCount(key: GuestKey, amount: number) {
-    setGuestCounts((current) => ({
-      ...current,
-      [key]: Math.max(0, current[key] + amount),
-    }));
   }
 
   return (
@@ -1475,279 +1266,37 @@ export function FeaturedAdventures({
           <div className="absolute inset-0 bg-primary/10" />
         </div>
 
-        <div className="absolute inset-x-0 top-[300px] z-30 px-6 sm:top-[330px] lg:top-[390px] lg:px-10">
+        <div className="absolute inset-x-0 top-[42vh] z-30 px-6 sm:top-[44vh] lg:px-10">
           <form
-            ref={searchFormRef}
             onSubmit={handleTripSearchSubmit}
-            className="relative mx-auto max-w-4xl text-white"
+            className="relative mx-auto max-w-3xl text-white"
           >
-            <div className="grid overflow-hidden rounded-[2rem] border border-white/50 bg-white/10 shadow-[0_24px_80px_rgba(17,16,11,0.18)] backdrop-blur-[1px] sm:rounded-full lg:grid-cols-[1fr_auto]">
-              <div
-                className={cn(
-                  "flex min-h-[76px] flex-col justify-center border-b border-white/24 px-6 py-4 transition-colors sm:border-b-0 lg:border-r",
-                  activeSearchPanel === "where" && "bg-white/14"
-                )}
-                onClick={() => setActiveSearchPanel("where")}
-              >
+            <div className="grid overflow-hidden rounded-[1.75rem] border border-white/50 bg-white/10 shadow-[0_24px_80px_rgba(17,16,11,0.18)] backdrop-blur-[1px] sm:rounded-full lg:grid-cols-[1fr_auto]">
+              <div className="flex min-h-[60px] flex-col justify-center border-b border-white/24 px-5 py-3 transition-colors sm:border-b-0 lg:border-r">
                 <label
                   htmlFor="trip-where-search"
-                  className="trip-meta-text text-xs uppercase tracking-[0.14em] text-white/82"
+                  className="sr-only"
                 >
-                  {searchCopy.where}
+                  {searchCopy.wherePlaceholder}
                 </label>
                 <input
                   id="trip-where-search"
                   value={query}
-                  onFocus={() => setActiveSearchPanel("where")}
-                  onChange={(event) => {
-                    setQuery(event.target.value);
-                    setActiveSearchPanel("where");
-                  }}
+                  onChange={(event) => setQuery(event.target.value)}
                   placeholder={searchCopy.wherePlaceholder}
-                  className="mt-1 min-w-0 appearance-none border-0 bg-transparent p-0 text-base text-white shadow-none outline-none [background:transparent] placeholder:text-white/62 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-xl"
+                  className="min-w-0 appearance-none border-0 bg-transparent p-0 text-sm text-white shadow-none outline-none [background:transparent] placeholder:text-white/62 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-lg"
                 />
               </div>
 
-              <div className="flex items-center justify-end px-3 pb-3 sm:pb-3 lg:p-3">
+              <div className="flex items-center justify-end px-2.5 pb-2.5 sm:pb-2.5 lg:p-2.5">
                 <button
                   type="submit"
-                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-7 text-sm uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-6 text-xs uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
                 >
                   <Search className="h-5 w-5" />
                   <span>{searchCopy.search}</span>
                 </button>
               </div>
-            </div>
-
-            {activeSearchPanel ? (
-              <div
-                className={cn(
-                  "absolute top-[calc(100%+0.85rem)] z-40 border border-black/10 bg-white text-[#11100b] shadow-[0_30px_90px_rgba(17,16,11,0.22)]",
-                  activeSearchPanel === "where" &&
-                    "left-0 right-0 rounded-[2rem] p-6",
-                  activeSearchPanel === "when" &&
-                    "left-1/2 w-[min(92vw,620px)] -translate-x-1/2 rounded-[1.5rem] p-5",
-                  activeSearchPanel === "who" &&
-                    "right-0 w-[min(92vw,420px)] rounded-[1.5rem] p-4"
-                )}
-              >
-                {activeSearchPanel === "where" ? (
-                  <div>
-                    <p className="trip-meta-text text-xs uppercase tracking-[0.16em] text-[#8f7020]">
-                      {searchCopy.whereHint}
-                    </p>
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setQuery("");
-                          setScope("all");
-                          setActiveSearchPanel(null);
-                        }}
-                        className="rounded-xl border border-[#eadfac] bg-[#fffdf3] px-4 py-3 text-left transition-colors hover:border-accent hover:bg-accent/15"
-                      >
-                        <span className="block text-base text-[#11100b]">
-                          {searchCopy.allDestinations}
-                        </span>
-                        <span className="mt-1 block text-xs text-[#6d6352]">
-                          {allAdventures.length} {sectionCopy.result}
-                        </span>
-                      </button>
-                      {visibleDestinationOptions.length > 0 ? (
-                        visibleDestinationOptions.map((option) => (
-                          <button
-                            key={option.label}
-                            type="button"
-                            onClick={() => {
-                              setQuery(option.label);
-                              setActiveSearchPanel(null);
-                            }}
-                            className="rounded-xl border border-[#eadfac] bg-[#fffdf3] px-4 py-3 text-left transition-colors hover:border-accent hover:bg-accent/15"
-                          >
-                            <span className="block text-base text-[#11100b]">
-                              {option.label}
-                            </span>
-                            <span className="mt-1 block text-xs text-[#6d6352]">
-                              {option.count} {sectionCopy.result}
-                            </span>
-                          </button>
-                        ))
-                      ) : (
-                        <p className="rounded-xl border border-[#eadfac] bg-[#fffdf3] px-4 py-5 text-sm text-[#6d6352] sm:col-span-2 lg:col-span-4">
-                          {searchCopy.suggestionsEmpty}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ) : null}
-
-                {activeSearchPanel === "when" ? (
-                  <div>
-                    <div className="mx-auto mb-4 grid max-w-xs grid-cols-2 rounded-full bg-[#f1f1f1] p-1 text-center text-xs">
-                      <span className="rounded-full bg-white px-4 py-2 shadow-sm">
-                        {searchCopy.dates}
-                      </span>
-                      <span className="px-4 py-2 text-[#4b4538]">
-                        {searchCopy.flexible}
-                      </span>
-                    </div>
-                    <div className="mb-4 flex items-center justify-between gap-4">
-                      <button
-                        type="button"
-                        disabled={calendarOffset === 0}
-                        onClick={() =>
-                          setCalendarOffset((offset) => Math.max(0, offset - 1))
-                        }
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfac] text-xl disabled:opacity-30"
-                        aria-label="Previous month"
-                      >
-                        ‹
-                      </button>
-                      <h3 className="text-center text-xl text-[#11100b]">
-                        {new Intl.DateTimeFormat(localeTag, {
-                          month: "long",
-                          year: "numeric",
-                        }).format(visibleCalendarMonth)}
-                      </h3>
-                      <button
-                        type="button"
-                        onClick={() => setCalendarOffset((offset) => offset + 1)}
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfac] text-xl"
-                        aria-label="Next month"
-                      >
-                        ›
-                      </button>
-                    </div>
-                    <div>
-                      <div className="grid grid-cols-7 text-center text-xs text-[#6d6352]">
-                        {WEEKDAY_LABELS[contentLocale].map((day) => (
-                          <span key={day} className="py-2">
-                            {day}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="mt-1 grid grid-cols-7 gap-y-2">
-                        {getMonthDays(visibleCalendarMonth).map((day, index) => {
-                          if (!day) {
-                            return <span key={`blank-${index}`} />;
-                          }
-
-                          const isDisabled = day < today;
-                          const isStart =
-                            Boolean(selectedStartDateKey) &&
-                            selectedStartDateKey === getDateKey(day);
-                          const isEnd =
-                            Boolean(selectedEndDateKey) &&
-                            selectedEndDateKey === getDateKey(day);
-                          const isBetween = isDateInRange(
-                            day,
-                            selectedStartDate,
-                            selectedEndDate
-                          );
-                          const isSelected = isStart || isEnd;
-
-                          return (
-                            <button
-                              key={day.toISOString()}
-                              type="button"
-                              disabled={isDisabled}
-                              onClick={() => selectRangeDate(day)}
-                              className={cn(
-                                "relative flex h-12 items-center justify-center text-sm transition-colors",
-                                isBetween && "bg-[#f2f2f2]",
-                                isStart && "rounded-l-full bg-[#f2f2f2]",
-                                isEnd && "rounded-r-full bg-[#f2f2f2]",
-                                !isDisabled && !isSelected && "hover:bg-[#f4edcf]",
-                                isDisabled &&
-                                  "cursor-not-allowed text-[#11100b]/22 hover:bg-transparent"
-                              )}
-                            >
-                              <span
-                                className={cn(
-                                  "relative z-10 flex h-10 w-10 items-center justify-center rounded-full",
-                                  isSelected && "bg-[#11100b] text-white",
-                                  isEnd && "ring-2 ring-[#11100b] ring-offset-2 ring-offset-white"
-                                )}
-                              >
-                                {day.getDate()}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                {activeSearchPanel === "who" ? (
-                  <div>
-                    {GUEST_ROWS.map((key, index) => {
-                      const hintKey = `${key}Hint` as const;
-
-                      return (
-                        <div
-                          key={key}
-                          className={cn(
-                            "flex items-center justify-between gap-4 py-4",
-                            index > 0 && "border-t border-[#eadfac]"
-                          )}
-                        >
-                          <div>
-                            <h3 className="text-base text-[#11100b]">
-                              {searchCopy[key]}
-                            </h3>
-                            <p className="mt-1 text-xs text-[#6d6352]">
-                              {searchCopy[hintKey]}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <button
-                              type="button"
-                              disabled={guestCounts[key] === 0}
-                              onClick={() => updateGuestCount(key, -1)}
-                              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f1f1f1] text-[#11100b] disabled:opacity-35"
-                              aria-label={`Decrease ${key}`}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </button>
-                            <span className="min-w-5 text-center text-base">
-                              {guestCounts[key]}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => updateGuestCount(key, 1)}
-                              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f1f1f1] text-[#11100b]"
-                              aria-label={`Increase ${key}`}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {scopeOptions.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => setScope(item.key)}
-                  className={cn(
-                    "inline-flex min-h-9 items-center justify-center gap-2 rounded-full border px-4 text-[10px] font-black uppercase text-white backdrop-blur transition-colors",
-                    scope === item.key
-                      ? "border-accent bg-accent text-accent-foreground"
-                      : "border-white/45 bg-black/14 hover:border-accent hover:bg-white/10"
-                  )}
-                >
-                  <item.icon className="h-3.5 w-3.5" />
-                  <span>{item.count}</span>
-                  <span>{item.label}</span>
-                </button>
-              ))}
             </div>
           </form>
         </div>

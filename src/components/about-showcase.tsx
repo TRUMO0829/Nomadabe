@@ -30,7 +30,7 @@ type AboutShowcaseProps = {
 
 const WORK_ICONS = [Compass, CalendarCheck, Route, Handshake] as const;
 
-const ACCENT = "#FF6A1A";
+const ACCENT = "#FFD400";
 
 const CONTACT = {
   phones: ["+976 9910 3258", "+976 9918 9317"],
@@ -64,16 +64,16 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 
   return (
     <section className="relative overflow-hidden bg-[#0B0A07] text-[#FFFDF3]">
-      {/* ambient orange glow */}
+      {/* ambient accent glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-32 right-[-10%] h-[420px] w-[420px] rounded-full blur-[120px]"
-        style={{ background: "rgba(255,106,26,0.22)" }}
+        style={{ background: "rgba(255,212,0,0.22)" }}
       />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute bottom-0 left-[-12%] h-[360px] w-[360px] rounded-full blur-[120px]"
-        style={{ background: "rgba(255,106,26,0.12)" }}
+        style={{ background: "rgba(255,212,0,0.12)" }}
       />
 
       {/* ───────────────────────── HERO ───────────────────────── */}
@@ -112,8 +112,8 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             <motion.span
               variants={fadeUp}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] tracking-[0.28em] text-[#FFD9BF]"
-              style={{ borderColor: "rgba(255,106,26,0.4)", background: "rgba(255,106,26,0.08)" }}
+              className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] tracking-[0.28em] text-[#FFF3BF]"
+              style={{ borderColor: "rgba(255,212,0,0.4)", background: "rgba(255,212,0,0.08)" }}
             >
               <MapPin className="h-3.5 w-3.5" style={{ color: ACCENT }} />
               {L("УЛААНБААТАР · МОНГОЛ · TRAVEL", "ULAANBAATAR · MONGOLIA · TRAVEL")}
@@ -319,7 +319,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 >
                   <span
                     className="inline-flex h-11 w-11 items-center justify-center rounded-full"
-                    style={{ background: "rgba(255,106,26,0.14)" }}
+                    style={{ background: "rgba(255,212,0,0.14)" }}
                   >
                     <Icon className="h-5 w-5" style={{ color: ACCENT }} />
                   </span>
@@ -469,7 +469,7 @@ function FaqRow({
         <span className="text-base sm:text-lg">{item.question}</span>
         <span
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
-          style={{ background: "rgba(255,106,26,0.14)" }}
+          style={{ background: "rgba(255,212,0,0.14)" }}
         >
           {open ? (
             <Minus className="h-4 w-4" style={{ color: ACCENT }} />
