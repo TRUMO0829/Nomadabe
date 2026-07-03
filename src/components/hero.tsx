@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
+import { LANGUAGES } from "@/lib/i18n";
 import type { SiteSettings } from "@/lib/site-settings";
+import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
 
 const HERO_VIDEOS = [
@@ -61,7 +64,8 @@ function openSignupPrompt() {
 }
 
 export function Hero({ settings }: HeroProps) {
-  const { contentLocale, locale } = useLanguage();
+  const { contentLocale, locale, setLocale, t } = useLanguage();
+  const [languageOpen, setLanguageOpen] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const [active, setActive] = useState(0);
   const [ready, setReady] = useState(false);
@@ -74,6 +78,8 @@ export function Hero({ settings }: HeroProps) {
     { label: copy.about, href: "/about" },
     { label: copy.order, href: "/plan" },
   ];
+  const currentLanguage =
+    LANGUAGES.find((language) => language.code === locale) ?? LANGUAGES[0];
 
   const total = HERO_VIDEOS.length;
 
@@ -206,9 +212,56 @@ export function Hero({ settings }: HeroProps) {
             <span aria-hidden="true" className="text-white/72">
               |
             </span>
-            <span className="nav-text whitespace-nowrap text-[11px] uppercase tracking-[0.18em] text-white sm:text-sm">
-              {locale.toUpperCase()}
-            </span>
+            <div
+              aria-label={t.nav.language}
+              className="relative"
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                  setLanguageOpen(false);
+                }
+              }}
+            >
+              <button
+                type="button"
+                aria-expanded={languageOpen}
+                onClick={() => setLanguageOpen((value) => !value)}
+                className="nav-text inline-flex items-center gap-1.5 whitespace-nowrap text-[11px] uppercase tracking-[0.18em] text-white transition-colors hover:text-accent sm:text-sm"
+              >
+                {currentLanguage.short}
+                <ChevronDown
+                  className={cn(
+                    "h-3.5 w-3.5 transition-transform",
+                    languageOpen && "rotate-180"
+                  )}
+                />
+              </button>
+
+              {languageOpen ? (
+                <div className="absolute right-0 top-[calc(100%+0.7rem)] min-w-36 overflow-hidden rounded-lg border border-white/20 bg-black/72 p-1 text-white shadow-xl backdrop-blur-md">
+                  {LANGUAGES.map((language) => (
+                    <button
+                      key={language.code}
+                      type="button"
+                      aria-pressed={locale === language.code}
+                      title={language.label}
+                      onClick={() => {
+                        setLocale(language.code);
+                        setLanguageOpen(false);
+                      }}
+                      className={cn(
+                        "nav-text flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors",
+                        locale === language.code
+                          ? "bg-accent text-accent-foreground"
+                          : "hover:bg-white/12"
+                      )}
+                    >
+                      <span>{language.label}</span>
+                      <span>{language.short}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </nav>
         </motion.div>
       </div>
