@@ -1026,6 +1026,10 @@ function DestinationDragCarousel({
     event: ReactMouseEvent<HTMLElement>,
     adventure: Adventure
   ) {
+    if ((event.target as HTMLElement).closest("a")) {
+      return;
+    }
+
     if (dragRef.current.didDrag) {
       event.preventDefault();
       event.stopPropagation();
@@ -1114,6 +1118,11 @@ function DestinationDragCarousel({
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <Link
                       href={`/tours/${adventure.slug}`}
+                      onPointerDown={(event) => {
+                        event.stopPropagation();
+                        stopMomentum();
+                        dragRef.current.didDrag = false;
+                      }}
                       onClick={(event) => {
                         event.stopPropagation();
                         if (dragRef.current.didDrag) {
@@ -1124,7 +1133,7 @@ function DestinationDragCarousel({
                         dragRef.current.didDrag = false;
                         stopMomentum();
                       }}
-                      className="group/btn inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
+                      className="group/btn relative z-10 inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
                     >
                       {detailsLabel}
                       <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
