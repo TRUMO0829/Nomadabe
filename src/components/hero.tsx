@@ -24,6 +24,7 @@ type HeroProps = {
 const HERO_NAV_COPY = {
   mn: {
     trips: "Аяллууд",
+    stays: "Зочид буудал, Вилла",
     about: "Бидний тухай",
     order: "Захиалга",
     login: "Нэвтрэх",
@@ -31,6 +32,7 @@ const HERO_NAV_COPY = {
   },
   en: {
     trips: "Trips",
+    stays: "Hotel & Villa",
     about: "About us",
     order: "Booking",
     login: "Login",
@@ -38,6 +40,7 @@ const HERO_NAV_COPY = {
   },
   zh: {
     trips: "旅行",
+    stays: "酒店与别墅",
     about: "关于我们",
     order: "预订",
     login: "登录",
@@ -45,6 +48,7 @@ const HERO_NAV_COPY = {
   },
   ja: {
     trips: "ツアー",
+    stays: "ホテル・ヴィラ",
     about: "私たちについて",
     order: "予約",
     login: "ログイン",
@@ -52,6 +56,7 @@ const HERO_NAV_COPY = {
   },
   ko: {
     trips: "여행",
+    stays: "호텔 & 빌라",
     about: "소개",
     order: "예약",
     login: "로그인",
@@ -75,6 +80,7 @@ export function Hero({ settings }: HeroProps) {
   const copy = HERO_NAV_COPY[contentLocale];
   const navItems = [
     { label: copy.trips, href: "/tours" },
+    { label: copy.stays, href: "/stays" },
     { label: copy.about, href: "/about" },
     { label: copy.order, href: "/plan" },
   ];
