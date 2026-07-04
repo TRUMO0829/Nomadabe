@@ -17,6 +17,8 @@ const HERO_VIDEOS = [
   "/hero/hero4-2160.mp4",
 ];
 
+const FALLBACK_HERO_POSTER = "/nomadabe-hero-panorama.webp";
+
 type HeroProps = {
   settings?: SiteSettings;
 };
@@ -76,7 +78,9 @@ export function Hero({ settings }: HeroProps) {
   const [ready, setReady] = useState(false);
 
   const overlayOpacity = settings?.heroOverlayOpacity ?? 0.36;
-  const poster = settings?.heroImage || "/nomadabe-hero-panorama.webp";
+  const poster = settings?.heroImage?.startsWith("/")
+    ? settings.heroImage
+    : FALLBACK_HERO_POSTER;
   const copy = HERO_NAV_COPY[contentLocale];
   const navItems = [
     { label: copy.trips, href: "/tours" },
