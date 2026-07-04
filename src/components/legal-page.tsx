@@ -138,25 +138,40 @@ export const LEGAL_COPY: Record<string, Record<LegalPageKind, LegalCopy>> = {
   },
 };
 
+const LEGAL_BACKGROUND_IMAGES: Record<LegalPageKind, string> = {
+  terms:
+    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=2600&q=90",
+  privacy:
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2600&q=90",
+};
+
 export function LegalPage({ kind }: { kind: LegalPageKind }) {
   const { contentLocale } = useLanguage();
   const copy = LEGAL_COPY[contentLocale]?.[kind] ?? LEGAL_COPY.mn[kind];
 
   return (
-    <section className="min-h-screen bg-white px-6 pb-16 pt-20 text-black sm:px-10 lg:px-16 lg:pb-24 lg:pt-24">
+    <section
+      className="min-h-screen bg-cover bg-center px-6 pb-16 pt-28 text-white sm:px-10 lg:px-16 lg:pb-24 lg:pt-32"
+      style={{
+        backgroundImage: `linear-gradient(115deg, rgba(0,0,0,0.84) 0%, rgba(0,0,0,0.64) 54%, rgba(0,0,0,0.36) 100%), url(${LEGAL_BACKGROUND_IMAGES[kind]})`,
+      }}
+    >
       <div className="mx-auto max-w-6xl">
-        <article className="py-4 lg:py-6">
-          <h1 className="font-sans text-[clamp(2.1rem,4vw,3.25rem)] font-black leading-tight tracking-normal text-black">
+        <article className="rounded-lg border border-white/16 bg-black/34 p-6 shadow-[0_22px_70px_rgba(0,0,0,0.22)] backdrop-blur-md sm:p-8 lg:p-10">
+          <p className="nav-text mb-5 text-xs uppercase text-accent">
+            {copy.eyebrow}
+          </p>
+          <h1 className="font-sans text-[clamp(2.1rem,4vw,3.25rem)] font-black leading-tight tracking-normal text-white">
             {copy.title}
           </h1>
 
-          <div className="mt-8 space-y-6 font-sans text-[1.08rem] leading-[1.55] text-black sm:text-[1.25rem] lg:text-[1.35rem]">
+          <div className="mt-8 space-y-6 font-sans text-[1.08rem] leading-[1.55] text-white/76 sm:text-[1.25rem] lg:text-[1.35rem]">
             <p>{copy.subtitle}</p>
             <p>{copy.updated}</p>
 
             {copy.sections.map((section) => (
               <section key={section.title} className="space-y-4">
-                <h2 className="text-[1.15rem] font-black leading-snug text-black sm:text-[1.35rem] lg:text-[1.45rem]">
+                <h2 className="text-[1.15rem] font-black leading-snug text-white sm:text-[1.35rem] lg:text-[1.45rem]">
                   {section.title}
                 </h2>
                 <p>{section.body}</p>

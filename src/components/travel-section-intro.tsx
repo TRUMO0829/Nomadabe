@@ -12,6 +12,8 @@ type TravelSectionIntroProps = {
 
 const DEFAULT_TRAVEL_VIDEO =
   "https://cdn.pixabay.com/video/2020/05/25/40130-424930032_large.mp4";
+const DEFAULT_TRAVEL_IMAGE =
+  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2600&q=90";
 
 export function TravelSectionIntro({
   id,
@@ -25,10 +27,13 @@ export function TravelSectionIntro({
     return (
       <section
         id={id}
-        className="relative overflow-hidden bg-white px-6 py-12 text-center text-foreground lg:py-16"
+        className="relative overflow-hidden bg-cover bg-center px-6 py-12 text-center text-[#fff8ea] lg:py-16"
+        style={{
+          backgroundImage: `linear-gradient(180deg, rgba(17,16,11,0.76), rgba(17,16,11,0.62)), url(${DEFAULT_TRAVEL_IMAGE})`,
+        }}
       >
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center">
-          <h2 className={cn("section-header-title min-h-[1.05em] max-w-full whitespace-nowrap text-[#11100b]", titleClassName)}>
+          <h2 className={cn("section-header-title min-h-[1.05em] max-w-full whitespace-nowrap text-[#fff8ea]", titleClassName)}>
             <Typewriter
               words={[title]}
               speed={62}
@@ -38,7 +43,7 @@ export function TravelSectionIntro({
             />
           </h2>
           {description ? (
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-[#11100b] sm:text-base lg:text-lg">
+            <p className="mt-5 max-w-2xl text-sm leading-7 text-[#fff8ea]/74 sm:text-base lg:text-lg">
               {description}
             </p>
           ) : null}

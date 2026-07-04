@@ -14,7 +14,7 @@ export default function TermsPage() {
     <>
       <SignupPromptModal autoOpen={false} />
       <Navbar surface="light" />
-      <main className="flex-1 bg-white">
+      <main className="flex-1 bg-[#0b0a07]">
         <LegalPage kind="terms" />
         <CtaFooter />
       </main>
