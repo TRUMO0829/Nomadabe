@@ -11,10 +11,10 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
 
 const HERO_VIDEOS = [
-  "/hero/hero1-2160.mp4",
-  "/hero/hero2-2160.mp4",
-  "/hero/hero3-2160.mp4",
-  "/hero/hero4-2160.mp4",
+  "/hero/web/hero1-1080.mp4",
+  "/hero/web/hero2-1080.mp4",
+  "/hero/web/hero3-1080.mp4",
+  "/hero/web/hero4-1080.mp4",
 ];
 
 const FALLBACK_HERO_POSTER = "/nomadabe-hero-panorama.webp";
