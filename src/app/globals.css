@@ -269,6 +269,11 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
   -webkit-text-stroke: 1px rgba(255, 253, 243, 0.55);
 }
 
+.hero-credit-watermark {
+  font-family: "Times New Roman", Georgia, serif !important;
+  letter-spacing: 0.02em !important;
+}
+
 @keyframes premiumHeroProgress {
   from {
     transform: scaleX(0);

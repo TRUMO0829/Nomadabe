@@ -153,6 +153,12 @@ export function Hero({ settings }: HeroProps) {
         }}
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.08)_100%)]" />
+      <span
+        aria-hidden="true"
+        className="hero-credit-watermark pointer-events-none absolute bottom-[7vh] right-[7vw] z-10 text-[clamp(1rem,1.7vw,1.65rem)] italic text-white/20 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]"
+      >
+        created by coziestone
+      </span>
 
       <div className="pointer-events-none absolute inset-x-0 top-[7vh] z-20 flex justify-center px-6">
         <Link
