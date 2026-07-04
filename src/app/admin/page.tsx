@@ -24,6 +24,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Adventure, AdventureTranslation } from "@/lib/adventures";
+import type { SiteSettings } from "@/lib/site-settings";
 import { AdminItineraryEditor } from "@/components/admin-itinerary-editor";
 import { ConfirmSubmitButton } from "@/components/admin-confirm-button";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
@@ -37,6 +38,7 @@ import {
   emailLatestInquiryAction,
   logoutAdminAction,
   refreshAdminAction,
+  saveSiteSettingsAction,
   saveTripAction,
   sendAdminEmailAction,
   updateInquiryStatusAction,
@@ -58,6 +60,7 @@ const navItems = [
   { label: "Ерөнхий", href: "#overview", icon: LayoutDashboard },
   { label: "Бүртгэлүүд", href: "#registrations", icon: Users },
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
+  { label: "Веб тохиргоо", href: "#web-settings", icon: Gauge },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
 ];
@@ -81,13 +84,14 @@ export default async function AdminDashboard({
 
   const [dashboardData, customersResult, emailLogsResult] =
     await Promise.allSettled([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
-  const { trips, inquiries, bookingStats } =
+  const { trips, inquiries, bookingStats, siteSettings } =
     dashboardData.status === "fulfilled"
       ? dashboardData.value
       : {
           trips: [],
           inquiries: [],
           bookingStats: [],
+          siteSettings: null,
         };
   const customers = customersResult.status === "fulfilled" ? customersResult.value : [];
   const emailLogs = emailLogsResult.status === "fulfilled" ? emailLogsResult.value : [];
@@ -250,6 +254,17 @@ export default async function AdminDashboard({
               <MetricCard href="#programs" icon={CalendarDays} label="Явах огноо" value={upcomingDepartures.length} detail="Товлогдсон аяллууд" tone="slate" />
               <MetricCard href="#mail-sender" icon={Mail} label="Мэйл" value={emailLogs.length} detail="Илгээсэн эсвэл дараалалд" tone="orange" />
             </section>
+
+            {siteSettings ? (
+              <section id="web-settings" className="scroll-mt-6 space-y-4">
+                <SectionHeader
+                  eyebrow="Веб тохиргоо"
+                  title="Landing page бичлэгүүд"
+                  action="Нүүр хэсэгт шууд нөлөөлнө"
+                />
+                <LandingVideoSettingsForm settings={siteSettings} />
+              </section>
+            ) : null}
 
             <section className="grid gap-6 xl:grid-cols-[1fr_380px]">
               <div className="space-y-6">
@@ -506,6 +521,55 @@ function ProgramEditor({
         </form>
       </div>
     </details>
+  );
+}
+
+function LandingVideoSettingsForm({ settings }: { settings: SiteSettings }) {
+  return (
+    <form
+      action={saveSiteSettingsAction}
+      className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+    >
+      <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
+        <TextareaField
+          label="Hero бичлэгүүд / нэг мөр бүрт нэг MP4 URL эсвэл public path"
+          name="heroVideos"
+          defaultValue={settings.heroVideos.join("\n")}
+          rows={7}
+        />
+        <div className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
+          <h3 className="text-sm font-black text-[var(--primary)]">
+            Ашиглах заавар
+          </h3>
+          <p className="mt-2 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+            `/hero/web/hero1-1080.mp4` шиг public path эсвэл Supabase/CDN дээрх
+            `.mp4` URL оруулж болно. Хоосон хадгалбал default 4 бичлэг хэвээр
+            ашиглагдана.
+          </p>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+            Зөвлөмж
+          </p>
+          <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">
+            1080p, 5-15 секунд, muted-friendly video ашиглавал landing page хурдан
+            ачаална.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="max-w-2xl text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+          Хадгалсны дараа нүүр хуудас revalidate хийгдэж, шинэ бичлэгүүд дараагийн
+          ачаалалтаас тоглоно.
+        </p>
+        <button
+          type="submit"
+          className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
+        >
+          <Save className="h-4 w-4" />
+          Бичлэг хадгалах
+        </button>
+      </div>
+    </form>
   );
 }
 

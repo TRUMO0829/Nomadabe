@@ -96,6 +96,12 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
     "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг төлөвлөн зохион байгуулна.",
   heroImage:
     "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=90&fit=crop&fm=webp",
+  heroVideos: [
+    "/hero/web/hero1-1080.mp4",
+    "/hero/web/hero2-1080.mp4",
+    "/hero/web/hero3-1080.mp4",
+    "/hero/web/hero4-1080.mp4",
+  ],
   accentColor: "#e85d2c",
   heroTextColor: "#ffffff",
   heroOverlayOpacity: 0.72,
@@ -278,6 +284,13 @@ export async function updateSiteSettingsFromForm(formData: FormData) {
       getFormString(formData, "heroImagePreset") ||
       getFormString(formData, "heroImage") ||
       DEFAULT_SITE_SETTINGS.heroImage;
+  }
+
+  if (formData.has("heroVideos")) {
+    settings.heroVideos = getVideoListFromString(
+      getFormString(formData, "heroVideos"),
+      DEFAULT_SITE_SETTINGS.heroVideos
+    );
   }
 
   if (formData.has("accentColor")) {
@@ -481,6 +494,7 @@ export function parseSiteSettingsFromJson(payload: unknown) {
     heroTitle: stringifyPayloadValue(payload.heroTitle),
     heroSubtitle: stringifyPayloadValue(payload.heroSubtitle),
     heroImage: stringifyPayloadValue(payload.heroImage),
+    heroVideos: parseHeroVideosPayload(payload.heroVideos),
     accentColor: stringifyPayloadValue(payload.accentColor),
     heroTextColor: stringifyPayloadValue(payload.heroTextColor),
     heroOverlayOpacity: getNumberFromString(
@@ -511,6 +525,7 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
     heroTitle: normalizeHeroTitle(settings.heroTitle || DEFAULT_SITE_SETTINGS.heroTitle),
     heroSubtitle: settings.heroSubtitle || DEFAULT_SITE_SETTINGS.heroSubtitle,
     heroImage: settings.heroImage || DEFAULT_SITE_SETTINGS.heroImage,
+    heroVideos: normalizeHeroVideos(settings.heroVideos),
     accentColor: settings.accentColor || DEFAULT_SITE_SETTINGS.accentColor,
     heroTextColor: settings.heroTextColor || DEFAULT_SITE_SETTINGS.heroTextColor,
     heroOverlayOpacity:
@@ -520,6 +535,32 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
     teamMembers: normalizeTeamMembers(settings.teamMembers),
     aboutSection: normalizeAboutSection(settings.aboutSection),
   };
+}
+
+function parseHeroVideosPayload(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+
+  if (typeof value === "string") {
+    return getVideoListFromString(value, DEFAULT_SITE_SETTINGS.heroVideos);
+  }
+
+  return undefined;
+}
+
+function normalizeHeroVideos(value: unknown) {
+  if (!Array.isArray(value)) {
+    return DEFAULT_SITE_SETTINGS.heroVideos;
+  }
+
+  const videos = value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  return videos.length > 0 ? videos : DEFAULT_SITE_SETTINGS.heroVideos;
 }
 
 function normalizeAboutSection(input: unknown): AboutSectionSettings {
@@ -975,6 +1016,20 @@ function getListFromString(value: string, fallback: string[]) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function getVideoListFromString(value: string, fallback: string[]) {
+  if (!value) {
+    return fallback;
+  }
+
+  const videos = value
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  return videos.length > 0 ? videos : fallback;
 }
 
 function parseItineraryField(

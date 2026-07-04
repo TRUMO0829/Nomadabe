@@ -91,6 +91,7 @@ export type SiteSettings = {
   heroTitle: string;
   heroSubtitle: string;
   heroImage: string;
+  heroVideos: string[];
   accentColor: string;
   heroTextColor: string;
   heroOverlayOpacity: number;

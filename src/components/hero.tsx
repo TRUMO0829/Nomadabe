@@ -80,6 +80,12 @@ export function Hero({ settings }: HeroProps) {
   const poster = settings?.heroImage?.startsWith("/")
     ? settings.heroImage
     : FALLBACK_HERO_POSTER;
+  const configuredVideos = settings?.heroVideos
+    ?.map((src) => src.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+  const heroVideos =
+    configuredVideos && configuredVideos.length > 0 ? configuredVideos : HERO_VIDEOS;
   const copy = HERO_NAV_COPY[contentLocale];
   const navItems = [
     { label: copy.trips, href: "/tours" },
@@ -88,11 +94,16 @@ export function Hero({ settings }: HeroProps) {
     { label: copy.order, href: "/plan" },
   ];
 
-  const total = HERO_VIDEOS.length;
+  const total = heroVideos.length;
 
   // Keep only the active 2160p clip playing so the landing page starts with
   // motion quickly instead of competing downloads for every hero video.
   useEffect(() => {
+    if (active >= total) {
+      setActive(0);
+      return;
+    }
+
     videoRefs.current.forEach((video, index) => {
       if (!video) return;
       if (index === active) {
@@ -102,7 +113,7 @@ export function Hero({ settings }: HeroProps) {
         video.pause();
       }
     });
-  }, [active]);
+  }, [active, total]);
 
   return (
     <section
@@ -120,7 +131,7 @@ export function Hero({ settings }: HeroProps) {
       />
 
       {/* All clips are stacked; only the active one is visible. */}
-      {HERO_VIDEOS.map((src, index) => {
+      {heroVideos.map((src, index) => {
         const isActive = index === active;
         return (
           <video
