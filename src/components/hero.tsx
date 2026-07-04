@@ -75,7 +75,6 @@ export function Hero({ settings }: HeroProps) {
   const [languageOpen, setLanguageOpen] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const [active, setActive] = useState(0);
-  const [ready, setReady] = useState(false);
 
   const overlayOpacity = settings?.heroOverlayOpacity ?? 0.36;
   const poster = settings?.heroImage?.startsWith("/")
@@ -91,10 +90,9 @@ export function Hero({ settings }: HeroProps) {
 
   const total = HERO_VIDEOS.length;
 
-  // Play the active clip from the start; all 2160p clips preload to keep the
-  // crossfade from falling back to older cached media.
+  // Keep only the active 2160p clip playing so the landing page starts with
+  // motion quickly instead of competing downloads for every hero video.
   useEffect(() => {
-    setReady(false);
     videoRefs.current.forEach((video, index) => {
       if (!video) return;
       if (index === active) {
@@ -134,19 +132,16 @@ export function Hero({ settings }: HeroProps) {
             muted
             playsInline
             autoPlay={index === 0}
-            preload="auto"
+            preload={isActive ? "auto" : "metadata"}
             poster={poster}
             src={src}
             width={3840}
             height={2160}
-            onCanPlay={() => {
-              if (isActive) setReady(true);
-            }}
             onEnded={() => {
               if (isActive) setActive((current) => (current + 1) % total);
             }}
             className="absolute inset-0 h-full w-full scale-105 object-cover transition-opacity duration-1000 ease-in-out"
-            style={{ opacity: isActive && ready ? 1 : 0 }}
+            style={{ opacity: isActive ? 1 : 0 }}
           />
         );
       })}
