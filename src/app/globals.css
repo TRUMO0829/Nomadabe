@@ -44,7 +44,7 @@
 *::after {
   border-color: var(--border);
   font-family: var(--site-font) !important;
-  letter-spacing: 0 !important;
+  letter-spacing: 1.6px !important;
 }
 
 html {
