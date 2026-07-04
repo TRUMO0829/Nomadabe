@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  ArrowLeft,
   ArrowRight,
   CalendarDays,
   CheckCircle2,
@@ -209,27 +208,7 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
             backgroundSize: "cover",
           }}
         >
-          <div className="relative z-10 mx-auto flex w-full max-w-[1500px] flex-col gap-8 text-white">
-            <Link
-              href="/tours"
-              className="inline-flex w-fit items-center gap-2 border border-white/45 bg-black/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white backdrop-blur-md transition hover:bg-white hover:text-black"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Аяллууд
-            </Link>
-
-            <div className="max-w-5xl">
-              <p className="text-xs uppercase tracking-[0.32em] text-white/72">
-                {text.country} / {text.location}
-              </p>
-              <h1 className="mt-5 max-w-[12ch] text-balance text-[clamp(3.25rem,8vw,8.5rem)] font-light leading-[0.92] tracking-normal">
-                {text.title}
-              </h1>
-              <p className="mt-6 max-w-2xl text-base leading-8 text-white/82 sm:text-lg">
-                {text.summary}
-              </p>
-            </div>
-
+          <div className="relative z-10 mx-auto w-full max-w-[1500px] text-white">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="border border-white/20 bg-white/12 p-4 backdrop-blur-md">
                 <CalendarDays className="h-5 w-5 text-[#ffcc00]" />
