@@ -8,7 +8,7 @@ import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 
-const ACCENT = "#FF6A1A";
+const ACCENT = "#FFD400";
 
 const COPY = {
   mn: {
@@ -293,16 +293,16 @@ export function OutboundTripsCarousel({
 
   return (
     <section className="relative overflow-hidden bg-[#0B0A07] text-[#FFFDF3]">
-      {/* ambient orange glow (matches the About section) */}
+      {/* ambient yellow glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-24 right-[-8%] h-[420px] w-[420px] rounded-full blur-[130px]"
-        style={{ background: "rgba(255,106,26,0.18)" }}
+        style={{ background: "rgba(255,212,0,0.16)" }}
       />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute bottom-0 left-[-10%] h-[360px] w-[360px] rounded-full blur-[130px]"
-        style={{ background: "rgba(255,106,26,0.1)" }}
+        style={{ background: "rgba(255,212,0,0.09)" }}
       />
 
       <div className="relative mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
@@ -333,7 +333,7 @@ export function OutboundTripsCarousel({
                 type="button"
                 onClick={() => setSelected(adventure)}
                 className={[
-                  "group relative block overflow-hidden rounded-[28px] border border-white/10 text-left transition-colors hover:border-[rgba(255,106,26,0.5)]",
+                  "group relative block overflow-hidden rounded-[28px] border border-white/10 text-left transition-colors hover:border-[rgba(255,212,0,0.55)]",
                   featured
                     ? "h-[clamp(20rem,40vw,30rem)] lg:col-span-2"
                     : "h-[clamp(18rem,30vw,26rem)]",
