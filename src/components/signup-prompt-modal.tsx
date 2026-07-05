@@ -382,10 +382,10 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-accent text-accent-foreground">
                 <UserRound className="h-6 w-6" />
               </div>
-              <h2 className="font-display text-3xl leading-tight">
+              <h2 className="font-display text-3xl font-semibold leading-tight">
                 {copy.title}
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-primary-foreground/75">
+              <p className="mt-3 text-sm font-medium leading-relaxed text-primary-foreground/78">
                 {copy.body}
               </p>
             </div>
@@ -409,7 +409,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                       setMessage("");
                     }}
                     className={cn(
-                      "rounded-md px-4 py-2 text-sm font-bold transition-colors",
+                      "rounded-md px-4 py-2 text-sm font-black transition-colors",
                       mode === item.key
                         ? "bg-accent text-accent-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -427,7 +427,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                     <input
                       name="name"
                       placeholder={copy.name}
-                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                      className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                     />
                   </label>
                 )}
@@ -450,7 +450,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                     }
                     required
                     placeholder={copy.email}
-                    className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                   />
                 </label>
                 {((mode === "reset" && resetStep === "confirm") ||
@@ -463,7 +463,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                       pattern="[0-9]{6}"
                       required
                       placeholder={copy.resetCode}
-                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                      className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                     />
                   </label>
                 )}
@@ -477,7 +477,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                       type="password"
                       required
                       placeholder={mode === "reset" ? copy.newPassword : copy.password}
-                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                      className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                     />
                   </label>
                 )}
@@ -490,14 +490,14 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                       type="password"
                       required
                       placeholder={copy.confirmPassword}
-                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                      className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                     />
                   </label>
                 )}
 
                 <button
                   disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-5 py-3.5 text-sm font-bold text-accent-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
+                  className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-5 py-3.5 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {loading
                     ? "..."
@@ -523,7 +523,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                   setSubmitted(false);
                   setMessage("");
                 }}
-                className="mt-3 w-full text-center text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+                className="mt-3 w-full text-center text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
               >
                 {mode === "reset" ? copy.backToLogin : copy.forgotPassword}
               </button>
@@ -531,12 +531,12 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="mt-3 w-full rounded-md border border-border px-5 py-3 text-sm font-bold text-foreground transition-colors hover:border-accent"
+                className="mt-3 w-full rounded-md border border-border px-5 py-3 text-sm font-black text-foreground transition-colors hover:border-accent"
               >
                 {copy.guest}
               </button>
 
-              <p className="mt-4 text-center text-xs text-muted-foreground">
+              <p className="mt-4 text-center text-xs font-medium text-muted-foreground">
                 {message || (submitted ? copy.success : copy.optional)}
               </p>
             </div>
