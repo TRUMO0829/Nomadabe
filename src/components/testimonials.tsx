@@ -94,6 +94,7 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
   const [localReviews, setLocalReviews] = useState<SiteReview[]>(reviews);
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
 
   const staticTestimonials: TestimonialColumnItem[] = REVIEW_PROFILES.map((profile, index) => {
     const quote = copy.quotes[index % copy.quotes.length];
@@ -157,8 +158,11 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
   }
 
   function scrollToReviewForm() {
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    window.setTimeout(() => nameInputRef.current?.focus(), 450);
+    setIsReviewFormOpen(true);
+    window.setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      nameInputRef.current?.focus();
+    }, 80);
   }
 
   return (
@@ -177,9 +181,9 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
           <button
             type="button"
             onClick={scrollToReviewForm}
-            className="nav-text mt-5 inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-xs uppercase tracking-[0.12em] text-primary-foreground shadow-[0_12px_30px_rgba(255,212,0,0.28)] transition hover:-translate-y-0.5 hover:bg-primary/90"
+            className="nav-text mt-5 inline-flex h-12 items-center justify-center rounded-full bg-[#11100b] px-8 text-xs uppercase tracking-[0.12em] text-white shadow-[0_14px_36px_rgba(17,16,11,0.16)] transition hover:-translate-y-0.5 hover:bg-[#2a271d]"
           >
-            Сэтгэгдэл бичих
+            Сэтгэгдэл үлдээх
           </button>
         </motion.div>
 
@@ -197,69 +201,74 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
           />
         </div>
 
-        <form
-          id="write-review"
-          ref={formRef}
-          onSubmit={submitReview}
-          className="mx-auto mt-8 grid w-full max-w-5xl scroll-mt-28 gap-3 rounded-xl border border-[#eadfac] bg-[#fffdf3] p-4 shadow-sm shadow-primary/10 md:grid-cols-[1fr_1fr_auto]"
-        >
-          <input
-            ref={nameInputRef}
-            name="name"
-            required
-            minLength={2}
-            placeholder="Нэр"
-            className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
-          />
-          <input
-            name="trip"
-            placeholder="Аяллын нэр"
-            className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
-          />
-          <select
-            name="rating"
-            defaultValue="5"
-            className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-semibold text-foreground outline-none transition focus:border-primary"
-            aria-label="Үнэлгээ"
+        {isReviewFormOpen ? (
+          <motion.form
+            id="write-review"
+            ref={formRef}
+            onSubmit={submitReview}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="mx-auto mt-8 grid w-full max-w-5xl scroll-mt-28 gap-3 rounded-xl border border-[#eadfac] bg-[#fffdf3] p-4 shadow-sm shadow-primary/10 md:grid-cols-[1fr_1fr_auto]"
           >
-            {[5, 4, 3, 2, 1].map((rating) => (
-              <option key={rating} value={rating}>
-                {rating} од
-              </option>
-            ))}
-          </select>
-          <textarea
-            name="message"
-            required
-            minLength={8}
-            placeholder="Сэтгэгдлээ бичнэ үү"
-            className="min-h-24 rounded-lg border border-[#eadfac] bg-white px-4 py-3 text-sm font-medium leading-6 text-foreground outline-none transition focus:border-primary md:col-span-2"
-          />
-          <label className="flex h-24 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[#d8c56d] bg-white px-4 text-sm font-semibold text-foreground/70 transition hover:border-primary hover:text-foreground">
-            <ImagePlus className="h-5 w-5 text-primary" />
-            Зураг
-            <input name="image" type="file" accept="image/*" className="sr-only" />
-          </label>
-          <div className="flex flex-col gap-3 md:col-span-3 md:flex-row md:items-center">
             <input
-              name="location"
-              placeholder="Хот / улс"
-              className="h-12 flex-1 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
+              ref={nameInputRef}
+              name="name"
+              required
+              minLength={2}
+              placeholder="Нэр"
+              className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
             />
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#11100b] px-6 text-sm font-semibold text-white transition hover:bg-[#2a271d] disabled:cursor-not-allowed disabled:opacity-60"
+            <input
+              name="trip"
+              placeholder="Аяллын нэр"
+              className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
+            />
+            <select
+              name="rating"
+              defaultValue="5"
+              className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-semibold text-foreground outline-none transition focus:border-primary"
+              aria-label="Үнэлгээ"
             >
-              <Star className="h-4 w-4" />
-              {isSubmitting ? "Хадгалж байна" : "Сэтгэгдэл үлдээх"}
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
-          {status ? (
-            <p className="text-sm font-medium text-foreground/70 md:col-span-3">{status}</p>
-          ) : null}
-        </form>
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <option key={rating} value={rating}>
+                  {rating} од
+                </option>
+              ))}
+            </select>
+            <textarea
+              name="message"
+              required
+              minLength={8}
+              placeholder="Сэтгэгдлээ бичнэ үү"
+              className="min-h-24 rounded-lg border border-[#eadfac] bg-white px-4 py-3 text-sm font-medium leading-6 text-foreground outline-none transition focus:border-primary md:col-span-2"
+            />
+            <label className="flex h-24 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[#d8c56d] bg-white px-4 text-sm font-semibold text-foreground/70 transition hover:border-primary hover:text-foreground">
+              <ImagePlus className="h-5 w-5 text-primary" />
+              Зураг
+              <input name="image" type="file" accept="image/*" className="sr-only" />
+            </label>
+            <div className="flex flex-col gap-3 md:col-span-3 md:flex-row md:items-center">
+              <input
+                name="location"
+                placeholder="Хот / улс"
+                className="h-12 flex-1 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#11100b] px-6 text-sm font-semibold text-white transition hover:bg-[#2a271d] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Star className="h-4 w-4" />
+                {isSubmitting ? "Хадгалж байна" : "Сэтгэгдэл үлдээх"}
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+            {status ? (
+              <p className="text-sm font-medium text-foreground/70 md:col-span-3">{status}</p>
+            ) : null}
+          </motion.form>
+        ) : null}
       </div>
     </section>
   );
