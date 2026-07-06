@@ -162,11 +162,11 @@ export function Navbar({
 
         <div
           className={cn(
-            "hidden items-center border transition-all duration-300 lg:ml-auto lg:flex",
+            "hidden items-center overflow-hidden border backdrop-blur-2xl transition-all duration-300 lg:ml-auto lg:flex",
             "rounded-[1.05rem] px-3 py-2",
             useLightHeader
-              ? "border-[#d7bd6c]/65 bg-[#050504]/20 text-white shadow-[0_18px_45px_rgba(17,16,11,0.06)]"
-              : "border-[#d7bd6c]/80 bg-[#050504]/20 text-white shadow-[0_18px_50px_rgba(0,0,0,0.12)]"
+              ? "border-white/18 bg-white/[0.08] text-white shadow-[0_18px_45px_rgba(17,16,11,0.06),inset_0_1px_0_rgba(255,255,255,0.22)]"
+              : "border-white/18 bg-white/[0.08] text-white shadow-[0_18px_50px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.22)]"
           )}
         >
           <nav className="flex items-center">
