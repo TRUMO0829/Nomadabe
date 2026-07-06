@@ -9,6 +9,7 @@ import {
 
 const POSTER_BUCKET = "trip-posters";
 const HERO_VIDEO_BUCKET = "hero-videos";
+const REVIEW_IMAGE_BUCKET = "review-images";
 const MAX_POSTER_BYTES = 8 * 1024 * 1024; // 8 MB
 const MAX_HERO_VIDEO_BYTES = 120 * 1024 * 1024; // 120 MB
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
@@ -16,6 +17,7 @@ const ALLOWED_VIDEO_MIME = ["video/mp4", "video/webm", "video/quicktime"];
 
 let posterBucketEnsured = false;
 let heroVideoBucketEnsured = false;
+let reviewImageBucketEnsured = false;
 
 /**
  * Upload a trip poster image to Supabase Storage and return its public URL.
@@ -46,6 +48,32 @@ export async function uploadTripPoster(file: File): Promise<string> {
   });
 
   return uploadPublicObject(POSTER_BUCKET, file);
+}
+
+export async function uploadReviewImage(file: File): Promise<string> {
+  if (!isSupabaseConfigured()) {
+    throw new Error(getSupabaseConfigurationErrorMessage());
+  }
+
+  if (file.size === 0) {
+    throw new Error("Сэтгэгдлийн зураг хоосон байна.");
+  }
+
+  if (file.size > MAX_POSTER_BYTES) {
+    throw new Error("Сэтгэгдлийн зураг 8MB-аас бага байх ёстой.");
+  }
+
+  if (file.type && !ALLOWED_MIME.includes(file.type)) {
+    throw new Error("Зөвхөн зураг (JPG, PNG, WEBP, AVIF, GIF) оруулна уу.");
+  }
+
+  await ensureStorageBucket({
+    allowedMimeTypes: ALLOWED_MIME,
+    bucket: REVIEW_IMAGE_BUCKET,
+    maxBytes: MAX_POSTER_BYTES,
+  });
+
+  return uploadPublicObject(REVIEW_IMAGE_BUCKET, file);
 }
 
 export async function uploadHeroVideo(file: File): Promise<string> {
@@ -116,6 +144,10 @@ async function ensureStorageBucket({
     return;
   }
 
+  if (bucket === REVIEW_IMAGE_BUCKET && reviewImageBucketEnsured) {
+    return;
+  }
+
   const supabaseUrl = getSupabaseUrl();
   const serviceKey = getSupabaseServiceKey();
 
@@ -164,6 +196,10 @@ function markBucketEnsured(bucket: string) {
   if (bucket === HERO_VIDEO_BUCKET) {
     heroVideoBucketEnsured = true;
   }
+
+  if (bucket === REVIEW_IMAGE_BUCKET) {
+    reviewImageBucketEnsured = true;
+  }
 }
 
 function extensionFor(file: File) {
@@ -192,5 +228,9 @@ export function isUploadedPoster(value: unknown): value is File {
 }
 
 export function isUploadedHeroVideo(value: unknown): value is File {
+  return typeof File !== "undefined" && value instanceof File && value.size > 0;
+}
+
+export function isUploadedReviewImage(value: unknown): value is File {
   return typeof File !== "undefined" && value instanceof File && value.size > 0;
 }

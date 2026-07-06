@@ -23,7 +23,7 @@ export default async function Home() {
           outboundTripImages={siteSettings.outboundTripImages}
         />
         <FeaturedTripsCarousel adventures={adventures} variant="compact" />
-        <Testimonials />
+        <Testimonials reviews={siteSettings.reviews} />
         <CtaFooter />
       </main>
     </>

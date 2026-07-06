@@ -1,11 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ImagePlus, Send, Star } from "lucide-react";
+import type { FormEvent } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   TestimonialsColumn,
   type TestimonialColumnItem,
 } from "@/components/ui/testimonials-columns-1";
 import { useLanguage } from "./language-provider";
+import type { SiteReview } from "@/lib/site-settings";
 
 const REVIEW_PROFILES: Array<{
   email: string;
@@ -78,11 +82,19 @@ const REVIEW_PROFILES: Array<{
   },
 ];
 
-export function Testimonials() {
+type TestimonialsProps = {
+  reviews?: SiteReview[];
+};
+
+export function Testimonials({ reviews = [] }: TestimonialsProps) {
   const { contentLocale, t } = useLanguage();
   const copy = t.testimonials;
+  const formRef = useRef<HTMLFormElement>(null);
+  const [localReviews, setLocalReviews] = useState<SiteReview[]>(reviews);
+  const [status, setStatus] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const testimonials: TestimonialColumnItem[] = REVIEW_PROFILES.map((profile, index) => {
+  const staticTestimonials: TestimonialColumnItem[] = REVIEW_PROFILES.map((profile, index) => {
     const quote = copy.quotes[index % copy.quotes.length];
 
     return {
@@ -93,9 +105,55 @@ export function Testimonials() {
     };
   });
 
+  const testimonials: TestimonialColumnItem[] = useMemo(() => {
+    const storedReviews = localReviews.map((review) => ({
+      text: review.message,
+      email: review.name,
+      avatar: {
+        initials: review.name.slice(0, 1).toUpperCase() || "N",
+        background: "#ffd400",
+        foreground: "#11100b",
+        gender: "female" as const,
+      },
+      role: [review.trip, review.location].filter(Boolean).join(" - ") || "Nomadabe traveller",
+      imageUrl: review.imageUrl,
+    }));
+
+    return storedReviews.length > 0
+      ? [...storedReviews, ...staticTestimonials.slice(storedReviews.length)]
+      : staticTestimonials;
+  }, [localReviews, staticTestimonials]);
+
   const firstColumn = testimonials.slice(0, 3);
   const secondColumn = testimonials.slice(3, 6);
   const thirdColumn = testimonials.slice(6, 9);
+
+  async function submitReview(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStatus("");
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData(event.currentTarget);
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        body: formData,
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error?.message || "Сэтгэгдэл хадгалж чадсангүй.");
+      }
+
+      setLocalReviews((current) => [payload.data.review, ...current].slice(0, 36));
+      formRef.current?.reset();
+      setStatus("Сэтгэгдэл хадгалагдлаа. Баярлалаа.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Сэтгэгдэл хадгалж чадсангүй.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <section id="journal" className="relative bg-white px-4 py-10 lg:px-8 lg:py-12">
@@ -125,6 +183,68 @@ export function Testimonials() {
             duration={17}
           />
         </div>
+
+        <form
+          ref={formRef}
+          onSubmit={submitReview}
+          className="mx-auto mt-8 grid w-full max-w-5xl gap-3 rounded-xl border border-[#eadfac] bg-[#fffdf3] p-4 shadow-sm shadow-primary/10 md:grid-cols-[1fr_1fr_auto]"
+        >
+          <input
+            name="name"
+            required
+            minLength={2}
+            placeholder="Нэр"
+            className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
+          />
+          <input
+            name="trip"
+            placeholder="Аяллын нэр"
+            className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
+          />
+          <select
+            name="rating"
+            defaultValue="5"
+            className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-semibold text-foreground outline-none transition focus:border-primary"
+            aria-label="Үнэлгээ"
+          >
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <option key={rating} value={rating}>
+                {rating} од
+              </option>
+            ))}
+          </select>
+          <textarea
+            name="message"
+            required
+            minLength={8}
+            placeholder="Сэтгэгдлээ бичнэ үү"
+            className="min-h-24 rounded-lg border border-[#eadfac] bg-white px-4 py-3 text-sm font-medium leading-6 text-foreground outline-none transition focus:border-primary md:col-span-2"
+          />
+          <label className="flex h-24 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[#d8c56d] bg-white px-4 text-sm font-semibold text-foreground/70 transition hover:border-primary hover:text-foreground">
+            <ImagePlus className="h-5 w-5 text-primary" />
+            Зураг
+            <input name="image" type="file" accept="image/*" className="sr-only" />
+          </label>
+          <div className="flex flex-col gap-3 md:col-span-3 md:flex-row md:items-center">
+            <input
+              name="location"
+              placeholder="Хот / улс"
+              className="h-12 flex-1 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
+            />
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Star className="h-4 w-4" />
+              {isSubmitting ? "Хадгалж байна" : "Сэтгэгдэл үлдээх"}
+              <Send className="h-4 w-4" />
+            </button>
+          </div>
+          {status ? (
+            <p className="text-sm font-medium text-foreground/70 md:col-span-3">{status}</p>
+          ) : null}
+        </form>
       </div>
     </section>
   );

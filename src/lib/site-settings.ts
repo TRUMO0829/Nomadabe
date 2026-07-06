@@ -11,6 +11,17 @@ export type TeamMember = {
   isVisible?: boolean;
 };
 
+export type SiteReview = {
+  id: string;
+  name: string;
+  location?: string;
+  trip?: string;
+  message: string;
+  rating: number;
+  imageUrl?: string;
+  createdAt: string;
+};
+
 export type AboutSectionId = "who" | "values" | "team" | "work";
 
 export type OrderedVisibility = {
@@ -97,6 +108,7 @@ export type SiteSettings = {
   heroTextColor: string;
   heroOverlayOpacity: number;
   teamMembers: TeamMember[];
+  reviews: SiteReview[];
   aboutSection: AboutSectionSettings;
 };
 

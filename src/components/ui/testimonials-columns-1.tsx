@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React from "react";
 
 export type TestimonialColumnItem = {
@@ -12,6 +13,7 @@ export type TestimonialColumnItem = {
     gender: "male" | "female";
   };
   role: string;
+  imageUrl?: string;
 };
 
 function ReviewAvatarGraphic() {
@@ -43,11 +45,22 @@ export function TestimonialsColumn(props: {
       >
         {new Array(2).fill(0).map((_, index) => (
           <React.Fragment key={index}>
-            {props.testimonials.map(({ text, email, role }, i) => (
+            {props.testimonials.map(({ text, email, role, imageUrl }, i) => (
               <div
                 className="w-full rounded-xl border border-[#eadfac] bg-white p-4 shadow-sm shadow-primary/10"
                 key={`${email}-${i}`}
               >
+                {imageUrl ? (
+                  <div className="relative mb-3 aspect-[4/3] overflow-hidden rounded-lg bg-[#11100b]/5">
+                    <Image
+                      src={imageUrl}
+                      alt=""
+                      fill
+                      sizes="(min-width: 768px) 280px, 92vw"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : null}
                 <div className="text-xs leading-5 text-foreground/80">{text}</div>
                 <div className="mt-3 flex items-center gap-2">
                   <ReviewAvatarGraphic />

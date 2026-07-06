@@ -4,6 +4,7 @@ import path from "node:path";
 import {
   ADVENTURES,
   TRAVEL_SERVICES,
+  normalizeAdventureImage,
   type Adventure,
   type AdventureItineraryStep,
   type AdventureTranslation,
@@ -22,6 +23,7 @@ import {
   type AboutStat,
   type AboutTextItem,
   type SiteSettings,
+  type SiteReview,
   type TeamMember,
 } from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
@@ -36,7 +38,9 @@ import { translateAdventure } from "@/lib/server/translate-trip";
 import {
   isUploadedHeroVideo,
   isUploadedPoster,
+  isUploadedReviewImage,
   uploadHeroVideo,
+  uploadReviewImage,
   uploadTripPoster,
 } from "@/lib/server/storage";
 
@@ -94,6 +98,39 @@ const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
   },
 ];
 
+const DEFAULT_REVIEWS: SiteReview[] = [
+  {
+    id: "review-nomin-canton",
+    name: "Номин",
+    location: "Ulaanbaatar",
+    trip: "Canton Fair - 7 өдөр",
+    message:
+      "Анх удаа Canton Fair-д явсан болохоор бүртгэл, павильон, уулзалтын цаг бүгдийг нь урьдчилж цэгцэлж өгсөн нь хамгийн их хэрэг болсон.",
+    rating: 5,
+    createdAt: "2026-01-12T00:00:00.000Z",
+  },
+  {
+    id: "review-temuulen-shanghai",
+    name: "Тэмүүлэн",
+    location: "Ulaanbaatar",
+    trip: "Шанхай бизнес аялал - 5 өдөр",
+    message:
+      "Нислэг хойшлоход буудал, тосолт, дараагийн өдрийн маршрутыг хурдан өөрчилж өгсөн. Ажлын уулзалтуудаа алдалгүй амжуулсан.",
+    rating: 5,
+    createdAt: "2026-01-18T00:00:00.000Z",
+  },
+  {
+    id: "review-saruul-jeju",
+    name: "Саруул",
+    location: "Ulaanbaatar",
+    trip: "Жэжү гэр бүлийн аялал - 6 өдөр",
+    message:
+      "Хүүхдүүдтэй явсан болохоор хөтөлбөр нь хэт шахуу биш, буудал нь далайд ойр байсан нь таалагдсан. Өдөр бүрийн мэдээлэл тодорхой ирдэг байсан.",
+    rating: 5,
+    createdAt: "2026-02-02T00:00:00.000Z",
+  },
+];
+
 const DEFAULT_OUTBOUND_TRIP_IMAGES: Record<string, string> = {
   zhangjiajie:
     "https://images.unsplash.com/photo-1561031454-4f1331bd2a34?w=2400&q=90&auto=format&fit=crop",
@@ -127,6 +164,7 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroTextColor: "#ffffff",
   heroOverlayOpacity: 0.72,
   teamMembers: DEFAULT_TEAM_MEMBERS,
+  reviews: DEFAULT_REVIEWS,
   aboutSection: DEFAULT_ABOUT_SECTION,
 };
 
@@ -399,12 +437,48 @@ export async function updateSiteSettings(siteSettings: Partial<SiteSettings>) {
     ...store.siteSettings,
     ...siteSettings,
     teamMembers: siteSettings.teamMembers ?? store.siteSettings.teamMembers,
+    reviews: siteSettings.reviews ?? store.siteSettings.reviews,
   });
   await saveAdminStore({
     ...store,
     siteSettings: normalized,
   });
   return normalized;
+}
+
+export async function addSiteReviewFromForm(formData: FormData) {
+  const name = getFormString(formData, "name");
+  const message = getFormString(formData, "message");
+
+  if (name.length < 2) {
+    throw new Error("Нэрээ 2-оос дээш тэмдэгтээр оруулна уу.");
+  }
+
+  if (message.length < 8) {
+    throw new Error("Сэтгэгдлээ арай дэлгэрэнгүй бичнэ үү.");
+  }
+
+  const uploadedImage = formData.get("image");
+  const imageUrl = isUploadedReviewImage(uploadedImage)
+    ? await uploadReviewImage(uploadedImage)
+    : undefined;
+
+  const review: SiteReview = {
+    id: randomUUID(),
+    name,
+    location: getFormString(formData, "location") || undefined,
+    trip: getFormString(formData, "trip") || undefined,
+    message,
+    rating: Math.min(5, Math.max(1, getNumberFromString(getFormString(formData, "rating"), 5))),
+    imageUrl,
+    createdAt: new Date().toISOString(),
+  };
+
+  const store = await getAdminStore();
+  const reviews = [review, ...store.siteSettings.reviews].slice(0, 36);
+  await updateSiteSettings({ reviews });
+
+  return review;
 }
 
 export async function upsertTeamMemberFromForm(formData: FormData) {
@@ -574,6 +648,7 @@ export function parseSiteSettingsFromJson(payload: unknown) {
     teamMembers: Array.isArray(payload.teamMembers)
       ? normalizeTeamMembers(payload.teamMembers)
       : undefined,
+    reviews: Array.isArray(payload.reviews) ? normalizeReviews(payload.reviews) : undefined,
     // About content is code-managed (the CMS editor was removed), so any legacy
     // value stored in Supabase is ignored — always fall back to DEFAULT_ABOUT_SECTION.
     aboutSection: undefined,
@@ -582,7 +657,9 @@ export function parseSiteSettingsFromJson(payload: unknown) {
 
 function normalizeStore(store: Partial<AdminStore>): AdminStore {
   return {
-    trips: Array.isArray(store.trips) && store.trips.length > 0 ? store.trips : ADVENTURES,
+    trips: (Array.isArray(store.trips) && store.trips.length > 0 ? store.trips : ADVENTURES).map(
+      normalizeAdventureImage
+    ),
     services:
       Array.isArray(store.services) && store.services.length > 0 ? store.services : TRAVEL_SERVICES,
     siteSettings: normalizeSiteSettings(store.siteSettings ?? DEFAULT_SITE_SETTINGS),
@@ -604,8 +681,39 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
         ? Math.min(0.9, Math.max(0.2, settings.heroOverlayOpacity))
         : DEFAULT_SITE_SETTINGS.heroOverlayOpacity,
     teamMembers: normalizeTeamMembers(settings.teamMembers),
+    reviews: normalizeReviews(settings.reviews),
     aboutSection: normalizeAboutSection(settings.aboutSection),
   };
+}
+
+function normalizeReviews(value: unknown): SiteReview[] {
+  if (!Array.isArray(value)) {
+    return DEFAULT_REVIEWS;
+  }
+
+  const reviews = value
+    .map((item): SiteReview | null => {
+      if (!isRecord(item)) return null;
+
+      const name = stringifyPayloadValue(item.name);
+      const message = stringifyPayloadValue(item.message);
+
+      if (!name || !message) return null;
+
+      return {
+        id: stringifyPayloadValue(item.id) || randomUUID(),
+        name,
+        location: stringifyPayloadValue(item.location) || undefined,
+        trip: stringifyPayloadValue(item.trip) || undefined,
+        message,
+        rating: Math.min(5, Math.max(1, getNumberFromString(stringifyPayloadValue(item.rating), 5))),
+        imageUrl: stringifyPayloadValue(item.imageUrl) || undefined,
+        createdAt: stringifyPayloadValue(item.createdAt) || new Date().toISOString(),
+      } satisfies SiteReview;
+    })
+    .filter((item): item is SiteReview => Boolean(item));
+
+  return reviews.length > 0 ? reviews : DEFAULT_REVIEWS;
 }
 
 function parseHeroVideosPayload(value: unknown) {

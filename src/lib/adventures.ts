@@ -85,6 +85,42 @@ export type TravelService = {
   highlights: string[];
 };
 
+const CURATED_ADVENTURE_IMAGES: Record<string, string> = {
+  "canton-fair-business-trip":
+    "https://images.unsplash.com/photo-1729434090353-7f2c090cc7ca?w=3200&q=90&fit=crop&fm=webp",
+  "gobi-seven-day-private-trip":
+    "https://images.unsplash.com/photo-1613294577715-0f52ff3504a0?w=3200&q=90&fit=crop&fm=webp",
+  "mongolia-festival-experience":
+    "https://images.unsplash.com/photo-1613294576846-73901118ef6d?w=3200&q=90&fit=crop&fm=webp",
+  "khuvsgul-lake-domestic-trip":
+    "https://images.unsplash.com/photo-1630614812901-550f93e0e888?w=3200&q=90&fit=crop&fm=webp",
+  "altai-domestic-trek":
+    "https://images.unsplash.com/photo-1742205025826-d6ae1b3727be?w=3200&q=90&fit=crop&fm=webp",
+};
+
+const STALE_ADVENTURE_IMAGE_IDS: Record<string, string[]> = {
+  "canton-fair-business-trip": ["photo-1508009603885", "photo-1753172201568"],
+  "gobi-seven-day-private-trip": ["photo-1547234935", "photo-1547531455"],
+  "mongolia-festival-experience": ["photo-1542662565"],
+  "khuvsgul-lake-domestic-trip": ["photo-1500530855697"],
+  "altai-domestic-trek": ["photo-1551632811"],
+};
+
+export function normalizeAdventureImage(adventure: Adventure): Adventure {
+  const curatedImage = CURATED_ADVENTURE_IMAGES[adventure.slug];
+
+  if (!curatedImage) {
+    return adventure;
+  }
+
+  const currentImage = adventure.image || "";
+  const staleIds = STALE_ADVENTURE_IMAGE_IDS[adventure.slug] ?? [];
+  const shouldReplace =
+    !currentImage || staleIds.some((imageId) => currentImage.includes(imageId));
+
+  return shouldReplace ? { ...adventure, image: curatedImage } : adventure;
+}
+
 export const ADVENTURES: Adventure[] = [
   {
     id: "1",
@@ -97,8 +133,7 @@ export const ADVENTURES: Adventure[] = [
     difficulty: "Easy",
     price: 0,
     currency: "MNT",
-    image:
-      "https://images.unsplash.com/photo-1753172201568-b28dc578ad57?w=3200&q=90&fit=crop&fm=webp",
+    image: CURATED_ADVENTURE_IMAGES["canton-fair-business-trip"],
     tags: ["Business", "Expo", "Import"],
     rating: 4.9,
     reviews: 38,
@@ -160,8 +195,7 @@ export const ADVENTURES: Adventure[] = [
     difficulty: "Moderate",
     price: 0,
     currency: "MNT",
-    image:
-      "https://images.unsplash.com/photo-1613297042426-58e7fa325fa4?w=3200&q=90&fit=crop&fm=webp",
+    image: CURATED_ADVENTURE_IMAGES["gobi-seven-day-private-trip"],
     tags: ["Gobi", "Leisure", "Culture"],
     rating: 4.9,
     reviews: 64,
@@ -184,8 +218,7 @@ export const ADVENTURES: Adventure[] = [
     difficulty: "Easy",
     price: 0,
     currency: "MNT",
-    image:
-      "https://images.unsplash.com/photo-1613294576846-73901118ef6d?w=3200&q=90&fit=crop&fm=webp",
+    image: CURATED_ADVENTURE_IMAGES["mongolia-festival-experience"],
     tags: ["Domestic", "Festival", "Culture"],
     rating: 4.9,
     reviews: 44,
@@ -209,8 +242,7 @@ export const ADVENTURES: Adventure[] = [
     difficulty: "Easy",
     price: 0,
     currency: "MNT",
-    image:
-      "https://images.unsplash.com/photo-1630614812901-550f93e0e888?w=3200&q=90&fit=crop&fm=webp",
+    image: CURATED_ADVENTURE_IMAGES["khuvsgul-lake-domestic-trip"],
     tags: ["Domestic", "Lake", "Family"],
     rating: 4.8,
     reviews: 31,
@@ -234,8 +266,7 @@ export const ADVENTURES: Adventure[] = [
     difficulty: "Moderate",
     price: 2190000,
     currency: "MNT",
-    image:
-      "https://images.unsplash.com/photo-1742205025826-d6ae1b3727be?w=3200&q=90&fit=crop&fm=webp",
+    image: CURATED_ADVENTURE_IMAGES["altai-domestic-trek"],
     tags: ["Domestic", "Altai", "Trekking"],
     rating: 4.9,
     reviews: 26,
