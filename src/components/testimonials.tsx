@@ -90,6 +90,7 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
   const { contentLocale, t } = useLanguage();
   const copy = t.testimonials;
   const formRef = useRef<HTMLFormElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const [localReviews, setLocalReviews] = useState<SiteReview[]>(reviews);
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -155,6 +156,11 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
     }
   }
 
+  function scrollToReviewForm() {
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => nameInputRef.current?.focus(), 450);
+  }
+
   return (
     <section id="journal" className="relative bg-white px-4 py-10 lg:px-8 lg:py-12">
       <div className="relative z-10 mx-auto w-full max-w-6xl">
@@ -168,6 +174,13 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
           <h2 className="text-balance text-2xl font-semibold leading-tight text-foreground sm:text-3xl lg:text-4xl">
             {copy.eyebrow}
           </h2>
+          <button
+            type="button"
+            onClick={scrollToReviewForm}
+            className="nav-text mt-5 inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-xs uppercase tracking-[0.12em] text-primary-foreground shadow-[0_12px_30px_rgba(255,212,0,0.28)] transition hover:-translate-y-0.5 hover:bg-primary/90"
+          >
+            Сэтгэгдэл бичих
+          </button>
         </motion.div>
 
         <div className="mx-auto mt-8 grid max-h-[430px] w-full max-w-5xl grid-cols-1 gap-4 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_16%,black_84%,transparent)] md:grid-cols-3">
@@ -185,11 +198,13 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
         </div>
 
         <form
+          id="write-review"
           ref={formRef}
           onSubmit={submitReview}
-          className="mx-auto mt-8 grid w-full max-w-5xl gap-3 rounded-xl border border-[#eadfac] bg-[#fffdf3] p-4 shadow-sm shadow-primary/10 md:grid-cols-[1fr_1fr_auto]"
+          className="mx-auto mt-8 grid w-full max-w-5xl scroll-mt-28 gap-3 rounded-xl border border-[#eadfac] bg-[#fffdf3] p-4 shadow-sm shadow-primary/10 md:grid-cols-[1fr_1fr_auto]"
         >
           <input
+            ref={nameInputRef}
             name="name"
             required
             minLength={2}
@@ -234,7 +249,7 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#11100b] px-6 text-sm font-semibold text-white transition hover:bg-[#2a271d] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Star className="h-4 w-4" />
               {isSubmitting ? "Хадгалж байна" : "Сэтгэгдэл үлдээх"}
