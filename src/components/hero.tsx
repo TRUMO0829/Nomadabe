@@ -194,7 +194,7 @@ export function Hero({ settings }: HeroProps) {
               setLanguageOpen(false);
             }
           }}
-          className="relative flex max-w-[92vw] flex-wrap items-center justify-center gap-x-3 gap-y-2 overflow-hidden rounded-xl border border-white/18 bg-white/[0.08] px-5 py-2.5 text-white shadow-[0_18px_50px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(115deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04)_44%,rgba(255,255,255,0.1))] sm:gap-x-4 sm:px-8"
+          className="relative flex max-w-[92vw] flex-wrap items-center justify-center gap-x-3 gap-y-2 overflow-hidden rounded-xl bg-white/[0.035] px-5 py-2.5 text-white shadow-[0_18px_48px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(115deg,rgba(255,255,255,0.08),rgba(255,255,255,0.015)_48%,rgba(255,255,255,0.05))] sm:gap-x-4 sm:px-8"
         >
           {navItems.map((item) => (
             <span key={item.href} className="inline-flex items-center gap-x-3 sm:gap-x-4">
