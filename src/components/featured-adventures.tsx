@@ -15,11 +15,15 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  BedDouble,
   CalendarDays,
+  Camera,
+  Home,
   MapPinned,
   Search,
   Star,
   Send,
+  UsersRound,
 } from "lucide-react";
 import {
   ADVENTURES,
@@ -54,6 +58,73 @@ const TOURS_BACKGROUNDS = [
   "/hero-winter.webp",
   "/hero-spring.webp",
   "/hero-autumn.webp",
+];
+
+type StayOption = {
+  id: string;
+  title: string;
+  type: string;
+  nights: number;
+  price: string;
+  guests: number;
+  rooms: number;
+  location: string;
+  summary: string;
+  images: string[];
+};
+
+const STAY_OPTIONS: StayOption[] = [
+  {
+    id: "ub-business-hotel",
+    title: "Хотын төвийн зочид буудал",
+    type: "Зочид буудал",
+    nights: 2,
+    price: "280,000 MNT / хоног",
+    guests: 2,
+    rooms: 1,
+    location: "Улаанбаатар",
+    summary:
+      "Бизнес уулзалт, expo, богино аялалд тохирох төв байршилтай буудлын сонголт.",
+    images: [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1800&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1200&q=85&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200&q=85&fit=crop&fm=webp",
+    ],
+  },
+  {
+    id: "terelj-family-villa",
+    title: "Тэрэлж гэр бүлийн вилла",
+    type: "Вилла",
+    nights: 3,
+    price: "650,000 MNT / хоног",
+    guests: 6,
+    rooms: 3,
+    location: "Тэрэлж",
+    summary:
+      "Гэр бүл, найз нөхөд, жижиг группийн амралтад тохирох хувийн орчинтой вилла.",
+    images: [
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1800&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=85&fit=crop&fm=webp",
+    ],
+  },
+  {
+    id: "lake-lodge-stay",
+    title: "Нуурын эргийн амралтын байр",
+    type: "Амралтын байр",
+    nights: 4,
+    price: "420,000 MNT / хоног",
+    guests: 4,
+    rooms: 2,
+    location: "Хөвсгөл / нуурын бүс",
+    summary:
+      "Байгальд ойр, тайван амралт болон дотоод аяллын маршрутад холбох байрны сонголт.",
+    images: [
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1800&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=1200&q=85&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=1200&q=85&fit=crop&fm=webp",
+    ],
+  },
 ];
 
 function compareTripPrice(
@@ -1116,6 +1187,113 @@ function DestinationDragCarousel({
   );
 }
 
+function StaysAndVillasSection() {
+  return (
+    <section id="stays" className="bg-white px-6 py-16 lg:px-10 lg:py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="nav-text text-xs uppercase text-[#b89422]">
+              Зочид буудал, вилла
+            </p>
+            <h2 className="site-heading mt-2 text-[clamp(2rem,5vw,4.8rem)] leading-none text-[#11100b]">
+              Байрлах сонголтууд
+            </h2>
+          </div>
+          <p className="max-w-xl text-sm leading-6 text-[#11100b]/58">
+            Аяллын маршрут, төсөв, хүний тоо, өрөөний хэрэгцээнд тааруулж буудал,
+            вилла болон амралтын байрны сонголтыг нэг дор төлөвлөнө.
+          </p>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-3">
+          {STAY_OPTIONS.map((stay) => (
+            <article
+              key={stay.id}
+              className="overflow-hidden rounded-[1.35rem] border border-[#eadfac] bg-[#fffdf3] shadow-[0_20px_70px_rgba(17,16,11,0.08)]"
+            >
+              <div className="grid h-[280px] grid-cols-[1.45fr_0.9fr] gap-2 p-2">
+                <div
+                  className="rounded-[1rem] bg-cover bg-center"
+                  style={{ backgroundImage: `url('${stay.images[0]}')` }}
+                />
+                <div className="grid gap-2">
+                  {stay.images.slice(1, 3).map((image) => (
+                    <div
+                      key={image}
+                      className="rounded-[1rem] bg-cover bg-center"
+                      style={{ backgroundImage: `url('${image}')` }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="px-5 pb-5 pt-3">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="nav-text inline-flex items-center gap-2 rounded-full border border-[#d8c56d] px-3 py-1.5 text-[10px] uppercase text-[#8a6f12]">
+                    <Home className="h-3.5 w-3.5" />
+                    {stay.type}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#11100b]/56">
+                    <Camera className="h-4 w-4 text-[#b89422]" />
+                    {stay.images.length} зураг
+                  </span>
+                </div>
+
+                <h3 className="site-heading text-3xl leading-tight text-[#11100b]">
+                  {stay.title}
+                </h3>
+                <p className="mt-2 min-h-12 text-sm leading-6 text-[#11100b]/62">
+                  {stay.summary}
+                </p>
+
+                <dl className="mt-5 grid grid-cols-2 gap-2">
+                  <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
+                      <CalendarDays className="h-4 w-4" />
+                      Хоног
+                    </dt>
+                    <dd className="mt-2 text-sm font-semibold text-[#11100b]">
+                      {stay.nights} хоног
+                    </dd>
+                  </div>
+                  <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
+                      <UsersRound className="h-4 w-4" />
+                      Хүний тоо
+                    </dt>
+                    <dd className="mt-2 text-sm font-semibold text-[#11100b]">
+                      {stay.guests} хүн
+                    </dd>
+                  </div>
+                  <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
+                      <BedDouble className="h-4 w-4" />
+                      Өрөөний тоо
+                    </dt>
+                    <dd className="mt-2 text-sm font-semibold text-[#11100b]">
+                      {stay.rooms} өрөө
+                    </dd>
+                  </div>
+                  <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
+                      <MapPinned className="h-4 w-4" />
+                      Үнэ
+                    </dt>
+                    <dd className="mt-2 text-sm font-semibold text-[#11100b]">
+                      {stay.price}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function FeaturedAdventures({
   adventures = ADVENTURES,
   beforeList,
@@ -1377,6 +1555,8 @@ export function FeaturedAdventures({
           </div>
         )}
       </div>
+
+      <StaysAndVillasSection />
 
       {beforeList}
 

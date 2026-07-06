@@ -37,7 +37,6 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "Аяллууд", href: "/tours" },
-        { label: "Зочид буудал, Вилла", href: "/stays" },
         { label: "Сэтгэгдэл", href: "/#journal" },
         { label: "Бидний тухай", href: "/about" },
       ],
@@ -209,7 +208,6 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "Adventures", href: "/tours" },
-        { label: "Hotel & Villa", href: "/stays" },
         { label: "Reviews", href: "/#journal" },
         { label: "About", href: "/about" },
       ],
@@ -375,7 +373,6 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "旅游", href: "/tours" },
-        { label: "酒店与别墅", href: "/stays" },
         { label: "评价", href: "/#journal" },
         { label: "关于我们", href: "/about" },
       ],
@@ -541,7 +538,6 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "ツアー", href: "/tours" },
-        { label: "ホテル・ヴィラ", href: "/stays" },
         { label: "レビュー", href: "/#journal" },
         { label: "私たちについて", href: "/about" },
       ],
@@ -707,7 +703,6 @@ export const UI_COPY = {
     nav: {
       items: [
         { label: "여행", href: "/tours" },
-        { label: "호텔 & 빌라", href: "/stays" },
         { label: "후기", href: "/#journal" },
         { label: "회사 소개", href: "/about" },
       ],
