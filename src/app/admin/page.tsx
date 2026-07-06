@@ -533,6 +533,11 @@ function LandingVideoSettingsForm({ settings }: { settings: SiteSettings }) {
     { id: "turkey", label: "Турк" },
     { id: "taiwan", label: "Тайвань" },
   ];
+  const heroVideoSlots = Array.from({ length: 4 }, (_, index) => ({
+    id: index,
+    label: `Hero бичлэг ${index + 1}`,
+    src: settings.heroVideos[index] ?? "",
+  }));
 
   return (
     <form
@@ -541,27 +546,65 @@ function LandingVideoSettingsForm({ settings }: { settings: SiteSettings }) {
       className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
     >
       <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-        <TextareaField
-          label="Hero бичлэгүүд / нэг мөр бүрт нэг MP4 URL эсвэл public path"
-          name="heroVideos"
-          defaultValue={settings.heroVideos.join("\n")}
-          rows={7}
-        />
+        <div>
+          <h3 className="text-sm font-black text-[var(--primary)]">
+            Hero бичлэгүүд upload хийх
+          </h3>
+          <p className="mt-1 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+            Local-аас MP4, WEBM эсвэл MOV бичлэг сонгоно. Шинэ файл сонгоогүй slot
+            одоогийн бичлэгээ хэвээр хадгална.
+          </p>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            {heroVideoSlots.map((video) => (
+              <label
+                key={video.id}
+                className="block rounded-md border border-[var(--border)] bg-[var(--background)] p-3"
+              >
+                <input
+                  type="hidden"
+                  name={`heroVideo_${video.id}`}
+                  defaultValue={video.src}
+                />
+                <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                  {video.label}
+                </span>
+                {video.src ? (
+                  <video
+                    src={video.src}
+                    muted
+                    playsInline
+                    controls
+                    className="mt-2 h-28 w-full rounded-md bg-black object-cover ring-1 ring-[var(--border)]"
+                  />
+                ) : (
+                  <div className="mt-2 flex h-28 w-full items-center justify-center rounded-md bg-[var(--muted)] text-xs font-semibold text-[var(--muted-foreground)]">
+                    Бичлэг алга
+                  </div>
+                )}
+                <input
+                  type="file"
+                  name={`heroVideoUpload_${video.id}`}
+                  accept="video/mp4,video/webm,video/quicktime"
+                  className="mt-3 block w-full text-xs text-[var(--foreground)] file:mr-2 file:rounded-md file:border-0 file:bg-[var(--primary)] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-[var(--foreground)]"
+                />
+              </label>
+            ))}
+          </div>
+        </div>
         <div className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
           <h3 className="text-sm font-black text-[var(--primary)]">
             Ашиглах заавар
           </h3>
           <p className="mt-2 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
-            `/hero/web/hero1-1080.mp4` шиг public path эсвэл Supabase/CDN дээрх
-            `.mp4` URL оруулж болно. Хоосон хадгалбал default 4 бичлэг хэвээр
-            ашиглагдана.
+            Файл сонгоод хадгалахад бичлэг Supabase Storage руу upload хийгдээд,
+            нүүр хэсгийн hero video жагсаалтад автоматаар хадгалагдана.
           </p>
           <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
             Зөвлөмж
           </p>
           <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">
-            1080p, 5-15 секунд, muted-friendly video ашиглавал landing page хурдан
-            ачаална.
+            1080p, 5-15 секунд, 120MB-аас бага, дуугүй тоглоход ойлгомжтой
+            бичлэг ашиглавал landing page хурдан ачаална.
           </p>
         </div>
       </div>

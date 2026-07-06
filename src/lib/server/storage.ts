@@ -8,10 +8,14 @@ import {
 } from "@/lib/server/supabase-rest";
 
 const POSTER_BUCKET = "trip-posters";
+const HERO_VIDEO_BUCKET = "hero-videos";
 const MAX_POSTER_BYTES = 8 * 1024 * 1024; // 8 MB
+const MAX_HERO_VIDEO_BYTES = 120 * 1024 * 1024; // 120 MB
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
+const ALLOWED_VIDEO_MIME = ["video/mp4", "video/webm", "video/quicktime"];
 
-let bucketEnsured = false;
+let posterBucketEnsured = false;
+let heroVideoBucketEnsured = false;
 
 /**
  * Upload a trip poster image to Supabase Storage and return its public URL.
@@ -35,44 +39,87 @@ export async function uploadTripPoster(file: File): Promise<string> {
     throw new Error("Зөвхөн зураг (JPG, PNG, WEBP, AVIF, GIF) оруулна уу.");
   }
 
-  await ensurePosterBucket();
+  await ensureStorageBucket({
+    allowedMimeTypes: ALLOWED_MIME,
+    bucket: POSTER_BUCKET,
+    maxBytes: MAX_POSTER_BYTES,
+  });
 
+  return uploadPublicObject(POSTER_BUCKET, file);
+}
+
+export async function uploadHeroVideo(file: File): Promise<string> {
+  if (!isSupabaseConfigured()) {
+    throw new Error(getSupabaseConfigurationErrorMessage());
+  }
+
+  if (file.size === 0) {
+    throw new Error("Бичлэг файл хоосон байна.");
+  }
+
+  if (file.size > MAX_HERO_VIDEO_BYTES) {
+    throw new Error("Landing page бичлэг 120MB-аас бага байх ёстой.");
+  }
+
+  if (file.type && !ALLOWED_VIDEO_MIME.includes(file.type)) {
+    throw new Error("Зөвхөн MP4, WEBM эсвэл MOV бичлэг оруулна уу.");
+  }
+
+  await ensureStorageBucket({
+    allowedMimeTypes: ALLOWED_VIDEO_MIME,
+    bucket: HERO_VIDEO_BUCKET,
+    maxBytes: MAX_HERO_VIDEO_BYTES,
+  });
+
+  return uploadPublicObject(HERO_VIDEO_BUCKET, file);
+}
+
+async function uploadPublicObject(bucket: string, file: File) {
   const supabaseUrl = getSupabaseUrl();
   const serviceKey = getSupabaseServiceKey();
   const objectPath = `${randomUUID()}.${extensionFor(file)}`;
   const bytes = new Uint8Array(await file.arrayBuffer());
 
-  const response = await fetch(
-    `${supabaseUrl}/storage/v1/object/${POSTER_BUCKET}/${objectPath}`,
-    {
-      method: "POST",
-      headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        "Content-Type": file.type || "application/octet-stream",
-        "cache-control": "31536000",
-        "x-upsert": "true",
-      },
-      body: bytes,
-    }
-  );
+  const response = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}/${objectPath}`, {
+    method: "POST",
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      "Content-Type": file.type || "application/octet-stream",
+      "cache-control": "31536000",
+      "x-upsert": "true",
+    },
+    body: bytes,
+  });
 
   if (!response.ok) {
     throw new Error(await getSupabaseError(response));
   }
 
-  return `${supabaseUrl}/storage/v1/object/public/${POSTER_BUCKET}/${objectPath}`;
+  return `${supabaseUrl}/storage/v1/object/public/${bucket}/${objectPath}`;
 }
 
-async function ensurePosterBucket() {
-  if (bucketEnsured) {
+async function ensureStorageBucket({
+  allowedMimeTypes,
+  bucket,
+  maxBytes,
+}: {
+  allowedMimeTypes: string[];
+  bucket: string;
+  maxBytes: number;
+}) {
+  if (bucket === POSTER_BUCKET && posterBucketEnsured) {
+    return;
+  }
+
+  if (bucket === HERO_VIDEO_BUCKET && heroVideoBucketEnsured) {
     return;
   }
 
   const supabaseUrl = getSupabaseUrl();
   const serviceKey = getSupabaseServiceKey();
 
-  const existing = await fetch(`${supabaseUrl}/storage/v1/bucket/${POSTER_BUCKET}`, {
+  const existing = await fetch(`${supabaseUrl}/storage/v1/bucket/${bucket}`, {
     headers: {
       apikey: serviceKey,
       Authorization: `Bearer ${serviceKey}`,
@@ -80,7 +127,7 @@ async function ensurePosterBucket() {
   });
 
   if (existing.ok) {
-    bucketEnsured = true;
+    markBucketEnsured(bucket);
     return;
   }
 
@@ -92,21 +139,31 @@ async function ensurePosterBucket() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      id: POSTER_BUCKET,
-      name: POSTER_BUCKET,
+      id: bucket,
+      name: bucket,
       public: true,
-      file_size_limit: MAX_POSTER_BYTES,
-      allowed_mime_types: ALLOWED_MIME,
+      file_size_limit: maxBytes,
+      allowed_mime_types: allowedMimeTypes,
     }),
   });
 
   // 200 created, or 400 when the bucket already exists (race) — both are fine.
   if (created.ok || created.status === 400 || created.status === 409) {
-    bucketEnsured = true;
+    markBucketEnsured(bucket);
     return;
   }
 
   throw new Error(await getSupabaseError(created));
+}
+
+function markBucketEnsured(bucket: string) {
+  if (bucket === POSTER_BUCKET) {
+    posterBucketEnsured = true;
+  }
+
+  if (bucket === HERO_VIDEO_BUCKET) {
+    heroVideoBucketEnsured = true;
+  }
 }
 
 function extensionFor(file: File) {
@@ -116,6 +173,9 @@ function extensionFor(file: File) {
     "image/webp": "webp",
     "image/avif": "avif",
     "image/gif": "gif",
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/quicktime": "mov",
   };
 
   if (file.type && fromType[file.type]) {
@@ -128,5 +188,9 @@ function extensionFor(file: File) {
 }
 
 export function isUploadedPoster(value: unknown): value is File {
+  return typeof File !== "undefined" && value instanceof File && value.size > 0;
+}
+
+export function isUploadedHeroVideo(value: unknown): value is File {
   return typeof File !== "undefined" && value instanceof File && value.size > 0;
 }

@@ -33,7 +33,12 @@ import {
   supabaseRest,
 } from "@/lib/server/supabase-rest";
 import { translateAdventure } from "@/lib/server/translate-trip";
-import { isUploadedPoster, uploadTripPoster } from "@/lib/server/storage";
+import {
+  isUploadedHeroVideo,
+  isUploadedPoster,
+  uploadHeroVideo,
+  uploadTripPoster,
+} from "@/lib/server/storage";
 
 export type AdminStore = {
   trips: Adventure[];
@@ -315,6 +320,26 @@ export async function updateSiteSettingsFromForm(formData: FormData) {
       getFormString(formData, "heroVideos"),
       DEFAULT_SITE_SETTINGS.heroVideos
     );
+  }
+
+  const heroVideos = [...DEFAULT_SITE_SETTINGS.heroVideos];
+  let hasHeroVideoUploads = false;
+
+  for (let index = 0; index < DEFAULT_SITE_SETTINGS.heroVideos.length; index += 1) {
+    const currentFieldName = `heroVideo_${index}`;
+    const uploadFieldName = `heroVideoUpload_${index}`;
+
+    if (formData.has(currentFieldName) || formData.has(uploadFieldName)) {
+      hasHeroVideoUploads = true;
+      const uploaded = formData.get(uploadFieldName);
+      heroVideos[index] = isUploadedHeroVideo(uploaded)
+        ? await uploadHeroVideo(uploaded)
+        : getFormString(formData, currentFieldName) || DEFAULT_SITE_SETTINGS.heroVideos[index];
+    }
+  }
+
+  if (hasHeroVideoUploads) {
+    settings.heroVideos = normalizeHeroVideos(heroVideos);
   }
 
   const outboundTripImages: Record<string, string> = {};
