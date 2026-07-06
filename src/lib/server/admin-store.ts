@@ -89,6 +89,21 @@ const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
   },
 ];
 
+const DEFAULT_OUTBOUND_TRIP_IMAGES: Record<string, string> = {
+  zhangjiajie:
+    "https://images.unsplash.com/photo-1561031454-4f1331bd2a34?w=2400&q=90&auto=format&fit=crop",
+  shanghai:
+    "https://images.unsplash.com/photo-1748078096261-5eff2aee113f?w=2400&q=90&auto=format&fit=crop",
+  japan:
+    "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=2400&q=90&auto=format&fit=crop",
+  jeju:
+    "https://images.unsplash.com/photo-1667971286457-144269b0e4d8?w=2400&q=90&auto=format&fit=crop",
+  turkey:
+    "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=2400&q=90&auto=format&fit=crop",
+  taiwan:
+    "https://images.unsplash.com/photo-1748104433499-3d492d0337cb?w=2400&q=90&auto=format&fit=crop",
+};
+
 const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroBadge: "★★★★★ 1,200+ аялагчийн үнэлгээ",
   heroTitle: "Дараагийн түвшинд аял.",
@@ -102,6 +117,7 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
     "/hero/web/hero3-1080.mp4",
     "/hero/web/hero4-1080.mp4",
   ],
+  outboundTripImages: DEFAULT_OUTBOUND_TRIP_IMAGES,
   accentColor: "#e85d2c",
   heroTextColor: "#ffffff",
   heroOverlayOpacity: 0.72,
@@ -194,6 +210,14 @@ export async function upsertTripFromForm(formData: FormData) {
   const poster = formData.get("poster");
   if (isUploadedPoster(poster)) {
     parsed.image = await uploadTripPoster(poster);
+  }
+
+  const galleryUploads = formData
+    .getAll("galleryImagesUpload")
+    .filter(isUploadedPoster);
+
+  if (galleryUploads.length > 0) {
+    parsed.galleryImages = await Promise.all(galleryUploads.map(uploadTripPoster));
   }
 
   return upsertTrip(parsed);
@@ -291,6 +315,26 @@ export async function updateSiteSettingsFromForm(formData: FormData) {
       getFormString(formData, "heroVideos"),
       DEFAULT_SITE_SETTINGS.heroVideos
     );
+  }
+
+  const outboundTripImages: Record<string, string> = {};
+  let hasOutboundTripImages = false;
+
+  for (const key of Object.keys(DEFAULT_OUTBOUND_TRIP_IMAGES)) {
+    const fieldName = `outboundTripImage_${key}`;
+    const uploadFieldName = `outboundTripImageUpload_${key}`;
+
+    if (formData.has(fieldName) || formData.has(uploadFieldName)) {
+      hasOutboundTripImages = true;
+      const uploaded = formData.get(uploadFieldName);
+      outboundTripImages[key] = isUploadedPoster(uploaded)
+        ? await uploadTripPoster(uploaded)
+        : getFormString(formData, fieldName) || DEFAULT_OUTBOUND_TRIP_IMAGES[key];
+    }
+  }
+
+  if (hasOutboundTripImages) {
+    settings.outboundTripImages = outboundTripImages;
   }
 
   if (formData.has("accentColor")) {
@@ -495,6 +539,7 @@ export function parseSiteSettingsFromJson(payload: unknown) {
     heroSubtitle: stringifyPayloadValue(payload.heroSubtitle),
     heroImage: stringifyPayloadValue(payload.heroImage),
     heroVideos: parseHeroVideosPayload(payload.heroVideos),
+    outboundTripImages: normalizeOutboundTripImages(payload.outboundTripImages),
     accentColor: stringifyPayloadValue(payload.accentColor),
     heroTextColor: stringifyPayloadValue(payload.heroTextColor),
     heroOverlayOpacity: getNumberFromString(
@@ -526,6 +571,7 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
     heroSubtitle: settings.heroSubtitle || DEFAULT_SITE_SETTINGS.heroSubtitle,
     heroImage: settings.heroImage || DEFAULT_SITE_SETTINGS.heroImage,
     heroVideos: normalizeHeroVideos(settings.heroVideos),
+    outboundTripImages: normalizeOutboundTripImages(settings.outboundTripImages),
     accentColor: settings.accentColor || DEFAULT_SITE_SETTINGS.accentColor,
     heroTextColor: settings.heroTextColor || DEFAULT_SITE_SETTINGS.heroTextColor,
     heroOverlayOpacity:
@@ -561,6 +607,24 @@ function normalizeHeroVideos(value: unknown) {
     .slice(0, 8);
 
   return videos.length > 0 ? videos : DEFAULT_SITE_SETTINGS.heroVideos;
+}
+
+function normalizeOutboundTripImages(value: unknown): Record<string, string> {
+  const normalized = { ...DEFAULT_OUTBOUND_TRIP_IMAGES };
+
+  if (!isRecord(value)) {
+    return normalized;
+  }
+
+  for (const key of Object.keys(normalized)) {
+    const image = stringifyPayloadValue(value[key]);
+
+    if (image) {
+      normalized[key] = image;
+    }
+  }
+
+  return normalized;
 }
 
 function normalizeAboutSection(input: unknown): AboutSectionSettings {
@@ -875,6 +939,7 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
     price: getNumberFromString(fields.get("price"), existing?.price ?? 0),
     currency: fields.get("currency") || existing?.currency || "MNT",
     image: fields.get("image") || existing?.image || DEFAULT_SITE_SETTINGS.heroImage,
+    galleryImages: getListFromString(fields.get("galleryImages"), existing?.galleryImages ?? []),
     tags: getListFromString(fields.get("tags"), existing?.tags ?? ["Захиалгат"]),
     rating: getNumberFromString(fields.get("rating"), existing?.rating ?? 4.8),
     reviews: getNumberFromString(fields.get("reviews"), existing?.reviews ?? 0),

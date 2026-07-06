@@ -33,7 +33,7 @@ import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 import { OUTBOUND_OPTIONS } from "./outbound-trips-carousel";
 
-type TripScope = "all" | "outbound" | "domestic";
+type TripScope = "all" | "outbound" | "domestic" | "corporate";
 type SortMode =
   | "recommended"
   | "price-low"
@@ -44,6 +44,7 @@ type SortMode =
 type FeaturedAdventuresProps = {
   adventures?: Adventure[];
   beforeList?: ReactNode;
+  outboundTripImages?: Record<string, string>;
 };
 
 const SEARCH_LOCALES = ["mn", "en", "zh", "ja", "ko"] as const;
@@ -247,6 +248,33 @@ function getAdventureSearchText(adventure: Adventure) {
   );
 }
 
+function isCorporateAdventure(adventure: Adventure) {
+  const corporateText = normalizeSearchText(
+    [
+      adventure.category,
+      adventure.title,
+      adventure.summary,
+      ...adventure.tags,
+      ...adventure.idealFor,
+    ].join(" ")
+  );
+
+  return [
+    "business",
+    "corporate",
+    "company",
+    "organization",
+    "expo",
+    "import",
+    "supplier",
+    "meeting",
+    "байгууллага",
+    "бизнес",
+    "үзэсгэлэн",
+    "нийлүүлэгч",
+  ].some((keyword) => corporateText.includes(keyword));
+}
+
 const SECTION_COPY = {
   mn: {
     eyebrow: "Аяллууд",
@@ -256,6 +284,7 @@ const SECTION_COPY = {
     all: "Бүх аялал",
     outbound: "Гадаад аялал",
     domestic: "Дотоод аялал",
+    corporate: "Байгууллагын аялал",
     search: "Аялал хайх...",
     listTitle: "Бүх аяллын жагсаалт",
     listBody: "Сонгосон аяллаа дарж дэлгэрэнгүй мэдээлэл, үнэ, багцын нөхцөлийг хараарай.",
@@ -271,6 +300,7 @@ const SECTION_COPY = {
     all: "All trips",
     outbound: "Outbound trips",
     domestic: "Domestic trips",
+    corporate: "Corporate trips",
     search: "Search trips...",
     listTitle: "All available trips",
     listBody: "Open a trip to view details, pricing, inclusions, and planning notes.",
@@ -286,6 +316,7 @@ const SECTION_COPY = {
     all: "全部旅行",
     outbound: "出境旅行",
     domestic: "蒙古国内旅行",
+    corporate: "企业旅行",
     search: "搜索旅行...",
     listTitle: "全部旅行列表",
     listBody: "点击旅行查看详细信息、价格和套餐条件。",
@@ -301,6 +332,7 @@ const SECTION_COPY = {
     all: "すべてのツアー",
     outbound: "海外ツアー",
     domestic: "国内ツアー",
+    corporate: "法人向けツアー",
     search: "ツアーを検索...",
     listTitle: "すべてのツアー一覧",
     listBody: "ツアーを開くと詳細、料金、含まれる条件を確認できます。",
@@ -316,6 +348,7 @@ const SECTION_COPY = {
     all: "전체 여행",
     outbound: "해외 여행",
     domestic: "몽골 국내 여행",
+    corporate: "기업 여행",
     search: "여행 검색...",
     listTitle: "전체 여행 목록",
     listBody: "여행을 눌러 자세한 정보, 가격, 패키지 조건을 확인하세요.",
@@ -1086,6 +1119,7 @@ function DestinationDragCarousel({
 export function FeaturedAdventures({
   adventures = ADVENTURES,
   beforeList,
+  outboundTripImages = {},
 }: FeaturedAdventuresProps) {
   const [selected, setSelected] = useState<Adventure | null>(null);
   const [scope, setScope] = useState<TripScope>("all");
@@ -1115,7 +1149,7 @@ export function FeaturedAdventures({
           difficulty: "Easy",
           price: parseMntPrice(option.price),
           currency: "MNT",
-          image: option.image,
+          image: outboundTripImages[option.id] || option.image,
           tags: ["Гадаад", country],
           rating: 4.8,
           reviews: 18 + index * 4,
@@ -1128,7 +1162,7 @@ export function FeaturedAdventures({
           translations: getOutboundOptionTranslations(option),
         };
       }),
-    [sectionCopy.flexible]
+    [outboundTripImages, sectionCopy.flexible]
   );
 
   const allAdventures = useMemo(
@@ -1150,7 +1184,8 @@ export function FeaturedAdventures({
     const nextScope =
       scopeQuery === "all" ||
       scopeQuery === "domestic" ||
-      scopeQuery === "outbound"
+      scopeQuery === "outbound" ||
+      scopeQuery === "corporate"
         ? scopeQuery
         : null;
 
@@ -1176,12 +1211,14 @@ export function FeaturedAdventures({
 
     const matches = allAdventures.filter((adventure) => {
       const isDomestic = adventure.country === "Mongolia";
+      const isCorporate = isCorporateAdventure(adventure);
       const searchText = getAdventureSearchText(adventure);
 
       const matchesScope =
         scope === "all" ||
         (scope === "domestic" && isDomestic) ||
-        (scope === "outbound" && !isDomestic);
+        (scope === "outbound" && !isDomestic) ||
+        (scope === "corporate" && isCorporate);
       const matchesQuery =
         !normalizedQuery || searchText.includes(normalizedQuery);
 
@@ -1223,6 +1260,7 @@ export function FeaturedAdventures({
     const outbound = filteredAdventures.filter(
       (adventure) => adventure.country !== "Mongolia"
     );
+    const corporate = filteredAdventures.filter(isCorporateAdventure);
     const domestic = filteredAdventures.filter(
       (adventure) => adventure.country === "Mongolia"
     );
@@ -1234,12 +1272,22 @@ export function FeaturedAdventures({
         adventures: outbound,
       },
       {
+        id: "corporate-trips",
+        title: sectionCopy.corporate,
+        adventures: corporate,
+      },
+      {
         id: "domestic-trips",
         title: sectionCopy.domestic,
         adventures: domestic,
       },
     ].filter((group) => group.adventures.length > 0);
-  }, [filteredAdventures, sectionCopy.domestic, sectionCopy.outbound]);
+  }, [
+    filteredAdventures,
+    sectionCopy.corporate,
+    sectionCopy.domestic,
+    sectionCopy.outbound,
+  ]);
   function handleTripSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     gallerySectionRef.current?.scrollIntoView({

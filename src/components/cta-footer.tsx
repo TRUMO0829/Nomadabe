@@ -31,6 +31,16 @@ const SOCIALS = [
     icon: "instagram",
     href: "https://www.instagram.com/nomadabe.travel/",
   },
+  {
+    label: "WhatsApp",
+    icon: "whatsapp",
+    href: "https://wa.me/97699103258",
+  },
+  {
+    label: "WeChat",
+    icon: "wechat",
+    href: "weixin://dl/chat?Ariunbold",
+  },
 ] as const;
 
 const CONTACT_EMAIL = "info@nomadabe.mn";
@@ -42,6 +52,8 @@ const OYU_INTELLIGENCE_URL = "https://www.oyu-intelligence.com/";
 
 const CONTACTS = [
   { type: "email", label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
+  { type: "whatsapp", label: "WhatsApp +976 9910 3258", href: "https://wa.me/97699103258" },
+  { type: "wechat", label: "WeChat Ariunbold", href: "weixin://dl/chat?Ariunbold" },
   { type: "phone", label: "+976 9910 3258", href: "tel:+97699103258" },
   { type: "phone", label: "+976 9918 9317", href: "tel:+97699189317" },
   {
@@ -596,6 +608,10 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent bg-transparent text-white transition-colors group-hover:bg-accent group-hover:text-primary">
                         {contact.type === "phone" ? (
                           <Phone className="h-4 w-4" />
+                        ) : contact.type === "whatsapp" ? (
+                          <SocialIcon icon="whatsapp" />
+                        ) : contact.type === "wechat" ? (
+                          <SocialIcon icon="wechat" />
                         ) : contact.type === "address" ? (
                           <MapPin className="h-4 w-4" />
                         ) : (
@@ -761,6 +777,36 @@ function SocialIcon({ icon }: { icon: (typeof SOCIALS)[number]["icon"] }) {
         <path
           fill="currentColor"
           d="M18.9 13.5l.7-4.7h-4.5v-3c0-1.3.6-2.5 2.6-2.5h2.1V.2S17.9 0 16.1 0C12.3 0 9.8 2.3 9.8 6.5v2.3H5.6v4.7h4.2V24H15V13.5h3.9Z"
+        />
+      </svg>
+    );
+  }
+
+  if (icon === "whatsapp") {
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+      >
+        <path
+          fill="currentColor"
+          d="M20.5 3.5A11.2 11.2 0 0 0 12.6 0C6.5 0 1.5 4.9 1.5 11c0 1.9.5 3.8 1.5 5.5L1.4 22l5.7-1.5a11 11 0 0 0 5.5 1.4c6.1 0 11.1-4.9 11.1-11 0-2.9-1.1-5.6-3.2-7.4Zm-7.9 16.6c-1.7 0-3.4-.5-4.8-1.4l-.3-.2-3.4.9.9-3.3-.2-.3a9 9 0 0 1-1.4-4.8c0-5 4.1-9.1 9.2-9.1 2.4 0 4.7.9 6.4 2.7a9 9 0 0 1 2.7 6.4c0 5-4.1 9.1-9.1 9.1Zm5-6.8c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.5.1-.2.1-.4 0-.6-.1-.2-.7-1.7-.9-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.9 0 1.7 1.3 3.4 1.4 3.6.2.2 2.5 3.8 6 5.3.8.4 1.5.6 2 .7.9.3 1.6.2 2.2.1.7-.1 1.8-.7 2.1-1.5.3-.7.3-1.4.2-1.5 0-.1-.3-.2-.6-.4Z"
+        />
+      </svg>
+    );
+  }
+
+  if (icon === "wechat") {
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+      >
+        <path
+          fill="currentColor"
+          d="M9.6 4.2C4.9 4.2 1.2 7.3 1.2 11c0 2.1 1.2 4 3.1 5.2l-.8 2.5 3-1.5c1 .3 2 .5 3.1.5h.4a6.5 6.5 0 0 1-.3-1.9c0-3.8 3.8-6.8 8.3-6.8h.3c-1-2.8-4.4-4.8-8.7-4.8Zm-2.9 3.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5.6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5.7 2.6c-3.8 0-6.9 2.5-6.9 5.6s3.1 5.6 6.9 5.6c.8 0 1.6-.1 2.3-.3l2.4 1.2-.6-2c1.6-1 2.6-2.5 2.6-4.2 0-3-3.1-5.5-6.7-5.5Zm-2.3 3a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6Zm4.6 0a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6Z"
         />
       </svg>
     );

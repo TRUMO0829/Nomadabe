@@ -525,9 +525,19 @@ function ProgramEditor({
 }
 
 function LandingVideoSettingsForm({ settings }: { settings: SiteSettings }) {
+  const outboundImageFields = [
+    { id: "zhangjiajie", label: "Жанжиажэ / Avatar" },
+    { id: "shanghai", label: "Шанхай" },
+    { id: "japan", label: "Япон 4 хот" },
+    { id: "jeju", label: "Жэжү арал" },
+    { id: "turkey", label: "Турк" },
+    { id: "taiwan", label: "Тайвань" },
+  ];
+
   return (
     <form
       action={saveSiteSettingsAction}
+      encType="multipart/form-data"
       className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
     >
       <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
@@ -556,6 +566,51 @@ function LandingVideoSettingsForm({ settings }: { settings: SiteSettings }) {
         </div>
       </div>
 
+      <div className="mt-5 rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
+        <h3 className="text-sm font-black text-[var(--primary)]">
+          Гадаад аяллын нүүр зураг солих
+        </h3>
+        <p className="mt-1 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+          Local-аас JPG, PNG, WEBP зураг upload хийнэ. Шинэ файл сонгоогүй аяллын
+          зураг одоогийнхоороо үлдэнэ.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {outboundImageFields.map((field) => {
+            const currentImage = settings.outboundTripImages[field.id];
+
+            return (
+              <label
+                key={field.id}
+                className="block rounded-md border border-[var(--border)] bg-white p-3 shadow-sm"
+              >
+                <input
+                  type="hidden"
+                  name={`outboundTripImage_${field.id}`}
+                  defaultValue={currentImage}
+                />
+                <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                  {field.label}
+                </span>
+                {currentImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={currentImage}
+                    alt={`${field.label} зураг`}
+                    className="mt-2 h-28 w-full rounded-md object-cover ring-1 ring-[var(--border)]"
+                  />
+                ) : null}
+                <input
+                  type="file"
+                  name={`outboundTripImageUpload_${field.id}`}
+                  accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+                  className="mt-3 block w-full text-xs text-[var(--foreground)] file:mr-2 file:rounded-md file:border-0 file:bg-[var(--primary)] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-[var(--foreground)]"
+                />
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-2xl text-sm font-medium leading-6 text-[var(--muted-foreground)]">
           Хадгалсны дараа нүүр хуудас revalidate хийгдэж, шинэ бичлэгүүд дараагийн
@@ -566,7 +621,7 @@ function LandingVideoSettingsForm({ settings }: { settings: SiteSettings }) {
           className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--foreground)]"
         >
           <Save className="h-4 w-4" />
-          Бичлэг хадгалах
+          Тохиргоо хадгалах
         </button>
       </div>
     </form>
@@ -698,7 +753,9 @@ function TripForm({
           <TextField label="Хугацаа / өдөр" name="days" type="number" defaultValue={String(trip?.days ?? 5)} />
           <TextField label="Дараагийн явах огноо" name="nextDeparture" type="date" defaultValue={getDateInputValue(trip?.nextDeparture)} />
           <TextareaField label="Хэрэглэгчид харагдах товч тайлбар" name="summary" defaultValue={trip?.summary} rows={3} className="lg:col-span-3" />
-          <TextField label="Эсвэл зургийн URL (постер оруулаагүй бол)" name="image" defaultValue={trip?.image} className="lg:col-span-3" />
+          <input type="hidden" name="image" defaultValue={trip?.image} />
+          <input type="hidden" name="galleryImages" defaultValue={trip?.galleryImages?.join("\n")} />
+          <GalleryUploadField trip={trip} className="lg:col-span-3" />
           <TextField label="Slug" name="slug" defaultValue={trip?.slug} placeholder="gobi-adventure" />
           <TextField label="Шинэ ангилал нэмэх" name="categoryCustom" placeholder="Жишээ: Дотоод аялал" />
           <TextField label="Групп / хэнд зориулсан" name="groupSize" defaultValue={trip?.groupSize ?? "Flexible"} placeholder="Family / Group" />
@@ -937,6 +994,48 @@ function PosterField({ trip, className }: { trip?: Adventure; className?: string
             {trip ? " Шинэ зураг оруулаагүй бол одоогийн постер хэвээр үлдэнэ." : ""}
           </p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function GalleryUploadField({ trip, className }: { trip?: Adventure; className?: string }) {
+  const images = trip?.galleryImages ?? [];
+
+  return (
+    <div className={`block ${className ?? ""}`}>
+      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+        Дэлгэрэнгүй gallery зурагнууд
+      </span>
+      <div className="mt-2 rounded-md border border-dashed border-[var(--border)] bg-white p-4">
+        {images.length > 0 ? (
+          <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+            {images.map((image, index) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={`${image}-${index}`}
+                src={image}
+                alt={`${trip?.title ?? "Аялал"} gallery ${index + 1}`}
+                className="h-20 w-full rounded-md object-cover ring-1 ring-[var(--border)]"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="mb-3 rounded-md bg-[var(--muted)] px-3 py-2 text-xs font-semibold text-[var(--muted-foreground)]">
+            Gallery зураг ороогүй байна.
+          </div>
+        )}
+        <input
+          type="file"
+          name="galleryImagesUpload"
+          accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+          multiple
+          className="block w-full text-sm text-[var(--foreground)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--primary)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[var(--foreground)]"
+        />
+        <p className="mt-2 text-xs font-medium leading-5 text-[var(--muted-foreground)]">
+          Олон зураг зэрэг сонгож болно. Шинэ зураг сонговол хуучин gallery жагсаалтыг
+          сольж хадгална.
+        </p>
       </div>
     </div>
   );

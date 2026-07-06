@@ -71,7 +71,7 @@ export const OUTBOUND_OPTIONS = [
     days: 8,
     price: "2,990,000₮",
     image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=2400&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1561031454-4f1331bd2a34?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "shanghai",
@@ -88,7 +88,7 @@ export const OUTBOUND_OPTIONS = [
     days: 6,
     price: "3,390,000₮",
     image:
-      "https://images.unsplash.com/photo-1548919973-5cef591cdbc9?w=2400&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1748078096261-5eff2aee113f?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "japan",
@@ -105,7 +105,7 @@ export const OUTBOUND_OPTIONS = [
     days: 5,
     price: "4,990,000₮",
     image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=2400&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "jeju",
@@ -122,7 +122,7 @@ export const OUTBOUND_OPTIONS = [
     days: 5,
     price: "4,290,000₮",
     image:
-      "https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?w=2400&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1667971286457-144269b0e4d8?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "turkey",
@@ -139,7 +139,7 @@ export const OUTBOUND_OPTIONS = [
     days: 8,
     price: "4,690,000₮",
     image:
-      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=2400&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=2400&q=90&auto=format&fit=crop",
   },
   {
     id: "taiwan",
@@ -156,12 +156,13 @@ export const OUTBOUND_OPTIONS = [
     days: 7,
     price: "6,790,000₮",
     image:
-      "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=2400&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1748104433499-3d492d0337cb?w=2400&q=90&auto=format&fit=crop",
   },
 ];
 
 type OutboundTripsCarouselProps = {
   adventures?: Adventure[];
+  outboundTripImages?: Record<string, string>;
 };
 
 function parseMntPrice(price: string) {
@@ -212,6 +213,7 @@ function getStaticOutboundDetails(
 
 export function OutboundTripsCarousel({
   adventures = [],
+  outboundTripImages = {},
 }: OutboundTripsCarouselProps) {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
@@ -242,7 +244,11 @@ export function OutboundTripsCarousel({
         adventure,
       };
     });
-  const options = [...OUTBOUND_OPTIONS, ...backendOptions].slice(0, 3);
+  const staticOptions = OUTBOUND_OPTIONS.map((option) => ({
+    ...option,
+    image: outboundTripImages[option.id] || option.image,
+  }));
+  const options = [...staticOptions, ...backendOptions].slice(0, 3);
   const cardRows = options.map((option, idx) => {
     const title = {
       mn: option.titleMn,

@@ -98,7 +98,7 @@ export const ADVENTURES: Adventure[] = [
     price: 0,
     currency: "MNT",
     image:
-      "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=3200&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1753172201568-b28dc578ad57?w=3200&q=90&fit=crop&fm=webp",
     tags: ["Business", "Expo", "Import"],
     rating: 4.9,
     reviews: 38,
@@ -136,7 +136,7 @@ export const ADVENTURES: Adventure[] = [
     price: 0,
     currency: "MNT",
     image:
-      "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=3200&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?w=3200&q=90&fit=crop&fm=webp",
     tags: ["Energy", "Expo", "Technology"],
     rating: 4.8,
     reviews: 21,
@@ -161,7 +161,7 @@ export const ADVENTURES: Adventure[] = [
     price: 0,
     currency: "MNT",
     image:
-      "https://images.unsplash.com/photo-1547234935-80c7145ec969?w=3200&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1613297042426-58e7fa325fa4?w=3200&q=90&fit=crop&fm=webp",
     tags: ["Gobi", "Leisure", "Culture"],
     rating: 4.9,
     reviews: 64,
@@ -185,7 +185,7 @@ export const ADVENTURES: Adventure[] = [
     price: 0,
     currency: "MNT",
     image:
-      "https://images.unsplash.com/photo-1542662565-7e4b66bae529?w=3200&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1613294576846-73901118ef6d?w=3200&q=90&fit=crop&fm=webp",
     tags: ["Domestic", "Festival", "Culture"],
     rating: 4.9,
     reviews: 44,
@@ -210,7 +210,7 @@ export const ADVENTURES: Adventure[] = [
     price: 0,
     currency: "MNT",
     image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=3200&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1630614812901-550f93e0e888?w=3200&q=90&fit=crop&fm=webp",
     tags: ["Domestic", "Lake", "Family"],
     rating: 4.8,
     reviews: 31,
@@ -235,7 +235,7 @@ export const ADVENTURES: Adventure[] = [
     price: 2190000,
     currency: "MNT",
     image:
-      "https://images.unsplash.com/photo-1551632811-561732d1e306?w=3200&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1742205025826-d6ae1b3727be?w=3200&q=90&fit=crop&fm=webp",
     tags: ["Domestic", "Altai", "Trekking"],
     rating: 4.9,
     reviews: 26,
@@ -1333,9 +1333,9 @@ const ADVENTURE_TEXT: Record<CopyLocale, Record<string, AdventureText>> = {
 
 const ADVENTURE_GALLERIES: Record<string, string[]> = {
   "1": [
-    "https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=3200&q=90&fit=crop&fm=webp",
-    "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=3200&q=90&fit=crop&fm=webp",
-    "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1753172201568-b28dc578ad57?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1768396855393-42624b5f0be5?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=3200&q=90&fit=crop&fm=webp",
   ],
   "2": [
     "https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?w=3200&q=90&fit=crop&fm=webp",
@@ -1343,9 +1343,9 @@ const ADVENTURE_GALLERIES: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=3200&q=90&fit=crop&fm=webp",
   ],
   "3": [
-    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=3200&q=90&fit=crop&fm=webp",
-    "https://images.unsplash.com/photo-1542838132-92c53300491e?w=3200&q=90&fit=crop&fm=webp",
-    "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1613297042426-58e7fa325fa4?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1587741748743-fcda9b5b237a?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1547234935-80c7145ec969?w=3200&q=90&fit=crop&fm=webp",
   ],
   "4": [
     "https://images.unsplash.com/photo-1552664730-d307ca884978?w=3200&q=90&fit=crop&fm=webp",
@@ -1363,25 +1363,25 @@ const ADVENTURE_GALLERIES: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=3200&q=90&fit=crop&fm=webp",
   ],
   "7": [
+    "https://images.unsplash.com/photo-1613294576846-73901118ef6d?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1542662565-7e4b66bae529?w=3200&q=90&fit=crop&fm=webp",
-    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=3200&q=90&fit=crop&fm=webp",
   ],
   "8": [
-    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1630614812901-550f93e0e888?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1664770427537-f24e362b0c30?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=3200&q=90&fit=crop&fm=webp",
-    "https://images.unsplash.com/photo-1439853949127-fa647821eba0?w=3200&q=90&fit=crop&fm=webp",
   ],
   "9": [
-    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1742205025826-d6ae1b3727be?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1514920735211-8c697444a248?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=3200&q=90&fit=crop&fm=webp",
-    "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=3200&q=90&fit=crop&fm=webp",
   ],
 };
 
 const FALLBACK_GALLERIES: Record<string, string[]> = {
   china: [
-    "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1753172201568-b28dc578ad57?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1548919973-5cef591cdbc9?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=3200&q=90&fit=crop&fm=webp",
@@ -1393,7 +1393,7 @@ const FALLBACK_GALLERIES: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=3200&q=90&fit=crop&fm=webp",
   ],
   korea: [
-    "https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1667971286457-144269b0e4d8?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1538485399081-7c8edb81cdb4?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=3200&q=90&fit=crop&fm=webp",
@@ -1405,16 +1405,16 @@ const FALLBACK_GALLERIES: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=3200&q=90&fit=crop&fm=webp",
   ],
   taiwan: [
-    "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1748104433499-3d492d0337cb?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=3200&q=90&fit=crop&fm=webp",
   ],
   mongolia: [
-    "https://images.unsplash.com/photo-1547234935-80c7145ec969?w=3200&q=90&fit=crop&fm=webp",
-    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1613297042426-58e7fa325fa4?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1742205025826-d6ae1b3727be?w=3200&q=90&fit=crop&fm=webp",
     "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=3200&q=90&fit=crop&fm=webp",
-    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=3200&q=90&fit=crop&fm=webp",
+    "https://images.unsplash.com/photo-1630614812901-550f93e0e888?w=3200&q=90&fit=crop&fm=webp",
   ],
   festival: [
     "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=3200&q=90&fit=crop&fm=webp",

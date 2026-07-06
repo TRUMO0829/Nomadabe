@@ -18,7 +18,10 @@ export default async function Home() {
       <main className="flex-1">
         <Hero settings={siteSettings} />
         <TravelOptionsCarousel adventures={adventures} />
-        <OutboundTripsCarousel adventures={adventures} />
+        <OutboundTripsCarousel
+          adventures={adventures}
+          outboundTripImages={siteSettings.outboundTripImages}
+        />
         <FeaturedTripsCarousel adventures={adventures} variant="compact" />
         <Testimonials />
         <CtaFooter />

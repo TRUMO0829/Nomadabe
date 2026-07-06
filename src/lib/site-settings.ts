@@ -92,6 +92,7 @@ export type SiteSettings = {
   heroSubtitle: string;
   heroImage: string;
   heroVideos: string[];
+  outboundTripImages: Record<string, string>;
   accentColor: string;
   heroTextColor: string;
   heroOverlayOpacity: number;

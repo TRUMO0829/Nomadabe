@@ -20,7 +20,7 @@ import {
   type Adventure,
 } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
-import { getTrips } from "@/lib/server/admin-store";
+import { getAdminStore } from "@/lib/server/admin-store";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +47,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 8,
     price: 2990000,
     image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=3200&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1561031454-4f1331bd2a34?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "shanghai",
@@ -56,7 +56,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 6,
     price: 3390000,
     image:
-      "https://images.unsplash.com/photo-1548919973-5cef591cdbc9?w=3200&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1748078096261-5eff2aee113f?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "japan",
@@ -65,7 +65,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 5,
     price: 4990000,
     image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=3200&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "jeju",
@@ -74,7 +74,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 5,
     price: 4290000,
     image:
-      "https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?w=3200&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1667971286457-144269b0e4d8?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "turkey",
@@ -83,7 +83,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 8,
     price: 4690000,
     image:
-      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=3200&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=3200&q=90&auto=format&fit=crop",
   },
   {
     id: "taiwan",
@@ -92,7 +92,7 @@ const STATIC_OUTBOUND_TRIPS: StaticOutboundTrip[] = [
     days: 7,
     price: 6790000,
     image:
-      "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=3200&q=90&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1748104433499-3d492d0337cb?w=3200&q=90&auto=format&fit=crop",
   },
 ];
 
@@ -104,7 +104,10 @@ function decodeSlug(slug: string) {
   }
 }
 
-function getStaticOutboundAdventureBySlug(slug: string): Adventure | null {
+function getStaticOutboundAdventureBySlug(
+  slug: string,
+  outboundTripImages: Record<string, string>
+): Adventure | null {
   const option = STATIC_OUTBOUND_TRIPS.find(
     (trip) => `static-outbound-${trip.id}` === slug
   );
@@ -124,7 +127,7 @@ function getStaticOutboundAdventureBySlug(slug: string): Adventure | null {
     difficulty: "Easy",
     price: option.price,
     currency: "MNT",
-    image: option.image,
+    image: outboundTripImages[option.id] || option.image,
     tags: ["Гадаад аялал", option.country],
     rating: 4.8,
     reviews: 24,
@@ -143,11 +146,11 @@ function getStaticOutboundAdventureBySlug(slug: string): Adventure | null {
 
 async function getTourBySlug(slug: string) {
   const decodedSlug = decodeSlug(slug);
-  const trips = await getTrips();
+  const { trips, siteSettings } = await getAdminStore();
 
   return (
     trips.find((adventure) => adventure.slug === decodedSlug) ??
-    getStaticOutboundAdventureBySlug(decodedSlug)
+    getStaticOutboundAdventureBySlug(decodedSlug, siteSettings.outboundTripImages)
   );
 }
 
