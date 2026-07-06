@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
+  Award,
   CalendarCheck,
   Compass,
   Globe,
@@ -39,6 +40,12 @@ const CONTACT = {
   mapHref:
     "https://www.google.com/maps/place/Minister+Tower/@47.9153226,106.917978,425m/data=!3m2!1e3!4b1!4m6!3m5!1s0x5d9693649ea1b323:0x8bb14a35346801cd!8m2!3d47.9153226!4d106.9205583!16s%2Fg%2F11ss8zbb4r?hl=en-US",
 };
+
+const CERTIFICATION_ITEMS = [
+  "Монголын аялал жуулчлалын холбооны гишүүн байгууллага",
+  "Гадаадаас жуулчин хүлээн авах тур оператор",
+  "Гадаад орон руу жуулчин илгээх тур оператор",
+];
 
 const fadeUp = {
   hidden: { opacity: 0, y: 26 },
@@ -267,10 +274,85 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 </div>
               </div>
             </div>
+
+            <div className="mx-1 mt-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
+              <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
+                <Award className="h-4 w-4" style={{ color: ACCENT }} />
+                {L("ГЭРЧИЛГЭЭ", "CERTIFICATION")}
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-[#E7E2D4]">
+                {L(
+                  "Nomadabe Adventure Silkres ХХК нь Монголын аялал жуулчлалын холбооны гишүүн байгууллага.",
+                  "Nomadabe Adventure Silkres LLC is a member organization of the Mongolian Tourism Association."
+                )}
+              </p>
+            </div>
           </motion.div>
           </div>
         </div>
       </div>
+
+      <Band bg="/nomadabe-hero-panorama.webp">
+        <div className="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <Kicker>{L("Баталгаажуулалт", "Certification")}</Kicker>
+            <h2 className="mt-5 max-w-3xl text-3xl leading-tight sm:text-4xl">
+              {L(
+                "Монголын аялал жуулчлалын холбооны гишүүн байгууллага.",
+                "Member of the Mongolian Tourism Association."
+              )}
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#D8D2C2]">
+              {L(
+                "2023 оны холбооны шийдвэр, үйл ажиллагааны ангиллын дагуу Nomadabe Adventure Silkres ХХК нь олон улсын аялал жуулчлалын тур операторын чиглэлээр бүртгэлтэй.",
+                "Based on the association's 2023 certification and activity classification, Nomadabe Adventure Silkres LLC is recognized for international tour operator services."
+              )}
+            </p>
+          </div>
+
+          <div className="rounded-[28px] border border-white/12 bg-[#0B0A07]/62 p-5 shadow-[0_28px_90px_rgba(0,0,0,0.24)] backdrop-blur-md">
+            <div className="flex items-start gap-4">
+              <span
+                className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
+                style={{ background: "rgba(255,212,0,0.14)" }}
+              >
+                <Award className="h-6 w-6" style={{ color: ACCENT }} />
+              </span>
+              <div>
+                <p className="text-xs tracking-[0.24em]" style={{ color: ACCENT }}>
+                  CERTIFICATE
+                </p>
+                <h3 className="mt-2 text-2xl leading-tight text-[#FFFDF3]">
+                  Nomadabe Adventure Silkres ХХК
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#B8B2A2]">
+                  {L(
+                    "Гадаад болон дотоод чиглэлийн аяллыг мэргэжлийн түвшинд төлөвлөж, зохион байгуулах баталгаатай аяллын баг.",
+                    "A certified travel team for professionally planned inbound and outbound travel."
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-3">
+              {CERTIFICATION_ITEMS.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
+                >
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ background: ACCENT }}
+                  />
+                  <span className="text-sm leading-relaxed text-[#E7E2D4]">
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Band>
 
       {/* ───────────────────────── VALUES ───────────────────────── */}
       {showValues && (
