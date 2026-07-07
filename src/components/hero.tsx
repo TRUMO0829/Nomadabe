@@ -181,8 +181,8 @@ export function Hero({ settings }: HeroProps) {
             width={574}
             height={615}
             priority
-            sizes="112px"
-            className="h-[104px] w-auto object-contain brightness-0 invert drop-shadow-[0_8px_24px_rgba(0,0,0,0.28)] sm:h-[122px]"
+            sizes="(min-width: 1024px) 160px, 128px"
+            className="h-24 w-auto object-contain brightness-0 invert drop-shadow-[0_8px_24px_rgba(0,0,0,0.28)] lg:h-28"
           />
         </Link>
       </div>
