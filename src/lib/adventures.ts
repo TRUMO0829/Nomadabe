@@ -1362,6 +1362,82 @@ const ADVENTURE_TEXT: Record<CopyLocale, Record<string, AdventureText>> = {
   },
 };
 
+const ADVENTURE_TEXT_SLUG_ALIASES: Partial<Record<string, string>> = {
+  "canton-fair-business-trip": "1",
+  "snec-pv-2026-business-trip": "2",
+  "mongolia-festival-experience": "7",
+  "khuvsgul-lake-domestic-trip": "8",
+  "altai-domestic-trek": "9",
+};
+
+const GOBI_ADVENTURE_TEXT: Record<CopyLocale, AdventureText> = {
+  mn: {
+    title: "Говь 7 өдрийн аялал",
+    location: "Говь",
+    country: "Монгол",
+    groupSize: "Жижиг групп",
+    difficulty: "Дунд зэрэг",
+    tags: ["Дотоод", "Говь", "Байгаль"],
+    summary:
+      "Говийн байгаль, элсэн манхан, нутгийн айл, одтой шөнийг мэдрэх хувийн болон жижиг групп аялал.",
+    idealFor: ["Гэр бүл", "Найз нөхөд", "Гадаад аялагч"],
+    includes: ["Унаа", "Жолооч", "Буудал/гэр", "Маршрут төлөвлөлт"],
+    businessSupport: [],
+  },
+  en: {
+    title: "Gobi 7-day trip",
+    location: "Gobi",
+    country: "Mongolia",
+    groupSize: "Small group",
+    difficulty: "Moderate",
+    tags: ["Domestic", "Gobi", "Nature"],
+    summary:
+      "A private or small-group trip through the Gobi desert, sand dunes, local nomadic life, and star-filled nights.",
+    idealFor: ["Families", "Friend groups", "International travellers"],
+    includes: ["Transport", "Driver", "Hotel / ger stay", "Route planning"],
+    businessSupport: [],
+  },
+  zh: {
+    title: "戈壁 7 日旅行",
+    location: "戈壁",
+    country: "蒙古",
+    groupSize: "小团",
+    difficulty: "中等",
+    tags: ["国内", "戈壁", "自然"],
+    summary:
+      "私人或小团戈壁旅行，体验沙丘、游牧家庭、辽阔自然和星空之夜。",
+    idealFor: ["家庭", "朋友团", "国际游客"],
+    includes: ["交通", "司机", "酒店 / 蒙古包住宿", "路线规划"],
+    businessSupport: [],
+  },
+  ja: {
+    title: "ゴビ 7日間ツアー",
+    location: "ゴビ",
+    country: "モンゴル",
+    groupSize: "小グループ",
+    difficulty: "中級",
+    tags: ["国内", "ゴビ", "自然"],
+    summary:
+      "砂丘、遊牧民の暮らし、広大な自然、満天の星を楽しむプライベートまたは小グループのゴビ旅行です。",
+    idealFor: ["家族", "友人グループ", "海外旅行者"],
+    includes: ["車両", "ドライバー", "ホテル / ゲル宿泊", "ルート計画"],
+    businessSupport: [],
+  },
+  ko: {
+    title: "고비 7일 여행",
+    location: "고비",
+    country: "몽골",
+    groupSize: "소규모 그룹",
+    difficulty: "보통",
+    tags: ["국내", "고비", "자연"],
+    summary:
+      "고비 사막, 모래언덕, 유목민 생활, 별이 가득한 밤을 경험하는 개인 또는 소규모 그룹 여행입니다.",
+    idealFor: ["가족", "친구 그룹", "해외 여행자"],
+    includes: ["교통", "운전기사", "호텔 / 게르 숙박", "루트 계획"],
+    businessSupport: [],
+  },
+};
+
 const ADVENTURE_GALLERIES: Record<string, string[]> = {
   "1": [
     "https://images.unsplash.com/photo-1753172201568-b28dc578ad57?w=3200&q=90&fit=crop&fm=webp",
@@ -1534,7 +1610,14 @@ export function getAdventureGalleryImages(adventure: Adventure): string[] {
 export function getAdventureText(adventure: Adventure, locale: Locale): AdventureText {
   const copyLocale = getCopyLocale(locale);
   const autoTranslatedText = adventure.translations?.[copyLocale];
-  const localizedText = ADVENTURE_TEXT[copyLocale][adventure.id];
+  const slugAlias = ADVENTURE_TEXT_SLUG_ALIASES[adventure.slug];
+  const slugLocalizedText =
+    adventure.slug === "gobi-seven-day-private-trip"
+      ? GOBI_ADVENTURE_TEXT[copyLocale]
+      : slugAlias
+        ? ADVENTURE_TEXT[copyLocale][slugAlias]
+        : undefined;
+  const localizedText = slugLocalizedText ?? ADVENTURE_TEXT[copyLocale][adventure.id];
 
   const fallbackText = {
     title: adventure.title,
@@ -1567,7 +1650,7 @@ export function getAdventureText(adventure: Adventure, locale: Locale): Adventur
     };
   }
 
-  if (localizedText && adventure.slug !== "gobi-seven-day-private-trip") {
+  if (localizedText) {
     return localizedText;
   }
 
