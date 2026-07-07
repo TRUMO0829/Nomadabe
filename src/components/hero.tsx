@@ -61,6 +61,10 @@ const HERO_NAV_COPY = {
   },
 } as const;
 
+const HERO_LANGUAGE_OPTIONS = LANGUAGES.filter((language) =>
+  ["mn", "zh", "en", "ja"].includes(language.code)
+);
+
 function openSignupPrompt() {
   window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
 }
@@ -247,7 +251,7 @@ export function Hero({ settings }: HeroProps) {
 
             {languageOpen ? (
               <div className="absolute right-0 top-[calc(100%+0.55rem)] min-w-40 overflow-hidden rounded-xl bg-black/70 p-1 text-white shadow-xl backdrop-blur-md">
-                {LANGUAGES.map((language) => (
+                {HERO_LANGUAGE_OPTIONS.map((language) => (
                   <button
                     key={language.code}
                     type="button"
