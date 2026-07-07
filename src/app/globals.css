@@ -179,7 +179,7 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 
 .section-header-title {
   font-family: var(--site-font) !important;
-  font-size: clamp(2rem, 4.4vw, 4.25rem) !important;
+  font-size: clamp(1.85rem, 4vw, 3.8rem) !important;
   font-weight: 400 !important;
   line-height: 0.98 !important;
   text-transform: uppercase;
@@ -190,29 +190,29 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 }
 
 .domestic-section-title {
-  font-size: clamp(1.65rem, 3.4vw, 3.2rem) !important;
+  font-size: clamp(1.5rem, 3.1vw, 2.9rem) !important;
   line-height: 1.02 !important;
   white-space: nowrap;
 }
 
 .trip-header-title {
-  font-size: clamp(1.65rem, 4vw, 3.45rem) !important;
+  font-size: clamp(1.5rem, 3.55vw, 3.05rem) !important;
   line-height: 0.98 !important;
   text-transform: uppercase;
 }
 
 .trip-header-title--hero {
-  font-size: clamp(2.1rem, 5.2vw, 4.6rem) !important;
+  font-size: clamp(1.95rem, 4.75vw, 4.15rem) !important;
   line-height: 0.93 !important;
 }
 
 .domestic-trip-title {
-  font-size: clamp(1.65rem, 3.5vw, 3.35rem) !important;
+  font-size: clamp(1.5rem, 3.15vw, 3rem) !important;
   line-height: 1.02 !important;
 }
 
 .trip-header-title--compact {
-  font-size: clamp(1.35rem, 3vw, 2.25rem) !important;
+  font-size: clamp(1.25rem, 2.65vw, 2rem) !important;
   line-height: 1.02 !important;
 }
 
