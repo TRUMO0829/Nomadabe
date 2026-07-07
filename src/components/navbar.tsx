@@ -47,9 +47,9 @@ type AuthCustomer = {
   isAdmin?: boolean;
 };
 const DESKTOP_BAR_ITEM_CLASS =
-  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-white/10 hover:text-accent";
+  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-white/[0.055] hover:text-accent";
 const DESKTOP_NAV_LINK_CLASS =
-  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-white/10 hover:text-accent";
+  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-white/[0.055] hover:text-accent";
 const DESKTOP_BAR_DIVIDER_CLASS =
   "w-px shrink-0 bg-current/30 transition-all duration-300";
 
@@ -162,11 +162,11 @@ export function Navbar({
 
         <div
           className={cn(
-            "hidden items-center overflow-hidden backdrop-blur-xl transition-all duration-300 lg:ml-auto lg:flex",
+            "hidden items-center overflow-hidden backdrop-blur-[2px] transition-all duration-300 lg:ml-auto lg:flex",
             "rounded-[1.05rem] px-3 py-2",
             useLightHeader
-              ? "bg-white/[0.035] text-white shadow-[0_18px_45px_rgba(17,16,11,0.05),inset_0_1px_0_rgba(255,255,255,0.12)]"
-              : "bg-white/[0.035] text-white shadow-[0_18px_48px_rgba(0,0,0,0.10),inset_0_1px_0_rgba(255,255,255,0.12)]"
+              ? "bg-white/[0.018] text-white shadow-[0_12px_30px_rgba(17,16,11,0.035),inset_0_1px_0_rgba(255,255,255,0.08)]"
+              : "bg-white/[0.018] text-white shadow-[0_12px_30px_rgba(0,0,0,0.055),inset_0_1px_0_rgba(255,255,255,0.08)]"
           )}
         >
           <nav className="flex items-center">

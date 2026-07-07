@@ -1511,7 +1511,7 @@ export function FeaturedAdventures({
             onSubmit={handleTripSearchSubmit}
             className="relative mx-auto max-w-3xl text-white"
           >
-            <div className="grid overflow-hidden rounded-[1.75rem] border border-white/50 bg-white/10 shadow-[0_24px_80px_rgba(17,16,11,0.18)] backdrop-blur-[1px] sm:rounded-full lg:grid-cols-[1fr_auto]">
+            <div className="grid overflow-hidden rounded-[1.75rem] border border-white/32 bg-white/[0.035] shadow-[0_14px_44px_rgba(17,16,11,0.09)] backdrop-blur-[0.5px] sm:rounded-full lg:grid-cols-[1fr_auto]">
               <div className="flex min-h-[60px] flex-col justify-center border-b border-white/24 px-5 py-3 transition-colors sm:border-b-0 lg:border-r">
                 <label
                   htmlFor="trip-where-search"
