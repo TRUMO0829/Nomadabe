@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, ChevronDown, Globe2, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { LEGAL_COPY, type LegalPageKind } from "@/components/legal-page";
+import { LANGUAGES, type Locale } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
 
 const SOCIALS = [
@@ -308,6 +309,43 @@ const FOOTER_COPY = {
   },
 } as const;
 
+const FOOTER_COLUMN_COPY = {
+  mn: {
+    menu: "Цэс",
+    contacts: "Холбоосууд",
+    socials: "Сошиал холбоос",
+    language: "Хэл",
+  },
+  en: {
+    menu: "Menu",
+    contacts: "Contacts",
+    socials: "Social links",
+    language: "Language",
+  },
+  zh: {
+    menu: "菜单",
+    contacts: "联系方式",
+    socials: "社交链接",
+    language: "语言",
+  },
+  ja: {
+    menu: "メニュー",
+    contacts: "連絡先",
+    socials: "SNSリンク",
+    language: "言語",
+  },
+  ko: {
+    menu: "메뉴",
+    contacts: "연락처",
+    socials: "소셜 링크",
+    language: "언어",
+  },
+} as const;
+
+const FOOTER_LANGUAGE_OPTIONS = LANGUAGES.filter((language) =>
+  ["mn", "zh", "en", "ja"].includes(language.code)
+);
+
 const LEGAL_DIALOG_COPY = {
   mn: {
     close: "Хаах",
@@ -341,6 +379,7 @@ type CtaFooterProps = {
 };
 
 export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [planningMode, setPlanningMode] = useState<"trip" | "villa">(() => {
     if (typeof window === "undefined") {
       return "trip";
@@ -393,8 +432,12 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
   );
-  const { contentLocale, t } = useLanguage();
+  const { contentLocale, locale, setLocale, t } = useLanguage();
   const footer = FOOTER_COPY[contentLocale];
+  const footerColumns = FOOTER_COLUMN_COPY[contentLocale];
+  const selectedLanguage =
+    FOOTER_LANGUAGE_OPTIONS.find((language) => language.code === locale) ??
+    FOOTER_LANGUAGE_OPTIONS[0];
   const villaPlanCopy =
     contentLocale === "mn" ? VILLA_PLAN_COPY.mn : VILLA_PLAN_COPY.en;
   const planCopy =
@@ -671,7 +714,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
 
       <footer className="bg-[#080807] text-white">
         <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
-          <div className="grid gap-12 lg:grid-cols-[1.45fr_0.9fr_1.05fr_0.8fr]">
+          <div className="grid gap-12 lg:grid-cols-[1.35fr_0.85fr_1.15fr_0.85fr_0.72fr]">
             <div>
               <Link href="/#home" aria-label="Nomadabe Travel" className="inline-flex">
                 <Image
@@ -700,7 +743,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </div>
 
             <nav>
-              <FooterColumnTitle>{footer.linksTitle}</FooterColumnTitle>
+              <FooterColumnTitle>{footerColumns.menu}</FooterColumnTitle>
               <ul className="space-y-4">
                 {footer.links.map((link) => (
                   <li key={link.href}>
@@ -716,9 +759,11 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </nav>
 
             <div>
-              <FooterColumnTitle>{footer.contactTitle}</FooterColumnTitle>
+              <FooterColumnTitle>{footerColumns.contacts}</FooterColumnTitle>
               <ul className="space-y-4">
-                {CONTACTS.filter((contact) => contact.type !== "address").map((contact) => (
+                {CONTACTS.filter(
+                  (contact) => contact.type === "email" || contact.type === "phone"
+                ).map((contact) => (
                   <li key={`${contact.type}-${contact.label}`}>
                     <a
                       href={contact.href}
@@ -727,10 +772,6 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center text-accent transition-transform group-hover:scale-110">
                         {contact.type === "phone" ? (
                           <Phone className="h-5 w-5" />
-                        ) : contact.type === "whatsapp" ? (
-                          <SocialIcon icon="whatsapp" />
-                        ) : contact.type === "wechat" ? (
-                          <SocialIcon icon="wechat" />
                         ) : (
                           <Mail className="h-5 w-5" />
                         )}
@@ -745,9 +786,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </div>
 
             <div>
-              <FooterColumnTitle>
-                {contentLocale === "mn" ? "Сошиал холбоос" : "Social links"}
-              </FooterColumnTitle>
+              <FooterColumnTitle>{footerColumns.socials}</FooterColumnTitle>
               <ul className="space-y-4">
                 {SOCIALS.map((social) => (
                   <li key={social.label}>
@@ -767,6 +806,52 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div>
+              <FooterColumnTitle>{footerColumns.language}</FooterColumnTitle>
+              <div className="relative">
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={languageOpen}
+                  onClick={() => setLanguageOpen((value) => !value)}
+                  className="flex h-11 w-full items-center justify-between gap-3 rounded-md border border-white/12 bg-white/[0.025] px-3 text-left text-white/62 transition-colors hover:border-accent/60 hover:text-accent"
+                >
+                  <span className="inline-flex min-w-0 items-center gap-2">
+                    <Globe2 className="h-5 w-5 shrink-0 text-accent" />
+                    <span className="truncate">{selectedLanguage.label}</span>
+                  </span>
+                  <ChevronDown
+                    className={`h-4 w-4 shrink-0 transition-transform ${
+                      languageOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {languageOpen && (
+                  <div className="absolute bottom-[calc(100%+0.5rem)] left-0 z-20 w-full overflow-hidden rounded-md border border-white/12 bg-[#10100f] p-1 shadow-[0_18px_48px_rgba(0,0,0,0.32)]">
+                    {FOOTER_LANGUAGE_OPTIONS.map((language) => (
+                      <button
+                        key={language.code}
+                        type="button"
+                        onClick={() => {
+                          setLocale(language.code as Locale);
+                          setLanguageOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between rounded px-3 py-2 text-sm transition-colors ${
+                          locale === language.code
+                            ? "bg-accent text-black"
+                            : "text-white/62 hover:bg-white/8 hover:text-accent"
+                        }`}
+                      >
+                        <span>{language.label}</span>
+                        <span className="text-xs font-semibold">{language.short}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
