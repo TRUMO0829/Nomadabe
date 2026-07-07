@@ -341,7 +341,7 @@ type CtaFooterProps = {
 };
 
 export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
-  const [planningMode] = useState<"trip" | "villa">(() => {
+  const [planningMode, setPlanningMode] = useState<"trip" | "villa">(() => {
     if (typeof window === "undefined") {
       return "trip";
     }
@@ -409,6 +409,37 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
     planningMode === "villa" ? villaPlanCopy.headingLine2 : t.cta.headingLine2;
   const planBody = planningMode === "villa" ? villaPlanCopy.body : t.cta.body;
   const idleText = planningMode === "villa" ? villaPlanCopy.idle : t.cta.idle;
+
+  useEffect(() => {
+    if (!showPlanningSection) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode")?.trim();
+    const tripSlug = params.get("trip")?.trim() ?? "";
+    const tripTitle = params.get("title")?.trim();
+    const destination = tripTitle || tripSlug;
+    const isVillaRequest = mode === "villa" || tripSlug.startsWith("villa-");
+
+    setPlanningMode(isVillaRequest ? "villa" : "trip");
+
+    if (!destination) {
+      return;
+    }
+
+    setPlanningForm((form) => ({
+      ...form,
+      destination,
+      inquiryType: isVillaRequest ? "villa" : form.inquiryType,
+      note:
+        form.note && !form.note.startsWith("Сонирхож буй ")
+          ? form.note
+          : isVillaRequest
+            ? `Сонирхож буй вилла: ${destination}`
+            : `Сонирхож буй аялал: ${destination}`,
+    }));
+  }, [showPlanningSection]);
 
   // Prefill the planning form with the signed-in customer's email/name so they
   // don't have to retype it. Only fills empty fields — never overwrites input.
