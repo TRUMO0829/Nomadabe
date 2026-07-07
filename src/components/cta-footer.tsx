@@ -71,6 +71,14 @@ const INQUIRY_MESSAGE = {
   ko: "Nomadabe Travel 여행 계획 정보를 받고 싶습니다.",
 } as const;
 
+const VILLA_INQUIRY_MESSAGE = {
+  mn: "Nomadabe Travel-ийн вилла захиалгын мэдээлэл авах хүсэлтэй байна.",
+  en: "I want to receive Nomadabe Travel villa booking information.",
+  zh: "我想获取 Nomadabe Travel 的别墅预订信息。",
+  ja: "Nomadabe Travel のヴィラ予約情報を受け取りたいです。",
+  ko: "Nomadabe Travel 빌라 예약 정보를 받고 싶습니다.",
+} as const;
+
 const PLAN_COPY = {
   mn: {
     eyebrow: "Хүсэлт",
@@ -126,6 +134,73 @@ const PLAN_COPY = {
       { value: "business", label: "Business trip" },
       { value: "expo", label: "Expo / fair" },
       { value: "general", label: "General advice" },
+    ],
+  },
+} as const;
+
+const VILLA_PLAN_COPY = {
+  mn: {
+    headingLine1: "Вилла захиалах хүсэлт",
+    headingLine2: "байршил, хоног, хүний тоогоо үлдээгээрэй.",
+    body: "Манай баг боломжит вилла, үнэ болон нөхцөлийг шалгаад тантай холбогдоно.",
+    eyebrow: "Вилла хүсэлт",
+    name: "Нэр",
+    email: "И-мэйл",
+    destination: "Вилла / байршил",
+    month: "Орох огноо",
+    travelers: "Хүний тоо",
+    budget: "Төсөв / хоног",
+    type: "Захиалгын төрөл",
+    note: "Нэмэлт хүсэлт",
+    submit: "Вилла хүсэлт илгээх",
+    loading: "Илгээж байна...",
+    success: "Вилла захиалгын хүсэлт хадгалагдлаа. Манай баг тантай холбогдоно.",
+    error: "Илгээхэд алдаа гарлаа. Дахин оролдоно уу.",
+    idle: "Спам байхгүй. Зөвхөн вилла захиалгын бодит санал илгээнэ.",
+    placeholders: {
+      name: "Таны нэр",
+      email: "name@example.com",
+      destination: "Жишээ: Тэрэлж гэр бүлийн вилла",
+      budget: "Жишээ: 650,000 MNT / хоног",
+      note: "Орох/гарах өдөр, өрөөний тоо, хүүхэдтэй эсэх, нэмэлт үйлчилгээ гэх мэт",
+    },
+    types: [
+      { value: "villa", label: "Вилла захиалга" },
+      { value: "family-villa", label: "Гэр бүлийн вилла" },
+      { value: "group-villa", label: "Групп вилла" },
+      { value: "villa-advice", label: "Вилла зөвлөгөө" },
+    ],
+  },
+  en: {
+    headingLine1: "Villa booking request",
+    headingLine2: "share your stay dates and guest count.",
+    body: "Our team will check available villas, pricing, and terms, then contact you.",
+    eyebrow: "Villa request",
+    name: "Name",
+    email: "Email",
+    destination: "Villa / location",
+    month: "Check-in date",
+    travelers: "Guests",
+    budget: "Budget / night",
+    type: "Booking type",
+    note: "Notes",
+    submit: "Send villa request",
+    loading: "Sending...",
+    success: "Villa booking request saved. Our team will contact you.",
+    error: "Could not send. Please try again.",
+    idle: "No spam. We only send real villa booking proposals.",
+    placeholders: {
+      name: "Your name",
+      email: "name@example.com",
+      destination: "Example: Terelj family villa",
+      budget: "Example: 650,000 MNT / night",
+      note: "Check-in/out dates, rooms, children, extra services, or other preferences",
+    },
+    types: [
+      { value: "villa", label: "Villa booking" },
+      { value: "family-villa", label: "Family villa" },
+      { value: "group-villa", label: "Group villa" },
+      { value: "villa-advice", label: "Villa advice" },
     ],
   },
 } as const;
@@ -266,7 +341,25 @@ type CtaFooterProps = {
 };
 
 export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
+  const [planningMode] = useState<"trip" | "villa">(() => {
+    if (typeof window === "undefined") {
+      return "trip";
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode")?.trim();
+    const tripSlug = params.get("trip")?.trim() ?? "";
+
+    return mode === "villa" || tripSlug.startsWith("villa-") ? "villa" : "trip";
+  });
   const [planningForm, setPlanningForm] = useState(() => {
+    const params =
+      typeof window === "undefined"
+        ? null
+        : new URLSearchParams(window.location.search);
+    const mode = params?.get("mode")?.trim();
+    const tripSlug = params?.get("trip")?.trim() ?? "";
+    const isVillaRequest = mode === "villa" || tripSlug.startsWith("villa-");
     const baseForm = {
       name: "",
       email: "",
@@ -274,17 +367,15 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
       preferredDate: "",
       travelers: "2",
       budget: "",
-      inquiryType: "custom",
+      inquiryType: isVillaRequest ? "villa" : "custom",
       note: "",
     };
 
-    if (typeof window === "undefined") {
+    if (!params) {
       return baseForm;
     }
 
-    const params = new URLSearchParams(window.location.search);
     const tripTitle = params.get("title")?.trim();
-    const tripSlug = params.get("trip")?.trim();
     const destination = tripTitle || tripSlug;
 
     if (!destination) {
@@ -294,7 +385,9 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
     return {
       ...baseForm,
       destination,
-      note: `Сонирхож буй аялал: ${destination}`,
+      note: isVillaRequest
+        ? `Сонирхож буй вилла: ${destination}`
+        : `Сонирхож буй аялал: ${destination}`,
     };
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
@@ -302,7 +395,20 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
   );
   const { contentLocale, t } = useLanguage();
   const footer = FOOTER_COPY[contentLocale];
-  const planCopy = contentLocale === "mn" ? PLAN_COPY.mn : PLAN_COPY.en;
+  const villaPlanCopy =
+    contentLocale === "mn" ? VILLA_PLAN_COPY.mn : VILLA_PLAN_COPY.en;
+  const planCopy =
+    planningMode === "villa"
+      ? villaPlanCopy
+      : contentLocale === "mn"
+        ? PLAN_COPY.mn
+        : PLAN_COPY.en;
+  const planHeadingLine1 =
+    planningMode === "villa" ? villaPlanCopy.headingLine1 : t.cta.headingLine1;
+  const planHeadingLine2 =
+    planningMode === "villa" ? villaPlanCopy.headingLine2 : t.cta.headingLine2;
+  const planBody = planningMode === "villa" ? villaPlanCopy.body : t.cta.body;
+  const idleText = planningMode === "villa" ? villaPlanCopy.idle : t.cta.idle;
 
   // Prefill the planning form with the signed-in customer's email/name so they
   // don't have to retype it. Only fills empty fields — never overwrites input.
@@ -340,8 +446,12 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
     setStatus("loading");
 
     const message = [
-      INQUIRY_MESSAGE[contentLocale],
-      `Чиглэл: ${planningForm.destination || "Тодорхойгүй"}`,
+      planningMode === "villa"
+        ? VILLA_INQUIRY_MESSAGE[contentLocale]
+        : INQUIRY_MESSAGE[contentLocale],
+      `${planningMode === "villa" ? "Вилла / байршил" : "Чиглэл"}: ${
+        planningForm.destination || "Тодорхойгүй"
+      }`,
       `Төсөв: ${planningForm.budget || "Тодорхойгүй"}`,
       `Тайлбар: ${planningForm.note || "Нэмэлт тайлбаргүй"}`,
     ].join("\n");
@@ -370,7 +480,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
           preferredDate: "",
           travelers: "2",
           budget: "",
-          inquiryType: "custom",
+          inquiryType: planningMode === "villa" ? "villa" : "custom",
           note: "",
         });
         setStatus("success");
@@ -408,12 +518,12 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               transition={{ duration: 0.7 }}
               className="font-display text-3xl text-balance sm:text-4xl lg:text-5xl"
             >
-              {t.cta.headingLine1}
+              {planHeadingLine1}
               <br />
-              <span className="italic text-accent">{t.cta.headingLine2}</span>
+              <span className="italic text-accent">{planHeadingLine2}</span>
             </motion.h1>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-primary-foreground/75 lg:text-lg">
-              {t.cta.body}
+              {planBody}
             </p>
 
             <form
@@ -522,7 +632,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                 ? planCopy.success
                 : status === "error"
                   ? planCopy.error
-                  : t.cta.idle}
+                  : idleText}
             </p>
           </div>
         </section>

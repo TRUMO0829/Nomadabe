@@ -1208,7 +1208,7 @@ function StaysAndVillasSection() {
 
         <div className="grid gap-5 lg:grid-cols-3">
           {STAY_OPTIONS.map((stay) => {
-            const requestHref = `/plan?trip=${encodeURIComponent(
+            const requestHref = `/plan?mode=villa&trip=${encodeURIComponent(
               `villa-${stay.id}`
             )}&title=${encodeURIComponent(stay.title)}`;
 
