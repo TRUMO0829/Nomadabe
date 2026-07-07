@@ -117,7 +117,7 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     eyebrow: "NOMADABE — TRAVEL ELEVATED",
     title: "Дараагийн түвшинд аял.",
     body:
-      "Nomadabe Travel нь бизнес аялал, олон улсын үзэсгэлэн (expo), хөтөлбөртэй амралт зугаалга болон чөлөөт аяллыг мэргэжлийн түвшинд зохион байгуулдаг аяллын компани. Улаанбаатар хотод төвтэй, 10,000 гаруй аялагчийн аяллыг амжилттай зохион байгуулсан туршлагатай.",
+      "Nomadabe Travel нь Улаанбаатар хотод төвтэй аяллын компани. Бид бизнес аялал, олон улсын үзэсгэлэн / expo аялал, хөтөлбөртэй амралт зугаалга болон чөлөөт аяллыг зөвлөгөө, маршрут, буудал, орчуулга, хөтөч, тээвэр логистикийн дэмжлэгтэйгээр нэг дор төлөвлөн зохион байгуулдаг.",
     navigation: [
       { id: "who", label: "Бид хэн бэ", order: 1, isVisible: true },
       { id: "values", label: "Бидний үнэт зүйлс", order: 2, isVisible: true },
@@ -127,7 +127,7 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     who: {
       label: "Бид хэн бэ",
       text:
-        "Nomadabe Travel нь зөвхөн аялал зохион байгуулахаас гадна бизнес зорилготой аялагчдад зориулсан зөвлөгөө, логистик, худалдан авалт, бүтээгдэхүүн судалгаа, олон улсын үзэсгэлэнгийн дэмжлэгийг нэг дор үзүүлдэг. Жил бүр 2,000 гаруй аялагчийг хүлээн авч, бизнес болон амралтын аяллыг бодит зохион байгуулалттай холбодог.",
+        "Бид энгийн аяллын багцаас илүү бизнес зорилготой аялагчдад зориулсан business travel, expo travel, consulting support бүхий шийдэл санал болгодог. Импорт эхлүүлэх, бизнесээ өргөжүүлэх, шинэ бараа бүтээгдэхүүн, үйлдвэрлэгч, нийлүүлэгч судлах, олон улсын үзэсгэлэнд оролцох аяллыг бодит зохион байгуулалттай холбодог.",
       order: 1,
       isVisible: true,
       stats: [
@@ -142,26 +142,26 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
       isVisible: true,
       items: [
         {
-          title: "Зөвхөн аялал биш — бизнесийн шийдэл",
-          body: "Аяллын явцад бараа бүтээгдэхүүн судлах, үйлдвэрлэгч, нийлүүлэгчтэй холбогдох, импорт, борлуулалт, санхүүжилт, логистикийн бодит зөвлөгөө авах боломжийг олгоно.",
+          title: "Зөвхөн аялал биш, бизнесийн зорилготой шийдэл",
+          body: "Аяллын явцад бараа бүтээгдэхүүн, брэнд, үйлдвэрлэгч, нийлүүлэгч судлах, импорт, борлуулалт, санхүүжилт, гэрээ хэлцэл болон логистикийн бодит зөвлөгөө авах боломжийг бүрдүүлнэ.",
           order: 1,
           isVisible: true,
         },
         {
           title: "All-in-one зохион байгуулалт",
-          body: "Нислэг, буудал, eSIM/дата SIM, даатгал, орчуулагч, хөтөч, бизнес зөвлөгөө, тээвэр логистикийг нэг багцад багтаасан тул аялагч зөвхөн цүнхээ үүрээд гарахад хангалттай.",
+          body: "Нислэг, зочид буудал, дата SIM/eSIM, аяллын даатгал, мэргэжлийн орчуулагч, хөтөч, бизнес зөвлөгөө, тээвэр логистикийн мэдээллийг нэг багцад уялдуулна.",
           order: 2,
           isVisible: true,
         },
         {
           title: "Олон улсын үзэсгэлэн, түншлэл",
-          body: "Canton Fair, SNEC PV+, SIAL Shanghai зэрэг дэлхийн томоохон үзэсгэлэнд оролцож, шинэ бүтээгдэхүүн, нийлүүлэгч, түншлэлийн боломжийг нээнэ.",
+          body: "Canton Fair, SNEC PV+ 2026, SIAL Shanghai зэрэг олон улсын үзэсгэлэн, худалдааны event-д оролцож, шинэ бүтээгдэхүүн, нийлүүлэгч, түншлэлийн боломжийг нээнэ.",
           order: 3,
           isVisible: true,
         },
         {
           title: "Итгэлтэй, мэргэжлийн баг",
-          body: "Аялал, бизнес зөвлөгөө, худалдан авалт, логистик, орчуулга, хөтөчийн дэмжлэгийг сэтгэлтэй, найдвартай баг нэг дор хариуцна.",
+          body: "Аялал, худалдан авалт, бүтээгдэхүүн судалгаа, орчуулга, хөтөч, логистикийн мэдээлэл болон аяллын дараагийн алхмыг нэг баг хариуцна.",
           order: 4,
           isVisible: true,
         },
@@ -170,33 +170,33 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     team: { label: "Манай баг", order: 3, isVisible: true },
     work: {
       label: "Бид юу хийдэг вэ",
-      title: "Бизнес, expo, амралт, чөлөөт аяллыг нэг дор.",
+      title: "Бизнес, expo, амралт, чөлөөт аяллыг зөвлөгөөтэй нь хамт.",
       body:
-        "Бид бизнес аялал, олон улсын үзэсгэлэн (expo), хөтөлбөртэй амралт зугаалга болон чөлөөт аяллыг төлөвлөж, зөвлөгөө, орчуулга, хөтөч, логистикийн дэмжлэгтэйгээр бодитоор гүйцэтгэдэг.",
+        "Бид аяллыг зөвхөн очоод ирэх маршрут бус, бизнесийн шинэ боломж, шинэ бүтээгдэхүүн, шинэ түншлэл, шинэ нийлүүлэгч, шинэ борлуулалтын суваг олох зорилготой төлөвлөлт гэж хардаг.",
       order: 4,
       isVisible: true,
       items: [
         {
           title: "Бизнес аялал",
-          body: "Импорт эхлүүлэх, бизнесээ өргөжүүлэх, шинэ бараа бүтээгдэхүүн, үйлдвэрлэгч, нийлүүлэгч судлах зорилготой аялал — бизнес зөвлөгөө, know-how-той хамт.",
+          body: "Импорт эхлүүлэх, бизнесээ өргөжүүлэх, шинэ бараа бүтээгдэхүүн, тоног төхөөрөмж, брэнд, үйлдвэрлэгч, нийлүүлэгч судлах хүмүүст зориулсан аялал.",
           order: 1,
           isVisible: true,
         },
         {
           title: "Олон улсын үзэсгэлэн / Expo аялал",
-          body: "Canton Fair, SNEC PV+ 2026, SIAL Shanghai зэрэг олон улсын үзэсгэлэн, худалдааны event-д оролцох аяллын багц.",
+          body: "Canton Fair, SNEC PV+ 2026, SIAL Shanghai зэрэг олон улсын үзэсгэлэн, худалдааны event-д оролцох бүртгэл, маршрут, уулзалт, аяллын зохион байгуулалт.",
           order: 2,
           isVisible: true,
         },
         {
           title: "Хөтөлбөртэй амралт зугаалга",
-          body: "Урьдчилан төлөвлөсөн, ойлгомжтой маршрут, зохион байгуулалттай амралт, аялал, туршлага хосолсон аялал.",
+          body: "Урьдчилан төлөвлөсөн маршрут, ойлгомжтой хөтөлбөр, амралт, аялал, туршлагыг хослуулсан зохион байгуулалт.",
           order: 3,
           isVisible: true,
         },
         {
           title: "Чөлөөт аялал",
-          body: "Аялагчийн зорилго, хугацаа, сонирхолд тааруулсан уян хатан маршрут — шинэ улс, шинэ дурсамж, шинэ адал явдал.",
+          body: "Аялагчийн зорилго, хугацаа, сонирхол, төсөвт тохируулсан уян хатан маршрут, зөвлөгөө, аяллын төлөвлөлт.",
           order: 4,
           isVisible: true,
         },
@@ -266,9 +266,9 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
   },
   en: {
     eyebrow: "ABOUT US",
-    title: "Connecting Mongolia with the world",
+    title: "Business travel, expo travel, and consulting support.",
     body:
-      "Nomadabe Travel is a professional travel company based in Ulaanbaatar, specializing in business travel, inbound tours, and outbound tours. We have successfully organized trips for over 10,000 travelers within Mongolia and to international destinations.",
+      "Nomadabe Travel is a Ulaanbaatar-based travel company organizing business travel, international expo trips, planned leisure programs, and custom travel with route planning, hotel coordination, translation, guide support, and transport logistics aligned in one place.",
     navigation: [
       { id: "who", label: "Who We Are", order: 1, isVisible: true },
       { id: "values", label: "Our Values", order: 2, isVisible: true },
@@ -278,7 +278,7 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     who: {
       label: "Who We Are",
       text:
-        "Since 2019, we have served over 2,000 travelers annually, bridging the gap between business and leisure by connecting entrepreneurs to major international events and opportunities for sustainable growth.",
+        "We go beyond ordinary tour packages by supporting travelers with business travel, expo travel, and consulting support. Our trips help entrepreneurs explore new products, brands, manufacturers, suppliers, logistics options, and international exhibition opportunities.",
       order: 1,
       isVisible: true,
       stats: [
@@ -293,26 +293,26 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
       isVisible: true,
       items: [
         {
-          title: "Showcase Mongolia",
-          body: "We turn Mongolia's natural beauty and nomadic heritage into memorable travel experiences.",
+          title: "Travel built around business goals",
+          body: "Trips can include product research, brand discovery, manufacturer and supplier meetings, import planning, sales, financing, contracts, and logistics guidance.",
           order: 1,
           isVisible: true,
         },
         {
-          title: "Connect to the world",
-          body: "We link travelers and businesses with international routes, exhibitions, and industry events.",
+          title: "All-in-one coordination",
+          body: "Flights, hotels, data SIM/eSIM, travel insurance, professional translators, guides, business consulting, and logistics information are coordinated into one plan.",
           order: 2,
           isVisible: true,
         },
         {
-          title: "Trusted coordination",
-          body: "Business and leisure trips are organized with hotels, transport, programs, and meetings aligned.",
+          title: "International expos and partnerships",
+          body: "Canton Fair, SNEC PV+ 2026, SIAL Shanghai, and other major trade events become practical paths to new products, suppliers, and partnerships.",
           order: 3,
           isVisible: true,
         },
         {
-          title: "Long-term opportunity",
-          body: "Travel becomes a path to new partnerships, markets, and sustainable growth.",
+          title: "A reliable operating team",
+          body: "One team handles travel, purchasing guidance, product research, translation, guide support, logistics information, and next-step planning.",
           order: 4,
           isVisible: true,
         },
@@ -321,33 +321,33 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
     team: { label: "Our Team", order: 3, isVisible: true },
     work: {
       label: "What We Do",
-      title: "Business, leisure, and custom trips, organized end to end.",
+      title: "Business, expo, leisure, and custom travel with practical guidance.",
       body:
-        "We arrange business travel, leisure travel, customized routes, international expo trips, and major industry event travel across Asia and beyond.",
+        "We see travel as more than getting from one place to another. It can be a way to find new business opportunities, products, partners, suppliers, and sales channels.",
       order: 4,
       isVisible: true,
       items: [
         {
           title: "Business Tours",
-          body: "International exhibitions, meetings, industry events, and market research trips.",
+          body: "Trips for import beginners, growing businesses, product researchers, equipment buyers, and people looking for manufacturers or suppliers.",
           order: 1,
           isVisible: true,
         },
         {
-          title: "Leisure Tours",
-          body: "Domestic and international holidays shaped around nature, cities, culture, and rest.",
+          title: "Expo Travel",
+          body: "Registration, routing, meetings, and trip coordination for Canton Fair, SNEC PV+ 2026, SIAL Shanghai, and similar international trade events.",
           order: 2,
           isVisible: true,
         },
         {
-          title: "Customized Tours",
-          body: "Routes tailored for families, friends, companies, and special travel goals.",
+          title: "Planned Leisure Programs",
+          body: "Clear itineraries, planned programs, rest, travel, and memorable experiences arranged with professional coordination.",
           order: 3,
           isVisible: true,
         },
         {
-          title: "Inbound + Outbound",
-          body: "One team for trips into Mongolia and from Mongolia to the world.",
+          title: "Custom Travel",
+          body: "Flexible routes and travel planning shaped around the traveler’s goal, timing, interests, and budget.",
           order: 4,
           isVisible: true,
         },

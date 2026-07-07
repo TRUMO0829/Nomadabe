@@ -760,6 +760,52 @@ function normalizeOutboundTripImages(value: unknown): Record<string, string> {
   return normalized;
 }
 
+const STALE_ABOUT_DEFAULT_TEXT = new Set([
+  "Connecting Mongolia with the world",
+  "Nomadabe Travel нь бизнес аялал, олон улсын үзэсгэлэн (expo), хөтөлбөртэй амралт зугаалга болон чөлөөт аяллыг мэргэжлийн түвшинд зохион байгуулдаг аяллын компани. Улаанбаатар хотод төвтэй, 10,000 гаруй аялагчийн аяллыг амжилттай зохион байгуулсан туршлагатай.",
+  "Nomadabe Travel нь зөвхөн аялал зохион байгуулахаас гадна бизнес зорилготой аялагчдад зориулсан зөвлөгөө, логистик, худалдан авалт, бүтээгдэхүүн судалгаа, олон улсын үзэсгэлэнгийн дэмжлэгийг нэг дор үзүүлдэг. Жил бүр 2,000 гаруй аялагчийг хүлээн авч, бизнес болон амралтын аяллыг бодит зохион байгуулалттай холбодог.",
+  "Зөвхөн аялал биш — бизнесийн шийдэл",
+  "Аяллын явцад бараа бүтээгдэхүүн судлах, үйлдвэрлэгч, нийлүүлэгчтэй холбогдох, импорт, борлуулалт, санхүүжилт, логистикийн бодит зөвлөгөө авах боломжийг олгоно.",
+  "Нислэг, буудал, eSIM/дата SIM, даатгал, орчуулагч, хөтөч, бизнес зөвлөгөө, тээвэр логистикийг нэг багцад багтаасан тул аялагч зөвхөн цүнхээ үүрээд гарахад хангалттай.",
+  "Canton Fair, SNEC PV+, SIAL Shanghai зэрэг дэлхийн томоохон үзэсгэлэнд оролцож, шинэ бүтээгдэхүүн, нийлүүлэгч, түншлэлийн боломжийг нээнэ.",
+  "Аялал, бизнес зөвлөгөө, худалдан авалт, логистик, орчуулга, хөтөчийн дэмжлэгийг сэтгэлтэй, найдвартай баг нэг дор хариуцна.",
+  "Бизнес, expo, амралт, чөлөөт аяллыг нэг дор.",
+  "Бид бизнес аялал, олон улсын үзэсгэлэн (expo), хөтөлбөртэй амралт зугаалга болон чөлөөт аяллыг төлөвлөж, зөвлөгөө, орчуулга, хөтөч, логистикийн дэмжлэгтэйгээр бодитоор гүйцэтгэдэг.",
+  "Импорт эхлүүлэх, бизнесээ өргөжүүлэх, шинэ бараа бүтээгдэхүүн, үйлдвэрлэгч, нийлүүлэгч судлах зорилготой аялал — бизнес зөвлөгөө, know-how-той хамт.",
+  "Canton Fair, SNEC PV+ 2026, SIAL Shanghai зэрэг олон улсын үзэсгэлэн, худалдааны event-д оролцох аяллын багц.",
+  "Урьдчилан төлөвлөсөн, ойлгомжтой маршрут, зохион байгуулалттай амралт, аялал, туршлага хосолсон аялал.",
+  "Аялагчийн зорилго, хугацаа, сонирхолд тааруулсан уян хатан маршрут — шинэ улс, шинэ дурсамж, шинэ адал явдал.",
+  "Nomadabe Travel is a professional travel company based in Ulaanbaatar, specializing in business travel, inbound tours, and outbound tours. We have successfully organized trips for over 10,000 travelers within Mongolia and to international destinations.",
+  "Since 2019, we have served over 2,000 travelers annually, bridging the gap between business and leisure by connecting entrepreneurs to major international events and opportunities for sustainable growth.",
+  "Showcase Mongolia",
+  "We turn Mongolia's natural beauty and nomadic heritage into memorable travel experiences.",
+  "Connect to the world",
+  "We link travelers and businesses with international routes, exhibitions, and industry events.",
+  "Trusted coordination",
+  "Business and leisure trips are organized with hotels, transport, programs, and meetings aligned.",
+  "Long-term opportunity",
+  "Travel becomes a path to new partnerships, markets, and sustainable growth.",
+  "Business, leisure, and custom trips, organized end to end.",
+  "We arrange business travel, leisure travel, customized routes, international expo trips, and major industry event travel across Asia and beyond.",
+  "International exhibitions, meetings, industry events, and market research trips.",
+  "Leisure Tours",
+  "Domestic and international holidays shaped around nature, cities, culture, and rest.",
+  "Customized Tours",
+  "Routes tailored for families, friends, companies, and special travel goals.",
+  "Inbound + Outbound",
+  "One team for trips into Mongolia and from Mongolia to the world.",
+]);
+
+function refreshStoredAboutDefault(value: string, fallback?: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return fallback || "";
+  }
+
+  return fallback && STALE_ABOUT_DEFAULT_TEXT.has(trimmed) ? fallback : trimmed;
+}
+
 function normalizeAboutSection(input: unknown): AboutSectionSettings {
   const inputRecord = isRecord(input) ? input : {};
   const normalized = {} as AboutSectionSettings;
@@ -787,13 +833,28 @@ function normalizeAboutLocale(
   const faq = isRecord(value.faq) ? value.faq : {};
 
   return {
-    eyebrow: stringifyPayloadValue(value.eyebrow) || defaults.eyebrow,
-    title: stringifyPayloadValue(value.title) || defaults.title,
-    body: stringifyPayloadValue(value.body) || defaults.body,
+    eyebrow: refreshStoredAboutDefault(
+      stringifyPayloadValue(value.eyebrow),
+      defaults.eyebrow
+    ),
+    title: refreshStoredAboutDefault(
+      stringifyPayloadValue(value.title),
+      defaults.title
+    ),
+    body: refreshStoredAboutDefault(
+      stringifyPayloadValue(value.body),
+      defaults.body
+    ),
     navigation: normalizeAboutNavigation(value.navigation, defaults.navigation),
     who: {
-      label: stringifyPayloadValue(who.label) || defaults.who.label,
-      text: stringifyPayloadValue(who.text) || defaults.who.text,
+      label: refreshStoredAboutDefault(
+        stringifyPayloadValue(who.label),
+        defaults.who.label
+      ),
+      text: refreshStoredAboutDefault(
+        stringifyPayloadValue(who.text),
+        defaults.who.text
+      ),
       order: getOptionalOrder(who.order, defaults.who.order),
       isVisible: getOptionalBoolean(who.isVisible, defaults.who.isVisible),
       stats: normalizeAboutStats(who.stats, defaults.who.stats),
@@ -805,14 +866,26 @@ function normalizeAboutLocale(
       items: normalizeAboutTextItems(values.items, defaults.values.items),
     },
     team: {
-      label: stringifyPayloadValue(team.label) || defaults.team.label,
+      label: refreshStoredAboutDefault(
+        stringifyPayloadValue(team.label),
+        defaults.team.label
+      ),
       order: getOptionalOrder(team.order, defaults.team.order),
       isVisible: getOptionalBoolean(team.isVisible, defaults.team.isVisible),
     },
     work: {
-      label: stringifyPayloadValue(work.label) || defaults.work.label,
-      title: stringifyPayloadValue(work.title) || defaults.work.title,
-      body: stringifyPayloadValue(work.body) || defaults.work.body,
+      label: refreshStoredAboutDefault(
+        stringifyPayloadValue(work.label),
+        defaults.work.label
+      ),
+      title: refreshStoredAboutDefault(
+        stringifyPayloadValue(work.title),
+        defaults.work.title
+      ),
+      body: refreshStoredAboutDefault(
+        stringifyPayloadValue(work.body),
+        defaults.work.body
+      ),
       order: getOptionalOrder(work.order, defaults.work.order),
       isVisible: getOptionalBoolean(work.isVisible, defaults.work.isVisible),
       items: normalizeAboutTextItems(work.items, defaults.work.items),
@@ -913,8 +986,14 @@ function normalizeAboutTextItems(value: unknown, defaults: AboutTextItem[]): Abo
       }
 
       const fallbackItem = defaults[index] ?? fallback;
-      const title = stringifyPayloadValue(item.title) || fallbackItem?.title;
-      const body = stringifyPayloadValue(item.body) || fallbackItem?.body;
+      const title = refreshStoredAboutDefault(
+        stringifyPayloadValue(item.title),
+        fallbackItem?.title
+      );
+      const body = refreshStoredAboutDefault(
+        stringifyPayloadValue(item.body),
+        fallbackItem?.body
+      );
 
       if (!title || !body) {
         return null;
