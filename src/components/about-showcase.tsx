@@ -418,7 +418,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
       {showTeam && (
         <Band bg="/nomadabe-hero-panorama.webp">
           <Kicker>{copy.team.label}</Kicker>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:max-w-4xl">
             {team.map((member, index) => (
               <motion.div
                 key={member.id}
@@ -427,15 +427,15 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 viewport={{ once: true, amount: 0.3 }}
                 variants={fadeUp}
                 transition={{ duration: 0.5, delay: (index % 3) * 0.08 }}
-                className="overflow-hidden rounded-3xl border border-white/10 bg-[#0B0A07]/70 backdrop-blur-md"
+                className="group flex flex-col items-center text-center"
               >
-                <div className="relative aspect-[4/5] w-full overflow-hidden">
+                <div className="relative h-[min(72vw,320px)] w-[min(72vw,320px)] overflow-hidden rounded-full border border-white/18 bg-[#0B0A07]/42 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-[1px] transition-transform duration-300 group-hover:-translate-y-1 sm:h-72 sm:w-72">
                   {member.image ? (
                     <Image
                       src={member.image}
                       alt={member.imageAlt || member.name}
                       fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
+                      sizes="(max-width: 640px) 72vw, 288px"
                       className="object-cover"
                     />
                   ) : (
@@ -454,15 +454,16 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                       </span>
                     </div>
                   )}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-[#0B0A07]/62 via-transparent to-white/8"
+                  />
                 </div>
-                <div className="p-5">
-                  <h3 className="text-lg">{member.name}</h3>
-                  <p className="mt-1 text-sm" style={{ color: ACCENT }}>
+                <div className="mt-5 rounded-full border border-white/12 bg-[#0B0A07]/44 px-7 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-[1px]">
+                  <h3 className="text-lg font-medium">{member.name}</h3>
+                  <p className="mt-1 text-sm font-medium" style={{ color: ACCENT }}>
                     {member.role}
                   </p>
-                  {member.bio && (
-                    <p className="mt-2.5 text-sm leading-relaxed text-[#B8B2A2]">{member.bio}</p>
-                  )}
                 </div>
               </motion.div>
             ))}
