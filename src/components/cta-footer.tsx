@@ -669,64 +669,44 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
         </section>
       )}
 
-      <footer className="bg-[#141414] text-white">
+      <footer className="bg-[#080807] text-white">
         <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
-          <div className="grid gap-10 lg:grid-cols-[1.15fr_0.65fr_1fr]">
+          <div className="grid gap-12 lg:grid-cols-[1.45fr_0.9fr_1.05fr_0.8fr]">
             <div>
-              <Link href="/#home" className="inline-flex items-center gap-3">
-                <span
-                  aria-hidden="true"
-                  className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-accent/30 bg-accent/5 p-2"
-                >
-                  <Image
-                    src="/nomadabe-logo-cropped.webp"
-                    alt=""
-                    width={574}
-                    height={615}
-                    sizes="64px"
-                    className="h-full w-auto object-contain"
-                  />
-                </span>
-                <span>
-                  <span className="block text-2xl font-black uppercase tracking-wide text-accent">
-                    Nomadabe
-                  </span>
-                  <span className="block text-xs font-bold uppercase tracking-[0.2em] text-white">
-                    {footer.tagline}
-                  </span>
-                </span>
+              <Link href="/#home" aria-label="Nomadabe Travel" className="inline-flex">
+                <Image
+                  src="/nomadabe-logo-cropped.webp"
+                  alt="Nomadabe Travel"
+                  width={574}
+                  height={615}
+                  sizes="92px"
+                  className="h-24 w-auto object-contain"
+                />
               </Link>
 
-              <p className="mt-6 max-w-sm text-sm leading-7 text-white/70">
-                {footer.description}
-              </p>
+              <a
+                href={MINISTER_TOWER_MAP_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-10 flex max-w-sm gap-4 text-sm leading-7 text-white/56 transition-colors hover:text-accent"
+              >
+                <MapPin className="mt-1 h-5 w-5 shrink-0 text-accent" />
+                <span>Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia</span>
+              </a>
 
-              <div className="mt-7 flex gap-3">
-                {SOCIALS.map((social) => (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={social.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-accent bg-transparent text-white shadow-sm transition-colors hover:bg-accent hover:text-primary"
-                  >
-                    <SocialIcon icon={social.icon} />
-                  </a>
-                ))}
-              </div>
+              <p className="mt-8 text-xs uppercase tracking-[0.44em] text-white/28">
+                Travel consulting
+              </p>
             </div>
 
             <nav>
-              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-accent">
-                {footer.linksTitle}
-              </h3>
-              <ul className="space-y-3">
+              <FooterColumnTitle>{footer.linksTitle}</FooterColumnTitle>
+              <ul className="space-y-4">
                 {footer.links.map((link) => (
                   <li key={link.href}>
                     <a
                       href={link.href}
-                      className="text-sm text-white/72 transition-colors hover:text-accent"
+                      className="text-base text-white/44 transition-colors hover:text-accent"
                     >
                       {link.label}
                     </a>
@@ -735,28 +715,24 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               </ul>
             </nav>
 
-            <div className="pt-4 lg:pt-0">
-              <h3 className="mb-6 text-sm font-black uppercase tracking-[0.16em] text-accent">
-                {footer.contactTitle}
-              </h3>
+            <div>
+              <FooterColumnTitle>{footer.contactTitle}</FooterColumnTitle>
               <ul className="space-y-4">
-                {CONTACTS.map((contact) => (
+                {CONTACTS.filter((contact) => contact.type !== "address").map((contact) => (
                   <li key={`${contact.type}-${contact.label}`}>
                     <a
                       href={contact.href}
-                      className="group flex gap-3 text-sm leading-6 text-white/72"
+                      className="group flex gap-3 text-base leading-6 text-white/44"
                     >
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent bg-transparent text-white transition-colors group-hover:bg-accent group-hover:text-primary">
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center text-accent transition-transform group-hover:scale-110">
                         {contact.type === "phone" ? (
-                          <Phone className="h-4 w-4" />
+                          <Phone className="h-5 w-5" />
                         ) : contact.type === "whatsapp" ? (
                           <SocialIcon icon="whatsapp" />
                         ) : contact.type === "wechat" ? (
                           <SocialIcon icon="wechat" />
-                        ) : contact.type === "address" ? (
-                          <MapPin className="h-4 w-4" />
                         ) : (
-                          <Mail className="h-4 w-4" />
+                          <Mail className="h-5 w-5" />
                         )}
                       </span>
                       <span className="transition-colors group-hover:text-accent">
@@ -768,6 +744,30 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               </ul>
             </div>
 
+            <div>
+              <FooterColumnTitle>
+                {contentLocale === "mn" ? "Сошиал холбоос" : "Social links"}
+              </FooterColumnTitle>
+              <ul className="space-y-4">
+                {SOCIALS.map((social) => (
+                  <li key={social.label}>
+                    <a
+                      href={social.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group flex items-center gap-3 text-base text-white/44"
+                    >
+                      <span className="flex h-6 w-6 items-center justify-center text-accent transition-transform group-hover:scale-110">
+                        <SocialIcon icon={social.icon} />
+                      </span>
+                      <span className="transition-colors group-hover:text-accent">
+                        {social.label}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           <div className="relative mt-14 border-t border-white/10 pt-7 text-xs text-white/45">
@@ -807,6 +807,17 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
         </div>
       </footer>
     </>
+  );
+}
+
+function FooterColumnTitle({ children }: { children: string }) {
+  return (
+    <div className="mb-7">
+      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-white/68">
+        {children}
+      </h3>
+      <span className="mt-5 block h-px w-full bg-white/12" />
+    </div>
   );
 }
 
