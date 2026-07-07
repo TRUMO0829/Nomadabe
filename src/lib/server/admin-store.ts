@@ -957,8 +957,18 @@ function normalizeAboutStats(value: unknown, defaults: AboutStat[]): AboutStat[]
       }
 
       const fallbackItem = defaults[index] ?? fallback;
-      const valueText = stringifyPayloadValue(item.value) || fallbackItem?.value;
+      const rawValueText = stringifyPayloadValue(item.value);
       const label = stringifyPayloadValue(item.label) || fallbackItem?.label;
+      const isExperienceStat =
+        label === "Жилийн туршлага" ||
+        label === "Years of experience" ||
+        label === "年经验" ||
+        label === "年の経験" ||
+        label === "년 경험";
+      const valueText =
+        rawValueText === "7+" && isExperienceStat
+          ? fallbackItem?.value
+          : rawValueText || fallbackItem?.value;
 
       if (!valueText || !label) {
         return null;

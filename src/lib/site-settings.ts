@@ -131,7 +131,7 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
       order: 1,
       isVisible: true,
       stats: [
-        { value: "7+", label: "Жилийн туршлага", order: 1, isVisible: true },
+        { value: "3+", label: "Жилийн туршлага", order: 1, isVisible: true },
         { value: "10К+", label: "Үйлчлүүлэгчид", order: 2, isVisible: true },
         { value: "2К+", label: "Жил бүрийн аялагч", order: 3, isVisible: true },
       ],
@@ -282,7 +282,7 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
       order: 1,
       isVisible: true,
       stats: [
-        { value: "7+", label: "Years of experience", order: 1, isVisible: true },
+        { value: "3+", label: "Years of experience", order: 1, isVisible: true },
         { value: "10k+", label: "Clients", order: 2, isVisible: true },
         { value: "2k+", label: "Annual travelers", order: 3, isVisible: true },
       ],
@@ -425,7 +425,7 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
       order: 1,
       isVisible: true,
       stats: [
-        { value: "7+", label: "年经验", order: 1, isVisible: true },
+        { value: "3+", label: "年经验", order: 1, isVisible: true },
         { value: "10k+", label: "客户", order: 2, isVisible: true },
         { value: "2k+", label: "年度旅客", order: 3, isVisible: true },
       ],
@@ -502,7 +502,7 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
       order: 1,
       isVisible: true,
       stats: [
-        { value: "7+", label: "年の経験", order: 1, isVisible: true },
+        { value: "3+", label: "年の経験", order: 1, isVisible: true },
         { value: "10k+", label: "顧客", order: 2, isVisible: true },
         { value: "2k+", label: "年間旅行者", order: 3, isVisible: true },
       ],
@@ -579,7 +579,7 @@ export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
       order: 1,
       isVisible: true,
       stats: [
-        { value: "7+", label: "년 경험", order: 1, isVisible: true },
+        { value: "3+", label: "년 경험", order: 1, isVisible: true },
         { value: "10k+", label: "고객", order: 2, isVisible: true },
         { value: "2k+", label: "연간 여행자", order: 3, isVisible: true },
       ],
