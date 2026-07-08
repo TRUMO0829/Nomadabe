@@ -755,12 +755,12 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                 rel="noreferrer"
                 className="mt-10 flex max-w-sm gap-4 text-sm leading-7 text-white/56 transition-colors hover:text-accent"
               >
-                <MapPin className="mt-1 h-5 w-5 shrink-0 text-accent" />
+                <MapPin className="mt-1 h-5 w-5 shrink-0 text-white" />
                 <span>Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia</span>
               </a>
 
               <p className="mt-8 text-xs uppercase tracking-[0.44em] text-white/28">
-                Travel consulting
+                Travel agency
               </p>
             </div>
 
@@ -791,7 +791,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       href={contact.href}
                       className="group flex gap-3 text-base leading-6 text-white/44"
                     >
-                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center text-accent transition-transform group-hover:scale-110">
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center text-white transition-transform group-hover:scale-110">
                         {contact.type === "phone" ? (
                           <Phone className="h-5 w-5" />
                         ) : (
@@ -818,7 +818,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       rel="noreferrer"
                       className="group flex items-center gap-3 text-base text-white/44"
                     >
-                      <span className="flex h-6 w-6 items-center justify-center text-accent transition-transform group-hover:scale-110">
+                      <span className="flex h-6 w-6 items-center justify-center text-white transition-transform group-hover:scale-110">
                         <SocialIcon icon={social.icon} />
                       </span>
                       <span className="transition-colors group-hover:text-accent">
