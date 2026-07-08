@@ -24,9 +24,17 @@ export function Typewriter({
   const [wordIndex, setWordIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
+  const wordsKey = words.join("\u0000");
 
   const currentWord = words[wordIndex] ?? "";
   const isComplete = !isDeleting && charIndex >= currentWord.length;
+
+  useEffect(() => {
+    setDisplayText("");
+    setIsDeleting(false);
+    setWordIndex(0);
+    setCharIndex(0);
+  }, [wordsKey]);
 
   useEffect(() => {
     if (words.length === 0) return;
