@@ -8,7 +8,6 @@ import {
   Globe,
   LogOut,
   Menu,
-  Search,
   UserRound,
   X,
 } from "lucide-react";
@@ -18,11 +17,49 @@ import { useLanguage } from "./language-provider";
 import { SiteSearch } from "./site-search";
 
 const AUTH_COPY = {
-  mn: "Нэвтрэх / Бүртгүүлэх",
-  en: "Sign in / Register",
-  zh: "登录 / 注册",
-  ja: "ログイン / 登録",
-  ko: "로그인 / 회원가입",
+  mn: "Нэвтрэх",
+  en: "Login",
+  zh: "登录",
+  ja: "ログイン",
+  ko: "로그인",
+} as const;
+
+const NAV_BAR_COPY = {
+  mn: {
+    trips: "Аяллууд",
+    about: "Бидний тухай",
+    booking: "Захиалга",
+    login: "Нэвтрэх",
+    search: "Хайлт",
+  },
+  en: {
+    trips: "Trips",
+    about: "About us",
+    booking: "Booking",
+    login: "Login",
+    search: "Search",
+  },
+  zh: {
+    trips: "旅行",
+    about: "关于我们",
+    booking: "预订",
+    login: "登录",
+    search: "搜索",
+  },
+  ja: {
+    trips: "ツアー",
+    about: "私たちについて",
+    booking: "予約",
+    login: "ログイン",
+    search: "検索",
+  },
+  ko: {
+    trips: "여행",
+    about: "소개",
+    booking: "예약",
+    login: "로그인",
+    search: "검색",
+  },
 } as const;
 
 const PROFILE_COPY = {
@@ -79,6 +116,12 @@ export function Navbar({
   const currentLanguage =
     LANGUAGES.find((language) => language.code === locale) ?? LANGUAGES[0];
   const visibleNavItems = t.nav.items.filter((item) => item.href !== "/#journal");
+  const navCopy = NAV_BAR_COPY[contentLocale];
+  const desktopNavItems = [
+    { href: "/tours", label: navCopy.trips },
+    { href: "/about", label: navCopy.about },
+    { href: "/plan", label: navCopy.booking },
+  ];
   const useLightHeader = surface === "light";
 
   useEffect(() => {
@@ -164,26 +207,26 @@ export function Navbar({
 
         <div
           className={cn(
-            "relative hidden items-center overflow-visible backdrop-blur-[2px] transition-all duration-300 lg:ml-auto lg:flex",
-            "rounded-xl px-4 py-2.5 before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:bg-[linear-gradient(115deg,rgba(255,255,255,0.035),rgba(255,255,255,0.006)_48%,rgba(255,255,255,0.025))]",
+            "absolute left-1/2 top-3 hidden -translate-x-1/2 items-center overflow-visible backdrop-blur-[10px] transition-all duration-300 lg:flex",
+            "rounded-[1.35rem] border border-white/12 px-6 py-3 before:pointer-events-none before:absolute before:inset-0 before:rounded-[1.35rem] before:bg-[linear-gradient(115deg,rgba(255,255,255,0.13),rgba(255,255,255,0.035)_48%,rgba(255,255,255,0.1))]",
             useLightHeader
-              ? "bg-white/[0.018] text-white shadow-[0_12px_30px_rgba(17,16,11,0.06),inset_0_1px_0_rgba(255,255,255,0.08)]"
-              : "bg-white/[0.018] text-white shadow-[0_12px_30px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.08)]"
+              ? "bg-white/[0.075] text-white shadow-[0_18px_55px_rgba(17,16,11,0.16),inset_0_1px_0_rgba(255,255,255,0.12)]"
+              : "bg-white/[0.075] text-white shadow-[0_18px_55px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.12)]"
           )}
         >
           <nav className="relative z-10 flex items-center">
-            {visibleNavItems.map((n, index) => (
-              <Fragment key={n.href}>
+            {desktopNavItems.map((item, index) => (
+              <Fragment key={item.href}>
                 <a
-                  href={n.href}
+                  href={item.href}
                   className={cn(
                     DESKTOP_NAV_LINK_CLASS,
-                    "h-10 px-3 text-sm"
+                    "h-11 px-4 text-[15px]"
                   )}
                 >
-                  {n.label}
+                  {item.label}
                 </a>
-                {index < visibleNavItems.length - 1 ? (
+                {index < desktopNavItems.length - 1 ? (
                   <span
                     aria-hidden="true"
                     className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
@@ -197,22 +240,9 @@ export function Navbar({
               aria-hidden="true"
               className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
             />
-            <Link
-              href="/plan"
-              className={cn(
-                DESKTOP_BAR_ITEM_CLASS,
-                "h-10 px-4 text-sm"
-              )}
-            >
-              {t.nav.cta}
-            </Link>
-            <span
-              aria-hidden="true"
-              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
-            />
             {customer ? (
               <div
-                className="relative h-10"
+                className="relative h-11"
                 onMouseEnter={() => setProfileMenuOpen(true)}
                 onMouseLeave={() => setProfileMenuOpen(false)}
                 onBlur={(event) => {
@@ -231,13 +261,11 @@ export function Navbar({
                   }}
                   className={cn(
                     DESKTOP_BAR_ITEM_CLASS,
-                    "h-10 w-10 px-0 text-sm"
+                    "h-11 px-4 text-[15px]"
                   )}
                   title={customer.email}
                 >
-                  <UserRound
-                    className="h-5 w-5 shrink-0 transition-all duration-300"
-                  />
+                  {PROFILE_COPY[contentLocale]}
                 </button>
 
                 {profileMenuOpen ? (
@@ -269,23 +297,36 @@ export function Navbar({
                 onClick={openSignupPrompt}
                 className={cn(
                   DESKTOP_BAR_ITEM_CLASS,
-                  "gap-2",
-                  "h-10 px-4 text-sm"
+                  "h-11 px-4 text-[15px]"
                 )}
               >
-                <UserRound
-                  className="h-5 w-5 shrink-0 transition-all duration-300"
-                />
-                {AUTH_COPY[contentLocale]}
+                {navCopy.login}
               </button>
             )}
             <span
               aria-hidden="true"
               className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
             />
+            <button
+              type="button"
+              aria-label={navCopy.search}
+              aria-expanded={searchOpen}
+              onClick={() => setSearchOpen((value) => !value)}
+              className={cn(
+                DESKTOP_BAR_ITEM_CLASS,
+                "h-11 px-4 text-[15px]",
+                searchOpen && "bg-white/[0.07] text-accent"
+              )}
+            >
+              {navCopy.search}
+            </button>
+            <span
+              aria-hidden="true"
+              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+            />
             <div
               aria-label={t.nav.language}
-              className="relative h-10 transition-all duration-300"
+              className="relative h-11 transition-all duration-300"
               onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) {
                   setLanguageOpen(false);
@@ -299,7 +340,7 @@ export function Navbar({
                 className={cn(
                   DESKTOP_BAR_ITEM_CLASS,
                   "h-full gap-1",
-                  "w-12 px-0 text-sm"
+                  "w-14 px-0 text-[15px]"
                 )}
               >
                 <Globe
@@ -339,31 +380,6 @@ export function Navbar({
                 </div>
               )}
             </div>
-            {showHomeSearch ? (
-              <>
-                <span
-                  aria-hidden="true"
-                  className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
-                />
-                <button
-                  type="button"
-                  aria-label="Аялал хайх"
-                  aria-expanded={searchOpen}
-                  onClick={() => setSearchOpen((value) => !value)}
-                  className={cn(
-                    DESKTOP_BAR_ITEM_CLASS,
-                    "h-10 w-10 px-0 text-sm",
-                    searchOpen && "bg-accent text-accent-foreground hover:bg-accent"
-                  )}
-                >
-                  {searchOpen ? (
-                    <X className="h-5 w-5" />
-                  ) : (
-                    <Search className="h-5 w-5" />
-                  )}
-                </button>
-              </>
-            ) : null}
           </div>
         </div>
 
@@ -379,7 +395,7 @@ export function Navbar({
         </button>
       </div>
 
-      {showHomeSearch && searchOpen ? (
+      {searchOpen ? (
         <div className="pointer-events-none absolute inset-x-0 top-full z-40 flex justify-center px-5 pt-3 sm:px-8 lg:pt-4">
           <div className="pointer-events-auto w-full max-w-[min(92vw,620px)]">
             <SiteSearch compact />
