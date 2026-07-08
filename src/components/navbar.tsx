@@ -164,14 +164,14 @@ export function Navbar({
 
         <div
           className={cn(
-            "hidden items-center overflow-hidden backdrop-blur-[2px] transition-all duration-300 lg:ml-auto lg:flex",
-            "rounded-[1.05rem] px-3 py-2",
+            "relative hidden items-center overflow-visible backdrop-blur-[2px] transition-all duration-300 lg:ml-auto lg:flex",
+            "rounded-xl px-4 py-2.5 before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:bg-[linear-gradient(115deg,rgba(255,255,255,0.035),rgba(255,255,255,0.006)_48%,rgba(255,255,255,0.025))]",
             useLightHeader
-              ? "bg-white/[0.018] text-white shadow-[0_12px_30px_rgba(17,16,11,0.035),inset_0_1px_0_rgba(255,255,255,0.08)]"
-              : "bg-white/[0.018] text-white shadow-[0_12px_30px_rgba(0,0,0,0.055),inset_0_1px_0_rgba(255,255,255,0.08)]"
+              ? "bg-white/[0.018] text-white shadow-[0_12px_30px_rgba(17,16,11,0.06),inset_0_1px_0_rgba(255,255,255,0.08)]"
+              : "bg-white/[0.018] text-white shadow-[0_12px_30px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.08)]"
           )}
         >
-          <nav className="flex items-center">
+          <nav className="relative z-10 flex items-center">
             {visibleNavItems.map((n, index) => (
               <Fragment key={n.href}>
                 <a
@@ -192,7 +192,7 @@ export function Navbar({
               </Fragment>
             ))}
           </nav>
-          <div className="flex items-center">
+          <div className="relative z-10 flex items-center">
             <span
               aria-hidden="true"
               className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
@@ -286,6 +286,11 @@ export function Navbar({
             <div
               aria-label={t.nav.language}
               className="relative h-10 transition-all duration-300"
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                  setLanguageOpen(false);
+                }
+              }}
             >
               <button
                 type="button"
@@ -293,14 +298,13 @@ export function Navbar({
                 onClick={() => setLanguageOpen((value) => !value)}
                 className={cn(
                   DESKTOP_BAR_ITEM_CLASS,
-                  "h-full gap-2",
-                  "px-3 text-sm"
+                  "h-full gap-1",
+                  "w-12 px-0 text-sm"
                 )}
               >
                 <Globe
                   className="h-5 w-5 shrink-0 transition-all duration-300"
                 />
-                {currentLanguage.short}
                 <ChevronDown
                   className={cn(
                     "h-3.5 w-3.5 transition-all duration-300",
@@ -310,7 +314,7 @@ export function Navbar({
               </button>
 
               {languageOpen && (
-                <div className="absolute right-0 top-[calc(100%+0.75rem)] min-w-36 overflow-hidden rounded-lg border border-border bg-card p-1 text-foreground shadow-xl">
+                <div className="absolute right-0 top-[calc(100%+0.55rem)] z-50 min-w-40 overflow-hidden rounded-xl bg-black/70 p-1 text-white shadow-xl backdrop-blur-md">
                   {LANGUAGES.map((language) => (
                     <button
                       key={language.code}
@@ -322,10 +326,10 @@ export function Navbar({
                         setLanguageOpen(false);
                       }}
                       className={cn(
-                        "nav-text flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors",
+                        "nav-text flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors",
                         locale === language.code
                           ? "bg-accent text-accent-foreground"
-                          : "hover:bg-muted"
+                          : "hover:bg-white/12"
                       )}
                     >
                       <span>{language.label}</span>
