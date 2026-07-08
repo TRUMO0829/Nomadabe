@@ -369,6 +369,7 @@ type CtaFooterProps = {
 };
 
 export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
+  const authPromptedRef = useRef(false);
   const [planningMode, setPlanningMode] = useState<"trip" | "villa">(() => {
     if (typeof window === "undefined") {
       return "trip";
@@ -420,6 +421,9 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
+  );
+  const [planningAuthenticated, setPlanningAuthenticated] = useState<boolean | null>(
+    null
   );
   const { contentLocale, t } = useLanguage();
   const footer = FOOTER_COPY[contentLocale];
@@ -479,30 +483,62 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
 
     let active = true;
 
-    fetch("/api/auth/me", { credentials: "include" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload) => {
+    async function loadCustomer() {
+      try {
+        const response = await fetch("/api/auth/me", {
+          cache: "no-store",
+          credentials: "include",
+        });
+        const payload = response.ok ? await response.json() : null;
         const customer = payload?.data?.customer;
 
         if (!active || !customer?.email) {
+          if (active) {
+            setPlanningAuthenticated(false);
+            if (!authPromptedRef.current) {
+              authPromptedRef.current = true;
+              window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+            }
+          }
           return;
         }
 
+        setPlanningAuthenticated(true);
         setPlanningForm((form) => ({
           ...form,
           email: form.email || customer.email,
           name: form.name || customer.name || "",
         }));
-      })
-      .catch(() => {});
+      } catch {
+        if (active) {
+          setPlanningAuthenticated(false);
+          if (!authPromptedRef.current) {
+            authPromptedRef.current = true;
+            window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+          }
+        }
+      }
+    }
+
+    void loadCustomer();
+    window.addEventListener("nomadabe:auth-changed", loadCustomer);
 
     return () => {
       active = false;
+      window.removeEventListener("nomadabe:auth-changed", loadCustomer);
     };
   }, [showPlanningSection]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (showPlanningSection && planningAuthenticated !== true) {
+      authPromptedRef.current = true;
+      window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
+      setStatus("idle");
+      return;
+    }
+
     setStatus("loading");
 
     const message = [

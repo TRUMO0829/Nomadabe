@@ -61,12 +61,14 @@ type NavbarProps = {
   showHomeSearch?: boolean;
   surface?: "auto" | "light";
   logoPlacement?: "left" | "center";
+  logoSize?: "default" | "compact";
 };
 
 export function Navbar({
   showHomeSearch = false,
   surface = "auto",
   logoPlacement = "left",
+  logoSize = "default",
 }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -152,7 +154,7 @@ export function Navbar({
             sizes="(min-width: 1024px) 160px, 128px"
             className={cn(
               "w-auto object-contain transition-all duration-300",
-              "h-24 lg:h-28",
+              logoSize === "compact" ? "h-20 lg:h-24" : "h-24 lg:h-28",
               useLightHeader
                 ? "drop-shadow-[0_2px_12px_rgba(0,0,0,0.88)]"
                 : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
