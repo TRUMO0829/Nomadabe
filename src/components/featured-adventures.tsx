@@ -1125,57 +1125,57 @@ function DestinationDragCarousel({
                 onClick={(event) => handleCardClick(event, adventure)}
                 className="group relative m-0 flex min-w-[82vw] shrink-0 cursor-pointer flex-col transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
               >
-                <div className="relative aspect-[4/5.65] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
+                <div className="relative aspect-[4/6.05] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
                   <div
                     className="h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
                     style={{ backgroundImage: `url(${getHighResolutionImageUrl(adventure.image)})` }}
                   />
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/82 via-black/22 to-transparent"
                   />
-                </div>
-                <div className="flex flex-1 flex-col px-0 pt-3 text-[#050505] sm:pt-4">
-                  <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase text-black/58">
-                    <span>{text.country}</span>
-                    <span className="inline-flex items-center gap-1">
-                      <MapPinned className="h-3.5 w-3.5 text-[#8f7020]" />
-                      {text.location}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <CalendarDays className="h-3.5 w-3.5 text-[#8f7020]" />
-                      {adventure.days} {dayLabel}
-                    </span>
-                  </p>
-                  <h3 className="trip-header-title trip-header-title--compact mt-2 min-h-[3.15em] max-w-[14ch] text-balance !text-[clamp(1.45rem,2.55vw,2.65rem)] !leading-[1.04] text-black">
-                    {text.title}
-                  </h3>
-                  <p className="trip-copy-text mt-2 line-clamp-2 min-h-10 max-w-sm text-xs leading-5 text-black/68 sm:text-sm">
-                    {text.summary}
-                  </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <Link
-                      href={`/tours/${adventure.slug}`}
-                      onPointerDown={(event) => {
-                        event.stopPropagation();
-                        stopMomentum();
-                        dragRef.current.didDrag = false;
-                      }}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        if (dragRef.current.didDrag) {
-                          event.preventDefault();
+                  <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col px-5 pb-5 text-white sm:px-6 sm:pb-6">
+                    <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase text-white/72">
+                      <span>{text.country}</span>
+                      <span className="inline-flex items-center gap-1">
+                        <MapPinned className="h-3.5 w-3.5 text-accent" />
+                        {text.location}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <CalendarDays className="h-3.5 w-3.5 text-accent" />
+                        {adventure.days} {dayLabel}
+                      </span>
+                    </p>
+                    <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[14ch] text-balance !text-[clamp(1.45rem,2.45vw,2.45rem)] !leading-[1.02] text-white">
+                      {text.title}
+                    </h3>
+                    <p className="trip-copy-text mt-2 line-clamp-2 max-w-sm text-xs leading-5 text-white/78 sm:text-sm">
+                      {text.summary}
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <Link
+                        href={`/tours/${adventure.slug}`}
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                          stopMomentum();
                           dragRef.current.didDrag = false;
-                          return;
-                        }
-                        dragRef.current.didDrag = false;
-                        stopMomentum();
-                      }}
-                      className="group/btn relative z-10 inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
-                    >
-                      {detailsLabel}
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
-                    </Link>
+                        }}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (dragRef.current.didDrag) {
+                            event.preventDefault();
+                            dragRef.current.didDrag = false;
+                            return;
+                          }
+                          dragRef.current.didDrag = false;
+                          stopMomentum();
+                        }}
+                        className="group/btn relative z-10 inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
+                      >
+                        {detailsLabel}
+                        <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </article>
