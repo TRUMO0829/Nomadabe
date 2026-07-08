@@ -207,7 +207,7 @@ const VILLA_PLAN_COPY = {
 
 const FOOTER_COPY = {
   mn: {
-    tagline: "Аяллын мэргэжлийн зөвлөх",
+    tagline: "Travel agency",
     description:
       "Монгол болон дэлхийн чиглэлүүдэд бизнес, expo, амралт зугаалга, захиалгат аяллыг төлөвлөж зохион байгуулна.",
     linksTitle: "Холбоосууд",
@@ -227,7 +227,7 @@ const FOOTER_COPY = {
     ],
   },
   en: {
-    tagline: "Professional travel consulting",
+    tagline: "Travel agency",
     description:
       "Business, expo, leisure, and custom travel across Mongolia and global destinations, planned with care.",
     linksTitle: "Links",
@@ -247,7 +247,7 @@ const FOOTER_COPY = {
     ],
   },
   zh: {
-    tagline: "专业旅行顾问",
+    tagline: "Travel agency",
     description:
       "我们为蒙古及全球目的地提供商务考察、展会行程、休闲度假和定制旅行规划。",
     linksTitle: "链接",
@@ -267,7 +267,7 @@ const FOOTER_COPY = {
     ],
   },
   ja: {
-    tagline: "旅の専門コンサルタント",
+    tagline: "Travel agency",
     description:
       "モンゴル国内外のビジネス視察、展示会、レジャー、オーダーメイド旅行を丁寧にプランニングします。",
     linksTitle: "リンク",
@@ -287,7 +287,7 @@ const FOOTER_COPY = {
     ],
   },
   ko: {
-    tagline: "전문 여행 컨설팅",
+    tagline: "Travel agency",
     description:
       "몽골 국내외 비즈니스 답사, 엑스포 일정, 휴양, 맞춤 여행을 목적에 맞게 세심하게 설계합니다.",
     linksTitle: "링크",
