@@ -86,9 +86,78 @@ type TestimonialsProps = {
   reviews?: SiteReview[];
 };
 
+const REVIEW_FORM_COPY = {
+  mn: {
+    write: "Сэтгэгдэл үлдээх",
+    name: "Нэр",
+    trip: "Аяллын нэр",
+    rating: "Үнэлгээ",
+    star: "од",
+    message: "Сэтгэгдлээ бичнэ үү",
+    image: "Зураг",
+    location: "Хот / улс",
+    saving: "Хадгалж байна",
+    saved: "Сэтгэгдэл хадгалагдлаа. Баярлалаа.",
+    error: "Сэтгэгдэл хадгалж чадсангүй.",
+  },
+  en: {
+    write: "Write a review",
+    name: "Name",
+    trip: "Trip name",
+    rating: "Rating",
+    star: "stars",
+    message: "Write your review",
+    image: "Photo",
+    location: "City / country",
+    saving: "Saving",
+    saved: "Review saved. Thank you.",
+    error: "Could not save the review.",
+  },
+  zh: {
+    write: "留下评价",
+    name: "姓名",
+    trip: "行程名称",
+    rating: "评分",
+    star: "星",
+    message: "写下您的评价",
+    image: "照片",
+    location: "城市 / 国家",
+    saving: "正在保存",
+    saved: "评价已保存，谢谢。",
+    error: "无法保存评价。",
+  },
+  ja: {
+    write: "レビューを書く",
+    name: "お名前",
+    trip: "ツアー名",
+    rating: "評価",
+    star: "つ星",
+    message: "レビューを書いてください",
+    image: "写真",
+    location: "都市 / 国",
+    saving: "保存中",
+    saved: "レビューを保存しました。ありがとうございます。",
+    error: "レビューを保存できませんでした。",
+  },
+  ko: {
+    write: "후기 작성",
+    name: "이름",
+    trip: "여행명",
+    rating: "평점",
+    star: "점",
+    message: "후기를 작성해 주세요",
+    image: "사진",
+    location: "도시 / 국가",
+    saving: "저장 중",
+    saved: "후기가 저장되었습니다. 감사합니다.",
+    error: "후기를 저장할 수 없습니다.",
+  },
+} as const;
+
 export function Testimonials({ reviews = [] }: TestimonialsProps) {
   const { contentLocale, t } = useLanguage();
   const copy = t.testimonials;
+  const formCopy = REVIEW_FORM_COPY[contentLocale];
   const formRef = useRef<HTMLFormElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [localReviews, setLocalReviews] = useState<SiteReview[]>(reviews);
@@ -144,14 +213,14 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
       const payload = await response.json();
 
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error?.message || "Сэтгэгдэл хадгалж чадсангүй.");
+        throw new Error(payload?.error?.message || formCopy.error);
       }
 
       setLocalReviews((current) => [payload.data.review, ...current].slice(0, 36));
       formRef.current?.reset();
-      setStatus("Сэтгэгдэл хадгалагдлаа. Баярлалаа.");
+      setStatus(formCopy.saved);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Сэтгэгдэл хадгалж чадсангүй.");
+      setStatus(error instanceof Error ? error.message : formCopy.error);
     } finally {
       setIsSubmitting(false);
     }
@@ -183,7 +252,7 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
             onClick={scrollToReviewForm}
             className="nav-text mt-5 inline-flex h-12 items-center justify-center rounded-full bg-[#11100b] px-8 text-xs uppercase tracking-[0.12em] text-white shadow-[0_14px_36px_rgba(17,16,11,0.16)] transition hover:-translate-y-0.5 hover:bg-[#2a271d]"
           >
-            Сэтгэгдэл үлдээх
+            {formCopy.write}
           </button>
         </motion.div>
 
@@ -216,23 +285,23 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
               name="name"
               required
               minLength={2}
-              placeholder="Нэр"
+              placeholder={formCopy.name}
               className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
             />
             <input
               name="trip"
-              placeholder="Аяллын нэр"
+              placeholder={formCopy.trip}
               className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
             />
             <select
               name="rating"
               defaultValue="5"
               className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-semibold text-foreground outline-none transition focus:border-primary"
-              aria-label="Үнэлгээ"
+              aria-label={formCopy.rating}
             >
               {[5, 4, 3, 2, 1].map((rating) => (
                 <option key={rating} value={rating}>
-                  {rating} од
+                  {rating} {formCopy.star}
                 </option>
               ))}
             </select>
@@ -240,18 +309,18 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
               name="message"
               required
               minLength={8}
-              placeholder="Сэтгэгдлээ бичнэ үү"
+              placeholder={formCopy.message}
               className="min-h-24 rounded-lg border border-[#eadfac] bg-white px-4 py-3 text-sm font-medium leading-6 text-foreground outline-none transition focus:border-primary md:col-span-2"
             />
             <label className="flex h-24 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[#d8c56d] bg-white px-4 text-sm font-semibold text-foreground/70 transition hover:border-primary hover:text-foreground">
               <ImagePlus className="h-5 w-5 text-primary" />
-              Зураг
+              {formCopy.image}
               <input name="image" type="file" accept="image/*" className="sr-only" />
             </label>
             <div className="flex flex-col gap-3 md:col-span-3 md:flex-row md:items-center">
               <input
                 name="location"
-                placeholder="Хот / улс"
+                placeholder={formCopy.location}
                 className="h-12 flex-1 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
               />
               <button
@@ -260,7 +329,7 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#11100b] px-6 text-sm font-semibold text-white transition hover:bg-[#2a271d] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Star className="h-4 w-4" />
-                {isSubmitting ? "Хадгалж байна" : "Сэтгэгдэл үлдээх"}
+                {isSubmitting ? formCopy.saving : formCopy.write}
                 <Send className="h-4 w-4" />
               </button>
             </div>
