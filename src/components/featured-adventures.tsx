@@ -1125,7 +1125,7 @@ function DestinationDragCarousel({
                 onClick={(event) => handleCardClick(event, adventure)}
                 className="group relative m-0 flex min-w-[82vw] shrink-0 cursor-pointer flex-col transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
               >
-                <div className="relative aspect-[4/4.85] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
+                <div className="relative aspect-[4/5.65] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
                   <div
                     className="h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
                     style={{ backgroundImage: `url(${getHighResolutionImageUrl(adventure.image)})` }}
@@ -1135,7 +1135,7 @@ function DestinationDragCarousel({
                     className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                   />
                 </div>
-                <div className="flex flex-1 flex-col px-0 pt-4 text-[#050505] sm:pt-5">
+                <div className="flex flex-1 flex-col px-0 pt-3 text-[#050505] sm:pt-4">
                   <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase text-black/58">
                     <span>{text.country}</span>
                     <span className="inline-flex items-center gap-1">
