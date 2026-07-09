@@ -84,9 +84,9 @@ type AuthCustomer = {
   isAdmin?: boolean;
 };
 const DESKTOP_BAR_ITEM_CLASS =
-  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-white/[0.055] hover:text-accent";
+  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-[#ffd400]/10 hover:text-[#ffe766]";
 const DESKTOP_NAV_LINK_CLASS =
-  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-white/[0.055] hover:text-accent";
+  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-[#ffd400]/10 hover:text-[#ffe766]";
 const DESKTOP_BAR_DIVIDER_CLASS =
   "w-px shrink-0 bg-current/30 transition-all duration-300";
 
@@ -207,11 +207,11 @@ export function Navbar({
 
         <div
           className={cn(
-            "absolute left-1/2 top-3 hidden -translate-x-1/2 items-center overflow-visible backdrop-blur-[10px] transition-all duration-300 lg:flex",
-            "rounded-[1.35rem] border border-white/12 px-6 py-3 before:pointer-events-none before:absolute before:inset-0 before:rounded-[1.35rem] before:bg-[linear-gradient(115deg,rgba(255,255,255,0.13),rgba(255,255,255,0.035)_48%,rgba(255,255,255,0.1))]",
+            "absolute right-4 top-3 hidden items-center overflow-visible text-[#ffd400] backdrop-blur-[10px] transition-all duration-300 lg:right-6 lg:flex xl:right-8",
+            "rounded-[1rem] border border-[#ffd400]/45 px-2.5 py-1.5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[1rem] before:bg-[linear-gradient(115deg,rgba(255,212,0,0.14),rgba(255,255,255,0.025)_48%,rgba(255,212,0,0.1))]",
             useLightHeader
-              ? "bg-white/[0.075] text-white shadow-[0_18px_55px_rgba(17,16,11,0.16),inset_0_1px_0_rgba(255,255,255,0.12)]"
-              : "bg-white/[0.075] text-white shadow-[0_18px_55px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.12)]"
+              ? "bg-[#050504]/20 shadow-[0_14px_34px_rgba(17,16,11,0.12),inset_0_1px_0_rgba(255,212,0,0.16)]"
+              : "bg-[#050504]/22 shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,212,0,0.16)]"
           )}
         >
           <nav className="relative z-10 flex items-center">
@@ -221,7 +221,7 @@ export function Navbar({
                   href={item.href}
                   className={cn(
                     DESKTOP_NAV_LINK_CLASS,
-                    "h-11 px-4 text-[15px]"
+                    "h-8 px-2.5 text-[12px] xl:px-3 xl:text-[13px]"
                   )}
                 >
                   {item.label}
@@ -229,7 +229,7 @@ export function Navbar({
                 {index < desktopNavItems.length - 1 ? (
                   <span
                     aria-hidden="true"
-                    className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+                    className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-4")}
                   />
                 ) : null}
               </Fragment>
@@ -238,11 +238,11 @@ export function Navbar({
           <div className="relative z-10 flex items-center">
             <span
               aria-hidden="true"
-              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-4")}
             />
             {customer ? (
               <div
-                className="relative h-11"
+                className="relative h-8"
                 onMouseEnter={() => setProfileMenuOpen(true)}
                 onMouseLeave={() => setProfileMenuOpen(false)}
                 onBlur={(event) => {
@@ -261,7 +261,7 @@ export function Navbar({
                   }}
                   className={cn(
                     DESKTOP_BAR_ITEM_CLASS,
-                    "h-11 px-4 text-[15px]"
+                    "h-8 px-2.5 text-[12px] xl:px-3 xl:text-[13px]"
                   )}
                   title={customer.email}
                 >
@@ -297,7 +297,7 @@ export function Navbar({
                 onClick={openSignupPrompt}
                 className={cn(
                   DESKTOP_BAR_ITEM_CLASS,
-                  "h-11 px-4 text-[15px]"
+                  "h-8 px-2.5 text-[12px] xl:px-3 xl:text-[13px]"
                 )}
               >
                 {navCopy.login}
@@ -305,7 +305,7 @@ export function Navbar({
             )}
             <span
               aria-hidden="true"
-              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-4")}
             />
             <button
               type="button"
@@ -314,19 +314,19 @@ export function Navbar({
               onClick={() => setSearchOpen((value) => !value)}
               className={cn(
                 DESKTOP_BAR_ITEM_CLASS,
-                "h-11 px-4 text-[15px]",
-                searchOpen && "bg-white/[0.07] text-accent"
+                "h-8 px-2.5 text-[12px] xl:px-3 xl:text-[13px]",
+                searchOpen && "bg-[#ffd400]/12 text-[#ffe766]"
               )}
             >
               {navCopy.search}
             </button>
             <span
               aria-hidden="true"
-              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-5")}
+              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-4")}
             />
             <div
               aria-label={t.nav.language}
-              className="relative h-11 transition-all duration-300"
+              className="relative h-8 transition-all duration-300"
               onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) {
                   setLanguageOpen(false);
@@ -340,15 +340,15 @@ export function Navbar({
                 className={cn(
                   DESKTOP_BAR_ITEM_CLASS,
                   "h-full gap-1",
-                  "w-14 px-0 text-[15px]"
+                  "w-10 px-0 text-[12px] xl:w-11 xl:text-[13px]"
                 )}
               >
                 <Globe
-                  className="h-5 w-5 shrink-0 transition-all duration-300"
+                  className="h-4 w-4 shrink-0 transition-all duration-300"
                 />
                 <ChevronDown
                   className={cn(
-                    "h-3.5 w-3.5 transition-all duration-300",
+                    "h-3 w-3 transition-all duration-300",
                     languageOpen && "rotate-180"
                   )}
                 />
