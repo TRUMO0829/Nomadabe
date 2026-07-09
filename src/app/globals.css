@@ -44,7 +44,8 @@
 *::after {
   border-color: var(--border);
   font-family: var(--site-font) !important;
-  letter-spacing: 0 !important;
+  letter-spacing: 1.6px !important;
+  word-spacing: 1.6px !important;
 }
 
 html {
@@ -132,7 +133,8 @@ input,
 select,
 textarea {
   font-family: var(--site-font) !important;
-  letter-spacing: 0 !important;
+  letter-spacing: 1.6px !important;
+  word-spacing: 1.6px !important;
 }
 
 /* Press feedback on every button (login, admin, everywhere). */
@@ -171,10 +173,12 @@ body [class*="leading-"],
 .trip-meta-text,
 .nav-text {
   line-height: 1.6 !important;
+  letter-spacing: 1.6px !important;
+  word-spacing: 1.6px !important;
 }
 
 body :where(p, li, dd, dt) {
-  letter-spacing: 0.4px !important;
+  letter-spacing: 1.6px !important;
 }
 
 body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
@@ -185,7 +189,8 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 .trip-meta-text,
 .nav-text {
   font-weight: 400 !important;
-  letter-spacing: 0 !important;
+  letter-spacing: 1.6px !important;
+  word-spacing: 1.6px !important;
 }
 
 .section-header-title {
@@ -299,7 +304,8 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 
 .hero-credit-watermark {
   font-family: "Times New Roman", Georgia, serif !important;
-  letter-spacing: 0.02em !important;
+  letter-spacing: 1.6px !important;
+  word-spacing: 1.6px !important;
 }
 
 @keyframes premiumHeroProgress {
