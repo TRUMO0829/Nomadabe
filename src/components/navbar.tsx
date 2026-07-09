@@ -84,9 +84,9 @@ type AuthCustomer = {
   isAdmin?: boolean;
 };
 const DESKTOP_BAR_ITEM_CLASS =
-  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-[#ffd400]/10 hover:text-[#ffe766]";
+  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase transition-all duration-300 hover:bg-[#ffd400]/10 hover:text-[#ffe766]";
 const DESKTOP_NAV_LINK_CLASS =
-  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase leading-none transition-all duration-300 hover:bg-[#ffd400]/10 hover:text-[#ffe766]";
+  "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase transition-all duration-300 hover:bg-[#ffd400]/10 hover:text-[#ffe766]";
 const DESKTOP_BAR_DIVIDER_CLASS =
   "w-px shrink-0 bg-current/30 transition-all duration-300";
 
@@ -208,7 +208,7 @@ export function Navbar({
         <div
           className={cn(
             "absolute right-4 top-3 hidden items-center overflow-visible text-[#ffd400] backdrop-blur-[10px] transition-all duration-300 lg:right-6 lg:flex xl:right-8",
-            "rounded-[1rem] border border-[#ffd400]/45 px-2.5 py-1.5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[1rem] before:bg-[linear-gradient(115deg,rgba(255,212,0,0.14),rgba(255,255,255,0.025)_48%,rgba(255,212,0,0.1))]",
+            "rounded-[1rem] border border-[#ffd400]/45 px-3 py-2 before:pointer-events-none before:absolute before:inset-0 before:rounded-[1rem] before:bg-[linear-gradient(115deg,rgba(255,212,0,0.14),rgba(255,255,255,0.025)_48%,rgba(255,212,0,0.1))]",
             useLightHeader
               ? "bg-[#050504]/20 shadow-[0_14px_34px_rgba(17,16,11,0.12),inset_0_1px_0_rgba(255,212,0,0.16)]"
               : "bg-[#050504]/22 shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,212,0,0.16)]"
@@ -221,7 +221,7 @@ export function Navbar({
                   href={item.href}
                   className={cn(
                     DESKTOP_NAV_LINK_CLASS,
-                    "h-8 px-2.5 text-[12px] xl:px-3 xl:text-[13px]"
+                    "min-h-10 px-3 py-2 text-[12px] xl:px-3.5 xl:text-[13px]"
                   )}
                 >
                   {item.label}
@@ -242,7 +242,7 @@ export function Navbar({
             />
             {customer ? (
               <div
-                className="relative h-8"
+                className="relative min-h-10"
                 onMouseEnter={() => setProfileMenuOpen(true)}
                 onMouseLeave={() => setProfileMenuOpen(false)}
                 onBlur={(event) => {
@@ -261,7 +261,7 @@ export function Navbar({
                   }}
                   className={cn(
                     DESKTOP_BAR_ITEM_CLASS,
-                    "h-8 px-2.5 text-[12px] xl:px-3 xl:text-[13px]"
+                    "min-h-10 px-3 py-2 text-[12px] xl:px-3.5 xl:text-[13px]"
                   )}
                   title={customer.email}
                 >
@@ -297,7 +297,7 @@ export function Navbar({
                 onClick={openSignupPrompt}
                 className={cn(
                   DESKTOP_BAR_ITEM_CLASS,
-                  "h-8 px-2.5 text-[12px] xl:px-3 xl:text-[13px]"
+                  "min-h-10 px-3 py-2 text-[12px] xl:px-3.5 xl:text-[13px]"
                 )}
               >
                 {navCopy.login}
@@ -314,7 +314,7 @@ export function Navbar({
               onClick={() => setSearchOpen((value) => !value)}
               className={cn(
                 DESKTOP_BAR_ITEM_CLASS,
-                "h-8 px-2.5 text-[12px] xl:px-3 xl:text-[13px]",
+                "min-h-10 px-3 py-2 text-[12px] xl:px-3.5 xl:text-[13px]",
                 searchOpen && "bg-[#ffd400]/12 text-[#ffe766]"
               )}
             >
@@ -326,7 +326,7 @@ export function Navbar({
             />
             <div
               aria-label={t.nav.language}
-              className="relative h-8 transition-all duration-300"
+              className="relative min-h-10 transition-all duration-300"
               onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) {
                   setLanguageOpen(false);
@@ -339,8 +339,8 @@ export function Navbar({
                 onClick={() => setLanguageOpen((value) => !value)}
                 className={cn(
                   DESKTOP_BAR_ITEM_CLASS,
-                  "h-full gap-1",
-                  "w-10 px-0 text-[12px] xl:w-11 xl:text-[13px]"
+                  "min-h-10 gap-1",
+                  "w-11 px-0 py-2 text-[12px] xl:w-12 xl:text-[13px]"
                 )}
               >
                 <Globe
