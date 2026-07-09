@@ -189,6 +189,23 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
   font-weight: 200 !important;
 }
 
+.footer-accent-icon,
+.footer-accent-icon svg,
+.footer-accent-icon path,
+.footer-accent-icon rect,
+.footer-accent-icon circle {
+  color: var(--accent) !important;
+}
+
+.footer-accent-icon svg {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.footer-accent-icon .fill-none {
+  fill: none !important;
+}
+
 .domestic-section-title {
   font-size: clamp(1.5rem, 3.1vw, 2.9rem) !important;
   line-height: 1.02 !important;

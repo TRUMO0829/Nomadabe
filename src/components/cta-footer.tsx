@@ -791,7 +791,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       href={contact.href}
                       className="group flex gap-3 text-base leading-6 text-white/44"
                     >
-                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center text-accent transition-transform group-hover:scale-110">
+                      <span className="footer-accent-icon mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center transition-transform group-hover:scale-110">
                         {contact.type === "phone" ? (
                           <Phone className="h-5 w-5" />
                         ) : (
@@ -818,7 +818,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       rel="noreferrer"
                       className="group flex items-center gap-3 text-base text-white/44"
                     >
-                      <span className="flex h-6 w-6 items-center justify-center text-accent transition-transform group-hover:scale-110">
+                      <span className="footer-accent-icon flex h-6 w-6 items-center justify-center transition-transform group-hover:scale-110">
                         <SocialIcon icon={social.icon} />
                       </span>
                       <span className="transition-colors group-hover:text-accent">
