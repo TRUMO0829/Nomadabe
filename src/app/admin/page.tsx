@@ -797,7 +797,6 @@ function TripForm({
           <TextField label="Дараагийн явах огноо" name="nextDeparture" type="date" defaultValue={getDateInputValue(trip?.nextDeparture)} />
           <TextareaField label="Хэрэглэгчид харагдах товч тайлбар" name="summary" defaultValue={trip?.summary} rows={3} className="lg:col-span-3" />
           <input type="hidden" name="image" defaultValue={trip?.image} />
-          <input type="hidden" name="galleryImages" defaultValue={trip?.galleryImages?.join("\n")} />
           <GalleryUploadField trip={trip} className="lg:col-span-3" />
           <TextField label="Slug" name="slug" defaultValue={trip?.slug} placeholder="gobi-adventure" />
           <TextField label="Шинэ ангилал нэмэх" name="categoryCustom" placeholder="Жишээ: Дотоод аялал" />
@@ -1052,15 +1051,48 @@ function GalleryUploadField({ trip, className }: { trip?: Adventure; className?:
       </span>
       <div className="mt-2 rounded-md border border-dashed border-[var(--border)] bg-white p-4">
         {images.length > 0 ? (
-          <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+          <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {images.map((image, index) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <div
                 key={`${image}-${index}`}
-                src={image}
-                alt={`${trip?.title ?? "Аялал"} gallery ${index + 1}`}
-                className="h-20 w-full rounded-md object-cover ring-1 ring-[var(--border)]"
-              />
+                className="rounded-md border border-[var(--border)] bg-[var(--background)] p-3"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={image}
+                  alt={`${trip?.title ?? "Аялал"} gallery ${index + 1}`}
+                  className="h-28 w-full rounded-md object-cover ring-1 ring-[var(--border)]"
+                />
+                <label className="mt-3 block">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
+                    Зургийн URL
+                  </span>
+                  <input
+                    name="galleryImageUrl"
+                    defaultValue={image}
+                    className="mt-1 h-9 w-full rounded-md border border-[var(--border)] bg-white px-3 text-xs font-medium outline-none focus:border-[var(--accent)]"
+                  />
+                </label>
+                <label className="mt-3 block">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
+                    Энэ зургийг солих
+                  </span>
+                  <input
+                    type="file"
+                    name={`galleryImageReplacement_${index}`}
+                    accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+                    className="mt-1 block w-full text-xs text-[var(--foreground)] file:mr-2 file:rounded-md file:border-0 file:bg-[var(--primary)] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-[var(--foreground)]"
+                  />
+                </label>
+                <label className="mt-3 flex items-center gap-2 text-xs font-semibold text-[var(--muted-foreground)]">
+                  <input
+                    type="checkbox"
+                    name={`galleryImageRemove_${index}`}
+                    className="h-4 w-4 accent-[var(--accent)]"
+                  />
+                  Энэ зургийг устгах
+                </label>
+              </div>
             ))}
           </div>
         ) : (
@@ -1068,16 +1100,32 @@ function GalleryUploadField({ trip, className }: { trip?: Adventure; className?:
             Gallery зураг ороогүй байна.
           </div>
         )}
+        <div className="rounded-md border border-[var(--border)] bg-[var(--background)] p-3">
+          <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--primary)]">
+            Шинэ gallery зураг нэмэх
+          </span>
+          <p className="mt-1 text-xs font-medium leading-5 text-[var(--muted-foreground)]">
+            Detail page-ийн баруун тал болон popup detail дээр харагдах нэмэлт зургууд. Олон зураг зэрэг сонгож болно.
+          </p>
+          <input
+            type="file"
+            name="galleryImagesAdd"
+            accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+            multiple
+            className="mt-3 block w-full text-sm text-[var(--foreground)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--primary)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[var(--foreground)]"
+          />
+        </div>
         <input
           type="file"
           name="galleryImagesUpload"
           accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
           multiple
-          className="block w-full text-sm text-[var(--foreground)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--primary)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[var(--foreground)]"
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
         />
         <p className="mt-2 text-xs font-medium leading-5 text-[var(--muted-foreground)]">
-          Олон зураг зэрэг сонгож болно. Шинэ зураг сонговол хуучин gallery жагсаалтыг
-          сольж хадгална.
+          URL-г шууд засаж болно, эсвэл тухайн зураг дээр file сонгож сольж болно. Устгах сонголт идэвхжүүлсэн зураг хадгалахад gallery-аас хасагдана.
         </p>
       </div>
     </div>

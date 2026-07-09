@@ -255,15 +255,43 @@ export async function upsertTripFromForm(formData: FormData) {
     parsed.image = await uploadTripPoster(poster);
   }
 
-  const galleryUploads = formData
-    .getAll("galleryImagesUpload")
-    .filter(isUploadedPoster);
-
-  if (galleryUploads.length > 0) {
-    parsed.galleryImages = await Promise.all(galleryUploads.map(uploadTripPoster));
-  }
+  parsed.galleryImages = await getGalleryImagesFromForm(formData, parsed.galleryImages);
 
   return upsertTrip(parsed);
+}
+
+async function getGalleryImagesFromForm(formData: FormData, fallbackImages: string[]) {
+  const currentUrls = formData
+    .getAll("galleryImageUrl")
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .filter(Boolean);
+
+  const nextImages = await Promise.all(
+    currentUrls.map(async (url, index) => {
+      if (formData.has(`galleryImageRemove_${index}`)) {
+        return "";
+      }
+
+      const replacement = formData.get(`galleryImageReplacement_${index}`);
+      return isUploadedPoster(replacement) ? uploadTripPoster(replacement) : url;
+    })
+  );
+
+  const addedImages = await Promise.all(
+    formData.getAll("galleryImagesAdd").filter(isUploadedPoster).map(uploadTripPoster)
+  );
+
+  const legacyUploads = await Promise.all(
+    formData.getAll("galleryImagesUpload").filter(isUploadedPoster).map(uploadTripPoster)
+  );
+
+  if (currentUrls.length === 0 && addedImages.length === 0 && legacyUploads.length === 0) {
+    return fallbackImages;
+  }
+
+  return Array.from(
+    new Set([...nextImages, ...addedImages, ...legacyUploads].map((image) => image.trim()).filter(Boolean))
+  );
 }
 
 export async function upsertTripFromJson(payload: unknown) {
