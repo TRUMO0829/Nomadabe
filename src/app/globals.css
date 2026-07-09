@@ -162,6 +162,17 @@ body :where(p, li, dd, dt, span, input, textarea, select) {
   font-weight: 200;
 }
 
+body :where(h1, h2, h3, h4, h5, h6, p, li, dd, dt, span, a, button, summary, label, input, textarea, select),
+body [class*="leading-"],
+.trip-header-title,
+.hero-heading,
+.site-heading,
+.section-header-title,
+.trip-meta-text,
+.nav-text {
+  line-height: 1.6 !important;
+}
+
 body :where(p, li, dd, dt) {
   letter-spacing: 0.4px !important;
 }
@@ -181,7 +192,7 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
   font-family: var(--site-font) !important;
   font-size: clamp(1.85rem, 4vw, 3.8rem) !important;
   font-weight: 400 !important;
-  line-height: 0.98 !important;
+  line-height: 1.6 !important;
   text-transform: uppercase;
 }
 
@@ -208,29 +219,29 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 
 .domestic-section-title {
   font-size: clamp(1.5rem, 3.1vw, 2.9rem) !important;
-  line-height: 1.02 !important;
+  line-height: 1.6 !important;
   white-space: nowrap;
 }
 
 .trip-header-title {
   font-size: clamp(1.5rem, 3.55vw, 3.05rem) !important;
-  line-height: 0.98 !important;
+  line-height: 1.6 !important;
   text-transform: uppercase;
 }
 
 .trip-header-title--hero {
   font-size: clamp(1.95rem, 4.75vw, 4.15rem) !important;
-  line-height: 0.93 !important;
+  line-height: 1.6 !important;
 }
 
 .domestic-trip-title {
   font-size: clamp(1.5rem, 3.15vw, 3rem) !important;
-  line-height: 1.02 !important;
+  line-height: 1.6 !important;
 }
 
 .trip-header-title--compact {
   font-size: clamp(1.25rem, 2.65vw, 2rem) !important;
-  line-height: 1.02 !important;
+  line-height: 1.6 !important;
 }
 
 .testimonial-column {
