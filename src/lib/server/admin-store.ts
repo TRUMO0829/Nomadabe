@@ -261,6 +261,7 @@ export async function upsertTripFromForm(formData: FormData) {
 }
 
 async function getGalleryImagesFromForm(formData: FormData, fallbackImages: string[]) {
+  // Current URLs are submitted as hidden fields so admins replace images via local uploads only.
   const currentUrls = formData
     .getAll("galleryImageUrl")
     .map((value) => (typeof value === "string" ? value.trim() : ""))

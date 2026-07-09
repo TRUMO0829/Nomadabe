@@ -1063,19 +1063,10 @@ function GalleryUploadField({ trip, className }: { trip?: Adventure; className?:
                   alt={`${trip?.title ?? "Аялал"} gallery ${index + 1}`}
                   className="h-28 w-full rounded-md object-cover ring-1 ring-[var(--border)]"
                 />
+                <input type="hidden" name="galleryImageUrl" defaultValue={image} />
                 <label className="mt-3 block">
                   <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
-                    Зургийн URL
-                  </span>
-                  <input
-                    name="galleryImageUrl"
-                    defaultValue={image}
-                    className="mt-1 h-9 w-full rounded-md border border-[var(--border)] bg-white px-3 text-xs font-medium outline-none focus:border-[var(--accent)]"
-                  />
-                </label>
-                <label className="mt-3 block">
-                  <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--muted-foreground)]">
-                    Энэ зургийг солих
+                    Local-аас энэ зургийг солих
                   </span>
                   <input
                     type="file"
@@ -1125,7 +1116,7 @@ function GalleryUploadField({ trip, className }: { trip?: Adventure; className?:
           aria-hidden="true"
         />
         <p className="mt-2 text-xs font-medium leading-5 text-[var(--muted-foreground)]">
-          URL-г шууд засаж болно, эсвэл тухайн зураг дээр file сонгож сольж болно. Устгах сонголт идэвхжүүлсэн зураг хадгалахад gallery-аас хасагдана.
+          Зөвхөн local-аас зураг upload хийж солино. Устгах сонголт идэвхжүүлсэн зураг хадгалахад gallery-аас хасагдана.
         </p>
       </div>
     </div>
