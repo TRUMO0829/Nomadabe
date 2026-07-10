@@ -755,7 +755,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                 rel="noreferrer"
                 className="mt-10 flex max-w-sm gap-4 text-sm leading-7 text-white/56 transition-colors hover:text-accent"
               >
-                <MapPin className="mt-1 h-5 w-5 shrink-0 text-accent" />
+                <MapPin className="mt-1 h-5 w-5 shrink-0 text-white" />
                 <span>Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia</span>
               </a>
 

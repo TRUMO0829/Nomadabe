@@ -210,7 +210,7 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 .footer-accent-icon path,
 .footer-accent-icon rect,
 .footer-accent-icon circle {
-  color: var(--accent) !important;
+  color: #ffffff !important;
 }
 
 .footer-accent-icon svg {
