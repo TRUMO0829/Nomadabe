@@ -1061,7 +1061,7 @@ function DestinationDragCarousel({
                 onClick={(event) => handleCardClick(event, adventure)}
                 className="group relative m-0 flex min-w-[82vw] shrink-0 cursor-pointer flex-col transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
               >
-                <div className="relative aspect-[4/6.05] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
+                <div className="relative aspect-[4/6.05] overflow-hidden bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
                   <div
                     className="h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
                     style={{ backgroundImage: `url(${getHighResolutionImageUrl(adventure.image)})` }}
@@ -1106,7 +1106,7 @@ function DestinationDragCarousel({
                           dragRef.current.didDrag = false;
                           stopMomentum();
                         }}
-                        className="group/btn relative z-10 inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
+                        className="group/btn relative z-10 inline-flex min-h-10 items-center justify-center gap-2 bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
                       >
                         {detailsLabel}
                         <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
@@ -1152,18 +1152,18 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
             return (
               <article
                 key={stay.id}
-                className="overflow-hidden rounded-[1.35rem] border border-[#eadfac] bg-[#fffdf3] shadow-[0_20px_70px_rgba(17,16,11,0.08)]"
+                className="overflow-hidden border border-[#eadfac] bg-[#fffdf3] shadow-[0_20px_70px_rgba(17,16,11,0.08)]"
               >
                 <div className="grid h-[280px] grid-cols-[1.45fr_0.9fr] gap-2 p-2">
                   <div
-                    className="rounded-[1rem] bg-cover bg-center"
+                    className="bg-cover bg-center"
                     style={{ backgroundImage: `url('${stay.images[0]}')` }}
                   />
                   <div className="grid gap-2">
                     {stay.images.slice(1, 3).map((image) => (
                       <div
                         key={image}
-                        className="rounded-[1rem] bg-cover bg-center"
+                        className="bg-cover bg-center"
                         style={{ backgroundImage: `url('${image}')` }}
                       />
                     ))}
@@ -1190,7 +1190,7 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
                   </p>
 
                   <dl className="mt-5 grid grid-cols-2 gap-2">
-                    <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <div className="border border-[#eadfac] bg-white px-3 py-3">
                       <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
                         <CalendarDays className="h-4 w-4" />
                         Хоног
@@ -1199,7 +1199,7 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
                         {stay.nights} хоног
                       </dd>
                     </div>
-                    <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <div className="border border-[#eadfac] bg-white px-3 py-3">
                       <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
                         <UsersRound className="h-4 w-4" />
                         Хүний тоо
@@ -1208,7 +1208,7 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
                         {stay.guests} хүн
                       </dd>
                     </div>
-                    <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <div className="border border-[#eadfac] bg-white px-3 py-3">
                       <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
                         <BedDouble className="h-4 w-4" />
                         Өрөөний тоо
@@ -1217,7 +1217,7 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
                         {stay.rooms} өрөө
                       </dd>
                     </div>
-                    <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <div className="border border-[#eadfac] bg-white px-3 py-3">
                       <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
                         <MapPinned className="h-4 w-4" />
                         Үнэ
@@ -1230,7 +1230,7 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
 
                   <Link
                     href={requestHref}
-                    className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#11100b] px-5 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#2b281d]"
+                    className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 bg-[#11100b] px-5 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#2b281d]"
                   >
                     Захиалах хүсэлт
                     <ArrowRight className="h-4 w-4" />

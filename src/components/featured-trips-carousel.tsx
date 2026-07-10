@@ -298,7 +298,7 @@ function FeaturedTripsScrollStack({
           return (
             <article
               key={adventure.id}
-              className="overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+              className="overflow-hidden border border-border bg-card shadow-sm"
             >
               <div className="relative aspect-[4/5] overflow-hidden">
                 <Image
@@ -333,7 +333,7 @@ function FeaturedTripsScrollStack({
                 <button
                   type="button"
                   onClick={() => onSelect(adventure)}
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-accent bg-accent px-5 text-xs uppercase text-accent-foreground transition-colors hover:bg-white hover:text-black"
+                  className="inline-flex min-h-11 items-center justify-center border border-accent bg-accent px-5 text-xs uppercase text-accent-foreground transition-colors hover:bg-white hover:text-black"
                 >
                   {copy.details}
                 </button>

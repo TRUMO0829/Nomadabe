@@ -340,7 +340,7 @@ export function OutboundTripsCarousel({
                 type="button"
                 onClick={() => setSelected(adventure)}
                 className={[
-                  "group relative block overflow-hidden rounded-[28px] border border-white/10 text-left transition-colors hover:border-[rgba(255,212,0,0.55)]",
+                  "group relative block overflow-hidden border border-white/10 text-left transition-colors hover:border-[rgba(255,212,0,0.55)]",
                   featured
                     ? "h-[clamp(20rem,40vw,30rem)] lg:col-span-2"
                     : "h-[clamp(18rem,30vw,26rem)]",
