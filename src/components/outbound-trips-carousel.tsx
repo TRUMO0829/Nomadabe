@@ -7,6 +7,7 @@ import { getAdventureText, type Adventure } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
+import { formatPrice } from "@/lib/currency";
 
 const ACCENT = "#FFD400";
 
@@ -238,7 +239,7 @@ export function OutboundTripsCarousel({
         days: adventure.days,
         price:
           adventure.price > 0
-            ? `${adventure.price.toLocaleString()} ${adventure.currency}`
+            ? formatPrice(adventure.price, contentLocale)
             : "",
         image: adventure.image,
         adventure,
@@ -329,7 +330,7 @@ export function OutboundTripsCarousel({
             const featured = index === 0;
             const price =
               adventure.price > 0
-                ? `${adventure.price.toLocaleString()} ${adventure.currency}`
+                ? formatPrice(adventure.price, contentLocale)
                 : null;
             const image = getHighResolutionImageUrl(adventure.image);
 

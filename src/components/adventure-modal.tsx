@@ -29,6 +29,7 @@ import {
 } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { useLanguage } from "./language-provider";
+import { formatPrice } from "@/lib/currency";
 
 type Props = {
   adventure: Adventure | null;
@@ -538,10 +539,7 @@ export function AdventureModal({ adventure, onClose, onRegisterClick }: Props) {
                   {adventure.price > 0 ? (
                     <>
                       <div className="mt-2 font-display text-4xl">
-                        {adventure.price.toLocaleString()}
-                      </div>
-                      <div className="mt-1 text-xs text-[#11100b]">
-                        {adventure.currency}
+                        {formatPrice(adventure.price, contentLocale)}
                       </div>
                     </>
                   ) : (

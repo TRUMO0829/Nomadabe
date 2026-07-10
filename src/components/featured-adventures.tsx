@@ -35,6 +35,7 @@ import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { cn } from "@/lib/utils";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
+import { formatPriceString } from "@/lib/currency";
 import { OUTBOUND_OPTIONS } from "./outbound-trips-carousel";
 
 type TripScope = "all" | "outbound" | "domestic" | "corporate";
@@ -1188,6 +1189,7 @@ function DestinationDragCarousel({
 }
 
 function StaysAndVillasSection() {
+  const { contentLocale } = useLanguage();
   return (
     <section id="stays" className="bg-white px-6 py-16 lg:px-10 lg:py-20">
       <div className="mx-auto max-w-7xl">
@@ -1286,7 +1288,7 @@ function StaysAndVillasSection() {
                         Үнэ
                       </dt>
                       <dd className="mt-2 text-sm font-semibold text-[#11100b]">
-                        {stay.price}
+                        {formatPriceString(stay.price, contentLocale)}
                       </dd>
                     </div>
                   </dl>

@@ -7,6 +7,7 @@ import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
+import { formatPrice } from "@/lib/currency";
 import { TravelSectionIntro } from "./travel-section-intro";
 
 const COPY = {
@@ -142,7 +143,7 @@ function DomesticTripCard({
   const image = getHighResolutionImageUrl(adventure.image);
   const price =
     adventure.price > 0
-      ? `${adventure.price.toLocaleString()} ${adventure.currency}`
+      ? formatPrice(adventure.price, contentLocale)
       : null;
   const indexLabel = String(index + 1).padStart(2, "0");
   const totalLabel = String(total).padStart(2, "0");

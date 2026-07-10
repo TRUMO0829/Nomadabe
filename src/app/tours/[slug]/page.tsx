@@ -13,6 +13,7 @@ import {
 import { Navbar } from "@/components/navbar";
 import { SignupPromptModal } from "@/components/signup-prompt-modal";
 import { CtaFooter } from "@/components/cta-footer";
+import { PriceTag } from "@/components/price-tag";
 import {
   getAdventureDetailInfo,
   getAdventureGalleryImages,
@@ -154,14 +155,6 @@ async function getTourBySlug(slug: string) {
   );
 }
 
-function formatPrice(adventure: Adventure) {
-  if (!adventure.price) {
-    return "Үнэ тохиролцоно";
-  }
-
-  return `${adventure.price.toLocaleString("mn-MN")} ${adventure.currency}`;
-}
-
 export async function generateMetadata({
   params,
 }: TourDetailPageProps): Promise<Metadata> {
@@ -244,7 +237,7 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
                   Үнэ
                 </p>
                 <p className="mt-1 text-lg font-semibold">
-                  {formatPrice(adventure)}
+                  <PriceTag mnt={adventure.price} />
                 </p>
               </div>
             </div>
@@ -337,7 +330,7 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
                 Захиалга
               </p>
               <p className="mt-4 text-3xl font-medium">
-                {formatPrice(adventure)}
+                <PriceTag mnt={adventure.price} />
               </p>
               <p className="mt-3 text-sm font-medium leading-6 text-white/76">
                 Аяллын боломжит өдөр, хүний тоо болон нэмэлт хэрэгцээгээ
