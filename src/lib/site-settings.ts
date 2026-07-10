@@ -22,6 +22,73 @@ export type SiteReview = {
   createdAt: string;
 };
 
+export type StayOption = {
+  id: string;
+  title: string;
+  type: string;
+  nights: number;
+  price: string;
+  guests: number;
+  rooms: number;
+  location: string;
+  summary: string;
+  images: string[];
+};
+
+export const DEFAULT_STAYS: StayOption[] = [
+  {
+    id: "ub-business-hotel",
+    title: "Хотын төвийн вилла",
+    type: "Вилла",
+    nights: 2,
+    price: "280,000 MNT / хоног",
+    guests: 2,
+    rooms: 1,
+    location: "Улаанбаатар",
+    summary:
+      "Бизнес уулзалт, expo, богино аялалд тохирох төв байршилтай хувийн вилла сонголт.",
+    images: [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1800&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1200&q=85&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200&q=85&fit=crop&fm=webp",
+    ],
+  },
+  {
+    id: "terelj-family-villa",
+    title: "Тэрэлж гэр бүлийн вилла",
+    type: "Вилла",
+    nights: 3,
+    price: "650,000 MNT / хоног",
+    guests: 6,
+    rooms: 3,
+    location: "Тэрэлж",
+    summary:
+      "Гэр бүл, найз нөхөд, жижиг группийн амралтад тохирох хувийн орчинтой вилла.",
+    images: [
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1800&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=85&fit=crop&fm=webp",
+    ],
+  },
+  {
+    id: "lake-lodge-stay",
+    title: "Нуурын эргийн вилла",
+    type: "Вилла",
+    nights: 4,
+    price: "420,000 MNT / хоног",
+    guests: 4,
+    rooms: 2,
+    location: "Хөвсгөл / нуурын бүс",
+    summary:
+      "Байгальд ойр, тайван амралт болон дотоод аяллын маршрутад холбох вилла сонголт.",
+    images: [
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1800&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=1200&q=85&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=1200&q=85&fit=crop&fm=webp",
+    ],
+  },
+];
+
 export type AboutSectionId = "who" | "values" | "team" | "work";
 
 export type OrderedVisibility = {
@@ -109,6 +176,7 @@ export type SiteSettings = {
   heroOverlayOpacity: number;
   teamMembers: TeamMember[];
   reviews: SiteReview[];
+  stays: StayOption[];
   aboutSection: AboutSectionSettings;
 };
 

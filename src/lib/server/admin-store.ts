@@ -14,6 +14,8 @@ import {
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import {
   DEFAULT_ABOUT_SECTION,
+  DEFAULT_STAYS,
+  type StayOption,
   type AboutFaqItem,
   type AboutGalleryImage,
   type AboutLocaleContent,
@@ -101,31 +103,31 @@ const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
 const DEFAULT_REVIEWS: SiteReview[] = [
   {
     id: "review-nomin-canton",
-    name: "Номин",
+    name: "ÐÐ¾Ð¼Ð¸Ð½",
     location: "Ulaanbaatar",
-    trip: "Canton Fair - 7 өдөр",
+    trip: "Canton Fair - 7 Ó©Ð´Ó©Ñ",
     message:
-      "Анх удаа Canton Fair-д явсан болохоор бүртгэл, павильон, уулзалтын цаг бүгдийг нь урьдчилж цэгцэлж өгсөн нь хамгийн их хэрэг болсон.",
+      "ÐÐ½Ñ ÑÐ´Ð°Ð° Canton Fair-Ð´ ÑÐ²ÑÐ°Ð½ Ð±Ð¾Ð»Ð¾ÑÐ¾Ð¾Ñ Ð±Ò¯ÑÑÐ³ÑÐ», Ð¿Ð°Ð²Ð¸Ð»ÑÐ¾Ð½, ÑÑÐ»Ð·Ð°Ð»ÑÑÐ½ ÑÐ°Ð³ Ð±Ò¯Ð³Ð´Ð¸Ð¹Ð³ Ð½Ñ ÑÑÑÐ´ÑÐ¸Ð»Ð¶ ÑÑÐ³ÑÑÐ»Ð¶ Ó©Ð³ÑÓ©Ð½ Ð½Ñ ÑÐ°Ð¼Ð³Ð¸Ð¹Ð½ Ð¸Ñ ÑÑÑÑÐ³ Ð±Ð¾Ð»ÑÐ¾Ð½.",
     rating: 5,
     createdAt: "2026-01-12T00:00:00.000Z",
   },
   {
     id: "review-temuulen-shanghai",
-    name: "Тэмүүлэн",
+    name: "Ð¢ÑÐ¼Ò¯Ò¯Ð»ÑÐ½",
     location: "Ulaanbaatar",
-    trip: "Шанхай бизнес аялал - 5 өдөр",
+    trip: "Ð¨Ð°Ð½ÑÐ°Ð¹ Ð±Ð¸Ð·Ð½ÐµÑ Ð°ÑÐ»Ð°Ð» - 5 Ó©Ð´Ó©Ñ",
     message:
-      "Нислэг хойшлоход буудал, тосолт, дараагийн өдрийн маршрутыг хурдан өөрчилж өгсөн. Ажлын уулзалтуудаа алдалгүй амжуулсан.",
+      "ÐÐ¸ÑÐ»ÑÐ³ ÑÐ¾Ð¹ÑÐ»Ð¾ÑÐ¾Ð´ Ð±ÑÑÐ´Ð°Ð», ÑÐ¾ÑÐ¾Ð»Ñ, Ð´Ð°ÑÐ°Ð°Ð³Ð¸Ð¹Ð½ Ó©Ð´ÑÐ¸Ð¹Ð½ Ð¼Ð°ÑÑÑÑÑÑÐ³ ÑÑÑÐ´Ð°Ð½ Ó©Ó©ÑÑÐ¸Ð»Ð¶ Ó©Ð³ÑÓ©Ð½. ÐÐ¶Ð»ÑÐ½ ÑÑÐ»Ð·Ð°Ð»ÑÑÑÐ´Ð°Ð° Ð°Ð»Ð´Ð°Ð»Ð³Ò¯Ð¹ Ð°Ð¼Ð¶ÑÑÐ»ÑÐ°Ð½.",
     rating: 5,
     createdAt: "2026-01-18T00:00:00.000Z",
   },
   {
     id: "review-saruul-jeju",
-    name: "Саруул",
+    name: "Ð¡Ð°ÑÑÑÐ»",
     location: "Ulaanbaatar",
-    trip: "Жэжү гэр бүлийн аялал - 6 өдөр",
+    trip: "ÐÑÐ¶Ò¯ Ð³ÑÑ Ð±Ò¯Ð»Ð¸Ð¹Ð½ Ð°ÑÐ»Ð°Ð» - 6 Ó©Ð´Ó©Ñ",
     message:
-      "Хүүхдүүдтэй явсан болохоор хөтөлбөр нь хэт шахуу биш, буудал нь далайд ойр байсан нь таалагдсан. Өдөр бүрийн мэдээлэл тодорхой ирдэг байсан.",
+      "Ð¥Ò¯Ò¯ÑÐ´Ò¯Ò¯Ð´ÑÑÐ¹ ÑÐ²ÑÐ°Ð½ Ð±Ð¾Ð»Ð¾ÑÐ¾Ð¾Ñ ÑÓ©ÑÓ©Ð»Ð±Ó©Ñ Ð½Ñ ÑÑÑ ÑÐ°ÑÑÑ Ð±Ð¸Ñ, Ð±ÑÑÐ´Ð°Ð» Ð½Ñ Ð´Ð°Ð»Ð°Ð¹Ð´ Ð¾Ð¹Ñ Ð±Ð°Ð¹ÑÐ°Ð½ Ð½Ñ ÑÐ°Ð°Ð»Ð°Ð³Ð´ÑÐ°Ð½. Ó¨Ð´Ó©Ñ Ð±Ò¯ÑÐ¸Ð¹Ð½ Ð¼ÑÐ´ÑÑÐ»ÑÐ» ÑÐ¾Ð´Ð¾ÑÑÐ¾Ð¹ Ð¸ÑÐ´ÑÐ³ Ð±Ð°Ð¹ÑÐ°Ð½.",
     rating: 5,
     createdAt: "2026-02-02T00:00:00.000Z",
   },
@@ -147,10 +149,10 @@ const DEFAULT_OUTBOUND_TRIP_IMAGES: Record<string, string> = {
 };
 
 const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  heroBadge: "★★★★★ 1,200+ аялагчийн үнэлгээ",
-  heroTitle: "Дараагийн түвшинд аял.",
+  heroBadge: "âââââ 1,200+ Ð°ÑÐ»Ð°Ð³ÑÐ¸Ð¹Ð½ Ò¯Ð½ÑÐ»Ð³ÑÑ",
+  heroTitle: "ÐÐ°ÑÐ°Ð°Ð³Ð¸Ð¹Ð½ ÑÒ¯Ð²ÑÐ¸Ð½Ð´ Ð°ÑÐ».",
   heroSubtitle:
-    "Монгол болон дэлхийн чиглэлүүдэд жижиг групп, бизнес, expo, амралтын аяллыг орон нутгийн мэдлэгтэй баг төлөвлөн зохион байгуулна.",
+    "ÐÐ¾Ð½Ð³Ð¾Ð» Ð±Ð¾Ð»Ð¾Ð½ Ð´ÑÐ»ÑÐ¸Ð¹Ð½ ÑÐ¸Ð³Ð»ÑÐ»Ò¯Ò¯Ð´ÑÐ´ Ð¶Ð¸Ð¶Ð¸Ð³ Ð³ÑÑÐ¿Ð¿, Ð±Ð¸Ð·Ð½ÐµÑ, expo, Ð°Ð¼ÑÐ°Ð»ÑÑÐ½ Ð°ÑÐ»Ð»ÑÐ³ Ð¾ÑÐ¾Ð½ Ð½ÑÑÐ³Ð¸Ð¹Ð½ Ð¼ÑÐ´Ð»ÑÐ³ÑÑÐ¹ Ð±Ð°Ð³ ÑÓ©Ð»Ó©Ð²Ð»Ó©Ð½ Ð·Ð¾ÑÐ¸Ð¾Ð½ Ð±Ð°Ð¹Ð³ÑÑÐ»Ð½Ð°.",
   heroImage:
     "https://images.unsplash.com/photo-1547531455-ccff21cdf2c4?w=2400&q=90&fit=crop&fm=webp",
   heroVideos: [
@@ -165,6 +167,7 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroOverlayOpacity: 0.72,
   teamMembers: DEFAULT_TEAM_MEMBERS,
   reviews: DEFAULT_REVIEWS,
+  stays: DEFAULT_STAYS,
   aboutSection: DEFAULT_ABOUT_SECTION,
 };
 
@@ -183,7 +186,7 @@ export async function getAdminStore() {
 
   if (!canUseLocalJsonStore()) {
     // Reads must never crash a public page when storage isn't configured
-    // (e.g. a Preview deploy missing Supabase env) — fall back to defaults.
+    // (e.g. a Preview deploy missing Supabase env) â fall back to defaults.
     // Saving still fails loudly via saveAdminStore.
     return normalizeStore({});
   }
@@ -480,11 +483,11 @@ export async function addSiteReviewFromForm(formData: FormData) {
   const message = getFormString(formData, "message");
 
   if (name.length < 2) {
-    throw new Error("Нэрээ 2-оос дээш тэмдэгтээр оруулна уу.");
+    throw new Error("ÐÑÑÑÑ 2-Ð¾Ð¾Ñ Ð´ÑÑÑ ÑÑÐ¼Ð´ÑÐ³ÑÑÑÑ Ð¾ÑÑÑÐ»Ð½Ð° ÑÑ.");
   }
 
   if (message.length < 8) {
-    throw new Error("Сэтгэгдлээ арай дэлгэрэнгүй бичнэ үү.");
+    throw new Error("Ð¡ÑÑÐ³ÑÐ³Ð´Ð»ÑÑ Ð°ÑÐ°Ð¹ Ð´ÑÐ»Ð³ÑÑÑÐ½Ð³Ò¯Ð¹ Ð±Ð¸ÑÐ½Ñ Ò¯Ò¯.");
   }
 
   const uploadedImage = formData.get("image");
@@ -679,7 +682,7 @@ export function parseSiteSettingsFromJson(payload: unknown) {
       : undefined,
     reviews: Array.isArray(payload.reviews) ? normalizeReviews(payload.reviews) : undefined,
     // About content is code-managed (the CMS editor was removed), so any legacy
-    // value stored in Supabase is ignored — always fall back to DEFAULT_ABOUT_SECTION.
+    // value stored in Supabase is ignored â always fall back to DEFAULT_ABOUT_SECTION.
     aboutSection: undefined,
   });
 }
@@ -693,6 +696,25 @@ function normalizeStore(store: Partial<AdminStore>): AdminStore {
       Array.isArray(store.services) && store.services.length > 0 ? store.services : TRAVEL_SERVICES,
     siteSettings: normalizeSiteSettings(store.siteSettings ?? DEFAULT_SITE_SETTINGS),
   };
+}
+
+function normalizeStays(input: unknown): StayOption[] {
+  if (!Array.isArray(input) || input.length === 0) return DEFAULT_STAYS;
+  const cleaned = input
+    .filter((s): s is Record<string, unknown> => isRecord(s) && typeof s.id === "string")
+    .map((s) => ({
+      id: String(s.id),
+      title: String(s.title ?? ""),
+      type: String(s.type ?? "Вилла"),
+      nights: Number(s.nights) || 0,
+      price: String(s.price ?? ""),
+      guests: Number(s.guests) || 0,
+      rooms: Number(s.rooms) || 0,
+      location: String(s.location ?? ""),
+      summary: String(s.summary ?? ""),
+      images: Array.isArray(s.images) ? s.images.map(String).filter(Boolean) : [],
+    }));
+  return cleaned.length > 0 ? cleaned : DEFAULT_STAYS;
 }
 
 function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
@@ -711,6 +733,7 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
         : DEFAULT_SITE_SETTINGS.heroOverlayOpacity,
     teamMembers: normalizeTeamMembers(settings.teamMembers),
     reviews: normalizeReviews(settings.reviews),
+    stays: normalizeStays(settings.stays),
     aboutSection: normalizeAboutSection(settings.aboutSection),
   };
 }
@@ -791,19 +814,19 @@ function normalizeOutboundTripImages(value: unknown): Record<string, string> {
 
 const STALE_ABOUT_DEFAULT_TEXT = new Set([
   "Connecting Mongolia with the world",
-  "Nomadabe Travel нь бизнес аялал, олон улсын үзэсгэлэн (expo), хөтөлбөртэй амралт зугаалга болон чөлөөт аяллыг мэргэжлийн түвшинд зохион байгуулдаг аяллын компани. Улаанбаатар хотод төвтэй, 10,000 гаруй аялагчийн аяллыг амжилттай зохион байгуулсан туршлагатай.",
-  "Nomadabe Travel нь зөвхөн аялал зохион байгуулахаас гадна бизнес зорилготой аялагчдад зориулсан зөвлөгөө, логистик, худалдан авалт, бүтээгдэхүүн судалгаа, олон улсын үзэсгэлэнгийн дэмжлэгийг нэг дор үзүүлдэг. Жил бүр 2,000 гаруй аялагчийг хүлээн авч, бизнес болон амралтын аяллыг бодит зохион байгуулалттай холбодог.",
-  "Зөвхөн аялал биш — бизнесийн шийдэл",
-  "Аяллын явцад бараа бүтээгдэхүүн судлах, үйлдвэрлэгч, нийлүүлэгчтэй холбогдох, импорт, борлуулалт, санхүүжилт, логистикийн бодит зөвлөгөө авах боломжийг олгоно.",
-  "Нислэг, буудал, eSIM/дата SIM, даатгал, орчуулагч, хөтөч, бизнес зөвлөгөө, тээвэр логистикийг нэг багцад багтаасан тул аялагч зөвхөн цүнхээ үүрээд гарахад хангалттай.",
-  "Canton Fair, SNEC PV+, SIAL Shanghai зэрэг дэлхийн томоохон үзэсгэлэнд оролцож, шинэ бүтээгдэхүүн, нийлүүлэгч, түншлэлийн боломжийг нээнэ.",
-  "Аялал, бизнес зөвлөгөө, худалдан авалт, логистик, орчуулга, хөтөчийн дэмжлэгийг сэтгэлтэй, найдвартай баг нэг дор хариуцна.",
-  "Бизнес, expo, амралт, чөлөөт аяллыг нэг дор.",
-  "Бид бизнес аялал, олон улсын үзэсгэлэн (expo), хөтөлбөртэй амралт зугаалга болон чөлөөт аяллыг төлөвлөж, зөвлөгөө, орчуулга, хөтөч, логистикийн дэмжлэгтэйгээр бодитоор гүйцэтгэдэг.",
-  "Импорт эхлүүлэх, бизнесээ өргөжүүлэх, шинэ бараа бүтээгдэхүүн, үйлдвэрлэгч, нийлүүлэгч судлах зорилготой аялал — бизнес зөвлөгөө, know-how-той хамт.",
-  "Canton Fair, SNEC PV+ 2026, SIAL Shanghai зэрэг олон улсын үзэсгэлэн, худалдааны event-д оролцох аяллын багц.",
-  "Урьдчилан төлөвлөсөн, ойлгомжтой маршрут, зохион байгуулалттай амралт, аялал, туршлага хосолсон аялал.",
-  "Аялагчийн зорилго, хугацаа, сонирхолд тааруулсан уян хатан маршрут — шинэ улс, шинэ дурсамж, шинэ адал явдал.",
+  "Nomadabe Travel Ð½Ñ Ð±Ð¸Ð·Ð½ÐµÑ Ð°ÑÐ»Ð°Ð», Ð¾Ð»Ð¾Ð½ ÑÐ»ÑÑÐ½ Ò¯Ð·ÑÑÐ³ÑÐ»ÑÐ½ (expo), ÑÓ©ÑÓ©Ð»Ð±Ó©ÑÑÑÐ¹ Ð°Ð¼ÑÐ°Ð»Ñ Ð·ÑÐ³Ð°Ð°Ð»Ð³Ð° Ð±Ð¾Ð»Ð¾Ð½ ÑÓ©Ð»Ó©Ó©Ñ Ð°ÑÐ»Ð»ÑÐ³ Ð¼ÑÑÐ³ÑÐ¶Ð»Ð¸Ð¹Ð½ ÑÒ¯Ð²ÑÐ¸Ð½Ð´ Ð·Ð¾ÑÐ¸Ð¾Ð½ Ð±Ð°Ð¹Ð³ÑÑÐ»Ð´Ð°Ð³ Ð°ÑÐ»Ð»ÑÐ½ ÐºÐ¾Ð¼Ð¿Ð°Ð½Ð¸. Ð£Ð»Ð°Ð°Ð½Ð±Ð°Ð°ÑÐ°Ñ ÑÐ¾ÑÐ¾Ð´ ÑÓ©Ð²ÑÑÐ¹, 10,000 Ð³Ð°ÑÑÐ¹ Ð°ÑÐ»Ð°Ð³ÑÐ¸Ð¹Ð½ Ð°ÑÐ»Ð»ÑÐ³ Ð°Ð¼Ð¶Ð¸Ð»ÑÑÐ°Ð¹ Ð·Ð¾ÑÐ¸Ð¾Ð½ Ð±Ð°Ð¹Ð³ÑÑÐ»ÑÐ°Ð½ ÑÑÑÑÐ»Ð°Ð³Ð°ÑÐ°Ð¹.",
+  "Nomadabe Travel Ð½Ñ Ð·Ó©Ð²ÑÓ©Ð½ Ð°ÑÐ»Ð°Ð» Ð·Ð¾ÑÐ¸Ð¾Ð½ Ð±Ð°Ð¹Ð³ÑÑÐ»Ð°ÑÐ°Ð°Ñ Ð³Ð°Ð´Ð½Ð° Ð±Ð¸Ð·Ð½ÐµÑ Ð·Ð¾ÑÐ¸Ð»Ð³Ð¾ÑÐ¾Ð¹ Ð°ÑÐ»Ð°Ð³ÑÐ´Ð°Ð´ Ð·Ð¾ÑÐ¸ÑÐ»ÑÐ°Ð½ Ð·Ó©Ð²Ð»Ó©Ð³Ó©Ó©, Ð»Ð¾Ð³Ð¸ÑÑÐ¸Ðº, ÑÑÐ´Ð°Ð»Ð´Ð°Ð½ Ð°Ð²Ð°Ð»Ñ, Ð±Ò¯ÑÑÑÐ³Ð´ÑÑÒ¯Ò¯Ð½ ÑÑÐ´Ð°Ð»Ð³Ð°Ð°, Ð¾Ð»Ð¾Ð½ ÑÐ»ÑÑÐ½ Ò¯Ð·ÑÑÐ³ÑÐ»ÑÐ½Ð³Ð¸Ð¹Ð½ Ð´ÑÐ¼Ð¶Ð»ÑÐ³Ð¸Ð¹Ð³ Ð½ÑÐ³ Ð´Ð¾Ñ Ò¯Ð·Ò¯Ò¯Ð»Ð´ÑÐ³. ÐÐ¸Ð» Ð±Ò¯Ñ 2,000 Ð³Ð°ÑÑÐ¹ Ð°ÑÐ»Ð°Ð³ÑÐ¸Ð¹Ð³ ÑÒ¯Ð»ÑÑÐ½ Ð°Ð²Ñ, Ð±Ð¸Ð·Ð½ÐµÑ Ð±Ð¾Ð»Ð¾Ð½ Ð°Ð¼ÑÐ°Ð»ÑÑÐ½ Ð°ÑÐ»Ð»ÑÐ³ Ð±Ð¾Ð´Ð¸Ñ Ð·Ð¾ÑÐ¸Ð¾Ð½ Ð±Ð°Ð¹Ð³ÑÑÐ»Ð°Ð»ÑÑÐ°Ð¹ ÑÐ¾Ð»Ð±Ð¾Ð´Ð¾Ð³.",
+  "ÐÓ©Ð²ÑÓ©Ð½ Ð°ÑÐ»Ð°Ð» Ð±Ð¸Ñ â Ð±Ð¸Ð·Ð½ÐµÑÐ¸Ð¹Ð½ ÑÐ¸Ð¹Ð´ÑÐ»",
+  "ÐÑÐ»Ð»ÑÐ½ ÑÐ²ÑÐ°Ð´ Ð±Ð°ÑÐ°Ð° Ð±Ò¯ÑÑÑÐ³Ð´ÑÑÒ¯Ò¯Ð½ ÑÑÐ´Ð»Ð°Ñ, Ò¯Ð¹Ð»Ð´Ð²ÑÑÐ»ÑÐ³Ñ, Ð½Ð¸Ð¹Ð»Ò¯Ò¯Ð»ÑÐ³ÑÑÑÐ¹ ÑÐ¾Ð»Ð±Ð¾Ð³Ð´Ð¾Ñ, Ð¸Ð¼Ð¿Ð¾ÑÑ, Ð±Ð¾ÑÐ»ÑÑÐ»Ð°Ð»Ñ, ÑÐ°Ð½ÑÒ¯Ò¯Ð¶Ð¸Ð»Ñ, Ð»Ð¾Ð³Ð¸ÑÑÐ¸ÐºÐ¸Ð¹Ð½ Ð±Ð¾Ð´Ð¸Ñ Ð·Ó©Ð²Ð»Ó©Ð³Ó©Ó© Ð°Ð²Ð°Ñ Ð±Ð¾Ð»Ð¾Ð¼Ð¶Ð¸Ð¹Ð³ Ð¾Ð»Ð³Ð¾Ð½Ð¾.",
+  "ÐÐ¸ÑÐ»ÑÐ³, Ð±ÑÑÐ´Ð°Ð», eSIM/Ð´Ð°ÑÐ° SIM, Ð´Ð°Ð°ÑÐ³Ð°Ð», Ð¾ÑÑÑÑÐ»Ð°Ð³Ñ, ÑÓ©ÑÓ©Ñ, Ð±Ð¸Ð·Ð½ÐµÑ Ð·Ó©Ð²Ð»Ó©Ð³Ó©Ó©, ÑÑÑÐ²ÑÑ Ð»Ð¾Ð³Ð¸ÑÑÐ¸ÐºÐ¸Ð¹Ð³ Ð½ÑÐ³ Ð±Ð°Ð³ÑÐ°Ð´ Ð±Ð°Ð³ÑÐ°Ð°ÑÐ°Ð½ ÑÑÐ» Ð°ÑÐ»Ð°Ð³Ñ Ð·Ó©Ð²ÑÓ©Ð½ ÑÒ¯Ð½ÑÑÑ Ò¯Ò¯ÑÑÑÐ´ Ð³Ð°ÑÐ°ÑÐ°Ð´ ÑÐ°Ð½Ð³Ð°Ð»ÑÑÐ°Ð¹.",
+  "Canton Fair, SNEC PV+, SIAL Shanghai Ð·ÑÑÑÐ³ Ð´ÑÐ»ÑÐ¸Ð¹Ð½ ÑÐ¾Ð¼Ð¾Ð¾ÑÐ¾Ð½ Ò¯Ð·ÑÑÐ³ÑÐ»ÑÐ½Ð´ Ð¾ÑÐ¾Ð»ÑÐ¾Ð¶, ÑÐ¸Ð½Ñ Ð±Ò¯ÑÑÑÐ³Ð´ÑÑÒ¯Ò¯Ð½, Ð½Ð¸Ð¹Ð»Ò¯Ò¯Ð»ÑÐ³Ñ, ÑÒ¯Ð½ÑÐ»ÑÐ»Ð¸Ð¹Ð½ Ð±Ð¾Ð»Ð¾Ð¼Ð¶Ð¸Ð¹Ð³ Ð½ÑÑÐ½Ñ.",
+  "ÐÑÐ»Ð°Ð», Ð±Ð¸Ð·Ð½ÐµÑ Ð·Ó©Ð²Ð»Ó©Ð³Ó©Ó©, ÑÑÐ´Ð°Ð»Ð´Ð°Ð½ Ð°Ð²Ð°Ð»Ñ, Ð»Ð¾Ð³Ð¸ÑÑÐ¸Ðº, Ð¾ÑÑÑÑÐ»Ð³Ð°, ÑÓ©ÑÓ©ÑÐ¸Ð¹Ð½ Ð´ÑÐ¼Ð¶Ð»ÑÐ³Ð¸Ð¹Ð³ ÑÑÑÐ³ÑÐ»ÑÑÐ¹, Ð½Ð°Ð¹Ð´Ð²Ð°ÑÑÐ°Ð¹ Ð±Ð°Ð³ Ð½ÑÐ³ Ð´Ð¾Ñ ÑÐ°ÑÐ¸ÑÑÐ½Ð°.",
+  "ÐÐ¸Ð·Ð½ÐµÑ, expo, Ð°Ð¼ÑÐ°Ð»Ñ, ÑÓ©Ð»Ó©Ó©Ñ Ð°ÑÐ»Ð»ÑÐ³ Ð½ÑÐ³ Ð´Ð¾Ñ.",
+  "ÐÐ¸Ð´ Ð±Ð¸Ð·Ð½ÐµÑ Ð°ÑÐ»Ð°Ð», Ð¾Ð»Ð¾Ð½ ÑÐ»ÑÑÐ½ Ò¯Ð·ÑÑÐ³ÑÐ»ÑÐ½ (expo), ÑÓ©ÑÓ©Ð»Ð±Ó©ÑÑÑÐ¹ Ð°Ð¼ÑÐ°Ð»Ñ Ð·ÑÐ³Ð°Ð°Ð»Ð³Ð° Ð±Ð¾Ð»Ð¾Ð½ ÑÓ©Ð»Ó©Ó©Ñ Ð°ÑÐ»Ð»ÑÐ³ ÑÓ©Ð»Ó©Ð²Ð»Ó©Ð¶, Ð·Ó©Ð²Ð»Ó©Ð³Ó©Ó©, Ð¾ÑÑÑÑÐ»Ð³Ð°, ÑÓ©ÑÓ©Ñ, Ð»Ð¾Ð³Ð¸ÑÑÐ¸ÐºÐ¸Ð¹Ð½ Ð´ÑÐ¼Ð¶Ð»ÑÐ³ÑÑÐ¹Ð³ÑÑÑ Ð±Ð¾Ð´Ð¸ÑÐ¾Ð¾Ñ Ð³Ò¯Ð¹ÑÑÑÐ³ÑÐ´ÑÐ³.",
+  "ÐÐ¼Ð¿Ð¾ÑÑ ÑÑÐ»Ò¯Ò¯Ð»ÑÑ, Ð±Ð¸Ð·Ð½ÐµÑÑÑ Ó©ÑÐ³Ó©Ð¶Ò¯Ò¯Ð»ÑÑ, ÑÐ¸Ð½Ñ Ð±Ð°ÑÐ°Ð° Ð±Ò¯ÑÑÑÐ³Ð´ÑÑÒ¯Ò¯Ð½, Ò¯Ð¹Ð»Ð´Ð²ÑÑÐ»ÑÐ³Ñ, Ð½Ð¸Ð¹Ð»Ò¯Ò¯Ð»ÑÐ³Ñ ÑÑÐ´Ð»Ð°Ñ Ð·Ð¾ÑÐ¸Ð»Ð³Ð¾ÑÐ¾Ð¹ Ð°ÑÐ»Ð°Ð» â Ð±Ð¸Ð·Ð½ÐµÑ Ð·Ó©Ð²Ð»Ó©Ð³Ó©Ó©, know-how-ÑÐ¾Ð¹ ÑÐ°Ð¼Ñ.",
+  "Canton Fair, SNEC PV+ 2026, SIAL Shanghai Ð·ÑÑÑÐ³ Ð¾Ð»Ð¾Ð½ ÑÐ»ÑÑÐ½ Ò¯Ð·ÑÑÐ³ÑÐ»ÑÐ½, ÑÑÐ´Ð°Ð»Ð´Ð°Ð°Ð½Ñ event-Ð´ Ð¾ÑÐ¾Ð»ÑÐ¾Ñ Ð°ÑÐ»Ð»ÑÐ½ Ð±Ð°Ð³Ñ.",
+  "Ð£ÑÑÐ´ÑÐ¸Ð»Ð°Ð½ ÑÓ©Ð»Ó©Ð²Ð»Ó©ÑÓ©Ð½, Ð¾Ð¹Ð»Ð³Ð¾Ð¼Ð¶ÑÐ¾Ð¹ Ð¼Ð°ÑÑÑÑÑ, Ð·Ð¾ÑÐ¸Ð¾Ð½ Ð±Ð°Ð¹Ð³ÑÑÐ»Ð°Ð»ÑÑÐ°Ð¹ Ð°Ð¼ÑÐ°Ð»Ñ, Ð°ÑÐ»Ð°Ð», ÑÑÑÑÐ»Ð°Ð³Ð° ÑÐ¾ÑÐ¾Ð»ÑÐ¾Ð½ Ð°ÑÐ»Ð°Ð».",
+  "ÐÑÐ»Ð°Ð³ÑÐ¸Ð¹Ð½ Ð·Ð¾ÑÐ¸Ð»Ð³Ð¾, ÑÑÐ³Ð°ÑÐ°Ð°, ÑÐ¾Ð½Ð¸ÑÑÐ¾Ð»Ð´ ÑÐ°Ð°ÑÑÑÐ»ÑÐ°Ð½ ÑÑÐ½ ÑÐ°ÑÐ°Ð½ Ð¼Ð°ÑÑÑÑÑ â ÑÐ¸Ð½Ñ ÑÐ»Ñ, ÑÐ¸Ð½Ñ Ð´ÑÑÑÐ°Ð¼Ð¶, ÑÐ¸Ð½Ñ Ð°Ð´Ð°Ð» ÑÐ²Ð´Ð°Ð».",
   "Nomadabe Travel is a professional travel company based in Ulaanbaatar, specializing in business travel, inbound tours, and outbound tours. We have successfully organized trips for over 10,000 travelers within Mongolia and to international destinations.",
   "Since 2019, we have served over 2,000 travelers annually, bridging the gap between business and leisure by connecting entrepreneurs to major international events and opportunities for sustainable growth.",
   "Showcase Mongolia",
@@ -989,11 +1012,11 @@ function normalizeAboutStats(value: unknown, defaults: AboutStat[]): AboutStat[]
       const rawValueText = stringifyPayloadValue(item.value);
       const label = stringifyPayloadValue(item.label) || fallbackItem?.label;
       const isExperienceStat =
-        label === "Жилийн туршлага" ||
+        label === "ÐÐ¸Ð»Ð¸Ð¹Ð½ ÑÑÑÑÐ»Ð°Ð³Ð°" ||
         label === "Years of experience" ||
-        label === "年经验" ||
-        label === "年の経験" ||
-        label === "년 경험";
+        label === "å¹´ç»éª" ||
+        label === "å¹´ã®çµé¨" ||
+        label === "ë ê²½í";
       const valueText =
         rawValueText === "7+" && isExperienceStat
           ? fallbackItem?.value
@@ -1137,8 +1160,8 @@ function normalizeTeamMembers(members: unknown): TeamMember[] {
 
       return {
         id,
-        name: name || "Нэр оруулах",
-        role: role || "Албан тушаал",
+        name: name || "ÐÑÑ Ð¾ÑÑÑÐ»Ð°Ñ",
+        role: role || "ÐÐ»Ð±Ð°Ð½ ÑÑÑÐ°Ð°Ð»",
         image,
         imageAlt: imageAlt || name || role || undefined,
         ...(bio ? { bio } : {}),
@@ -1182,8 +1205,8 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
     id,
     slug,
     title,
-    location: fields.get("location") || existing?.location || "Захиалгат",
-    country: fields.get("country") || existing?.country || "Захиалгат",
+    location: fields.get("location") || existing?.location || "ÐÐ°ÑÐ¸Ð°Ð»Ð³Ð°Ñ",
+    country: fields.get("country") || existing?.country || "ÐÐ°ÑÐ¸Ð°Ð»Ð³Ð°Ñ",
     days: getNumberFromString(fields.get("days"), existing?.days ?? 5),
     groupSize: fields.get("groupSize") || existing?.groupSize || "Flexible",
     difficulty: getDifficulty(fields.get("difficulty") || existing?.difficulty || "Easy"),
@@ -1191,11 +1214,11 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
     currency: fields.get("currency") || existing?.currency || "MNT",
     image: fields.get("image") || existing?.image || DEFAULT_SITE_SETTINGS.heroImage,
     galleryImages: getListFromString(fields.get("galleryImages"), existing?.galleryImages ?? []),
-    tags: getListFromString(fields.get("tags"), existing?.tags ?? ["Захиалгат"]),
+    tags: getListFromString(fields.get("tags"), existing?.tags ?? ["ÐÐ°ÑÐ¸Ð°Ð»Ð³Ð°Ñ"]),
     rating: getNumberFromString(fields.get("rating"), existing?.rating ?? 4.8),
     reviews: getNumberFromString(fields.get("reviews"), existing?.reviews ?? 0),
     category: getCategory(fields.get("categoryCustom") || fields.get("category") || existing?.category || "custom"),
-    summary: fields.get("summary") || existing?.summary || "Захиалгат аяллын хөтөлбөр.",
+    summary: fields.get("summary") || existing?.summary || "ÐÐ°ÑÐ¸Ð°Ð»Ð³Ð°Ñ Ð°ÑÐ»Ð»ÑÐ½ ÑÓ©ÑÓ©Ð»Ð±Ó©Ñ.",
     idealFor: getListFromString(fields.get("idealFor"), existing?.idealFor ?? []),
     includes: getListFromString(fields.get("includes"), existing?.includes ?? []),
     businessSupport: getListFromString(fields.get("businessSupport"), existing?.businessSupport ?? []),
@@ -1311,7 +1334,7 @@ function getFormString(formData: FormData, key: string) {
 function normalizeHeroTitle(value: string) {
   const normalized = value.replace(/\s+/g, " ").toLocaleLowerCase("mn-MN");
 
-  if (normalized === "аяллаа нүүдэлчин хэмнэлээр." || normalized === "аяллаа нүүдэлчин хэмнэлээр") {
+  if (normalized === "Ð°ÑÐ»Ð»Ð°Ð° Ð½Ò¯Ò¯Ð´ÑÐ»ÑÐ¸Ð½ ÑÑÐ¼Ð½ÑÐ»ÑÑÑ." || normalized === "Ð°ÑÐ»Ð»Ð°Ð° Ð½Ò¯Ò¯Ð´ÑÐ»ÑÐ¸Ð½ ÑÑÐ¼Ð½ÑÐ»ÑÑÑ") {
     return DEFAULT_SITE_SETTINGS.heroTitle;
   }
 
