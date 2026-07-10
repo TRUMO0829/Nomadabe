@@ -39,10 +39,12 @@ import {
   logoutAdminAction,
   refreshAdminAction,
   saveSiteSettingsAction,
+  saveStaysAction,
   saveTripAction,
   sendAdminEmailAction,
   updateInquiryStatusAction,
 } from "./actions";
+import type { StayOption } from "@/lib/site-settings";
 import { getCustomers } from "@/lib/server/customer-auth";
 import { getEmailLogs } from "@/lib/server/mail";
 import { getErrorMessage } from "@/lib/server/supabase-rest";
@@ -288,6 +290,15 @@ export default async function AdminDashboard({
                       />
                     ))}
                   </div>
+                </section>
+
+                <section id="villas" className="scroll-mt-6 space-y-4">
+                  <SectionHeader
+                    eyebrow="Вилла"
+                    title="Вилла засварлах"
+                    action={`Нийт ${siteSettings?.stays.length ?? 0}`}
+                  />
+                  <StaysEditor stays={siteSettings?.stays ?? []} />
                 </section>
               </div>
 
@@ -985,6 +996,76 @@ function getCategoryOptions(trips: Adventure[]): CategoryOption[] {
 
 function getCategoryLabel(category: string) {
   return defaultCategoryLabels[category] ?? category;
+}
+
+function StaysEditor({ stays }: { stays: StayOption[] }) {
+  return (
+    <form action={saveStaysAction} className="space-y-5">
+      <input type="hidden" name="stayCount" defaultValue={stays.length} />
+      {stays.map((stay, i) => (
+        <div
+          key={stay.id}
+          className="space-y-4 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+        >
+          <input type="hidden" name={`stay_${i}_id`} defaultValue={stay.id} />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TextField label="Нэр" name={`stay_${i}_title`} defaultValue={stay.title} />
+            <TextField label="Байршил" name={`stay_${i}_location`} defaultValue={stay.location} />
+            <TextField label="Үнэ" name={`stay_${i}_price`} defaultValue={stay.price} />
+            <TextField label="Төрөл" name={`stay_${i}_type`} defaultValue={stay.type} />
+            <TextField label="Зочид (хүн)" name={`stay_${i}_guests`} type="number" defaultValue={stay.guests} />
+            <TextField label="Өрөө" name={`stay_${i}_rooms`} type="number" defaultValue={stay.rooms} />
+            <TextField label="Хоног" name={`stay_${i}_nights`} type="number" defaultValue={stay.nights} />
+          </div>
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+              Тайлбар
+            </span>
+            <textarea
+              name={`stay_${i}_summary`}
+              defaultValue={stay.summary}
+              rows={2}
+              className="mt-2 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+            />
+          </label>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[0, 1, 2].map((j) => (
+              <div
+                key={j}
+                className="rounded-md border border-dashed border-[var(--border)] bg-white p-3"
+              >
+                <input type="hidden" name={`stay_${i}_imageUrl_${j}`} defaultValue={stay.images[j] ?? ""} />
+                {stay.images[j] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={stay.images[j]}
+                    alt={`${stay.title} ${j + 1}`}
+                    className="h-24 w-full rounded object-cover ring-1 ring-[var(--border)]"
+                  />
+                ) : (
+                  <div className="flex h-24 items-center justify-center rounded bg-[var(--muted)] text-xs text-[var(--muted-foreground)]">
+                    Зураг {j + 1}
+                  </div>
+                )}
+                <input
+                  type="file"
+                  name={`stay_${i}_imageReplace_${j}`}
+                  accept="image/png,image/jpeg,image/webp,image/avif"
+                  className="mt-2 w-full text-xs"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <button
+        type="submit"
+        className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--primary)] px-6 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+      >
+        Вилла хадгалах
+      </button>
+    </form>
+  );
 }
 
 function TextField({

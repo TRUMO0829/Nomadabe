@@ -463,6 +463,47 @@ export async function updateSiteSettingsFromJson(payload: unknown) {
   return updateSiteSettings(parseSiteSettingsFromJson(payload));
 }
 
+export async function upsertStaysFromForm(formData: FormData) {
+  const store = await getAdminStore();
+  const current = store.siteSettings.stays;
+  const count = Number(formData.get("stayCount")) || current.length;
+  const next: StayOption[] = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const base = current[i];
+    const str = (key: string) => {
+      const value = formData.get(`stay_${i}_${key}`);
+      return typeof value === "string" ? value.trim() : "";
+    };
+
+    const images: string[] = [];
+    for (let j = 0; j < 3; j += 1) {
+      const replacement = formData.get(`stay_${i}_imageReplace_${j}`);
+      if (isUploadedPoster(replacement)) {
+        images.push(await uploadTripPoster(replacement));
+        continue;
+      }
+      const url = str(`imageUrl_${j}`);
+      if (url) images.push(url);
+    }
+
+    next.push({
+      id: str("id") || base?.id || `villa-${i + 1}`,
+      title: str("title") || base?.title || "",
+      type: str("type") || base?.type || "Вилла",
+      nights: Number(str("nights")) || base?.nights || 0,
+      price: str("price") || base?.price || "",
+      guests: Number(str("guests")) || base?.guests || 0,
+      rooms: Number(str("rooms")) || base?.rooms || 0,
+      location: str("location") || base?.location || "",
+      summary: str("summary") || base?.summary || "",
+      images: images.length > 0 ? images : base?.images ?? [],
+    });
+  }
+
+  return updateSiteSettings({ stays: next });
+}
+
 export async function updateSiteSettings(siteSettings: Partial<SiteSettings>) {
   const store = await getAdminStore();
   const normalized = normalizeSiteSettings({
@@ -470,6 +511,7 @@ export async function updateSiteSettings(siteSettings: Partial<SiteSettings>) {
     ...siteSettings,
     teamMembers: siteSettings.teamMembers ?? store.siteSettings.teamMembers,
     reviews: siteSettings.reviews ?? store.siteSettings.reviews,
+    stays: siteSettings.stays ?? store.siteSettings.stays,
   });
   await saveAdminStore({
     ...store,
