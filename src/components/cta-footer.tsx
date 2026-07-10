@@ -311,7 +311,7 @@ const FOOTER_COPY = {
 const FOOTER_COLUMN_COPY = {
   mn: {
     menu: "Цэс",
-    contacts: "Холбоосууд",
+    contacts: "Холбоо барих",
     socials: "Сошиал холбоос",
   },
   en: {

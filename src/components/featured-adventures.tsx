@@ -1082,10 +1082,10 @@ function DestinationDragCarousel({
                         {adventure.days} {dayLabel}
                       </span>
                     </p>
-                    <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[14ch] text-balance !text-[clamp(1.45rem,2.45vw,2.45rem)] !leading-[1.02] text-white">
+                    <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[15ch] text-balance !text-[clamp(1.9rem,3.4vw,3.4rem)] !leading-[1.04] text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.45)]">
                       {text.title}
                     </h3>
-                    <p className="trip-copy-text mt-2 line-clamp-2 max-w-sm text-xs leading-5 text-white/78 sm:text-sm">
+                    <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm leading-6 text-white/80 sm:text-base">
                       {text.summary}
                     </p>
                     <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -1133,7 +1133,7 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
             <p className="nav-text text-xs uppercase text-[#b89422]">
               Вилла
             </p>
-            <h2 className="site-heading mt-2 text-[clamp(2rem,5vw,4.8rem)] leading-none text-[#11100b]">
+            <h2 className="site-heading mt-2 text-[clamp(1.5rem,3vw,2.6rem)] leading-tight text-[#11100b]">
               Вилла
             </h2>
           </div>
@@ -1182,7 +1182,7 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
                     </span>
                   </div>
 
-                  <h3 className="site-heading text-3xl leading-tight text-[#11100b]">
+                  <h3 className="site-heading text-xl leading-tight text-[#11100b]">
                     {stay.title}
                   </h3>
                   <p className="mt-2 min-h-12 text-sm leading-6 text-[#11100b]/62">
