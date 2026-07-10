@@ -9,12 +9,9 @@ import {
   Award,
   CalendarCheck,
   Compass,
-  Globe,
   Handshake,
-  Mail,
   MapPin,
   Minus,
-  Phone,
   Plus,
   Route,
 } from "lucide-react";
@@ -32,14 +29,6 @@ type AboutShowcaseProps = {
 const WORK_ICONS = [Compass, CalendarCheck, Route, Handshake] as const;
 
 const ACCENT = "#FFD400";
-
-const CONTACT = {
-  phones: ["+976 9910 3258", "+976 9918 9317"],
-  email: "info@nomadabe.mn",
-  address: "Minister Tower, Olympic Street 15, Ulaanbaatar",
-  mapHref:
-    "https://www.google.com/maps/place/Minister+Tower/@47.9153226,106.917978,425m/data=!3m2!1e3!4b1!4m6!3m5!1s0x5d9693649ea1b323:0x8bb14a35346801cd!8m2!3d47.9153226!4d106.9205583!16s%2Fg%2F11ss8zbb4r?hl=en-US",
-};
 
 const CERTIFICATION_ITEMS = [
   "Монголын аялал жуулчлалын холбооны гишүүн байгууллага",
@@ -119,8 +108,8 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             <motion.span
               variants={fadeUp}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] tracking-[0.28em] text-[#FFF3BF]"
-              style={{ borderColor: "rgba(255,212,0,0.4)", background: "rgba(255,212,0,0.08)" }}
+              className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 font-sans text-[10px] tracking-[0.22em] text-[#FFF3BF]"
+              style={{ background: "rgba(255,212,0,0.08)" }}
             >
               <MapPin className="h-3.5 w-3.5" style={{ color: ACCENT }} />
               {L("УЛААНБААТАР · МОНГОЛ · TRAVEL", "ULAANBAATAR · MONGOLIA · TRAVEL")}
@@ -129,7 +118,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             <motion.p
               variants={fadeUp}
               transition={{ duration: 0.6 }}
-              className="mt-7 text-xs tracking-[0.34em]"
+              className="mt-6 font-sans text-[11px] tracking-[0.26em]"
               style={{ color: ACCENT }}
             >
               {copy.eyebrow}
@@ -138,7 +127,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             <motion.h1
               variants={fadeUp}
               transition={{ duration: 0.7 }}
-              className="mt-4 text-4xl leading-[1.02] sm:text-5xl lg:text-6xl xl:text-7xl"
+              className="mt-4 max-w-4xl font-sans text-3xl leading-[1.06] sm:text-4xl lg:text-5xl xl:text-6xl"
             >
               {copy.title}
             </motion.h1>
@@ -146,7 +135,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             <motion.p
               variants={fadeUp}
               transition={{ duration: 0.7 }}
-              className="mt-6 max-w-xl text-base leading-relaxed text-[#D8D2C2] sm:text-lg"
+              className="mt-5 max-w-lg font-sans text-sm leading-relaxed text-[#D8D2C2] sm:text-base"
             >
               {copy.body}
             </motion.p>
@@ -158,7 +147,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             >
               <Link
                 href="/plan"
-                className="group inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium text-[#11100B] transition-transform duration-200 hover:scale-[1.03]"
+                className="group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-xs font-medium text-[#11100B] transition-transform duration-200 hover:scale-[1.03]"
                 style={{ background: ACCENT }}
               >
                 {L("Аялал төлөвлөх", "Plan a trip")}
@@ -166,7 +155,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 px-7 py-3.5 text-sm font-medium text-[#FFFDF3] transition-colors duration-200 hover:border-white/50 hover:bg-white/5"
+                className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-xs font-medium text-[#FFFDF3] transition-colors duration-200 hover:bg-white/5"
               >
                 {L("Аяллууд үзэх", "Explore tours")}
               </Link>
@@ -179,7 +168,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="rounded-[28px] border border-white/10 bg-white/[0.04] p-3 backdrop-blur-sm"
+            className="rounded-[28px] bg-white/[0.04] p-3 backdrop-blur-sm"
           >
             <div className="relative overflow-hidden rounded-[20px]">
               <Image
@@ -200,7 +189,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
               </span>
             </div>
 
-            <p className="px-3 pt-5 text-sm leading-relaxed text-[#CFC9B9]">
+            <p className="px-3 pt-5 text-xs leading-relaxed text-[#CFC9B9] sm:text-sm">
               {copy.who.text}
             </p>
 
@@ -210,83 +199,18 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 {stats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-4 text-center"
+                    className="rounded-2xl bg-white/[0.03] px-3 py-3 text-center"
                   >
-                    <div className="text-2xl sm:text-3xl" style={{ color: ACCENT }}>
+                    <div className="text-xl sm:text-2xl" style={{ color: ACCENT }}>
                       {stat.value}
                     </div>
-                    <div className="mt-1 text-[11px] leading-tight text-[#A9A491]">
+                    <div className="mt-1 text-[10px] leading-tight text-[#A9A491]">
                       {stat.label}
                     </div>
                   </div>
                 ))}
               </div>
             )}
-
-            {/* contact grid */}
-            <div className="mt-3 grid grid-cols-1 gap-2 px-1 pb-2 sm:grid-cols-2">
-              <a
-                href={CONTACT.mapHref}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5 transition-colors hover:border-white/25"
-              >
-                <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
-                  <MapPin className="h-3.5 w-3.5" style={{ color: ACCENT }} />
-                  {L("БАЙРШИЛ", "LOCATION")}
-                </div>
-                <div className="mt-1.5 text-[13px] leading-snug text-[#E7E2D4]">
-                  {CONTACT.address}
-                </div>
-              </a>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5">
-                <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
-                  <Phone className="h-3.5 w-3.5" style={{ color: ACCENT }} />
-                  {L("ХОЛБОО", "CONTACT")}
-                </div>
-                <div className="mt-1.5 space-y-0.5 text-[13px] leading-snug text-[#E7E2D4]">
-                  {CONTACT.phones.map((p) => (
-                    <a key={p} href={`tel:${p.replace(/\s/g, "")}`} className="block hover:underline">
-                      {p}
-                    </a>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5">
-                <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
-                  <Mail className="h-3.5 w-3.5" style={{ color: ACCENT }} />
-                  {L("И-МЭЙЛ", "EMAIL")}
-                </div>
-                <a
-                  href={`mailto:${CONTACT.email}`}
-                  className="mt-1.5 block text-[13px] leading-snug text-[#E7E2D4] hover:underline"
-                >
-                  {CONTACT.email}
-                </a>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5">
-                <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
-                  <Globe className="h-3.5 w-3.5" style={{ color: ACCENT }} />
-                  {L("ХЭЛ", "LANGUAGES")}
-                </div>
-                <div className="mt-1.5 text-[13px] leading-snug text-[#E7E2D4]">
-                  {L("Монгол · Англи · Хятад", "Mongolian · English · Chinese")}
-                </div>
-              </div>
-            </div>
-
-            <div className="mx-1 mt-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
-              <div className="flex items-center gap-2 text-[10px] tracking-[0.18em] text-[#A9A491]">
-                <Award className="h-4 w-4" style={{ color: ACCENT }} />
-                {L("ГЭРЧИЛГЭЭ", "CERTIFICATION")}
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-[#E7E2D4]">
-                {L(
-                  "Nomadabe Adventure Silkres ХХК нь Монголын аялал жуулчлалын холбооны гишүүн байгууллага.",
-                  "Nomadabe Adventure Silkres LLC is a member organization of the Mongolian Tourism Association."
-                )}
-              </p>
-            </div>
           </motion.div>
           </div>
         </div>
