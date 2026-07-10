@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronDown,
   Globe,
@@ -87,8 +87,8 @@ const DESKTOP_BAR_ITEM_CLASS =
   "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase transition-all duration-300 hover:bg-[#ffd400]/10 hover:text-[#ffe766]";
 const DESKTOP_NAV_LINK_CLASS =
   "nav-text inline-flex items-center justify-center whitespace-nowrap rounded-md uppercase transition-all duration-300 hover:bg-[#ffd400]/10 hover:text-[#ffe766]";
-const DESKTOP_BAR_DIVIDER_CLASS =
-  "w-px shrink-0 bg-current/30 transition-all duration-300";
+const DESKTOP_BAR_TEXT_SIZE_CLASS =
+  "min-h-10 px-3 py-2 text-[12px] xl:px-3.5 xl:text-[13px]";
 
 function openSignupPrompt() {
   window.dispatchEvent(new Event("nomadabe:open-signup-prompt"));
@@ -208,38 +208,24 @@ export function Navbar({
         <div
           className={cn(
             "absolute right-4 top-3 hidden items-center overflow-visible text-[#ffd400] backdrop-blur-[10px] transition-all duration-300 lg:right-6 lg:flex xl:right-8",
-            "rounded-[1rem] border border-[#ffd400]/45 px-3 py-2 before:pointer-events-none before:absolute before:inset-0 before:rounded-[1rem] before:bg-[linear-gradient(115deg,rgba(255,212,0,0.14),rgba(255,255,255,0.025)_48%,rgba(255,212,0,0.1))]",
+            "rounded-[1rem] px-3 py-2",
             useLightHeader
-              ? "bg-[#050504]/20 shadow-[0_14px_34px_rgba(17,16,11,0.12),inset_0_1px_0_rgba(255,212,0,0.16)]"
-              : "bg-[#050504]/22 shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,212,0,0.16)]"
+              ? "bg-[#050504]/20 shadow-[0_14px_34px_rgba(17,16,11,0.12)]"
+              : "bg-[#050504]/22 shadow-[0_14px_34px_rgba(0,0,0,0.16)]"
           )}
         >
           <nav className="relative z-10 flex items-center">
-            {desktopNavItems.map((item, index) => (
-              <Fragment key={item.href}>
-                <a
-                  href={item.href}
-                  className={cn(
-                    DESKTOP_NAV_LINK_CLASS,
-                    "min-h-10 px-3 py-2 text-[12px] xl:px-3.5 xl:text-[13px]"
-                  )}
-                >
-                  {item.label}
-                </a>
-                {index < desktopNavItems.length - 1 ? (
-                  <span
-                    aria-hidden="true"
-                    className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-4")}
-                  />
-                ) : null}
-              </Fragment>
+            {desktopNavItems.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className={cn(DESKTOP_NAV_LINK_CLASS, DESKTOP_BAR_TEXT_SIZE_CLASS)}
+              >
+                {item.label}
+              </a>
             ))}
           </nav>
           <div className="relative z-10 flex items-center">
-            <span
-              aria-hidden="true"
-              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-4")}
-            />
             {customer ? (
               <div
                 className="relative min-h-10"
@@ -261,7 +247,7 @@ export function Navbar({
                   }}
                   className={cn(
                     DESKTOP_BAR_ITEM_CLASS,
-                    "min-h-10 px-3 py-2 text-[12px] xl:px-3.5 xl:text-[13px]"
+                    DESKTOP_BAR_TEXT_SIZE_CLASS
                   )}
                   title={customer.email}
                 >
@@ -295,18 +281,11 @@ export function Navbar({
               <button
                 type="button"
                 onClick={openSignupPrompt}
-                className={cn(
-                  DESKTOP_BAR_ITEM_CLASS,
-                  "min-h-10 px-3 py-2 text-[12px] xl:px-3.5 xl:text-[13px]"
-                )}
+                className={cn(DESKTOP_BAR_ITEM_CLASS, DESKTOP_BAR_TEXT_SIZE_CLASS)}
               >
                 {navCopy.login}
               </button>
             )}
-            <span
-              aria-hidden="true"
-              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-4")}
-            />
             <button
               type="button"
               aria-label={navCopy.search}
@@ -314,16 +293,12 @@ export function Navbar({
               onClick={() => setSearchOpen((value) => !value)}
               className={cn(
                 DESKTOP_BAR_ITEM_CLASS,
-                "min-h-10 px-3 py-2 text-[12px] xl:px-3.5 xl:text-[13px]",
+                DESKTOP_BAR_TEXT_SIZE_CLASS,
                 searchOpen && "bg-[#ffd400]/12 text-[#ffe766]"
               )}
             >
               {navCopy.search}
             </button>
-            <span
-              aria-hidden="true"
-              className={cn(DESKTOP_BAR_DIVIDER_CLASS, "h-4")}
-            />
             <div
               aria-label={t.nav.language}
               className="relative min-h-10 transition-all duration-300"
