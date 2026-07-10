@@ -73,7 +73,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
       />
 
       {/* ───────────────────────── HERO ───────────────────────── */}
-      <div className="relative min-h-[100svh]">
+      <div className="about-screen relative">
         {/* nature backdrop */}
         <div
           aria-hidden="true"
@@ -93,7 +93,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
           className="absolute inset-x-0 bottom-0 h-48"
           style={{ background: "linear-gradient(to bottom, rgba(11,10,7,0), #0B0A07)" }}
         />
-        <div className="relative mx-auto flex min-h-[100svh] w-full max-w-7xl items-center px-5 py-24 sm:px-8 sm:py-28 lg:px-12 lg:py-32">
+        <div className="about-screen relative mx-auto flex w-full max-w-7xl items-center px-5 py-24 sm:px-8 sm:py-28 lg:px-12 lg:py-32">
           <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           {/* left column */}
           <motion.div
@@ -416,7 +416,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 
 function Band({ children, bg }: { children: React.ReactNode; bg?: string }) {
   return (
-    <div className="relative min-h-[100svh] overflow-hidden">
+    <div className="about-screen relative overflow-hidden">
       {bg && (
         <>
           <div
@@ -434,7 +434,7 @@ function Band({ children, bg }: { children: React.ReactNode; bg?: string }) {
           />
         </>
       )}
-      <div className="relative mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-center px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+      <div className="about-screen relative mx-auto flex w-full max-w-7xl flex-col justify-center px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
         {/* content-width hairline divider — aligns with the section content */}
         <div
           aria-hidden="true"
