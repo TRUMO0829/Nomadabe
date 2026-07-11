@@ -9,23 +9,26 @@ type ToursExperienceProps = {
   adventures: Adventure[];
   outboundTripImages?: Record<string, string>;
   stays?: StayOption[];
+  pageMode?: "all" | "outbound" | "domestic";
 };
 
 export function ToursExperience({
   adventures,
   outboundTripImages,
   stays,
+  pageMode = "all",
 }: ToursExperienceProps) {
   return (
     <FeaturedAdventures
       adventures={adventures}
       outboundTripImages={outboundTripImages}
       stays={stays}
-      beforeList={(
+      pageMode={pageMode}
+      beforeList={pageMode === "all" ? (
         <>
           <FeaturedTripsCarousel adventures={adventures} variant="compact" />
         </>
-      )}
+      ) : null}
     />
   );
 }

@@ -52,6 +52,7 @@ type FeaturedAdventuresProps = {
   beforeList?: ReactNode;
   outboundTripImages?: Record<string, string>;
   stays?: StayOption[];
+  pageMode?: "all" | "outbound" | "domestic";
 };
 
 const SEARCH_LOCALES = ["mn", "en", "zh", "ja", "ko"] as const;
@@ -292,6 +293,14 @@ const SECTION_COPY = {
     outbound: "Гадаад аялал",
     domestic: "Дотоод аялал",
     corporate: "Байгууллагын аялал",
+    villa: "Вилла",
+    directions: "Чиглэлүүд",
+    categoryTitle: "Аяллын категори",
+    outboundDirection: "Гадаад чиглэл",
+    domesticDirection: "Дотоод чиглэл",
+    outboundDescription: "Чиглэлүүд, байгууллагын аялал болон вилла сонголтууд.",
+    domesticDescription: "Монгол доторх амралт, байгаль, соёлын аяллууд.",
+    subcategoryTitle: "Дэд категори",
     search: "Аялал хайх...",
     listTitle: "Бүх аяллын жагсаалт",
     listBody: "Сонгосон аяллаа дарж дэлгэрэнгүй мэдээлэл, үнэ, багцын нөхцөлийг хараарай.",
@@ -308,6 +317,14 @@ const SECTION_COPY = {
     outbound: "Outbound trips",
     domestic: "Domestic trips",
     corporate: "Corporate trips",
+    villa: "Villas",
+    directions: "Destinations",
+    categoryTitle: "Trip categories",
+    outboundDirection: "Outbound",
+    domesticDirection: "Domestic",
+    outboundDescription: "Destinations, corporate trips, and villa options.",
+    domesticDescription: "Trips across Mongolia for nature, leisure, and culture.",
+    subcategoryTitle: "Subcategories",
     search: "Search trips...",
     listTitle: "All available trips",
     listBody: "Open a trip to view details, pricing, inclusions, and planning notes.",
@@ -324,6 +341,14 @@ const SECTION_COPY = {
     outbound: "出境旅行",
     domestic: "蒙古国内旅行",
     corporate: "企业旅行",
+    villa: "别墅",
+    directions: "目的地",
+    categoryTitle: "旅行分类",
+    outboundDirection: "出境方向",
+    domesticDirection: "国内方向",
+    outboundDescription: "目的地、企业旅行和别墅选择。",
+    domesticDescription: "蒙古国内自然、休闲和文化旅行。",
+    subcategoryTitle: "子分类",
     search: "搜索旅行...",
     listTitle: "全部旅行列表",
     listBody: "点击旅行查看详细信息、价格和套餐条件。",
@@ -340,6 +365,14 @@ const SECTION_COPY = {
     outbound: "海外ツアー",
     domestic: "国内ツアー",
     corporate: "法人向けツアー",
+    villa: "ヴィラ",
+    directions: "目的地",
+    categoryTitle: "ツアーカテゴリ",
+    outboundDirection: "海外方面",
+    domesticDirection: "国内方面",
+    outboundDescription: "目的地、法人向けツアー、ヴィラ選択。",
+    domesticDescription: "モンゴル国内の自然、休暇、文化ツアー。",
+    subcategoryTitle: "サブカテゴリ",
     search: "ツアーを検索...",
     listTitle: "すべてのツアー一覧",
     listBody: "ツアーを開くと詳細、料金、含まれる条件を確認できます。",
@@ -356,6 +389,14 @@ const SECTION_COPY = {
     outbound: "해외 여행",
     domestic: "몽골 국내 여행",
     corporate: "기업 여행",
+    villa: "빌라",
+    directions: "목적지",
+    categoryTitle: "여행 카테고리",
+    outboundDirection: "해외 방향",
+    domesticDirection: "국내 방향",
+    outboundDescription: "목적지, 기업 여행, 빌라 옵션.",
+    domesticDescription: "몽골 국내 자연, 휴식, 문화 여행.",
+    subcategoryTitle: "하위 카테고리",
     search: "여행 검색...",
     listTitle: "전체 여행 목록",
     listBody: "여행을 눌러 자세한 정보, 가격, 패키지 조건을 확인하세요.",
@@ -714,6 +755,81 @@ export function TripRatingWidget({
           </div>
         </form>
       )}
+    </div>
+  );
+}
+
+type SectionCopy = (typeof SECTION_COPY)[keyof typeof SECTION_COPY];
+
+function ToursCategoryNavigation({
+  mode,
+  copy,
+  staysCount,
+}: {
+  mode: "all" | "outbound" | "domestic";
+  copy: SectionCopy;
+  staysCount: number;
+}) {
+  const cards =
+    mode === "outbound"
+      ? [
+          {
+            href: "#outbound-trips",
+            title: copy.directions,
+            body: copy.outboundDescription,
+          },
+          {
+            href: "#corporate-trips",
+            title: copy.corporate,
+            body: copy.outboundDescription,
+          },
+          ...(staysCount > 0
+            ? [
+                {
+                  href: "#stays",
+                  title: copy.villa,
+                  body: copy.outboundDescription,
+                },
+              ]
+            : []),
+        ]
+      : [
+          {
+            href: "/tours/outbound",
+            title: copy.outboundDirection,
+            body: copy.outboundDescription,
+          },
+          {
+            href: "/tours/domestic",
+            title: copy.domesticDirection,
+            body: copy.domesticDescription,
+          },
+        ];
+
+  return (
+    <div className="mx-auto w-full max-w-[1500px] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-12">
+      <p className="nav-text text-xs uppercase text-[#b89422]">
+        {mode === "outbound" ? copy.subcategoryTitle : copy.categoryTitle}
+      </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {cards.map((card) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            className="group border border-[#eadfac] bg-[#fffdf3] p-5 text-[#11100b] transition-colors hover:border-[#11100b]"
+          >
+            <div className="flex items-center justify-between gap-5">
+              <h3 className="site-heading text-xl leading-tight">
+                {card.title}
+              </h3>
+              <ArrowRight className="h-5 w-5 shrink-0 text-[#b89422] transition-transform group-hover:translate-x-1" />
+            </div>
+            <p className="mt-3 text-sm leading-6 text-[#11100b]/60">
+              {card.body}
+            </p>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1250,9 +1366,12 @@ export function FeaturedAdventures({
   beforeList,
   outboundTripImages = {},
   stays = DEFAULT_STAYS,
+  pageMode = "all",
 }: FeaturedAdventuresProps) {
   const [selected, setSelected] = useState<Adventure | null>(null);
-  const [scope, setScope] = useState<TripScope>("all");
+  const [scope, setScope] = useState<TripScope>(
+    pageMode === "domestic" ? "domestic" : "all"
+  );
   const [sortMode] = useState<SortMode>("recommended");
   const [query, setQuery] = useState("");
   const [activeHeroImage, setActiveHeroImage] = useState(0);
@@ -1343,6 +1462,10 @@ export function FeaturedAdventures({
       const isDomestic = adventure.country === "Mongolia";
       const isCorporate = isCorporateAdventure(adventure);
       const searchText = getAdventureSearchText(adventure);
+      const matchesPageMode =
+        pageMode === "all" ||
+        (pageMode === "domestic" && isDomestic) ||
+        (pageMode === "outbound" && (!isDomestic || isCorporate));
 
       const matchesScope =
         scope === "all" ||
@@ -1352,7 +1475,7 @@ export function FeaturedAdventures({
       const matchesQuery =
         !normalizedQuery || searchText.includes(normalizedQuery);
 
-      return matchesScope && matchesQuery;
+      return matchesPageMode && matchesScope && matchesQuery;
     });
 
     const sortedMatches = [...matches];
@@ -1384,39 +1507,67 @@ export function FeaturedAdventures({
     }
 
     return sortedMatches;
-  }, [allAdventures, query, scope, sortMode]);
+  }, [allAdventures, pageMode, query, scope, sortMode]);
 
   const groupedFilteredAdventures = useMemo(() => {
     const outbound = filteredAdventures.filter(
-      (adventure) => adventure.country !== "Mongolia"
+      (adventure) =>
+        adventure.country !== "Mongolia" && !isCorporateAdventure(adventure)
     );
     const corporate = filteredAdventures.filter(isCorporateAdventure);
     const domestic = filteredAdventures.filter(
       (adventure) => adventure.country === "Mongolia"
     );
 
-    return [
-      {
-        id: "outbound-trips",
-        title: sectionCopy.outbound,
-        adventures: outbound,
-      },
-      {
-        id: "corporate-trips",
-        title: sectionCopy.corporate,
-        adventures: corporate,
-      },
-      {
-        id: "domestic-trips",
-        title: sectionCopy.domestic,
-        adventures: domestic,
-      },
-    ].filter((group) => group.adventures.length > 0);
+    const groups =
+      pageMode === "domestic"
+        ? [
+            {
+              id: "domestic-trips",
+              title: sectionCopy.domestic,
+              adventures: domestic,
+            },
+          ]
+        : pageMode === "outbound"
+          ? [
+              {
+                id: "outbound-trips",
+                title: sectionCopy.directions,
+                adventures: outbound,
+              },
+              {
+                id: "corporate-trips",
+                title: sectionCopy.corporate,
+                adventures: corporate,
+              },
+            ]
+          : [
+              {
+                id: "outbound-trips",
+                title: sectionCopy.outboundDirection,
+                adventures: outbound,
+              },
+              {
+                id: "corporate-trips",
+                title: sectionCopy.corporate,
+                adventures: corporate,
+              },
+              {
+                id: "domestic-trips",
+                title: sectionCopy.domesticDirection,
+                adventures: domestic,
+              },
+            ];
+
+    return groups.filter((group) => group.adventures.length > 0);
   }, [
     filteredAdventures,
     sectionCopy.corporate,
     sectionCopy.domestic,
-    sectionCopy.outbound,
+    sectionCopy.directions,
+    sectionCopy.domesticDirection,
+    sectionCopy.outboundDirection,
+    pageMode,
   ]);
   function handleTripSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1485,6 +1636,11 @@ export function FeaturedAdventures({
         id="all"
         className="bg-white"
       >
+        <ToursCategoryNavigation
+          mode={pageMode}
+          copy={sectionCopy}
+          staysCount={stays.length}
+        />
         {groupedFilteredAdventures.length > 0 ? (
           groupedFilteredAdventures.map((group) => (
             <DestinationDragCarousel
@@ -1508,7 +1664,7 @@ export function FeaturedAdventures({
         )}
       </div>
 
-      <StaysAndVillasSection stays={stays} />
+      {pageMode !== "domestic" ? <StaysAndVillasSection stays={stays} /> : null}
 
       {beforeList}
 
