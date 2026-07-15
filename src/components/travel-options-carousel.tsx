@@ -1,62 +1,133 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, CalendarDays, MapPin } from "lucide-react";
-import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
-import { getHighResolutionImageUrl } from "@/lib/image-quality";
-import { AdventureModal } from "./adventure-modal";
+import Link from "next/link";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  CalendarClock,
+  CheckCircle2,
+  ClipboardList,
+  Globe2,
+  Hotel,
+  MapPinned,
+  MessageCircle,
+  Route,
+  ShieldCheck,
+  UsersRound,
+} from "lucide-react";
+import { ADVENTURES, type Adventure } from "@/lib/adventures";
 import { useLanguage } from "./language-provider";
-import { formatPrice } from "@/lib/currency";
-import { TravelSectionIntro } from "./travel-section-intro";
 
 const COPY = {
   mn: {
-    eyebrow: "Дотоод чиглэлийн аяллууд",
-    title: "Монгол орноор аялах сонголтууд",
+    eyebrow: "Travel desk",
+    title: "Аяллыг жагсаалтаас биш, зорилгоос нь эхлүүлье.",
     body:
-      "Говь, нуур, уулсын чиглэлүүдийг гэр бүл, найз нөхөд, хамт олонд зориулан илүү тайван хэмнэлээр сонгоорой.",
-    priceFrom: "Эхлэх үнэ",
-    details: "Дэлгэрэнгүй",
-    day: "хоног",
-    route: "Чиглэл",
+      "Nomadabe баг таны аяллын зорилго, хугацаа, хүний тоо, хэрэгтэй дэмжлэгийг нэг дор цэгцэлж маршрут, буудал, унаа, зөвлөгөөг төлөвлөнө.",
+    boardTitle: "Аялал төлөвлөлтийн самбар",
+    boardSubtitle: "Эхний мэдээллээ өгөөд бодит маршрут болгож авна.",
+    live: "Шинэ хүсэлт",
+    totalTrips: "боломжит аялал",
+    goal: "Зорилго",
+    goalValue: "Амралт, бизнес, expo эсвэл гэр бүл",
+    duration: "Хугацаа",
+    durationValue: "3-14 хоног, уян хатан огноо",
+    support: "Дэмжлэг",
+    supportValue: "Орчуулга, буудал, унаа, зөвлөгөө",
+    output: "Гарах үр дүн",
+    outputValue: "Маршрут + төсөв + дараагийн алхам",
+    actionsTitle: "Эндээс эхэлж болно",
+    plan: "Аялал төлөвлүүлэх",
+    business: "Бизнес аялал",
+    villas: "Вилла & амралт",
   },
   en: {
-    eyebrow: "Domestic trips",
-    title: "Ways to travel Mongolia",
+    eyebrow: "Travel desk",
+    title: "Start with the purpose, not a long trip list.",
     body:
-      "Choose calm, scenic routes across the Gobi, lakes, and mountains for family, friends, and teams.",
-    priceFrom: "From",
-    details: "Details",
-    day: "days",
-    route: "Route",
+      "Nomadabe turns your goal, timing, group size, and support needs into a clear route with hotels, transport, consulting, and next steps.",
+    boardTitle: "Trip planning board",
+    boardSubtitle: "Share the first details and turn them into a real route.",
+    live: "New request",
+    totalTrips: "available trips",
+    goal: "Goal",
+    goalValue: "Leisure, business, expo, or family",
+    duration: "Timing",
+    durationValue: "3-14 days, flexible dates",
+    support: "Support",
+    supportValue: "Interpreter, hotel, transport, consulting",
+    output: "Output",
+    outputValue: "Route + budget + next step",
+    actionsTitle: "Start here",
+    plan: "Plan a trip",
+    business: "Business travel",
+    villas: "Villas & stays",
   },
   zh: {
-    eyebrow: "蒙古国内旅行",
-    title: "探索蒙古的旅行选择",
-    body: "为家人、朋友和团队选择戈壁、湖泊与山地线路。",
-    priceFrom: "起价",
-    details: "详情",
-    day: "天",
-    route: "路线",
+    eyebrow: "Travel desk",
+    title: "先从旅行目的开始，而不是从长列表开始。",
+    body:
+      "Nomadabe 会把目的、时间、人数和所需支持整理成路线、酒店、交通、咨询和下一步。",
+    boardTitle: "旅行规划看板",
+    boardSubtitle: "先提供基础信息，再生成真实路线。",
+    live: "新需求",
+    totalTrips: "可选行程",
+    goal: "目的",
+    goalValue: "休闲、商务、展会或家庭",
+    duration: "时间",
+    durationValue: "3-14 天，日期灵活",
+    support: "支持",
+    supportValue: "翻译、酒店、交通、咨询",
+    output: "结果",
+    outputValue: "路线 + 预算 + 下一步",
+    actionsTitle: "从这里开始",
+    plan: "规划旅行",
+    business: "商务旅行",
+    villas: "别墅与度假",
   },
   ja: {
-    eyebrow: "国内ツアー",
-    title: "モンゴルを旅する選択肢",
-    body: "家族、友人、チーム向けにゴビ、湖、山岳ルートを選べます。",
-    priceFrom: "開始料金",
-    details: "詳細",
-    day: "日",
-    route: "ルート",
+    eyebrow: "Travel desk",
+    title: "長いリストではなく、旅の目的から始めます。",
+    body:
+      "Nomadabe は目的、日程、人数、必要なサポートを整理し、ルート、ホテル、移動、相談、次のステップにします。",
+    boardTitle: "旅行計画ボード",
+    boardSubtitle: "最初の情報から具体的なルートへ。",
+    live: "新規依頼",
+    totalTrips: "候補ツアー",
+    goal: "目的",
+    goalValue: "休暇、ビジネス、展示会、家族旅行",
+    duration: "日程",
+    durationValue: "3-14日、柔軟な日付",
+    support: "サポート",
+    supportValue: "通訳、ホテル、移動、相談",
+    output: "成果",
+    outputValue: "ルート + 予算 + 次のステップ",
+    actionsTitle: "ここから開始",
+    plan: "旅行を計画",
+    business: "ビジネス旅行",
+    villas: "ヴィラ・滞在",
   },
   ko: {
-    eyebrow: "몽골 국내 여행",
-    title: "몽골을 여행하는 방법",
-    body: "가족, 친구, 팀을 위한 고비, 호수, 산악 루트를 선택하세요.",
-    priceFrom: "시작가",
-    details: "자세히",
-    day: "일",
-    route: "루트",
+    eyebrow: "Travel desk",
+    title: "긴 여행 목록보다 목적부터 시작합니다.",
+    body:
+      "Nomadabe는 목적, 일정, 인원, 필요한 지원을 정리해 루트, 호텔, 교통, 컨설팅, 다음 단계로 만듭니다.",
+    boardTitle: "여행 계획 보드",
+    boardSubtitle: "첫 정보를 실제 일정으로 바꿉니다.",
+    live: "새 요청",
+    totalTrips: "가능한 여행",
+    goal: "목적",
+    goalValue: "휴식, 비즈니스, 전시회, 가족",
+    duration: "기간",
+    durationValue: "3-14일, 유연한 날짜",
+    support: "지원",
+    supportValue: "통역, 호텔, 교통, 컨설팅",
+    output: "결과",
+    outputValue: "루트 + 예산 + 다음 단계",
+    actionsTitle: "여기서 시작",
+    plan: "여행 계획하기",
+    business: "비즈니스 여행",
+    villas: "빌라 & 스테이",
   },
 } as const;
 
@@ -64,247 +135,144 @@ type TravelOptionsCarouselProps = {
   adventures?: Adventure[];
 };
 
-type DomesticCopy = {
-  eyebrow: string;
-  title: string;
-  body: string;
-  priceFrom: string;
-  details: string;
-  day: string;
-};
-
-type DomesticTripCardProps = {
-  adventure: Adventure;
-  copy: DomesticCopy;
-  onSelect: (adventure: Adventure) => void;
-  index: number;
-  total: number;
-};
-
-const PANEL_GAP_VW = 0;
-const PANEL_SCROLL_VH_PER_CARD = 180;
-const PANEL_END_BUFFER_VH = 280;
-const PANEL_FULLY_VISIBLE_HOLD_RATIO = 0.42;
-
-function getPanelXOffset(panelIndex: number) {
-  if (panelIndex === 0) {
-    return "calc(0vw / var(--site-scale))";
-  }
-
-  return `calc(${-panelIndex * (100 + PANEL_GAP_VW)}vw / var(--site-scale))`;
-}
-
-function buildPanelTrackStops(panelCount: number) {
-  if (panelCount <= 1) {
-    return {
-      inputRange: [0, 1],
-      outputRange: [
-        "calc(0vw / var(--site-scale))",
-        "calc(0vw / var(--site-scale))",
-      ],
-    };
-  }
-
-  const inputRange = [0];
-  const outputRange = [getPanelXOffset(0)];
-  const segmentSize = 1 / panelCount;
-
-  for (let index = 0; index < panelCount; index += 1) {
-    const panelOffset = getPanelXOffset(index);
-    const holdEnd =
-      index === panelCount - 1
-        ? 1
-        : index * segmentSize +
-          segmentSize * PANEL_FULLY_VISIBLE_HOLD_RATIO;
-
-    inputRange.push(holdEnd);
-    outputRange.push(panelOffset);
-
-    if (index < panelCount - 1) {
-      const nextPanelStart = (index + 1) * segmentSize;
-
-      inputRange.push(nextPanelStart);
-      outputRange.push(getPanelXOffset(index + 1));
-    }
-  }
-
-  return { inputRange, outputRange };
-}
-
-function DomesticTripCard({
-  adventure,
-  copy,
-  onSelect,
-  index,
-  total,
-}: DomesticTripCardProps) {
-  const { contentLocale } = useLanguage();
-  const text = getAdventureText(adventure, contentLocale);
-  const image = getHighResolutionImageUrl(adventure.image);
-  const price =
-    adventure.price > 0
-      ? formatPrice(adventure.price, contentLocale)
-      : null;
-  const indexLabel = String(index + 1).padStart(2, "0");
-  const totalLabel = String(total).padStart(2, "0");
-
-  return (
-    <motion.article className="group relative h-[calc(100svh/var(--site-scale))] w-[calc(100vw/var(--site-scale))] shrink-0 overflow-hidden bg-[#11100b]">
-      {/* full-bleed image */}
-      <div
-        className="absolute inset-0 scale-105 bg-cover bg-center transition-transform duration-[3200ms] ease-out group-hover:scale-110"
-        style={{ backgroundImage: `url(${image})` }}
-      />
-      {/* cinematic gradients — darken bottom + left for text legibility,
-          keep the top + right of the image bright so it shines */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/15 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-transparent to-transparent" />
-
-      {/* index watermark */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute right-6 top-2 select-none text-[clamp(6rem,15vw,15rem)] font-semibold leading-none text-white/10 lg:right-14"
-      >
-        {indexLabel}
-      </span>
-
-      {/* price pill */}
-      {price ? (
-        <div className="trip-meta-text absolute right-6 top-8 rounded-full bg-white/95 px-4 py-2 text-xs text-[#11100b] shadow-[0_18px_40px_rgba(0,0,0,0.25)] backdrop-blur lg:right-14 lg:top-14">
-          {price}
-        </div>
-      ) : null}
-
-      {/* content overlaid bottom-left */}
-      <div className="absolute inset-x-0 bottom-0 px-6 pb-12 pt-24 sm:px-10 sm:pb-16 lg:px-16 lg:pb-20">
-        <div className="max-w-2xl text-white">
-          <div className="trip-meta-text flex items-center gap-3 text-xs uppercase tracking-[0.24em] text-white/75">
-            <span className="text-accent">{indexLabel}</span>
-            <span className="h-px w-8 bg-white/40" />
-            <span>{text.country}</span>
-            <span className="text-white/40">/ {totalLabel}</span>
-          </div>
-
-          <h3
-            className="mt-5 max-w-[18ch] text-balance text-[clamp(2.2rem,4.4vw,4.25rem)] leading-[1.04] text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)]"
-            style={{ textTransform: "none" }}
-          >
-            {text.title}
-          </h3>
-
-          {/* glass meta chips */}
-          <div className="mt-6 flex flex-wrap items-center gap-2.5">
-            <span className="trip-meta-text inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs text-white backdrop-blur">
-              <CalendarDays className="h-3.5 w-3.5 text-accent" />
-              {adventure.days} {copy.day}
-            </span>
-            {text.location ? (
-              <span className="trip-meta-text inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs text-white backdrop-blur">
-                <MapPin className="h-3.5 w-3.5 text-accent" />
-                {text.location}
-              </span>
-            ) : null}
-          </div>
-
-          <p className="trip-copy-text mt-6 max-w-xl text-sm leading-7 text-white/85 sm:text-base lg:text-lg lg:leading-8">
-            {text.summary}
-          </p>
-
-          <button
-            type="button"
-            onClick={() => onSelect(adventure)}
-            className="group/btn mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent px-7 text-sm text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_12px_32px_rgba(255,212,0,0.5)]"
-            style={{ textTransform: "none" }}
-          >
-            {copy.details}
-            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
-          </button>
-        </div>
-      </div>
-    </motion.article>
-  );
-}
-
 export function TravelOptionsCarousel({
   adventures = ADVENTURES,
 }: TravelOptionsCarouselProps) {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
-  const sectionRef = useRef<HTMLElement>(null);
-  const [selected, setSelected] = useState<Adventure | null>(null);
-  const domesticOptions = adventures
-    .filter((adventure) => adventure.country === "Mongolia")
-    .slice(0, 3);
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
-  const { inputRange, outputRange } = buildPanelTrackStops(
-    domesticOptions.length
-  );
-  const desktopTrackX = useTransform(
-    scrollYProgress,
-    inputRange,
-    outputRange,
-  );
-
-  if (domesticOptions.length === 0) {
-    return null;
-  }
+  const tripCount = adventures.length;
+  const boardItems = [
+    {
+      label: copy.goal,
+      value: copy.goalValue,
+      icon: Route,
+    },
+    {
+      label: copy.duration,
+      value: copy.durationValue,
+      icon: CalendarClock,
+    },
+    {
+      label: copy.support,
+      value: copy.supportValue,
+      icon: ShieldCheck,
+    },
+    {
+      label: copy.output,
+      value: copy.outputValue,
+      icon: ClipboardList,
+    },
+  ];
+  const actionLinks = [
+    {
+      href: "/plan",
+      label: copy.plan,
+      icon: MessageCircle,
+    },
+    {
+      href: "/tours/outbound#corporate-trips",
+      label: copy.business,
+      icon: BriefcaseBusiness,
+    },
+    {
+      href: "/tours/outbound#stays",
+      label: copy.villas,
+      icon: Hotel,
+    },
+  ];
 
   return (
-    <>
-      <TravelSectionIntro
-        id="destinations"
-        title={copy.eyebrow}
-        titleClassName="domestic-section-title"
-        variant="plain"
+    <section className="relative overflow-hidden bg-[#0f0e0a] text-[#fffdf3]">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-cover bg-center opacity-38"
+        style={{ backgroundImage: "url('/hero-autumn.webp')" }}
       />
-
-      <section
-        ref={sectionRef}
-        className="relative overflow-clip bg-white text-[#11100b] max-lg:!h-auto"
-        style={{
-          height: `calc(${domesticOptions.length * PANEL_SCROLL_VH_PER_CARD + PANEL_END_BUFFER_VH}svh / var(--site-scale))`,
-        }}
-      >
-        <div className="hidden h-[calc(100svh/var(--site-scale))] overflow-hidden lg:sticky lg:top-0 lg:flex">
-          <div className="relative z-10 h-full w-full overflow-hidden">
-            <motion.div
-              style={{ x: desktopTrackX }}
-              className="flex h-full w-max gap-0 pr-0 will-change-transform"
-            >
-              {domesticOptions.map((adventure, index) => (
-                <DomesticTripCard
-                  key={adventure.id}
-                  adventure={adventure}
-                  copy={copy}
-                  onSelect={setSelected}
-                  index={index}
-                  total={domesticOptions.length}
-                />
-              ))}
-            </motion.div>
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,14,10,0.96),rgba(15,14,10,0.82)_48%,rgba(15,14,10,0.66))]"
+      />
+      <div className="relative mx-auto grid min-h-[calc(100svh/var(--site-scale))] w-full max-w-7xl items-center gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:px-12">
+        <div>
+          <p className="nav-text text-xs uppercase text-[#ffd400]">
+            {copy.eyebrow}
+          </p>
+          <h2 className="mt-5 max-w-3xl text-balance text-[clamp(2.2rem,5vw,5.3rem)] leading-[1.02]">
+            {copy.title}
+          </h2>
+          <p className="mt-6 max-w-2xl text-sm leading-7 text-white/70 sm:text-base">
+            {copy.body}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <span className="inline-flex items-center gap-2 border border-white/16 bg-white/7 px-4 py-3 text-xs uppercase text-white/74">
+              <Globe2 className="h-4 w-4 text-[#ffd400]" />
+              {tripCount} {copy.totalTrips}
+            </span>
+            <span className="inline-flex items-center gap-2 border border-white/16 bg-white/7 px-4 py-3 text-xs uppercase text-white/74">
+              <UsersRound className="h-4 w-4 text-[#ffd400]" />
+              {copy.live}
+            </span>
           </div>
         </div>
 
-        <div className="relative z-10 lg:hidden">
-          {domesticOptions.map((adventure, index) => (
-            <DomesticTripCard
-              key={adventure.id}
-              adventure={adventure}
-              copy={copy}
-              onSelect={setSelected}
-              index={index}
-              total={domesticOptions.length}
-            />
-          ))}
+        <div className="border border-white/14 bg-black/24 p-4 shadow-[0_28px_90px_rgba(0,0,0,0.28)] backdrop-blur-md sm:p-6">
+          <div className="flex flex-col gap-3 border-b border-white/12 pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="nav-text text-[11px] uppercase text-[#ffd400]">
+                {copy.boardTitle}
+              </p>
+              <h3 className="mt-2 text-2xl leading-tight text-white sm:text-3xl">
+                {copy.boardSubtitle}
+              </h3>
+            </div>
+            <MapPinned className="h-8 w-8 text-[#ffd400]" />
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {boardItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div key={item.label} className="border border-white/12 bg-white/[0.055] p-4">
+                  <div className="flex items-center gap-2 text-[11px] uppercase text-white/50">
+                    <Icon className="h-4 w-4 text-[#ffd400]" />
+                    {item.label}
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-white/82">
+                    {item.value}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 border border-[#ffd400]/26 bg-[#ffd400]/9 p-4">
+            <div className="flex items-center gap-2 text-[11px] uppercase text-[#ffd400]">
+              <CheckCircle2 className="h-4 w-4" />
+              {copy.actionsTitle}
+            </div>
+            <div className="mt-4 grid gap-2">
+              {actionLinks.map((link) => {
+                const Icon = link.icon;
+
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="group flex min-h-12 items-center justify-between gap-4 bg-[#fffdf3] px-4 text-xs uppercase text-[#11100b] transition-colors hover:bg-[#ffd400]"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <Icon className="h-4 w-4" />
+                      {link.label}
+                    </span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         </div>
-
-        <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
-      </section>
-
-    </>
+      </div>
+    </section>
   );
 }
