@@ -218,7 +218,16 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 .footer-accent-icon path,
 .footer-accent-icon rect,
 .footer-accent-icon circle {
-  color: #ffffff !important;
+  color: rgba(255, 255, 255, 0.58) !important;
+  transition: color 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+.group:hover .footer-accent-icon,
+.group:hover .footer-accent-icon svg,
+.group:hover .footer-accent-icon path,
+.group:hover .footer-accent-icon rect,
+.group:hover .footer-accent-icon circle {
+  color: rgba(255, 255, 255, 0.82) !important;
 }
 
 .footer-accent-icon svg {
