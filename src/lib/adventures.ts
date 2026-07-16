@@ -1598,11 +1598,18 @@ function getFallbackGalleryImages(adventure: Adventure): string[] {
 }
 
 export function getAdventureGalleryImages(adventure: Adventure): string[] {
+  const configuredGallery =
+    adventure.galleryImages && adventure.galleryImages.length > 0
+      ? adventure.galleryImages
+      : [
+          ...(ADVENTURE_GALLERIES[adventure.id] ?? []),
+          ...getFallbackGalleryImages(adventure),
+        ];
+
   return Array.from(
     new Set([
       adventure.image,
-      ...(adventure.galleryImages ?? ADVENTURE_GALLERIES[adventure.id] ?? []),
-      ...getFallbackGalleryImages(adventure),
+      ...configuredGallery,
     ].map((image) => getHighResolutionImageUrl(image)))
   );
 }

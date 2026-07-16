@@ -23,7 +23,12 @@ import {
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { Adventure, AdventureTranslation } from "@/lib/adventures";
+import {
+  getAdventureGalleryImages,
+  type Adventure,
+  type AdventureTranslation,
+} from "@/lib/adventures";
+import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import type { SiteSettings } from "@/lib/site-settings";
 import { AdminItineraryEditor } from "@/components/admin-itinerary-editor";
 import { ConfirmSubmitButton } from "@/components/admin-confirm-button";
@@ -1123,7 +1128,11 @@ function PosterField({ trip, className }: { trip?: Adventure; className?: string
 }
 
 function GalleryUploadField({ trip, className }: { trip?: Adventure; className?: string }) {
-  const images = trip?.galleryImages ?? [];
+  const posterImage = trip?.image ? getHighResolutionImageUrl(trip.image) : "";
+  const images = trip
+    ? getAdventureGalleryImages(trip).filter((image) => image !== posterImage)
+    : [];
+  const hasSavedGallery = (trip?.galleryImages?.length ?? 0) > 0;
 
   return (
     <div className={`block ${className ?? ""}`}>
@@ -1197,7 +1206,10 @@ function GalleryUploadField({ trip, className }: { trip?: Adventure; className?:
           aria-hidden="true"
         />
         <p className="mt-2 text-xs font-medium leading-5 text-[var(--muted-foreground)]">
-          Зөвхөн local-аас зураг upload хийж солино. Устгах сонголт идэвхжүүлсэн зураг хадгалахад gallery-аас хасагдана.
+          Зөвхөн local-аас зураг upload хийж солино. Веб дээр fallback-аар харагдаж байгаа зургууд ч энд гарна.
+          {hasSavedGallery
+            ? " Устгах сонголт идэвхжүүлсэн зураг хадгалахад gallery-аас хасагдана."
+            : " Одоогийн fallback зургуудыг хадгалах үед энэ хөтөлбөрийн gallery болгон хадгална."}
         </p>
       </div>
     </div>
