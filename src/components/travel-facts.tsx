@@ -11,7 +11,7 @@ import {
   Map,
   Mountain,
   MountainSnow,
-  Snowflake,
+  Thermometer,
   Sun,
   TreePine,
   Users,
@@ -66,12 +66,12 @@ const FACTS: Fact[] = [
     },
   },
   {
-    icon: Snowflake,
-    value: "−25°C",
-    place: { mn: "Улаанбаатар", en: "Ulaanbaatar" },
+    icon: Thermometer,
+    value: "+40 / −40°C",
+    place: { mn: "Монгол улс", en: "Mongolia" },
     note: {
-      mn: "Өвлийн дундаж хэм. Улаанбаатар бол дэлхийн хамгийн хүйтэн нийслэл хот.",
-      en: "Average winter temperature — the coldest capital city in the world.",
+      mn: "Дэлхийн хамгийн эрс тэрс уур амьсгалтай орнуудын нэг — зун +40°C хүртэл халж, өвөл −40°C хүртэл хүйтэрдэг.",
+      en: "One of the world's most extreme continental climates — from +40°C in summer down to −40°C in winter.",
     },
   },
   {
@@ -106,8 +106,8 @@ const FACTS: Fact[] = [
     value: "1.3 сая км²",
     place: { mn: "Говь цөл", en: "The Gobi" },
     note: {
-      mn: "Азийн хамгийн том цөл бөгөөд зун, өвлийн хэмийн ялгаа 80°C хүрдэг.",
-      en: "Asia's largest desert, where summer-to-winter temperatures can swing by 80°C.",
+      mn: "Азийн хамгийн том цөл — үлэг гүрвэлийн олдворууд анх олдсон газраараа дэлхийд алдартай.",
+      en: "Asia's largest desert — world famous as the place the first dinosaur eggs were found.",
     },
   },
   {
