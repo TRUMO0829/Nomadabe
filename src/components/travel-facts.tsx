@@ -1,7 +1,22 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Compass, Landmark, Mountain, Snowflake, Sun, Waves } from "lucide-react";
+import {
+  Building2,
+  CloudSun,
+  Compass,
+  Flame,
+  Footprints,
+  Landmark,
+  Map,
+  Mountain,
+  MountainSnow,
+  Snowflake,
+  Sun,
+  TreePine,
+  Users,
+  Waves,
+} from "lucide-react";
 import { useLanguage } from "./language-provider";
 
 const SECTION_COPY = {
@@ -52,11 +67,29 @@ const FACTS: Fact[] = [
   },
   {
     icon: Snowflake,
-    value: "-25°C",
+    value: "−25°C",
     place: { mn: "Улаанбаатар", en: "Ulaanbaatar" },
     note: {
       mn: "Өвлийн дундаж хэм. Улаанбаатар бол дэлхийн хамгийн хүйтэн нийслэл хот.",
       en: "Average winter temperature — the coldest capital city in the world.",
+    },
+  },
+  {
+    icon: Users,
+    value: "2 хүн / км²",
+    place: { mn: "Монгол улс", en: "Mongolia" },
+    note: {
+      mn: "Хүн амын нягтрал дэлхийн бүрэн эрхт улсуудаас хамгийн бага нь.",
+      en: "The lowest population density of any sovereign country in the world.",
+    },
+  },
+  {
+    icon: Map,
+    value: "1.56 сая км²",
+    place: { mn: "Монгол улс", en: "Mongolia" },
+    note: {
+      mn: "Нутаг дэвсгэрийн хэмжээгээр дэлхийд 18-рт ордог.",
+      en: "The 18th largest country in the world by land area.",
     },
   },
   {
@@ -73,8 +106,26 @@ const FACTS: Fact[] = [
     value: "1.3 сая км²",
     place: { mn: "Говь цөл", en: "The Gobi" },
     note: {
-      mn: "Азийн хамгийн том цөл. Зуны халуун, өвлийн хүйтний ялгаа 80°C хүрдэг.",
+      mn: "Азийн хамгийн том цөл бөгөөд зун, өвлийн хэмийн ялгаа 80°C хүрдэг.",
       en: "Asia's largest desert, where summer-to-winter temperatures can swing by 80°C.",
+    },
+  },
+  {
+    icon: CloudSun,
+    value: "250+ өдөр",
+    place: { mn: "Мөнх хөх тэнгэр", en: "Eternal Blue Sky" },
+    note: {
+      mn: "Монголд жилд дунджаар ийм олон нарлаг өдөр тохиодог.",
+      en: "Mongolia averages this many sunny days a year — hence its nickname.",
+    },
+  },
+  {
+    icon: Footprints,
+    value: "4 сая морь",
+    place: { mn: "Монголын адуу", en: "Mongolian horses" },
+    note: {
+      mn: "Морьдын тоо нь хүн амаас (≈3.5 сая) илүү байдаг.",
+      en: "Horses outnumber the country's people (≈3.5 million).",
     },
   },
   {
@@ -87,12 +138,39 @@ const FACTS: Fact[] = [
     },
   },
   {
-    icon: Compass,
+    icon: MountainSnow,
     value: "3,776 м",
     place: { mn: "Япон — Фүжи уул", en: "Japan — Mt. Fuji" },
     note: {
-      mn: "Японы хамгийн өндөр цэг бөгөөд жилд 300 мянга орчим хүн авирдаг.",
-      en: "Japan's highest point, climbed by around 300,000 people every year.",
+      mn: "Японы хамгийн өндөр цэг бөгөөд идэвхтэй галт уул юм.",
+      en: "Japan's highest point — and an active volcano.",
+    },
+  },
+  {
+    icon: Flame,
+    value: "100+",
+    place: { mn: "Япон — галт уул", en: "Japan — volcanoes" },
+    note: {
+      mn: "Идэвхтэй галт уулын тоо — дэлхийн нийт галт уулын ~10%.",
+      en: "Active volcanoes — around 10% of all the world's active volcanoes.",
+    },
+  },
+  {
+    icon: TreePine,
+    value: "70%",
+    place: { mn: "Өмнөд Солонгос", en: "South Korea" },
+    note: {
+      mn: "Нутаг дэвсгэрийн ойролцоогоор энэ хувь нь уулархаг газар.",
+      en: "Roughly this share of the country's land is mountainous.",
+    },
+  },
+  {
+    icon: Building2,
+    value: "2 тив",
+    place: { mn: "Турк — Истанбул", en: "Türkiye — Istanbul" },
+    note: {
+      mn: "Ази, Европ хоёр тивд зэрэг оршдог дэлхийн цорын ганц том хот.",
+      en: "The only major city in the world that sits on two continents at once.",
     },
   },
 ];
@@ -142,7 +220,11 @@ export function TravelFacts() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.5, delay: (index % 3) * 0.08 }}
-                className="group bg-[#0b0a07]/90 p-7 backdrop-blur-md transition-colors hover:bg-[#141209]/90 sm:p-8"
+                className={`group bg-[#0b0a07]/90 p-7 backdrop-blur-md transition-colors hover:bg-[#141209]/90 sm:p-8 ${
+                  index === FACTS.length - 1 && FACTS.length % 3 === 1
+                    ? "sm:col-span-2 lg:col-span-3"
+                    : ""
+                }`}
               >
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-accent/15">
                   <Icon className="h-5 w-5 text-accent" />
