@@ -1,5 +1,6 @@
 import { Hero } from "@/components/hero";
 import { Testimonials } from "@/components/testimonials";
+import { TravelFacts } from "@/components/travel-facts";
 import { CtaFooter } from "@/components/cta-footer";
 import { SignupPromptModal } from "@/components/signup-prompt-modal";
 import { TravelOptionsCarousel } from "@/components/travel-options-carousel";
@@ -23,6 +24,7 @@ export default async function Home() {
           outboundTripImages={siteSettings.outboundTripImages}
         />
         <FeaturedTripsCarousel adventures={adventures} variant="compact" />
+        <TravelFacts />
         <Testimonials reviews={siteSettings.reviews} />
         <CtaFooter />
       </main>
