@@ -44,12 +44,13 @@ import {
   logoutAdminAction,
   refreshAdminAction,
   saveSiteSettingsAction,
+  saveFactsAction,
   saveStaysAction,
   saveTripAction,
   sendAdminEmailAction,
   updateInquiryStatusAction,
 } from "./actions";
-import type { StayOption } from "@/lib/site-settings";
+import type { StayOption, TravelFact } from "@/lib/site-settings";
 import { getCustomers } from "@/lib/server/customer-auth";
 import { getEmailLogs } from "@/lib/server/mail";
 import { getErrorMessage } from "@/lib/server/supabase-rest";
@@ -304,6 +305,15 @@ export default async function AdminDashboard({
                     action={`Нийт ${siteSettings?.stays.length ?? 0}`}
                   />
                   <StaysEditor stays={siteSettings?.stays ?? []} />
+                </section>
+
+                <section id="facts" className="scroll-mt-6 space-y-4">
+                  <SectionHeader
+                    eyebrow="Нүүр хуудас"
+                    title="Сонирхолтой баримт"
+                    action={`Нийт ${siteSettings?.facts.length ?? 0}`}
+                  />
+                  <FactsEditor facts={siteSettings?.facts ?? []} />
                 </section>
               </div>
 
@@ -1001,6 +1011,133 @@ function getCategoryOptions(trips: Adventure[]): CategoryOption[] {
 
 function getCategoryLabel(category: string) {
   return defaultCategoryLabels[category] ?? category;
+}
+
+function FactsEditor({ facts }: { facts: TravelFact[] }) {
+  return (
+    <form action={saveFactsAction} className="space-y-5">
+      <input type="hidden" name="factCount" defaultValue={facts.length} />
+
+      {facts.map((fact, i) => (
+        <div
+          key={fact.id}
+          className="space-y-3 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+        >
+          <input type="hidden" name={`fact_${i}_id`} defaultValue={fact.id} />
+          <input type="hidden" name={`fact_${i}_imageUrl`} defaultValue={fact.image ?? ""} />
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <TextField label="Тоо / утга" name={`fact_${i}_value`} defaultValue={fact.value} />
+            <TextField label="Газар (MN)" name={`fact_${i}_place`} defaultValue={fact.place} />
+            <TextField label="Газар (EN)" name={`fact_${i}_placeEn`} defaultValue={fact.placeEn ?? ""} />
+          </div>
+
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+              Тайлбар (MN)
+            </span>
+            <textarea
+              name={`fact_${i}_note`}
+              defaultValue={fact.note}
+              rows={2}
+              className="mt-2 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+              Тайлбар (EN)
+            </span>
+            <textarea
+              name={`fact_${i}_noteEn`}
+              defaultValue={fact.noteEn ?? ""}
+              rows={2}
+              className="mt-2 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+            />
+          </label>
+
+          <div className="flex flex-wrap items-center gap-4 rounded-md border border-dashed border-[var(--border)] p-3">
+            {fact.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={fact.image}
+                alt={fact.place}
+                className="h-20 w-28 shrink-0 rounded object-cover ring-1 ring-[var(--border)]"
+              />
+            ) : (
+              <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded bg-[var(--muted)] text-xs text-[var(--muted-foreground)]">
+                Зураг алга
+              </div>
+            )}
+            <div className="min-w-[220px] flex-1">
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                Зураг солих (компьютерээс)
+              </span>
+              <input
+                type="file"
+                name={`fact_${i}_image`}
+                accept="image/png,image/jpeg,image/webp,image/avif"
+                className="mt-2 w-full text-xs"
+              />
+            </div>
+            <label className="flex items-center gap-2 text-xs font-semibold text-red-600">
+              <input type="checkbox" name={`fact_${i}_delete`} className="h-4 w-4" />
+              Устгах
+            </label>
+          </div>
+        </div>
+      ))}
+
+      <div className="space-y-3 rounded-md border-2 border-dashed border-[var(--accent)] bg-[var(--muted)]/40 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+          Шинэ баримт нэмэх
+        </p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <TextField label="Тоо / утга" name="newFact_value" placeholder="Жишээ: 18.94 сая" />
+          <TextField label="Газар (MN)" name="newFact_place" placeholder="Жишээ: Өмнөд Солонгос" />
+          <TextField label="Газар (EN)" name="newFact_placeEn" placeholder="South Korea" />
+        </div>
+        <label className="block">
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+            Тайлбар (MN)
+          </span>
+          <textarea
+            name="newFact_note"
+            rows={2}
+            placeholder="Жишээ: Жилд хүлээн авдаг гадаад жуулчны тоо."
+            className="mt-2 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+            Тайлбар (EN)
+          </span>
+          <textarea
+            name="newFact_noteEn"
+            rows={2}
+            className="mt-2 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+          />
+        </label>
+        <div>
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+            Зураг (компьютерээс)
+          </span>
+          <input
+            type="file"
+            name="newFact_image"
+            accept="image/png,image/jpeg,image/webp,image/avif"
+            className="mt-2 w-full text-xs"
+          />
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--primary)] px-6 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+      >
+        Баримтуудыг хадгалах
+      </button>
+    </form>
+  );
 }
 
 function StaysEditor({ stays }: { stays: StayOption[] }) {

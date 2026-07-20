@@ -15,7 +15,9 @@ import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import {
   DEFAULT_ABOUT_SECTION,
   DEFAULT_STAYS,
+  DEFAULT_TRAVEL_FACTS,
   type StayOption,
+  type TravelFact,
   type AboutFaqItem,
   type AboutGalleryImage,
   type AboutLocaleContent,
@@ -137,6 +139,7 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   teamMembers: DEFAULT_TEAM_MEMBERS,
   reviews: DEFAULT_REVIEWS,
   stays: DEFAULT_STAYS,
+  facts: DEFAULT_TRAVEL_FACTS,
   aboutSection: DEFAULT_ABOUT_SECTION,
 };
 
@@ -325,6 +328,76 @@ export async function deleteServiceById(id: string) {
   });
 }
 
+function normalizeFacts(input: unknown): TravelFact[] {
+  if (!Array.isArray(input)) return DEFAULT_TRAVEL_FACTS;
+  const cleaned = input
+    .filter((f): f is Record<string, unknown> => isRecord(f))
+    .map((f, index) => ({
+      id: String(f.id ?? `fact-${index + 1}`),
+      value: String(f.value ?? ""),
+      place: String(f.place ?? ""),
+      note: String(f.note ?? ""),
+      placeEn: f.placeEn ? String(f.placeEn) : undefined,
+      noteEn: f.noteEn ? String(f.noteEn) : undefined,
+      image: f.image ? String(f.image) : "",
+    }))
+    .filter((f) => f.value || f.place || f.note);
+  return cleaned;
+}
+
+export async function upsertFactsFromForm(formData: FormData) {
+  const store = await getAdminStore();
+  const current = store.siteSettings.facts;
+  const count = Number(formData.get("factCount")) || current.length;
+  const next: TravelFact[] = [];
+
+  const readImage = async (fileKey: string, currentUrl: string) => {
+    const upload = formData.get(fileKey);
+    if (isUploadedPoster(upload)) return uploadTripPoster(upload);
+    return currentUrl;
+  };
+
+  for (let i = 0; i < count; i += 1) {
+    if (formData.has(`fact_${i}_delete`)) continue;
+    const str = (key: string) => {
+      const value = formData.get(`fact_${i}_${key}`);
+      return typeof value === "string" ? value.trim() : "";
+    };
+    const base = current[i];
+    const value = str("value");
+    const place = str("place");
+    const note = str("note");
+    if (!value && !place && !note) continue;
+
+    next.push({
+      id: str("id") || base?.id || `fact-${i + 1}`,
+      value,
+      place,
+      note,
+      placeEn: str("placeEn") || undefined,
+      noteEn: str("noteEn") || undefined,
+      image: await readImage(`fact_${i}_image`, str("imageUrl") || base?.image || ""),
+    });
+  }
+
+  const newValue = String(formData.get("newFact_value") ?? "").trim();
+  const newPlace = String(formData.get("newFact_place") ?? "").trim();
+  const newNote = String(formData.get("newFact_note") ?? "").trim();
+  if (newValue || newPlace || newNote) {
+    next.push({
+      id: `fact-${Date.now()}`,
+      value: newValue,
+      place: newPlace,
+      note: newNote,
+      placeEn: String(formData.get("newFact_placeEn") ?? "").trim() || undefined,
+      noteEn: String(formData.get("newFact_noteEn") ?? "").trim() || undefined,
+      image: await readImage("newFact_image", ""),
+    });
+  }
+
+  return updateSiteSettings({ facts: next });
+}
+
 export async function updateSiteSettingsFromForm(formData: FormData) {
   const settings: Partial<SiteSettings> = {};
 
@@ -481,6 +554,7 @@ export async function updateSiteSettings(siteSettings: Partial<SiteSettings>) {
     teamMembers: siteSettings.teamMembers ?? store.siteSettings.teamMembers,
     reviews: siteSettings.reviews ?? store.siteSettings.reviews,
     stays: siteSettings.stays ?? store.siteSettings.stays,
+    facts: siteSettings.facts ?? store.siteSettings.facts,
   });
   await saveAdminStore({
     ...store,
@@ -745,6 +819,7 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
     teamMembers: normalizeTeamMembers(settings.teamMembers),
     reviews: normalizeReviews(settings.reviews),
     stays: normalizeStays(settings.stays),
+    facts: normalizeFacts(settings.facts),
     aboutSection: normalizeAboutSection(settings.aboutSection),
   };
 }

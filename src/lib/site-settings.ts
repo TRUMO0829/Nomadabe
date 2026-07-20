@@ -89,6 +89,58 @@ export const DEFAULT_STAYS: StayOption[] = [
   },
 ];
 
+export type TravelFact = {
+  id: string;
+  value: string;
+  place: string;
+  note: string;
+  placeEn?: string;
+  noteEn?: string;
+  image?: string;
+};
+
+export const DEFAULT_TRAVEL_FACTS: TravelFact[] = [
+  { id: "fact-elevation", value: "1,580 м", place: "Монгол улс", placeEn: "Mongolia",
+    note: "Далайн түвшнээс дээш дундаж өндөр — дэлхийд хамгийн өндөрт оршдог орнуудын нэг.",
+    noteEn: "Average elevation above sea level — one of the highest-lying countries on Earth.", image: "" },
+  { id: "fact-climate", value: "+40 / −40°C", place: "Монгол улс", placeEn: "Mongolia",
+    note: "Дэлхийн хамгийн эрс тэрс уур амьсгалтай орнуудын нэг — зун +40°C хүртэл халж, өвөл −40°C хүртэл хүйтэрдэг.",
+    noteEn: "One of the world's most extreme continental climates — from +40°C in summer down to −40°C in winter.", image: "" },
+  { id: "fact-density", value: "2 хүн / км²", place: "Монгол улс", placeEn: "Mongolia",
+    note: "Хүн амын нягтрал дэлхийн бүрэн эрхт улсуудаас хамгийн бага нь.",
+    noteEn: "The lowest population density of any sovereign country in the world.", image: "" },
+  { id: "fact-area", value: "1.56 сая км²", place: "Монгол улс", placeEn: "Mongolia",
+    note: "Нутаг дэвсгэрийн хэмжээгээр дэлхийд 18-рт ордог.",
+    noteEn: "The 18th largest country in the world by land area.", image: "" },
+  { id: "fact-khuvsgul", value: "70%", place: "Хөвсгөл нуур", placeEn: "Lake Khövsgöl",
+    note: "Монгол орны цэвэр усны нөөцийн ойролцоогоор энэ хувийг ганцаараа агуулдаг.",
+    noteEn: "Holds roughly this share of Mongolia's entire fresh water reserve on its own.", image: "" },
+  { id: "fact-gobi", value: "1.3 сая км²", place: "Говь цөл", placeEn: "The Gobi",
+    note: "Азийн хамгийн том цөл — үлэг гүрвэлийн олдворууд анх олдсон газраараа дэлхийд алдартай.",
+    noteEn: "Asia's largest desert — world famous as the place the first dinosaur eggs were found.", image: "" },
+  { id: "fact-sun", value: "250+ өдөр", place: "Мөнх хөх тэнгэр", placeEn: "Eternal Blue Sky",
+    note: "Монголд жилд дунджаар ийм олон нарлаг өдөр тохиодог.",
+    noteEn: "Mongolia averages this many sunny days a year — hence its nickname.", image: "" },
+  { id: "fact-horses", value: "4 сая морь", place: "Монголын адуу", placeEn: "Mongolian horses",
+    note: "Морьдын тоо нь хүн амаас (≈3.5 сая) илүү байдаг.",
+    noteEn: "Horses outnumber the country's people (≈3.5 million).", image: "" },
+  { id: "fact-greatwall", value: "21,196 км", place: "Хятад — Цагаан хэрэм", placeEn: "China — Great Wall",
+    note: "Албан ёсны хэмжилтээр бүх салбар нийлээд ийм урттай.",
+    noteEn: "The official surveyed length of all its branches combined.", image: "" },
+  { id: "fact-fuji", value: "3,776 м", place: "Япон — Фүжи уул", placeEn: "Japan — Mt. Fuji",
+    note: "Японы хамгийн өндөр цэг бөгөөд идэвхтэй галт уул юм.",
+    noteEn: "Japan's highest point — and an active volcano.", image: "" },
+  { id: "fact-volcano", value: "100+", place: "Япон — галт уул", placeEn: "Japan — volcanoes",
+    note: "Идэвхтэй галт уулын тоо — дэлхийн нийт галт уулын ~10%.",
+    noteEn: "Active volcanoes — around 10% of all the world's active volcanoes.", image: "" },
+  { id: "fact-korea", value: "70%", place: "Өмнөд Солонгос", placeEn: "South Korea",
+    note: "Нутаг дэвсгэрийн ойролцоогоор энэ хувь нь уулархаг газар.",
+    noteEn: "Roughly this share of the country's land is mountainous.", image: "" },
+  { id: "fact-istanbul", value: "2 тив", place: "Турк — Истанбул", placeEn: "Türkiye — Istanbul",
+    note: "Ази, Европ хоёр тивд зэрэг оршдог дэлхийн цорын ганц том хот.",
+    noteEn: "The only major city in the world that sits on two continents at once.", image: "" },
+];
+
 export type AboutSectionId = "who" | "values" | "team" | "work";
 
 export type OrderedVisibility = {
@@ -177,6 +229,7 @@ export type SiteSettings = {
   teamMembers: TeamMember[];
   reviews: SiteReview[];
   stays: StayOption[];
+  facts: TravelFact[];
   aboutSection: AboutSectionSettings;
 };
 

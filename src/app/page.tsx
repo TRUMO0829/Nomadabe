@@ -14,7 +14,7 @@ export default async function Home() {
       <SignupPromptModal autoOpen={false} />
       <main className="flex-1">
         <Hero settings={siteSettings} />
-        <TravelFacts />
+        <TravelFacts facts={siteSettings.facts} />
         <CtaFooter />
       </main>
     </>

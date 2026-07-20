@@ -13,6 +13,7 @@ import {
   upsertServiceFromForm,
   upsertTripFromForm,
   upsertStaysFromForm,
+  upsertFactsFromForm,
 } from "@/lib/server/admin-store";
 import { getInquiries, isInquiryStatus, updateInquiryStatus } from "@/lib/server/inquiries";
 import { sendEmail, sendEmailFromForm } from "@/lib/server/mail";
@@ -36,6 +37,19 @@ export async function saveTripAction(formData: FormData) {
       ? "Хөтөлбөр хадгалагдаж, орчуулгууд шинэчлэгдлээ."
       : "Хөтөлбөр хадгалагдлаа. LibreTranslate URL тохируулбал дараагийн хадгалалтаар орчуулга автоматаар үүснэ."
   );
+}
+
+export async function saveFactsAction(formData: FormData) {
+  await assertAdminAction();
+  const error = await getActionError(() => upsertFactsFromForm(formData));
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  redirectWithStatus("Сонирхолтой баримтууд хадгалагдлаа.");
 }
 
 export async function saveStaysAction(formData: FormData) {
