@@ -1198,13 +1198,13 @@ function DestinationDragCarousel({
                         {adventure.days} {dayLabel}
                       </span>
                     </p>
-                    <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[15ch] text-balance !text-[clamp(1.3rem,2.3vw,2.05rem)] !leading-[1.1] text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.45)]">
+                    <h3 className="trip-header-title trip-header-title--compact mt-1.5 max-w-[16ch] text-balance !text-[clamp(0.95rem,1.7vw,1.4rem)] !leading-[1.15] text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.45)]">
                       {text.title}
                     </h3>
-                    <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm leading-6 text-white/80 sm:text-base">
+                    <p className="trip-copy-text mt-2 line-clamp-2 max-w-md text-xs leading-5 text-white/75 sm:text-sm">
                       {text.summary}
                     </p>
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
                       <Link
                         href={`/tours/${adventure.slug}`}
                         onPointerDown={(event) => {
