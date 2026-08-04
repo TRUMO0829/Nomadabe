@@ -927,7 +927,7 @@ function DestinationDragCarousel({
       const maxScroll = scroller.scrollWidth - scroller.clientWidth;
 
       if (maxScroll > 0 && !dragRef.current.active) {
-        scroller.scrollLeft += elapsed * 0.034;
+        scroller.scrollLeft += elapsed * 0.06;
 
         if (scroller.scrollLeft >= maxScroll - 1) {
           scroller.scrollLeft = 0;
@@ -1198,7 +1198,7 @@ function DestinationDragCarousel({
                         {adventure.days} {dayLabel}
                       </span>
                     </p>
-                    <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[15ch] text-balance !text-[clamp(1.9rem,3.4vw,3.4rem)] !leading-[1.04] text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.45)]">
+                    <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[15ch] text-balance !text-[clamp(1.3rem,2.3vw,2.05rem)] !leading-[1.1] text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.45)]">
                       {text.title}
                     </h3>
                     <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm leading-6 text-white/80 sm:text-base">
