@@ -5,9 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
 import {
+  deleteSiteReviewById,
   deleteTripById,
   deleteServiceById,
   deleteTeamMemberById,
+  setSiteReviewApproval,
   updateSiteSettingsFromForm,
   upsertTeamMemberFromForm,
   upsertServiceFromForm,
@@ -28,8 +30,11 @@ export async function saveTripAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/tours");
+  revalidatePath("/tours/domestic");
+  revalidatePath("/tours/outbound");
+  revalidatePath("/tours/[slug]", "page");
+  revalidatePath("/sitemap.xml");
   revalidatePath("/admin");
-  revalidatePath("/api/trips");
   redirectWithStatus(
     isTripTranslationConfigured()
       ? "Хөтөлбөр хадгалагдаж, орчуулгууд шинэчлэгдлээ."
@@ -53,8 +58,11 @@ export async function deleteTripAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/tours");
+  revalidatePath("/tours/domestic");
+  revalidatePath("/tours/outbound");
+  revalidatePath("/tours/[slug]", "page");
+  revalidatePath("/sitemap.xml");
   revalidatePath("/admin");
-  revalidatePath("/api/trips");
   redirectWithStatus("Хөтөлбөр устгагдлаа.");
 }
 
@@ -83,7 +91,6 @@ export async function saveServiceAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin");
-  revalidatePath("/api/services");
   redirectWithStatus("Үйлчилгээ хадгалагдлаа.");
 }
 
@@ -103,7 +110,6 @@ export async function deleteServiceAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin");
-  revalidatePath("/api/services");
   redirectWithStatus("Үйлчилгээ устгагдлаа.");
 }
 
@@ -139,6 +145,49 @@ export async function deleteTeamMemberAction(formData: FormData) {
   redirectWithStatus("Багийн гишүүн устгагдлаа.");
 }
 
+export async function setReviewApprovalAction(formData: FormData) {
+  await assertAdminAction();
+  const error = await getActionError(async () => {
+    const id = formData.get("id");
+    const approve = formData.get("approve");
+
+    if (typeof id === "string" && id) {
+      await setSiteReviewApproval(id, approve === "true");
+    }
+  });
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  redirectWithStatus(
+    formData.get("approve") === "true"
+      ? "Сэтгэгдэл нийтлэгдлээ."
+      : "Сэтгэгдэл нуугдлаа."
+  );
+}
+
+export async function deleteReviewAction(formData: FormData) {
+  await assertAdminAction();
+  const error = await getActionError(async () => {
+    const id = formData.get("id");
+
+    if (typeof id === "string" && id) {
+      await deleteSiteReviewById(id);
+    }
+  });
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  redirectWithStatus("Сэтгэгдэл устгагдлаа.");
+}
+
 export async function updateInquiryStatusAction(formData: FormData) {
   await assertAdminAction();
   const error = await getActionError(async () => {
@@ -163,7 +212,6 @@ export async function updateInquiryStatusAction(formData: FormData) {
   }
 
   revalidatePath("/admin");
-  revalidatePath("/api/inquiries");
   redirectWithStatus("Бүртгэлийн төлөв шинэчлэгдлээ.");
 }
 
@@ -224,14 +272,12 @@ export async function logoutAdminAction() {
 export async function refreshAdminAction() {
   await assertAdminAction();
   revalidatePath("/admin");
-  revalidatePath("/api/admin/dashboard");
-  revalidatePath("/api/admin/inquiries");
   redirectWithStatus("Админ самбар шинэчлэгдлээ.");
 }
 
 async function assertAdminAction() {
   const cookieStore = await cookies();
-  const admin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
+  const admin = await verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 
   if (!admin) {
     redirect("/admin/login");

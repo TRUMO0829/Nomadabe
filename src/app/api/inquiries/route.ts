@@ -1,6 +1,7 @@
 import { apiError, ok, rateLimitRequest } from "@/lib/server/api";
 import { getTrips } from "@/lib/server/admin-store";
 import { saveInquiry, validateInquiry } from "@/lib/server/inquiries";
+import { notifyNewInquiry } from "@/lib/server/notifications";
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,8 @@ export async function POST(request: Request) {
     }
 
     const inquiry = await saveInquiry(validation.value);
+    await notifyNewInquiry(inquiry);
+
     return ok({ inquiry }, { status: 201 });
   } catch (error) {
     return apiError("BAD_REQUEST", getErrorMessage(error), 400);

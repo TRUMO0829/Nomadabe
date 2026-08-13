@@ -21,8 +21,24 @@ import {
 } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { getAdminStore } from "@/lib/server/admin-store";
+import { absoluteUrl } from "@/lib/site-url";
 
-export const dynamic = "force-dynamic";
+// Content changes only when an admin saves, and every admin action calls
+// revalidatePath, so the page is rebuilt immediately on a change. The window
+// below is just a backstop; it replaces force-dynamic, which made every single
+// visitor trigger a fresh round of Supabase queries.
+export const revalidate = 300;
+
+// Prerender the trips that exist at build time; anything added later is rendered
+// on first request and then cached under the same window.
+export async function generateStaticParams() {
+  const { trips } = await getAdminStore();
+
+  return [
+    ...trips.map((trip) => ({ slug: trip.slug })),
+    ...STATIC_OUTBOUND_TRIPS.map((trip) => ({ slug: `static-outbound-${trip.id}` })),
+  ];
+}
 
 type TourDetailPageProps = {
   params: Promise<{
@@ -170,15 +186,82 @@ export async function generateMetadata({
 
   if (!adventure) {
     return {
-      title: "Nomadabe",
+      title: "Аялал олдсонгүй",
     };
   }
 
   const text = getAdventureText(adventure, "mn");
+  const image = getHighResolutionImageUrl(adventure.image);
+  const path = `/tours/${adventure.slug}`;
 
   return {
-    title: `${text.title} | Nomadabe Travel`,
+    title: text.title,
     description: text.summary,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "article",
+      title: text.title,
+      description: text.summary,
+      url: path,
+      images: image ? [{ url: image, alt: text.title }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: text.title,
+      description: text.summary,
+      images: image ? [image] : undefined,
+    },
+  };
+}
+
+/**
+ * Search engines show trips with price, duration, and rating when the page
+ * carries TouristTrip structured data — the single highest-leverage SEO item
+ * for a travel catalogue.
+ */
+function getTripJsonLd(adventure: Adventure, text: ReturnType<typeof getAdventureText>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "TouristTrip",
+    name: text.title,
+    description: text.summary,
+    url: absoluteUrl(`/tours/${adventure.slug}`),
+    image: getHighResolutionImageUrl(adventure.image) || undefined,
+    touristType: text.idealFor,
+    itinerary: {
+      "@type": "ItemList",
+      numberOfItems: adventure.days,
+      itemListElement: (adventure.itinerary ?? []).map((step, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: step.title,
+      })),
+    },
+    provider: {
+      "@type": "TravelAgency",
+      name: "Nomadabe Travel",
+      url: absoluteUrl("/"),
+    },
+    ...(adventure.price > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: adventure.price,
+            priceCurrency: adventure.currency,
+            availability: "https://schema.org/InStock",
+            url: absoluteUrl(`/plan?trip=${encodeURIComponent(adventure.slug)}`),
+          },
+        }
+      : {}),
+    ...(adventure.reviews > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: adventure.rating,
+            reviewCount: adventure.reviews,
+          },
+        }
+      : {}),
   };
 }
 
@@ -200,6 +283,13 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        // Structured data is generated from our own trip record, not user input.
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(getTripJsonLd(adventure, text)),
+        }}
+      />
       <SignupPromptModal autoOpen={false} />
       <Navbar />
       <main className="min-h-screen bg-[#f5f3ee] text-[#11100b]">

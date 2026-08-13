@@ -5,10 +5,14 @@ import { AboutShowcase } from "@/components/about-showcase";
 import { CtaFooter } from "@/components/cta-footer";
 import { getSiteSettings } from "@/lib/server/admin-store";
 
-export const dynamic = "force-dynamic";
+// Content changes only when an admin saves, and every admin action calls
+// revalidatePath, so the page is rebuilt immediately on a change. The window
+// below is just a backstop; it replaces force-dynamic, which made every single
+// visitor trigger a fresh round of Supabase queries.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Бидний тухай | Nomadabe",
+  title: "Бидний тухай",
   description:
     "Nomadabe Travel-ийн аялал төлөвлөлт, бодит зохион байгуулалт, дотоод болон гадаад чиглэлийн ажиллах зарчим.",
 };

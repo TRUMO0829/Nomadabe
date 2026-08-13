@@ -20,6 +20,53 @@ export type SiteReview = {
   rating: number;
   imageUrl?: string;
   createdAt: string;
+  /**
+   * Reviews arrive from an unauthenticated form, so they stay hidden until an
+   * admin approves them. Reviews saved before moderation existed have no flag
+   * and are treated as approved.
+   */
+  isApproved?: boolean;
+};
+
+export function isApprovedReview(review: SiteReview) {
+  return review.isApproved !== false;
+}
+
+/** The reviews a visitor is allowed to see. */
+export function getPublicReviews(reviews: SiteReview[]) {
+  return reviews.filter(isApprovedReview);
+}
+
+/** Site settings minus anything a visitor must not receive. */
+export type PublicSiteSettings = Omit<SiteSettings, "reviews">;
+
+/**
+ * Strip reviews before handing settings to a client component.
+ *
+ * Anything passed as a prop to a client component is serialised into the page,
+ * so leaving the legacy `reviews` array in place shipped unapproved — possibly
+ * spam — review text to every visitor even though it was never rendered.
+ * Reviews have their own table now and are fetched separately.
+ */
+export function toPublicSiteSettings(settings: SiteSettings): PublicSiteSettings {
+  const publicSettings: Partial<SiteSettings> = { ...settings };
+  delete publicSettings.reviews;
+
+  return publicSettings as PublicSiteSettings;
+}
+
+export type StayOption = {
+  id: string;
+  title: string;
+  type: string;
+  nights: number;
+  /** Nightly rate in MNT. Rendered with formatPriceString. */
+  price: number;
+  guests: number;
+  rooms: number;
+  location: string;
+  summary: string;
+  images: string[];
 };
 
 export type AboutSectionId = "who" | "values" | "team" | "work";
@@ -109,8 +156,63 @@ export type SiteSettings = {
   heroOverlayOpacity: number;
   teamMembers: TeamMember[];
   reviews: SiteReview[];
+  stays: StayOption[];
   aboutSection: AboutSectionSettings;
 };
+
+export const DEFAULT_STAYS: StayOption[] = [
+  {
+    id: "ub-business-hotel",
+    title: "Хотын төвийн вилла",
+    type: "Вилла",
+    nights: 2,
+    price: 280000,
+    guests: 2,
+    rooms: 1,
+    location: "Улаанбаатар",
+    summary:
+      "Бизнес уулзалт, expo, богино аялалд тохирох төв байршилтай хувийн вилла сонголт.",
+    images: [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1800&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1200&q=85&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200&q=85&fit=crop&fm=webp",
+    ],
+  },
+  {
+    id: "terelj-family-villa",
+    title: "Тэрэлж гэр бүлийн вилла",
+    type: "Вилла",
+    nights: 3,
+    price: 650000,
+    guests: 6,
+    rooms: 3,
+    location: "Тэрэлж",
+    summary:
+      "Гэр бүл, найз нөхөд, жижиг группийн амралтад тохирох хувийн орчинтой вилла.",
+    images: [
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1800&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=85&fit=crop&fm=webp",
+    ],
+  },
+  {
+    id: "lake-lodge-stay",
+    title: "Нуурын эргийн вилла",
+    type: "Вилла",
+    nights: 4,
+    price: 420000,
+    guests: 4,
+    rooms: 2,
+    location: "Хөвсгөл / нуурын бүс",
+    summary:
+      "Байгальд ойр, тайван амралт болон дотоод аяллын маршрутад холбох вилла сонголт.",
+    images: [
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1800&q=90&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=1200&q=85&fit=crop&fm=webp",
+      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=1200&q=85&fit=crop&fm=webp",
+    ],
+  },
+];
 
 export const DEFAULT_ABOUT_SECTION: AboutSectionSettings = {
   mn: {

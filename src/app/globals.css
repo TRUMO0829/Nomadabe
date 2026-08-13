@@ -94,8 +94,16 @@ body {
   min-height: 100svh;
 }
 
+.about-screen {
+  min-height: 100svh;
+}
+
 @supports (zoom: 1) {
   .home-hero-screen {
+    min-height: calc(100svh / var(--site-scale));
+  }
+
+  .about-screen {
     min-height: calc(100svh / var(--site-scale));
   }
 }
@@ -210,7 +218,7 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 .footer-accent-icon path,
 .footer-accent-icon rect,
 .footer-accent-icon circle {
-  color: var(--accent) !important;
+  color: #ffffff !important;
 }
 
 .footer-accent-icon svg {

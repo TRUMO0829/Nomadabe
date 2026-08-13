@@ -4,7 +4,7 @@ import { SignupPromptModal } from "@/components/signup-prompt-modal";
 import { CtaFooter } from "@/components/cta-footer";
 
 export const metadata: Metadata = {
-  title: "Nomadabe",
+  title: "Аялал төлөвлөх",
   description:
     "Nomadabe Travel багтай аяллын санаа, чиглэл, хугацаа, төсвөө хуваалцаарай.",
 };

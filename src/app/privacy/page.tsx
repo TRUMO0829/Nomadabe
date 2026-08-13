@@ -5,7 +5,7 @@ import { Navbar } from "@/components/navbar";
 import { SignupPromptModal } from "@/components/signup-prompt-modal";
 
 export const metadata: Metadata = {
-  title: "Нууцлалын бодлого | Nomadabe",
+  title: "Нууцлалын бодлого",
   description: "Nomadabe Travel-ийн нууцлалын бодлого.",
 };
 

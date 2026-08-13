@@ -9,6 +9,7 @@ import {
   Inbox,
   LayoutDashboard,
   Mail,
+  MessageSquare,
   Plane,
   Plus,
   RefreshCw,
@@ -23,8 +24,13 @@ import {
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { Adventure, AdventureTranslation } from "@/lib/adventures";
-import type { SiteSettings } from "@/lib/site-settings";
+import {
+  isBuiltInTravelCategory,
+  type Adventure,
+  type AdventureTranslation,
+  type BuiltInTravelCategory,
+} from "@/lib/adventures";
+import { isApprovedReview, type SiteReview, type SiteSettings } from "@/lib/site-settings";
 import { AdminItineraryEditor } from "@/components/admin-itinerary-editor";
 import { ConfirmSubmitButton } from "@/components/admin-confirm-button";
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
@@ -34,6 +40,7 @@ import {
   getBookingCount,
 } from "@/lib/server/admin-store";
 import {
+  deleteReviewAction,
   deleteTripAction,
   emailLatestInquiryAction,
   logoutAdminAction,
@@ -41,6 +48,7 @@ import {
   saveSiteSettingsAction,
   saveTripAction,
   sendAdminEmailAction,
+  setReviewApprovalAction,
   updateInquiryStatusAction,
 } from "./actions";
 import { getCustomers } from "@/lib/server/customer-auth";
@@ -49,7 +57,9 @@ import { getErrorMessage } from "@/lib/server/supabase-rest";
 
 export const dynamic = "force-dynamic";
 
-const defaultCategoryLabels: Record<string, string> = {
+// Labels for the built-in categories. Admin-defined categories fall back to
+// their raw value — see getCategoryLabel.
+const defaultCategoryLabels: Record<BuiltInTravelCategory, string> = {
   business: "Бизнес",
   festival: "Festival",
   leisure: "Амралт",
@@ -60,6 +70,7 @@ const navItems = [
   { label: "Ерөнхий", href: "#overview", icon: LayoutDashboard },
   { label: "Бүртгэлүүд", href: "#registrations", icon: Users },
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
+  { label: "Сэтгэгдэл", href: "#reviews", icon: MessageSquare },
   { label: "Веб тохиргоо", href: "#web-settings", icon: Gauge },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
@@ -76,7 +87,7 @@ export default async function AdminDashboard({
   searchParams?: Promise<{ status?: string }>;
 }) {
   const cookieStore = await cookies();
-  const admin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
+  const admin = await verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 
   if (!admin) {
     redirect("/admin/login");
@@ -84,7 +95,7 @@ export default async function AdminDashboard({
 
   const [dashboardData, customersResult, emailLogsResult] =
     await Promise.allSettled([getAdminDashboardData(), getCustomers(), getEmailLogs()]);
-  const { trips, inquiries, bookingStats, siteSettings } =
+  const { trips, inquiries, bookingStats, siteSettings, reviews } =
     dashboardData.status === "fulfilled"
       ? dashboardData.value
       : {
@@ -92,6 +103,7 @@ export default async function AdminDashboard({
           inquiries: [],
           bookingStats: [],
           siteSettings: null,
+          reviews: [],
         };
   const customers = customersResult.status === "fulfilled" ? customersResult.value : [];
   const emailLogs = emailLogsResult.status === "fulfilled" ? emailLogsResult.value : [];
@@ -103,6 +115,9 @@ export default async function AdminDashboard({
   const latestInquiries = inquiries.slice(0, 12);
   const latestCustomers = customers.slice(0, 12);
   const latestEmailLogs = emailLogs.slice(0, 8);
+  const allReviews = reviews;
+  const pendingReviews = allReviews.filter((review) => !isApprovedReview(review));
+  const approvedReviews = allReviews.filter(isApprovedReview);
   const upcomingDepartures = trips
     .filter((trip) => trip.nextDeparture)
     .sort((left, right) => String(left.nextDeparture).localeCompare(String(right.nextDeparture)));
@@ -459,6 +474,50 @@ export default async function AdminDashboard({
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </section>
+
+            <section id="reviews" className="scroll-mt-6 space-y-4">
+              <SectionHeader
+                eyebrow="Модерац"
+                title="Сэтгэгдэл хянах"
+                action={`${pendingReviews.length} хүлээгдэж байна`}
+              />
+              <p className="text-sm text-[var(--muted-foreground)]">
+                Сайтад сэтгэгдэл нэвтрэлтгүйгээр илгээгддэг тул та зөвшөөрөх хүртэл
+                нүүр хуудсанд харагдахгүй.
+              </p>
+
+              {allReviews.length === 0 ? (
+                <EmptyState />
+              ) : (
+                <div className="space-y-6">
+                  {pendingReviews.length > 0 ? (
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                        Хүлээгдэж буй
+                      </h3>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {pendingReviews.map((review) => (
+                          <ReviewCard key={review.id} review={review} />
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {approvedReviews.length > 0 ? (
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                        Нийтлэгдсэн
+                      </h3>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {approvedReviews.map((review) => (
+                          <ReviewCard key={review.id} review={review} />
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               )}
             </section>
@@ -984,7 +1043,7 @@ function getCategoryOptions(trips: Adventure[]): CategoryOption[] {
 }
 
 function getCategoryLabel(category: string) {
-  return defaultCategoryLabels[category] ?? category;
+  return isBuiltInTravelCategory(category) ? defaultCategoryLabels[category] : category;
 }
 
 function TextField({
@@ -1240,6 +1299,55 @@ function MiniStat({ label, value }: { label: string; value: number }) {
     <div className="rounded-md bg-white/10 p-3">
       <div className="text-2xl font-semibold">{value}</div>
       <div className="mt-1 text-sm text-[var(--border)]">{label}</div>
+    </div>
+  );
+}
+
+function ReviewCard({ review }: { review: SiteReview }) {
+  const approved = isApprovedReview(review);
+
+  return (
+    <div className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h4 className="truncate text-sm font-semibold text-[var(--primary)]">{review.name}</h4>
+          <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+            {[review.trip, review.location].filter(Boolean).join(" · ") || "Аялал заагаагүй"}
+          </p>
+        </div>
+        <StatusPill label={approved ? "нийтлэгдсэн" : "хүлээгдэж буй"} />
+      </div>
+
+      <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">{review.message}</p>
+
+      <div className="mt-3 flex items-center gap-3 text-xs text-[var(--muted-foreground)]">
+        <span>{review.rating}/5 од</span>
+        <span>{formatDate(review.createdAt)}</span>
+        {review.imageUrl ? <span>Зурагтай</span> : null}
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
+        <form action={setReviewApprovalAction}>
+          <input type="hidden" name="id" defaultValue={review.id} />
+          <input type="hidden" name="approve" defaultValue={approved ? "false" : "true"} />
+          <button
+            type="submit"
+            className="inline-flex h-9 items-center rounded-md bg-[var(--primary)] px-3 text-xs font-semibold text-white"
+          >
+            {approved ? "Нуух" : "Нийтлэх"}
+          </button>
+        </form>
+        <form action={deleteReviewAction}>
+          <input type="hidden" name="id" defaultValue={review.id} />
+          <ConfirmSubmitButton
+            className="inline-flex h-9 items-center rounded-md border border-[var(--border)] px-3 text-xs font-semibold text-[var(--foreground)]"
+            message="Энэ сэтгэгдлийг устгах уу?"
+          >
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+            Устгах
+          </ConfirmSubmitButton>
+        </form>
+      </div>
     </div>
   );
 }

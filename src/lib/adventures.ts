@@ -1,7 +1,25 @@
 import { getCopyLocale, type CopyLocale, type Locale } from "@/lib/i18n";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
 
+/**
+ * The categories shipped with the site. Admins can also type a new one in the
+ * trip form, which is why TravelCategory stays an open string rather than a
+ * union — treat this list as the known values, not the allowed values.
+ */
+export const BUILT_IN_TRAVEL_CATEGORIES = [
+  "business",
+  "festival",
+  "leisure",
+  "custom",
+] as const;
+
+export type BuiltInTravelCategory = (typeof BUILT_IN_TRAVEL_CATEGORIES)[number];
+
 export type TravelCategory = string;
+
+export function isBuiltInTravelCategory(value: string): value is BuiltInTravelCategory {
+  return (BUILT_IN_TRAVEL_CATEGORIES as readonly string[]).includes(value);
+}
 
 export type AdventureTranslation = {
   title?: string;

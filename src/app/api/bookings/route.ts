@@ -2,6 +2,7 @@ import { apiError, ok, rateLimitRequest } from "@/lib/server/api";
 import { getTrips } from "@/lib/server/admin-store";
 import { getCustomerFromRequest } from "@/lib/server/customer-auth";
 import { saveInquiry, validateInquiry } from "@/lib/server/inquiries";
+import { notifyNewInquiry } from "@/lib/server/notifications";
 
 export const runtime = "nodejs";
 
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
     }
 
     const inquiry = await saveInquiry(validation.value);
+    await notifyNewInquiry(inquiry);
 
     return ok(
       {

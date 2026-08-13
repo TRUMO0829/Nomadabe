@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { apiError, rateLimitRequest } from "@/lib/server/api";
 import {
   CUSTOMER_SESSION_COOKIE,
+  normalizeIdentifier,
   resetCustomerPassword,
 } from "@/lib/server/customer-auth";
 
@@ -23,6 +24,19 @@ export async function POST(request: Request) {
       code?: unknown;
       password?: unknown;
     };
+
+    // Per-address cap as well as per-IP: a six digit code is small enough to
+    // brute force from a pool of addresses otherwise.
+    const perEmail = await rateLimitRequest(request, "password-reset-confirm-email", {
+      limit: 8,
+      windowMs: 15 * 60 * 1000,
+      identifier: normalizeIdentifier(payload.email),
+    });
+
+    if (perEmail) {
+      return perEmail;
+    }
+
     const { customer, session } = await resetCustomerPassword(payload);
     const response = NextResponse.json({
       ok: true,

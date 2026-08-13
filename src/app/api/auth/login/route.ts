@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiError, rateLimitRequest } from "@/lib/server/api";
-import {
-  createAdminSession,
-  getAdminCookieOptions,
-  isAllowedAdminEmail,
-  ADMIN_SESSION_COOKIE,
-} from "@/lib/server/admin-auth";
+import { isAllowedAdminEmail } from "@/lib/server/admin-auth";
 import {
   CUSTOMER_SESSION_COOKIE,
   loginCustomerWithPassword,
@@ -29,12 +24,13 @@ export async function POST(request: Request) {
       password?: unknown;
     };
     const { customer, session } = await loginCustomerWithPassword(payload);
-    const adminSession = isAllowedAdminEmail(customer.email)
-      ? createAdminSession(customer.email)
-      : null;
+    // A customer password must never mint an admin session. Admin access is
+    // gated behind the emailed one-time code at /admin/login; issuing the admin
+    // cookie here would reduce that second factor to a single password.
+    // `adminRedirect` only points the UI at the admin sign-in page.
     const response = NextResponse.json({
       ok: true,
-      data: { customer, adminRedirect: Boolean(adminSession) },
+      data: { customer, adminRedirect: isAllowedAdminEmail(customer.email) },
     });
 
     response.cookies.set(CUSTOMER_SESSION_COOKIE, session.token, {
@@ -44,14 +40,6 @@ export async function POST(request: Request) {
       path: "/",
       expires: new Date(session.expiresAt),
     });
-
-    if (adminSession) {
-      response.cookies.set(
-        ADMIN_SESSION_COOKIE,
-        adminSession.token,
-        getAdminCookieOptions(adminSession.expiresAt)
-      );
-    }
 
     return response;
   } catch (error) {

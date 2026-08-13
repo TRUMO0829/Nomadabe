@@ -23,12 +23,12 @@
 # misc
 .DS_Store
 *.pem
-/data/inquiries.jsonl
-/data/admin-store.json
-/data/customers.json
-/data/auth-codes.json
-/data/customer-sessions.json
-/data/email-log.json
+# Local development store. These hold one-time login codes and customer data —
+# never commit them. The glob replaces a hand-maintained list that had already
+# drifted (admin-auth-codes.json was written but only auth-codes.json ignored).
+/data/*.json
+/data/*.jsonl
+!/data/knowledge-posts-import-report.json
 .venv/
 .pyenv/
 .vscode/

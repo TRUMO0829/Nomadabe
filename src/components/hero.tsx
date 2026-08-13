@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ChevronDown, Globe2 } from "lucide-react";
 import { LANGUAGES } from "@/lib/i18n";
-import type { SiteSettings } from "@/lib/site-settings";
+import type { PublicSiteSettings } from "@/lib/site-settings";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
 
@@ -20,7 +20,7 @@ const HERO_VIDEOS = [
 const FALLBACK_HERO_POSTER = "/nomadabe-hero-panorama.webp";
 
 type HeroProps = {
-  settings?: SiteSettings;
+  settings?: PublicSiteSettings;
 };
 
 const HERO_NAV_COPY = {
@@ -93,25 +93,25 @@ export function Hero({ settings }: HeroProps) {
   ];
 
   const total = heroVideos.length;
+  // Clamp during render rather than correcting it in an effect. The video list
+  // is admin-editable, so `active` can point past the end after a save; a
+  // setState inside the effect would render the wrong clip for one frame first.
+  const activeIndex = active < total ? active : 0;
+  const nextIndex = total > 1 ? (activeIndex + 1) % total : -1;
 
-  // Keep only the active 2160p clip playing so the landing page starts with
-  // motion quickly instead of competing downloads for every hero video.
+  // Keep only the active clip playing so the landing page starts with motion
+  // quickly instead of competing downloads for every hero video.
   useEffect(() => {
-    if (active >= total) {
-      setActive(0);
-      return;
-    }
-
     videoRefs.current.forEach((video, index) => {
       if (!video) return;
-      if (index === active) {
+      if (index === activeIndex) {
         video.currentTime = 0;
         video.play().catch(() => {});
       } else {
         video.pause();
       }
     });
-  }, [active, total]);
+  }, [activeIndex]);
 
   return (
     <section
@@ -121,16 +121,24 @@ export function Hero({ settings }: HeroProps) {
       <span id="home" className="absolute left-0 top-0" aria-hidden="true" />
 
       {/* Poster bridges the brief moment before the active clip can play — a
-          bright image, never a black frame. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 scale-105 bg-cover bg-center"
-        style={{ backgroundImage: `url('${poster}')` }}
-      />
+          bright image, never a black frame. This is the LCP element, so it goes
+          through next/image (AVIF/WebP, sized to the viewport) with priority
+          rather than a CSS background, which the optimiser cannot touch. */}
+      <div aria-hidden="true" className="absolute inset-0 scale-105">
+        <Image
+          src={poster}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          quality={75}
+          className="object-cover object-center"
+        />
+      </div>
 
       {/* All clips are stacked; only the active one is visible. */}
       {heroVideos.map((src, index) => {
-        const isActive = index === active;
+        const isActive = index === activeIndex;
         return (
           <video
             key={src}
@@ -141,7 +149,10 @@ export function Hero({ settings }: HeroProps) {
             muted
             playsInline
             autoPlay={index === 0}
-            preload={isActive ? "auto" : "metadata"}
+            // Only the playing clip and the one queued after it are fetched.
+            // "metadata" on every clip still issued a range request per video,
+            // which on a four-clip hero competed with the poster for bandwidth.
+            preload={isActive ? "auto" : index === nextIndex ? "metadata" : "none"}
             poster={poster}
             src={src}
             width={3840}

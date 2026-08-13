@@ -1,6 +1,13 @@
-import { createHmac, randomInt, randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import {
+  createAdminSessionToken,
+  isAllowedAdminEmail,
+  normalizeAdminEmail,
+  readAdminSessionCookie,
+  verifyAdminSessionToken,
+} from "@/lib/admin-session";
 import { sendEmail } from "@/lib/server/mail";
 import {
   getSupabaseConfigurationErrorMessage,
@@ -28,33 +35,18 @@ type AdminCodeRow = {
   used_at: string | null;
 };
 
-export type AdminSessionPayload = {
-  email: string;
-  exp: number;
-};
-
-export const ADMIN_SESSION_COOKIE = "nomadabe_admin_session";
+export {
+  ADMIN_SESSION_COOKIE,
+  getAdminCookieOptions,
+  getAllowedAdminEmails,
+  isAllowedAdminEmail,
+  normalizeAdminEmail,
+  type AdminSessionPayload,
+} from "@/lib/admin-session";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const ADMIN_CODES_FILE = path.join(DATA_DIR, "admin-auth-codes.json");
 const CODE_TTL_MS = 10 * 60 * 1000;
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-export function normalizeAdminEmail(value: unknown) {
-  return typeof value === "string" ? value.trim().toLowerCase() : "";
-}
-
-export function getAllowedAdminEmails() {
-  return (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "")
-    .split(",")
-    .map((email) => normalizeAdminEmail(email))
-    .filter(Boolean);
-}
-
-export function isAllowedAdminEmail(email: string) {
-  const allowed = getAllowedAdminEmails();
-  return allowed.length > 0 && allowed.includes(normalizeAdminEmail(email));
-}
 
 export async function requestAdminLoginCode(emailValue: unknown) {
   const email = normalizeAdminEmail(emailValue);
@@ -162,6 +154,16 @@ export async function verifyAdminLoginCode(emailValue: unknown, codeValue: unkno
 }
 
 async function createSupabaseAdminCode(record: AdminCode) {
+  // Retire any earlier unused code so only one is ever live per address.
+  await supabaseRest<null>(
+    `/admin_auth_codes?email=eq.${encodeURIComponent(record.email)}&used_at=is.null`,
+    {
+      method: "PATCH",
+      prefer: "return=minimal",
+      body: JSON.stringify({ used_at: new Date().toISOString() }),
+    }
+  );
+
   await supabaseRest<AdminCodeRow[]>("/admin_auth_codes", {
     method: "POST",
     prefer: "return=representation",
@@ -221,95 +223,17 @@ function fromSupabaseAdminCode(row: AdminCodeRow): AdminCode {
   };
 }
 
-export function createAdminSession(email: string) {
-  const payload: AdminSessionPayload = {
-    email: normalizeAdminEmail(email),
-    exp: Date.now() + SESSION_TTL_MS,
-  };
-  const body = base64UrlEncode(JSON.stringify(payload));
-  const signature = signValue(body);
-
-  return {
-    token: `${body}.${signature}`,
-    payload,
-    expiresAt: new Date(payload.exp),
-  };
-}
-
-export function verifyAdminSession(token: string | undefined | null) {
-  if (!token) {
-    return null;
-  }
-
-  const [body, signature] = token.split(".");
-  if (!body || !signature || signValue(body) !== signature) {
-    return null;
-  }
-
-  try {
-    const payload = JSON.parse(base64UrlDecode(body)) as AdminSessionPayload;
-
-    if (!payload.email || payload.exp < Date.now() || !isAllowedAdminEmail(payload.email)) {
-      return null;
-    }
-
-    return payload;
-  } catch {
-    return null;
-  }
-}
+export const createAdminSession = createAdminSessionToken;
+export const verifyAdminSession = verifyAdminSessionToken;
 
 export function getAdminFromRequest(request: Request) {
-  const cookieHeader = request.headers.get("cookie") ?? "";
-  const token = cookieHeader
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(`${ADMIN_SESSION_COOKIE}=`))
-    ?.slice(ADMIN_SESSION_COOKIE.length + 1);
-
-  return verifyAdminSession(token);
-}
-
-export function getAdminCookieOptions(expires: Date) {
-  return {
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    expires,
-  };
-}
-
-function signValue(value: string) {
-  return createHmac("sha256", getAdminSessionSecret()).update(value).digest("base64url");
-}
-
-function getAdminSessionSecret() {
-  const secret = process.env.ADMIN_SESSION_SECRET?.trim() || process.env.ADMIN_PASSWORD?.trim();
-
-  if (secret) {
-    return secret;
-  }
-
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "ADMIN_SESSION_SECRET тохируулаагүй байна. Vercel Project Settings > Environment Variables дээр санамсаргүй урт утга нэмээд redeploy хийнэ үү."
-    );
-  }
-
-  return "nomadabe-local-admin-session-secret";
+  return verifyAdminSessionToken(
+    readAdminSessionCookie(request.headers.get("cookie") ?? "")
+  );
 }
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function base64UrlEncode(value: string) {
-  return Buffer.from(value, "utf8").toString("base64url");
-}
-
-function base64UrlDecode(value: string) {
-  return Buffer.from(value, "base64url").toString("utf8");
 }
 
 async function readJsonFile<T>(filePath: string, fallback: T) {

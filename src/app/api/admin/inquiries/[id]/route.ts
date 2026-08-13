@@ -11,7 +11,7 @@ type RouteContext = {
 };
 
 export async function GET(request: Request, context: RouteContext) {
-  if (!getAdminFromRequest(request)) {
+  if (!(await getAdminFromRequest(request))) {
     return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
   }
 
@@ -26,7 +26,7 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
-  if (!getAdminFromRequest(request)) {
+  if (!(await getAdminFromRequest(request))) {
     return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
   }
 

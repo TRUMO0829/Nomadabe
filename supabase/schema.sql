@@ -58,7 +58,7 @@ create table if not exists public.inquiries (
   customer_id uuid references public.profiles(id) on delete set null,
   trip_slug text,
   inquiry_type text not null default 'general'
-    check (inquiry_type in ('trip', 'business', 'expo', 'custom', 'general')),
+    check (inquiry_type in ('trip', 'business', 'expo', 'custom', 'villa', 'general')),
   travelers integer check (travelers is null or travelers >= 1),
   preferred_date text,
   message text not null,
@@ -67,6 +67,15 @@ create table if not exists public.inquiries (
   created_at timestamptz not null default now(),
   updated_at timestamptz
 );
+
+-- `create table if not exists` above is a no-op on an existing database, so the
+-- check constraint has to be replaced explicitly for 'villa' to be accepted.
+alter table public.inquiries
+  drop constraint if exists inquiries_inquiry_type_check;
+
+alter table public.inquiries
+  add constraint inquiries_inquiry_type_check
+  check (inquiry_type in ('trip', 'business', 'expo', 'custom', 'villa', 'general'));
 
 create index if not exists inquiries_created_at_idx
   on public.inquiries (created_at desc);
@@ -132,6 +141,27 @@ before update on public.site_settings
 for each row
 execute function public.set_updated_at();
 
+-- Reviews used to live inside site_settings.settings. Sharing one JSON blob with
+-- every other setting meant a visitor posting a review and an admin saving the
+-- hero video could silently overwrite each other. They get their own rows now.
+create table if not exists public.site_reviews (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  location text,
+  trip text,
+  message text not null,
+  rating integer not null default 5 check (rating between 1 and 5),
+  image_url text,
+  is_approved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists site_reviews_created_at_idx
+  on public.site_reviews (created_at desc);
+
+create index if not exists site_reviews_approved_idx
+  on public.site_reviews (is_approved, created_at desc);
+
 create table if not exists public.email_logs (
   id uuid primary key default gen_random_uuid(),
   to_email text not null,
@@ -188,3 +218,43 @@ create table if not exists public.registration_codes (
 create index if not exists registration_codes_lookup_idx
   on public.registration_codes (email, code, expires_at desc)
   where used_at is null;
+
+-- ---------------------------------------------------------------------------
+-- Row Level Security
+--
+-- Every table below is reached only from Next.js server code, which uses the
+-- service role key (SUPABASE_SERVICE_ROLE_KEY) and therefore bypasses RLS.
+-- The browser only ever holds the anon key, and it is used exclusively against
+-- /auth/v1/* endpoints, never against /rest/v1/*.
+--
+-- So: enable RLS and define NO policies. That is a deny-all default for the
+-- anon and authenticated roles, while server code keeps full access. Without
+-- this, anyone holding the public anon key could read admin_auth_codes and log
+-- in as an administrator, drain password_reset_codes to take over accounts, or
+-- download every customer profile and inquiry.
+--
+-- If you ever add browser-side Supabase queries, add a narrow policy for that
+-- one table rather than turning RLS off.
+-- ---------------------------------------------------------------------------
+
+alter table public.knowledge_base       enable row level security;
+alter table public.profiles             enable row level security;
+alter table public.inquiries            enable row level security;
+alter table public.admin_trips          enable row level security;
+alter table public.admin_services       enable row level security;
+alter table public.site_settings        enable row level security;
+alter table public.site_reviews         enable row level security;
+alter table public.email_logs           enable row level security;
+alter table public.admin_auth_codes     enable row level security;
+alter table public.password_reset_codes enable row level security;
+alter table public.registration_codes   enable row level security;
+
+-- Defense in depth for the tables that hold login secrets and personal data:
+-- drop the table-level grants too, so a future policy added by mistake cannot
+-- accidentally expose them.
+revoke all on public.admin_auth_codes     from anon, authenticated;
+revoke all on public.password_reset_codes from anon, authenticated;
+revoke all on public.registration_codes   from anon, authenticated;
+revoke all on public.email_logs           from anon, authenticated;
+revoke all on public.profiles             from anon, authenticated;
+revoke all on public.inquiries            from anon, authenticated;

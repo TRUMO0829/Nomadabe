@@ -97,7 +97,7 @@ const REVIEW_FORM_COPY = {
     image: "Зураг",
     location: "Хот / улс",
     saving: "Хадгалж байна",
-    saved: "Сэтгэгдэл хадгалагдлаа. Баярлалаа.",
+    saved: "Баярлалаа. Сэтгэгдлийг чинь хянаад удахгүй нийтэлнэ.",
     error: "Сэтгэгдэл хадгалж чадсангүй.",
   },
   en: {
@@ -110,7 +110,7 @@ const REVIEW_FORM_COPY = {
     image: "Photo",
     location: "City / country",
     saving: "Saving",
-    saved: "Review saved. Thank you.",
+    saved: "Thank you. Your review will appear once our team reviews it.",
     error: "Could not save the review.",
   },
   zh: {
@@ -123,7 +123,7 @@ const REVIEW_FORM_COPY = {
     image: "照片",
     location: "城市 / 国家",
     saving: "正在保存",
-    saved: "评价已保存，谢谢。",
+    saved: "谢谢。您的评价将在审核后显示。",
     error: "无法保存评价。",
   },
   ja: {
@@ -136,7 +136,7 @@ const REVIEW_FORM_COPY = {
     image: "写真",
     location: "都市 / 国",
     saving: "保存中",
-    saved: "レビューを保存しました。ありがとうございます。",
+    saved: "ありがとうございます。確認後に公開されます。",
     error: "レビューを保存できませんでした。",
   },
   ko: {
@@ -149,7 +149,7 @@ const REVIEW_FORM_COPY = {
     image: "사진",
     location: "도시 / 국가",
     saving: "저장 중",
-    saved: "후기가 저장되었습니다. 감사합니다.",
+    saved: "감사합니다. 확인 후 게시됩니다.",
     error: "후기를 저장할 수 없습니다.",
   },
 } as const;
@@ -160,7 +160,6 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
   const formCopy = REVIEW_FORM_COPY[contentLocale];
   const formRef = useRef<HTMLFormElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const [localReviews, setLocalReviews] = useState<SiteReview[]>(reviews);
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
@@ -177,7 +176,7 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
   });
 
   const testimonials: TestimonialColumnItem[] = useMemo(() => {
-    const storedReviews = localReviews.map((review) => ({
+    const storedReviews = reviews.map((review) => ({
       text: review.message,
       email: review.name,
       avatar: {
@@ -193,7 +192,7 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
     return storedReviews.length > 0
       ? [...storedReviews, ...staticTestimonials.slice(storedReviews.length)]
       : staticTestimonials;
-  }, [localReviews, staticTestimonials]);
+  }, [reviews, staticTestimonials]);
 
   const firstColumn = testimonials.slice(0, 3);
   const secondColumn = testimonials.slice(3, 6);
@@ -216,7 +215,7 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
         throw new Error(payload?.error?.message || formCopy.error);
       }
 
-      setLocalReviews((current) => [payload.data.review, ...current].slice(0, 36));
+      // Not added to the list: reviews stay hidden until an admin approves them.
       formRef.current?.reset();
       setStatus(formCopy.saved);
     } catch (error) {

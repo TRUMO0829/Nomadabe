@@ -5,7 +5,7 @@ import { getAdminFromRequest } from "@/lib/server/admin-auth";
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  if (!getAdminFromRequest(request)) {
+  if (!(await getAdminFromRequest(request))) {
     return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
   }
 
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!getAdminFromRequest(request)) {
+  if (!(await getAdminFromRequest(request))) {
     return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
   }
 

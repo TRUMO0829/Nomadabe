@@ -51,7 +51,7 @@ export function SiteSearch({ compact = false }: { compact?: boolean }) {
       onSubmit={handleSearch}
       aria-label={copy.label}
       className={[
-        "flex w-full items-center gap-2 rounded-full border border-white/45 bg-white/18 p-1.5 text-left shadow-[0_8px_22px_rgba(0,0,0,0.18)] backdrop-blur-[2px]",
+        "flex w-full items-center gap-2 rounded-full bg-white/18 p-1.5 text-left shadow-[0_8px_22px_rgba(0,0,0,0.18)] backdrop-blur-[2px]",
         compact ? "max-w-[min(92vw,560px)]" : "max-w-[min(92vw,620px)]",
       ].join(" ")}
     >

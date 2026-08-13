@@ -14,6 +14,7 @@ import {
 import { LANGUAGES, type CopyLocale } from "@/lib/i18n";
 import {
   DEFAULT_ABOUT_SECTION,
+  DEFAULT_STAYS,
   type AboutFaqItem,
   type AboutGalleryImage,
   type AboutLocaleContent,
@@ -24,6 +25,7 @@ import {
   type AboutTextItem,
   type SiteSettings,
   type SiteReview,
+  type StayOption,
   type TeamMember,
 } from "@/lib/site-settings";
 import { getInquiries, type InquiryRecord } from "@/lib/server/inquiries";
@@ -34,6 +36,12 @@ import {
   isSupabaseConfigured,
   supabaseRest,
 } from "@/lib/server/supabase-rest";
+import {
+  createReview,
+  deleteReview,
+  getReviews,
+  setReviewApproval,
+} from "@/lib/server/reviews";
 import { translateAdventure } from "@/lib/server/translate-trip";
 import {
   isUploadedHeroVideo,
@@ -165,6 +173,7 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroOverlayOpacity: 0.72,
   teamMembers: DEFAULT_TEAM_MEMBERS,
   reviews: DEFAULT_REVIEWS,
+  stays: DEFAULT_STAYS,
   aboutSection: DEFAULT_ABOUT_SECTION,
 };
 
@@ -200,20 +209,11 @@ export async function getAdminStore() {
   }
 }
 
-export async function saveAdminStore(store: AdminStore) {
-  if (isSupabaseConfigured()) {
-    try {
-      await saveSupabaseAdminStore(normalizeStore(store));
-    } catch (error) {
-      if (isMissingSupabaseTableError(error)) {
-        throw new Error(getMissingSupabaseSchemaMessage());
-      }
-
-      throw error;
-    }
-    return;
-  }
-
+/**
+ * Local development store only. Against Supabase every write goes through a
+ * targeted single-row helper instead — see writeSupabaseRow / saveSiteSettings.
+ */
+async function saveAdminStore(store: AdminStore) {
   assertLocalJsonStoreAllowed();
   await mkdir(DATA_DIR, { recursive: true });
   await writeFile(STORE_FILE, `${JSON.stringify(normalizeStore(store), null, 2)}\n`, "utf8");
@@ -237,12 +237,65 @@ export async function getTeamMembers() {
 
 export async function getAdminDashboardData() {
   const [store, inquiries] = await Promise.all([getAdminStore(), getInquiries()]);
+  const reviews = await getReviews(store.siteSettings.reviews);
 
   return {
     ...store,
+    reviews,
     inquiries,
     bookingStats: getBookingStats(inquiries),
   };
+}
+
+/**
+ * Write a single trip or service instead of rewriting the whole store.
+ *
+ * The bulk path (saveAdminStore) reads every row, mutates one, then writes them
+ * all back — so two admins saving at the same time silently discard one of the
+ * two edits, and renaming one trip rewrites every row. These helpers touch only
+ * the row that actually changed.
+ */
+async function writeSupabaseRow<T>(path: string, row: T) {
+  try {
+    await supabaseRest<null>(path, {
+      method: "POST",
+      prefer: "resolution=merge-duplicates,return=minimal",
+      body: JSON.stringify(row),
+    });
+  } catch (error) {
+    if (isMissingSupabaseTableError(error)) {
+      throw new Error(getMissingSupabaseSchemaMessage());
+    }
+
+    throw error;
+  }
+}
+
+async function deleteSupabaseRowById(path: string, id: string) {
+  try {
+    await supabaseRest<null>(`${path}?id=eq.${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      prefer: "return=minimal",
+    });
+  } catch (error) {
+    if (isMissingSupabaseTableError(error)) {
+      throw new Error(getMissingSupabaseSchemaMessage());
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * New rows sort above everything else. Existing rows keep the sort_order they
+ * already have, so inserting never renumbers the rest of the table.
+ */
+async function getTopSortOrder(path: string) {
+  const [row] = await supabaseRest<Array<{ sort_order: number }>>(
+    `${path}?select=sort_order&order=sort_order.asc&limit=1`
+  );
+
+  return (row?.sort_order ?? 0) - 1;
 }
 
 export async function upsertTripFromForm(formData: FormData) {
@@ -305,6 +358,18 @@ export async function upsertTrip(input: Adventure) {
   const translatedInput = await translateAdventure(input);
   const existing = store.trips.some((trip) => trip.id === input.id);
 
+  if (isSupabaseConfigured()) {
+    const row = toSupabaseTripRow(translatedInput);
+
+    await writeSupabaseRow("/admin_trips", {
+      ...row,
+      // Omitting sort_order on an update leaves the stored order untouched.
+      ...(existing ? {} : { sort_order: await getTopSortOrder("/admin_trips") }),
+    });
+
+    return translatedInput;
+  }
+
   await saveAdminStore({
     ...store,
     trips: existing
@@ -316,6 +381,11 @@ export async function upsertTrip(input: Adventure) {
 }
 
 export async function deleteTripById(id: string) {
+  if (isSupabaseConfigured()) {
+    await deleteSupabaseRowById("/admin_trips", id);
+    return;
+  }
+
   const store = await getAdminStore();
   await saveAdminStore({
     ...store,
@@ -335,6 +405,15 @@ export async function upsertService(input: TravelService) {
   const store = await getAdminStore();
   const existing = store.services.some((service) => service.id === input.id);
 
+  if (isSupabaseConfigured()) {
+    await writeSupabaseRow("/admin_services", {
+      ...toSupabaseServiceRow(input),
+      ...(existing ? {} : { sort_order: await getTopSortOrder("/admin_services") }),
+    });
+
+    return input;
+  }
+
   await saveAdminStore({
     ...store,
     services: existing
@@ -346,6 +425,11 @@ export async function upsertService(input: TravelService) {
 }
 
 export async function deleteServiceById(id: string) {
+  if (isSupabaseConfigured()) {
+    await deleteSupabaseRowById("/admin_services", id);
+    return;
+  }
+
   const store = await getAdminStore();
   await saveAdminStore({
     ...store,
@@ -467,12 +551,36 @@ export async function updateSiteSettings(siteSettings: Partial<SiteSettings>) {
     ...siteSettings,
     teamMembers: siteSettings.teamMembers ?? store.siteSettings.teamMembers,
     reviews: siteSettings.reviews ?? store.siteSettings.reviews,
+    stays: siteSettings.stays ?? store.siteSettings.stays,
   });
-  await saveAdminStore({
-    ...store,
-    siteSettings: normalized,
-  });
+
+  await saveSiteSettings(normalized);
+
   return normalized;
+}
+
+/** Writes the settings row only — trips and services are never touched. */
+async function saveSiteSettings(siteSettings: SiteSettings) {
+  if (isSupabaseConfigured()) {
+    try {
+      await upsertSupabaseSiteSettings(siteSettings);
+    } catch (error) {
+      if (isMissingSupabaseTableError(error)) {
+        throw new Error(getMissingSupabaseSchemaMessage());
+      }
+
+      throw error;
+    }
+    return;
+  }
+
+  const store = await getAdminStore();
+  await saveAdminStore({ ...store, siteSettings });
+}
+
+/** Reviews are stored in their own table — see lib/server/reviews.ts. */
+export async function getSiteReviews() {
+  return getReviews((await getAdminStore()).siteSettings.reviews);
 }
 
 export async function addSiteReviewFromForm(formData: FormData) {
@@ -492,22 +600,54 @@ export async function addSiteReviewFromForm(formData: FormData) {
     ? await uploadReviewImage(uploadedImage)
     : undefined;
 
-  const review: SiteReview = {
-    id: randomUUID(),
+  const review = await createReview({
     name,
     location: getFormString(formData, "location") || undefined,
     trip: getFormString(formData, "trip") || undefined,
     message,
-    rating: Math.min(5, Math.max(1, getNumberFromString(getFormString(formData, "rating"), 5))),
+    rating: getNumberFromString(getFormString(formData, "rating"), 5),
     imageUrl,
-    createdAt: new Date().toISOString(),
-  };
+  });
 
-  const store = await getAdminStore();
-  const reviews = [review, ...store.siteSettings.reviews].slice(0, 36);
-  await updateSiteSettings({ reviews });
+  if (!isSupabaseConfigured()) {
+    // Local development has no site_reviews table; keep them in the JSON store
+    // so the moderation flow can still be exercised end to end.
+    const store = await getAdminStore();
+    await updateSiteSettings({ reviews: [review, ...store.siteSettings.reviews] });
+  }
 
   return review;
+}
+
+export async function setSiteReviewApproval(id: string, isApproved: boolean) {
+  if (isSupabaseConfigured()) {
+    await setReviewApproval(id, isApproved);
+    return;
+  }
+
+  const store = await getAdminStore();
+
+  if (!store.siteSettings.reviews.some((review) => review.id === id)) {
+    throw new Error("Сэтгэгдэл олдсонгүй.");
+  }
+
+  await updateSiteSettings({
+    reviews: store.siteSettings.reviews.map((review) =>
+      review.id === id ? { ...review, isApproved } : review
+    ),
+  });
+}
+
+export async function deleteSiteReviewById(id: string) {
+  if (isSupabaseConfigured()) {
+    await deleteReview(id);
+    return;
+  }
+
+  const store = await getAdminStore();
+  await updateSiteSettings({
+    reviews: store.siteSettings.reviews.filter((review) => review.id !== id),
+  });
 }
 
 export async function upsertTeamMemberFromForm(formData: FormData) {
@@ -518,16 +658,12 @@ export async function upsertTeamMember(input: TeamMember) {
   const store = await getAdminStore();
   const existing = store.siteSettings.teamMembers.some((member) => member.id === input.id);
 
-  await saveAdminStore({
-    ...store,
-    siteSettings: normalizeSiteSettings({
-      ...store.siteSettings,
-      teamMembers: existing
-        ? store.siteSettings.teamMembers.map((member) =>
-            member.id === input.id ? input : member
-          )
-        : [...store.siteSettings.teamMembers, input],
-    }),
+  await updateSiteSettings({
+    teamMembers: existing
+      ? store.siteSettings.teamMembers.map((member) =>
+          member.id === input.id ? input : member
+        )
+      : [...store.siteSettings.teamMembers, input],
   });
 
   return input;
@@ -535,12 +671,9 @@ export async function upsertTeamMember(input: TeamMember) {
 
 export async function deleteTeamMemberById(id: string) {
   const store = await getAdminStore();
-  await saveAdminStore({
-    ...store,
-    siteSettings: normalizeSiteSettings({
-      ...store.siteSettings,
-      teamMembers: store.siteSettings.teamMembers.filter((member) => member.id !== id),
-    }),
+
+  await updateSiteSettings({
+    teamMembers: store.siteSettings.teamMembers.filter((member) => member.id !== id),
   });
 }
 
@@ -551,6 +684,16 @@ async function getSupabaseAdminStore() {
     supabaseRest<SiteSettingsRow[]>("/site_settings?select=*&id=eq.default&limit=1"),
   ]);
 
+  // Nothing has ever been written to this project — seed the built-in demo
+  // content. Once any row exists, an empty table means the admin deliberately
+  // emptied it and must be honoured as-is.
+  const isUninitialized =
+    tripRows.length === 0 && serviceRows.length === 0 && settingsRows.length === 0;
+
+  if (isUninitialized) {
+    return normalizeStore({});
+  }
+
   return normalizeStore({
     trips: tripRows.map((row) => ({
       ...row.payload,
@@ -559,44 +702,6 @@ async function getSupabaseAdminStore() {
     services: serviceRows.map((row) => row.payload),
     siteSettings: settingsRows[0]?.settings,
   });
-}
-
-async function saveSupabaseAdminStore(store: AdminStore) {
-  // Upsert first so a failure never leaves the tables empty, then prune the
-  // rows that no longer exist. This avoids the data-loss window of the old
-  // delete-all-then-insert-all approach.
-  await Promise.all([
-    upsertSupabaseRows("/admin_trips", store.trips.map(toSupabaseTripRow)),
-    upsertSupabaseRows("/admin_services", store.services.map(toSupabaseServiceRow)),
-    upsertSupabaseSiteSettings(store.siteSettings),
-  ]);
-
-  await Promise.all([
-    deleteSupabaseRowsNotIn("/admin_trips", store.trips.map((trip) => trip.id)),
-    deleteSupabaseRowsNotIn("/admin_services", store.services.map((service) => service.id)),
-  ]);
-}
-
-async function upsertSupabaseRows(path: string, rows: Array<{ id: string }>) {
-  if (rows.length === 0) {
-    return;
-  }
-
-  await supabaseRest<unknown[]>(path, {
-    method: "POST",
-    prefer: "resolution=merge-duplicates,return=minimal",
-    body: JSON.stringify(rows),
-  });
-}
-
-async function deleteSupabaseRowsNotIn(path: string, ids: string[]) {
-  if (ids.length === 0) {
-    await supabaseRest<null>(`${path}?id=not.is.null`, { method: "DELETE" });
-    return;
-  }
-
-  const list = ids.map((id) => `"${encodeURIComponent(id)}"`).join(",");
-  await supabaseRest<null>(`${path}?id=not.in.(${list})`, { method: "DELETE" });
 }
 
 async function upsertSupabaseSiteSettings(siteSettings: SiteSettings) {
@@ -610,21 +715,19 @@ async function upsertSupabaseSiteSettings(siteSettings: SiteSettings) {
   });
 }
 
-function toSupabaseTripRow(trip: Adventure, index: number) {
+function toSupabaseTripRow(trip: Adventure) {
   return {
     id: trip.id,
     slug: trip.slug,
     payload: trip,
     translations: trip.translations ?? {},
-    sort_order: index,
   };
 }
 
-function toSupabaseServiceRow(service: TravelService, index: number) {
+function toSupabaseServiceRow(service: TravelService) {
   return {
     id: service.id,
     payload: service,
-    sort_order: index,
   };
 }
 
@@ -678,6 +781,7 @@ export function parseSiteSettingsFromJson(payload: unknown) {
       ? normalizeTeamMembers(payload.teamMembers)
       : undefined,
     reviews: Array.isArray(payload.reviews) ? normalizeReviews(payload.reviews) : undefined,
+    stays: Array.isArray(payload.stays) ? normalizeStays(payload.stays) : undefined,
     // About content is code-managed (the CMS editor was removed), so any legacy
     // value stored in Supabase is ignored — always fall back to DEFAULT_ABOUT_SECTION.
     aboutSection: undefined,
@@ -685,12 +789,12 @@ export function parseSiteSettingsFromJson(payload: unknown) {
 }
 
 function normalizeStore(store: Partial<AdminStore>): AdminStore {
+  // Built-in content is a fallback for *missing* storage (undefined), never a
+  // substitute for an empty one. An admin who deletes every trip must not see
+  // the eight demo trips reappear on the homepage.
   return {
-    trips: (Array.isArray(store.trips) && store.trips.length > 0 ? store.trips : ADVENTURES).map(
-      normalizeAdventureImage
-    ),
-    services:
-      Array.isArray(store.services) && store.services.length > 0 ? store.services : TRAVEL_SERVICES,
+    trips: (Array.isArray(store.trips) ? store.trips : ADVENTURES).map(normalizeAdventureImage),
+    services: Array.isArray(store.services) ? store.services : TRAVEL_SERVICES,
     siteSettings: normalizeSiteSettings(store.siteSettings ?? DEFAULT_SITE_SETTINGS),
   };
 }
@@ -711,8 +815,46 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
         : DEFAULT_SITE_SETTINGS.heroOverlayOpacity,
     teamMembers: normalizeTeamMembers(settings.teamMembers),
     reviews: normalizeReviews(settings.reviews),
+    stays: normalizeStays(settings.stays),
     aboutSection: normalizeAboutSection(settings.aboutSection),
   };
+}
+
+function normalizeStays(value: unknown): StayOption[] {
+  if (!Array.isArray(value)) {
+    return DEFAULT_STAYS;
+  }
+
+  const stays = value
+    .map((item, index): StayOption | null => {
+      if (!isRecord(item)) return null;
+
+      const fallback = DEFAULT_STAYS[index];
+      const title = stringifyPayloadValue(item.title) || fallback?.title;
+      const images = Array.isArray(item.images)
+        ? item.images
+            .map((image) => stringifyPayloadValue(image))
+            .filter(Boolean)
+        : (fallback?.images ?? []);
+
+      if (!title || images.length === 0) return null;
+
+      return {
+        id: stringifyPayloadValue(item.id) || slugify(title) || randomUUID(),
+        title,
+        type: stringifyPayloadValue(item.type) || fallback?.type || "Вилла",
+        nights: getNumberFromString(stringifyPayloadValue(item.nights), fallback?.nights ?? 1),
+        price: getNumberFromString(stringifyPayloadValue(item.price), fallback?.price ?? 0),
+        guests: getNumberFromString(stringifyPayloadValue(item.guests), fallback?.guests ?? 2),
+        rooms: getNumberFromString(stringifyPayloadValue(item.rooms), fallback?.rooms ?? 1),
+        location: stringifyPayloadValue(item.location) || fallback?.location || "",
+        summary: stringifyPayloadValue(item.summary) || fallback?.summary || "",
+        images,
+      } satisfies StayOption;
+    })
+    .filter((item): item is StayOption => Boolean(item));
+
+  return stays.length > 0 ? stays : DEFAULT_STAYS;
 }
 
 function normalizeReviews(value: unknown): SiteReview[] {
@@ -738,6 +880,8 @@ function normalizeReviews(value: unknown): SiteReview[] {
         rating: Math.min(5, Math.max(1, getNumberFromString(stringifyPayloadValue(item.rating), 5))),
         imageUrl: stringifyPayloadValue(item.imageUrl) || undefined,
         createdAt: stringifyPayloadValue(item.createdAt) || new Date().toISOString(),
+        // Absent flag means the review predates moderation — keep it visible.
+        isApproved: getOptionalBoolean(item.isApproved, true),
       } satisfies SiteReview;
     })
     .filter((item): item is SiteReview => Boolean(item));

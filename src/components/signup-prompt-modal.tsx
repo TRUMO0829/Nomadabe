@@ -333,7 +333,9 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
       window.dispatchEvent(new Event("nomadabe:auth-changed"));
 
       if (result.data?.adminRedirect) {
-        window.location.href = "/admin";
+        // Admin access needs the emailed one-time code, so send them to the
+        // admin sign-in step rather than straight into the dashboard.
+        window.location.href = "/admin/login";
         return;
       }
 

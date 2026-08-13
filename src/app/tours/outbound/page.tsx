@@ -6,9 +6,9 @@ import { CtaFooter } from "@/components/cta-footer";
 import { getAdminStore } from "@/lib/server/admin-store";
 
 export const metadata: Metadata = {
-  title: "Аяллууд",
+  title: "Гадаад чиглэл",
   description:
-    "Nomadabe Travel-ийн гадаад болон дотоод аяллуудыг нэг дороос хайж сонго.",
+    "Nomadabe Travel-ийн гадаад чиглэлүүд, байгууллагын аялал болон вилла сонголтууд.",
 };
 
 // Content changes only when an admin saves, and every admin action calls
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 // visitor trigger a fresh round of Supabase queries.
 export const revalidate = 300;
 
-export default async function ToursPage() {
+export default async function OutboundToursPage() {
   const { trips: adventures, siteSettings } = await getAdminStore();
 
   return (
@@ -28,6 +28,8 @@ export default async function ToursPage() {
         <ToursExperience
           adventures={adventures}
           outboundTripImages={siteSettings.outboundTripImages}
+          stays={siteSettings.stays}
+          pageMode="outbound"
         />
         <CtaFooter />
       </main>

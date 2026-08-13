@@ -365,6 +365,16 @@ export async function getCustomerFromRequest(request: Request) {
       return null;
     }
 
+    // Read, don't write. This runs on every authenticated request (the navbar
+    // alone calls /api/auth/me on each page load), and upserting here turned a
+    // read into a database write every time. The profile row is created on
+    // registration and refreshed on login, so a miss here is the rare case.
+    const profile = await findSupabaseProfileById(user.id);
+
+    if (profile) {
+      return fromSupabaseProfile(profile);
+    }
+
     return upsertSupabaseProfile({
       id: user.id,
       email: user.email ?? "",
@@ -586,6 +596,14 @@ async function getSupabaseUser(token: string) {
   return (await response.json()) as SupabaseAuthUser;
 }
 
+async function findSupabaseProfileById(id: string) {
+  const [profile] = await supabaseRest<SupabaseProfile[]>(
+    `/profiles?select=*&id=eq.${encodeURIComponent(id)}&limit=1`
+  );
+
+  return profile ?? null;
+}
+
 async function findSupabaseProfileByEmail(email: string) {
   const [profile] = await supabaseRest<SupabaseProfile[]>(
     `/profiles?select=*&email=eq.${encodeURIComponent(email)}&limit=1`
@@ -594,7 +612,24 @@ async function findSupabaseProfileByEmail(email: string) {
   return profile ? profile : null;
 }
 
+/**
+ * Retire every unused code for an address before issuing a new one. Otherwise
+ * each request left another live code behind, so repeatedly asking for a code
+ * widened the pool of values an attacker could guess.
+ */
+async function expirePreviousCodes(table: string, email: string) {
+  await supabaseRest<null>(
+    `/${table}?email=eq.${encodeURIComponent(email)}&used_at=is.null`,
+    {
+      method: "PATCH",
+      prefer: "return=minimal",
+      body: JSON.stringify({ used_at: new Date().toISOString() }),
+    }
+  );
+}
+
 async function createSupabasePasswordResetCode(record: PasswordResetCode) {
+  await expirePreviousCodes("password_reset_codes", record.email);
   await supabaseRest<PasswordResetCodeRow[]>("/password_reset_codes", {
     method: "POST",
     prefer: "return=representation",
@@ -641,6 +676,7 @@ type RegistrationCodeRow = {
 };
 
 async function createSupabaseRegistrationCode(record: RegistrationCode) {
+  await expirePreviousCodes("registration_codes", record.email);
   await supabaseRest<RegistrationCodeRow[]>("/registration_codes", {
     method: "POST",
     prefer: "return=representation",

@@ -3,6 +3,7 @@ import { apiError, rateLimitRequest } from "@/lib/server/api";
 import {
   ADMIN_SESSION_COOKIE,
   getAdminCookieOptions,
+  normalizeAdminEmail,
   verifyAdminLoginCode,
 } from "@/lib/server/admin-auth";
 
@@ -20,6 +21,19 @@ export async function POST(request: Request) {
 
   try {
     const payload = (await request.json()) as { email?: unknown; code?: unknown };
+
+    // Also cap attempts per target address, so rotating IPs cannot be used to
+    // brute force the six digit code.
+    const perEmail = await rateLimitRequest(request, "admin-verify-code-email", {
+      limit: 8,
+      windowMs: 15 * 60 * 1000,
+      identifier: normalizeAdminEmail(payload.email),
+    });
+
+    if (perEmail) {
+      return perEmail;
+    }
+
     const session = await verifyAdminLoginCode(payload.email, payload.code);
     const response = NextResponse.json({
       ok: true,

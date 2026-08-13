@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { Adventure, TravelCategory } from "@/lib/adventures";
+import { BUILT_IN_TRAVEL_CATEGORIES, type Adventure } from "@/lib/adventures";
 
 export type ApiErrorCode =
   | "BAD_REQUEST"
@@ -35,6 +35,12 @@ export function apiError(
 type RateLimitOptions = {
   limit: number;
   windowMs: number;
+  /**
+   * Bucket on something other than the caller's IP — normally the target email.
+   * IP-only limits are trivially bypassed by rotating IPs, which for a six digit
+   * one-time code means the code itself can be brute forced.
+   */
+  identifier?: string;
 };
 
 const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
@@ -42,10 +48,9 @@ const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
 export async function rateLimitRequest(
   request: Request,
   scope: string,
-  { limit, windowMs }: RateLimitOptions
+  { limit, windowMs, identifier }: RateLimitOptions
 ) {
-  const clientIp = getClientIp(request);
-  const key = `${scope}:${clientIp}`;
+  const key = `${scope}:${identifier ? `id:${identifier}` : getClientIp(request)}`;
 
   // Prefer a shared Upstash Redis counter so limits hold across serverless
   // instances. Fall back to the per-instance in-memory counter when Upstash
@@ -179,14 +184,11 @@ export function getTripsFromSearchParams(params: URLSearchParams, sourceTrips: A
 }
 
 export function getTripSummary(trips: Adventure[]) {
-  // Keep the four known category keys (default 0) for backward compatibility,
+  // Keep the built-in category keys (default 0) for backward compatibility,
   // then layer on counts for any custom categories admins may have added.
-  const categories: Record<string, number> = {
-    business: 0,
-    festival: 0,
-    leisure: 0,
-    custom: 0,
-  };
+  const categories: Record<string, number> = Object.fromEntries(
+    BUILT_IN_TRAVEL_CATEGORIES.map((category) => [category, 0])
+  );
 
   for (const trip of trips) {
     categories[trip.category] = (categories[trip.category] ?? 0) + 1;
@@ -197,10 +199,6 @@ export function getTripSummary(trips: Adventure[]) {
     featured: trips.filter((trip) => trip.featured).length,
     categories,
   };
-}
-
-export function isTravelCategory(value: string): value is TravelCategory {
-  return ["business", "festival", "leisure", "custom"].includes(value);
 }
 
 export function sanitizeTrip(trip: Adventure) {

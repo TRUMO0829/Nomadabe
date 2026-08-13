@@ -5,7 +5,7 @@ import { Navbar } from "@/components/navbar";
 import { SignupPromptModal } from "@/components/signup-prompt-modal";
 
 export const metadata: Metadata = {
-  title: "Үйлчилгээний нөхцөл | Nomadabe",
+  title: "Үйлчилгээний нөхцөл",
   description: "Nomadabe Travel-ийн үйлчилгээний нөхцөл.",
 };
 

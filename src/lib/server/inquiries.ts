@@ -3,7 +3,16 @@ import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { isSupabaseConfigured, supabaseRest } from "@/lib/server/supabase-rest";
 
-export type InquiryType = "trip" | "business" | "expo" | "custom" | "general";
+export type InquiryType = "trip" | "business" | "expo" | "custom" | "villa" | "general";
+
+const INQUIRY_TYPES: InquiryType[] = [
+  "trip",
+  "business",
+  "expo",
+  "custom",
+  "villa",
+  "general",
+];
 export type InquiryStatus = "new" | "contacted" | "confirmed" | "closed";
 
 export type InquiryInput = {
@@ -59,11 +68,11 @@ export function validateInquiry(payload: unknown) {
   }
 
   if (!isInquiryType(inquiryType)) {
-    errors.inquiryType = "Use one of: trip, business, expo, custom, general.";
+    errors.inquiryType = `Use one of: ${INQUIRY_TYPES.join(", ")}.`;
   }
 
   if (tripSlug && inquiryType === "general") {
-    errors.inquiryType = "Trip inquiries must use inquiryType trip, business, expo, or custom.";
+    errors.inquiryType = "Trip inquiries must use inquiryType trip, business, expo, custom, or villa.";
   }
 
   if (payload.travelers !== undefined && travelers === undefined) {
@@ -294,7 +303,7 @@ function asOptionalPositiveInteger(value: unknown) {
 }
 
 function isInquiryType(value: string): value is InquiryType {
-  return ["trip", "business", "expo", "custom", "general"].includes(value);
+  return (INQUIRY_TYPES as string[]).includes(value);
 }
 
 function isNodeFileError(error: unknown): error is NodeJS.ErrnoException {

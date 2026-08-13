@@ -5,7 +5,7 @@ import { getInquiries } from "@/lib/server/inquiries";
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  if (!getAdminFromRequest(request)) {
+  if (!(await getAdminFromRequest(request))) {
     return apiError("UNAUTHORIZED", "Админ нэвтрэлт шаардлагатай.", 401);
   }
 

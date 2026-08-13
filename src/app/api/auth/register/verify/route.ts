@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import { apiError, rateLimitRequest } from "@/lib/server/api";
-import {
-  createAdminSession,
-  getAdminCookieOptions,
-  isAllowedAdminEmail,
-  ADMIN_SESSION_COOKIE,
-} from "@/lib/server/admin-auth";
+import { isAllowedAdminEmail } from "@/lib/server/admin-auth";
 import {
   CUSTOMER_SESSION_COOKIE,
+  normalizeIdentifier,
   verifyCustomerRegistrationCode,
 } from "@/lib/server/customer-auth";
 
@@ -30,14 +26,27 @@ export async function POST(request: Request) {
       code?: unknown;
       password?: unknown;
     };
+
+    // Cap attempts per address too, not just per IP.
+    const perEmail = await rateLimitRequest(request, "auth-register-verify-email", {
+      limit: 8,
+      windowMs: 10 * 60 * 1000,
+      identifier: normalizeIdentifier(payload.email),
+    });
+
+    if (perEmail) {
+      return perEmail;
+    }
+
     const { customer, session } = await verifyCustomerRegistrationCode(payload);
-    const adminSession =
-      customer && isAllowedAdminEmail(customer.email)
-        ? createAdminSession(customer.email)
-        : null;
+    // Registering with an allow-listed address does not grant admin access —
+    // that still requires the one-time code flow at /admin/login.
     const response = NextResponse.json({
       ok: true,
-      data: { customer, adminRedirect: Boolean(adminSession) },
+      data: {
+        customer,
+        adminRedirect: Boolean(customer && isAllowedAdminEmail(customer.email)),
+      },
     });
 
     response.cookies.set(CUSTOMER_SESSION_COOKIE, session.token, {
@@ -47,14 +56,6 @@ export async function POST(request: Request) {
       path: "/",
       expires: new Date(session.expiresAt),
     });
-
-    if (adminSession) {
-      response.cookies.set(
-        ADMIN_SESSION_COOKIE,
-        adminSession.token,
-        getAdminCookieOptions(adminSession.expiresAt)
-      );
-    }
 
     return response;
   } catch (error) {

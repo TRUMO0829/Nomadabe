@@ -4,7 +4,7 @@ import { ProfilePageClient } from "@/components/profile-page-client";
 import { SignupPromptModal } from "@/components/signup-prompt-modal";
 
 export const metadata: Metadata = {
-  title: "Миний профайл | Nomadabe",
+  title: "Миний профайл",
   description: "Nomadabe Travel хэрэглэгчийн профайл болон аяллын хүсэлтүүд.",
 };
 

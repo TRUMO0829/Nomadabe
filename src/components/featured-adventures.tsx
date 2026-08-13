@@ -21,8 +21,6 @@ import {
   Home,
   MapPinned,
   Search,
-  Star,
-  Send,
   UsersRound,
 } from "lucide-react";
 import {
@@ -35,6 +33,8 @@ import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import { cn } from "@/lib/utils";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
+import { formatPriceString } from "@/lib/currency";
+import { type StayOption, DEFAULT_STAYS } from "@/lib/site-settings";
 import { OUTBOUND_OPTIONS } from "./outbound-trips-carousel";
 
 type TripScope = "all" | "outbound" | "domestic" | "corporate";
@@ -49,6 +49,8 @@ type FeaturedAdventuresProps = {
   adventures?: Adventure[];
   beforeList?: ReactNode;
   outboundTripImages?: Record<string, string>;
+  stays?: StayOption[];
+  pageMode?: "all" | "outbound" | "domestic";
 };
 
 const SEARCH_LOCALES = ["mn", "en", "zh", "ja", "ko"] as const;
@@ -58,73 +60,6 @@ const TOURS_BACKGROUNDS = [
   "/hero-winter.webp",
   "/hero-spring.webp",
   "/hero-autumn.webp",
-];
-
-type StayOption = {
-  id: string;
-  title: string;
-  type: string;
-  nights: number;
-  price: string;
-  guests: number;
-  rooms: number;
-  location: string;
-  summary: string;
-  images: string[];
-};
-
-const STAY_OPTIONS: StayOption[] = [
-  {
-    id: "ub-business-hotel",
-    title: "Хотын төвийн вилла",
-    type: "Вилла",
-    nights: 2,
-    price: "280,000 MNT / хоног",
-    guests: 2,
-    rooms: 1,
-    location: "Улаанбаатар",
-    summary:
-      "Бизнес уулзалт, expo, богино аялалд тохирох төв байршилтай хувийн вилла сонголт.",
-    images: [
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1800&q=90&fit=crop&fm=webp",
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1200&q=85&fit=crop&fm=webp",
-      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200&q=85&fit=crop&fm=webp",
-    ],
-  },
-  {
-    id: "terelj-family-villa",
-    title: "Тэрэлж гэр бүлийн вилла",
-    type: "Вилла",
-    nights: 3,
-    price: "650,000 MNT / хоног",
-    guests: 6,
-    rooms: 3,
-    location: "Тэрэлж",
-    summary:
-      "Гэр бүл, найз нөхөд, жижиг группийн амралтад тохирох хувийн орчинтой вилла.",
-    images: [
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1800&q=90&fit=crop&fm=webp",
-      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&fit=crop&fm=webp",
-      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=85&fit=crop&fm=webp",
-    ],
-  },
-  {
-    id: "lake-lodge-stay",
-    title: "Нуурын эргийн вилла",
-    type: "Вилла",
-    nights: 4,
-    price: "420,000 MNT / хоног",
-    guests: 4,
-    rooms: 2,
-    location: "Хөвсгөл / нуурын бүс",
-    summary:
-      "Байгальд ойр, тайван амралт болон дотоод аяллын маршрутад холбох вилла сонголт.",
-    images: [
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1800&q=90&fit=crop&fm=webp",
-      "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=1200&q=85&fit=crop&fm=webp",
-      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=1200&q=85&fit=crop&fm=webp",
-    ],
-  },
 ];
 
 function compareTripPrice(
@@ -356,6 +291,14 @@ const SECTION_COPY = {
     outbound: "Гадаад аялал",
     domestic: "Дотоод аялал",
     corporate: "Байгууллагын аялал",
+    villa: "Вилла",
+    directions: "Чиглэлүүд",
+    categoryTitle: "Аяллын категори",
+    outboundDirection: "Гадаад чиглэл",
+    domesticDirection: "Дотоод чиглэл",
+    outboundDescription: "Чиглэлүүд, байгууллагын аялал болон вилла сонголтууд.",
+    domesticDescription: "Монгол доторх амралт, байгаль, соёлын аяллууд.",
+    subcategoryTitle: "Дэд категори",
     search: "Аялал хайх...",
     listTitle: "Бүх аяллын жагсаалт",
     listBody: "Сонгосон аяллаа дарж дэлгэрэнгүй мэдээлэл, үнэ, багцын нөхцөлийг хараарай.",
@@ -372,6 +315,14 @@ const SECTION_COPY = {
     outbound: "Outbound trips",
     domestic: "Domestic trips",
     corporate: "Corporate trips",
+    villa: "Villas",
+    directions: "Destinations",
+    categoryTitle: "Trip categories",
+    outboundDirection: "Outbound",
+    domesticDirection: "Domestic",
+    outboundDescription: "Destinations, corporate trips, and villa options.",
+    domesticDescription: "Trips across Mongolia for nature, leisure, and culture.",
+    subcategoryTitle: "Subcategories",
     search: "Search trips...",
     listTitle: "All available trips",
     listBody: "Open a trip to view details, pricing, inclusions, and planning notes.",
@@ -388,6 +339,14 @@ const SECTION_COPY = {
     outbound: "出境旅行",
     domestic: "蒙古国内旅行",
     corporate: "企业旅行",
+    villa: "别墅",
+    directions: "目的地",
+    categoryTitle: "旅行分类",
+    outboundDirection: "出境方向",
+    domesticDirection: "国内方向",
+    outboundDescription: "目的地、企业旅行和别墅选择。",
+    domesticDescription: "蒙古国内自然、休闲和文化旅行。",
+    subcategoryTitle: "子分类",
     search: "搜索旅行...",
     listTitle: "全部旅行列表",
     listBody: "点击旅行查看详细信息、价格和套餐条件。",
@@ -404,6 +363,14 @@ const SECTION_COPY = {
     outbound: "海外ツアー",
     domestic: "国内ツアー",
     corporate: "法人向けツアー",
+    villa: "ヴィラ",
+    directions: "目的地",
+    categoryTitle: "ツアーカテゴリ",
+    outboundDirection: "海外方面",
+    domesticDirection: "国内方面",
+    outboundDescription: "目的地、法人向けツアー、ヴィラ選択。",
+    domesticDescription: "モンゴル国内の自然、休暇、文化ツアー。",
+    subcategoryTitle: "サブカテゴリ",
     search: "ツアーを検索...",
     listTitle: "すべてのツアー一覧",
     listBody: "ツアーを開くと詳細、料金、含まれる条件を確認できます。",
@@ -420,6 +387,14 @@ const SECTION_COPY = {
     outbound: "해외 여행",
     domestic: "몽골 국내 여행",
     corporate: "기업 여행",
+    villa: "빌라",
+    directions: "목적지",
+    categoryTitle: "여행 카테고리",
+    outboundDirection: "해외 방향",
+    domesticDirection: "국내 방향",
+    outboundDescription: "목적지, 기업 여행, 빌라 옵션.",
+    domesticDescription: "몽골 국내 자연, 휴식, 문화 여행.",
+    subcategoryTitle: "하위 카테고리",
     search: "여행 검색...",
     listTitle: "전체 여행 목록",
     listBody: "여행을 눌러 자세한 정보, 가격, 패키지 조건을 확인하세요.",
@@ -547,237 +522,77 @@ const TRIP_SEARCH_COPY = {
   },
 } as const;
 
-const RATING_COPY = {
-  mn: {
-    rate: "Үнэлэх",
-    title: "Энэ аяллыг үнэлэх",
-    name: "Таны нэр",
-    email: "И-мэйл",
-    note: "Санал хүсэлт",
-    submit: "Илгээх",
-    loading: "Илгээж байна...",
-    done: "Үнэлсэн",
-    success: "Баярлалаа. Үнэлгээ хүлээн авлаа.",
-    error: "Илгээж чадсангүй. Дахин оролдоно уу.",
-    score: "Үнэлгээ",
-    recordLabel: "Аяллын үнэлгээ",
-    trip: "Аялал",
-    emptyNote: "Нэмэлт санал бичээгүй",
-  },
-  en: {
-    rate: "Rate",
-    title: "Rate this trip",
-    name: "Your name",
-    email: "Email",
-    note: "Feedback",
-    submit: "Send",
-    loading: "Sending...",
-    done: "Rated",
-    success: "Thanks. We received your rating.",
-    error: "Could not send. Please try again.",
-    score: "Rating",
-    recordLabel: "Trip rating",
-    trip: "Trip",
-    emptyNote: "No extra note.",
-  },
-  zh: {
-    rate: "评分",
-    title: "评价此行程",
-    name: "姓名",
-    email: "邮箱",
-    note: "反馈",
-    submit: "提交",
-    loading: "发送中...",
-    done: "已评分",
-    success: "谢谢，我们已收到您的评分。",
-    error: "暂时无法发送，请再试一次。",
-    score: "评分",
-    recordLabel: "行程评分",
-    trip: "行程",
-    emptyNote: "未填写补充意见。",
-  },
-  ja: {
-    rate: "評価",
-    title: "このツアーを評価",
-    name: "お名前",
-    email: "メール",
-    note: "ご意見",
-    submit: "送信",
-    loading: "送信中...",
-    done: "評価済み",
-    success: "ありがとうございます。評価を受け付けました。",
-    error: "送信できませんでした。もう一度お試しください。",
-    score: "評価",
-    recordLabel: "ツアー評価",
-    trip: "ツアー",
-    emptyNote: "追加コメントはありません。",
-  },
-  ko: {
-    rate: "평가",
-    title: "이 여행 평가",
-    name: "이름",
-    email: "이메일",
-    note: "의견",
-    submit: "보내기",
-    loading: "전송 중...",
-    done: "평가됨",
-    success: "감사합니다. 평가를 받았습니다.",
-    error: "전송할 수 없습니다. 다시 시도해주세요.",
-    score: "평점",
-    recordLabel: "여행 평가",
-    trip: "여행",
-    emptyNote: "추가 의견 없음.",
-  },
-} as const;
+type SectionCopy = (typeof SECTION_COPY)[keyof typeof SECTION_COPY];
 
-type RatingStatus = "idle" | "loading" | "success" | "error";
-
-export function TripRatingWidget({
-  adventure,
-  title,
-  locale,
+function ToursCategoryNavigation({
+  mode,
+  copy,
+  staysCount,
 }: {
-  adventure: Adventure;
-  title: string;
-  locale: keyof typeof RATING_COPY;
+  mode: "all" | "outbound" | "domestic";
+  copy: SectionCopy;
+  staysCount: number;
 }) {
-  const copy = RATING_COPY[locale];
-  const [open, setOpen] = useState(false);
-  const [rating, setRating] = useState(5);
-  const [form, setForm] = useState({ name: "", email: "", note: "" });
-  const [status, setStatus] = useState<RatingStatus>("idle");
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    event.stopPropagation();
-    setStatus("loading");
-
-    try {
-      const response = await fetch("/api/inquiries", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          inquiryType: "trip",
-          tripSlug: adventure.slug,
-          message: [
-            copy.recordLabel,
-            `${copy.score}: ${rating}/5`,
-            `${copy.trip}: ${title}`,
-            form.note ? `${copy.note}: ${form.note}` : copy.emptyNote,
-          ].join("\n"),
-        }),
-      });
-
-      if (response.ok) {
-        setForm({ name: "", email: "", note: "" });
-        setRating(5);
-        setStatus("success");
-        setOpen(false);
-        return;
-      }
-    } catch {
-      setStatus("error");
-      return;
-    }
-
-    setStatus("error");
-  }
+  const cards =
+    mode === "outbound"
+      ? [
+          {
+            href: "#outbound-trips",
+            title: copy.directions,
+            body: copy.outboundDescription,
+          },
+          {
+            href: "#corporate-trips",
+            title: copy.corporate,
+            body: copy.outboundDescription,
+          },
+          ...(staysCount > 0
+            ? [
+                {
+                  href: "#stays",
+                  title: copy.villa,
+                  body: copy.outboundDescription,
+                },
+              ]
+            : []),
+        ]
+      : [
+          {
+            href: "/tours/outbound",
+            title: copy.outboundDirection,
+            body: copy.outboundDescription,
+          },
+          {
+            href: "/tours/domestic",
+            title: copy.domesticDirection,
+            body: copy.domesticDescription,
+          },
+        ];
 
   return (
-    <div
-      className="mt-4"
-      onClick={(event) => event.stopPropagation()}
-      onMouseDown={(event) => event.stopPropagation()}
-    >
-      {!open ? (
-        <button
-          type="button"
-          onClick={() => {
-            setStatus("idle");
-            setOpen(true);
-          }}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs text-foreground transition-colors hover:border-accent hover:bg-accent"
-        >
-          <Star className="h-4 w-4 fill-accent text-accent" />
-          {status === "success" ? copy.done : copy.rate}
-        </button>
-      ) : (
-        <form
-          className="grid gap-2 rounded-md border border-border bg-background p-3"
-          onSubmit={handleSubmit}
-        >
-          <div className="trip-meta-text text-xs uppercase tracking-wider text-foreground">
-            {copy.title}
-          </div>
-          <div className="flex gap-1">
-            {[1, 2, 3, 4, 5].map((value) => (
-              <button
-                key={value}
-                type="button"
-                aria-label={`${copy.score} ${value}`}
-                aria-pressed={rating === value}
-                onClick={() => setRating(value)}
-                className="rounded-sm p-0.5 text-accent"
-              >
-                <Star
-                  className={`h-4 w-4 ${
-                    rating >= value ? "fill-current" : "fill-transparent"
-                  }`}
-                />
-              </button>
-            ))}
-          </div>
-          <input
-            required
-            value={form.name}
-            onChange={(event) =>
-              setForm((value) => ({ ...value, name: event.target.value }))
-            }
-            placeholder={copy.name}
-            className="min-w-0 rounded-md border border-border bg-card px-3 py-2 text-xs outline-none focus:border-accent"
-          />
-          <input
-            required
-            type="email"
-            value={form.email}
-            onChange={(event) =>
-              setForm((value) => ({ ...value, email: event.target.value }))
-            }
-            placeholder={copy.email}
-            className="min-w-0 rounded-md border border-border bg-card px-3 py-2 text-xs outline-none focus:border-accent"
-          />
-          <textarea
-            value={form.note}
-            onChange={(event) =>
-              setForm((value) => ({ ...value, note: event.target.value }))
-            }
-            placeholder={copy.note}
-            rows={2}
-            className="min-w-0 resize-none rounded-md border border-border bg-card px-3 py-2 text-xs outline-none focus:border-accent"
-          />
-          <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-            <p className="min-h-4 text-[11px] leading-tight text-muted-foreground">
-              {status === "success"
-                ? copy.success
-                : status === "error"
-                  ? copy.error
-                  : ""}
+    <div className="mx-auto w-full max-w-[1500px] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-12">
+      <p className="nav-text text-xs uppercase text-[#b89422]">
+        {mode === "outbound" ? copy.subcategoryTitle : copy.categoryTitle}
+      </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {cards.map((card) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            className="group border border-[#eadfac] bg-[#fffdf3] p-5 text-[#11100b] transition-colors hover:border-[#11100b]"
+          >
+            <div className="flex items-center justify-between gap-5">
+              <h3 className="site-heading text-xl leading-tight">
+                {card.title}
+              </h3>
+              <ArrowRight className="h-5 w-5 shrink-0 text-[#b89422] transition-transform group-hover:translate-x-1" />
+            </div>
+            <p className="mt-3 text-sm leading-6 text-[#11100b]/60">
+              {card.body}
             </p>
-            <button
-              type="submit"
-              disabled={status === "loading"}
-              className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:cursor-wait disabled:opacity-70"
-            >
-              {status === "loading" ? copy.loading : copy.submit}
-              <Send className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </form>
-      )}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1125,7 +940,7 @@ function DestinationDragCarousel({
                 onClick={(event) => handleCardClick(event, adventure)}
                 className="group relative m-0 flex min-w-[82vw] shrink-0 cursor-pointer flex-col transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
               >
-                <div className="relative aspect-[4/6.05] overflow-hidden rounded-b-[1.5rem] rounded-t-[clamp(2.75rem,6vw,5rem)] bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
+                <div className="relative aspect-[4/6.05] overflow-hidden bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
                   <div
                     className="h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
                     style={{ backgroundImage: `url(${getHighResolutionImageUrl(adventure.image)})` }}
@@ -1146,10 +961,10 @@ function DestinationDragCarousel({
                         {adventure.days} {dayLabel}
                       </span>
                     </p>
-                    <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[14ch] text-balance !text-[clamp(1.45rem,2.45vw,2.45rem)] !leading-[1.02] text-white">
+                    <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[15ch] text-balance !text-[clamp(1.9rem,3.4vw,3.4rem)] !leading-[1.04] text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.45)]">
                       {text.title}
                     </h3>
-                    <p className="trip-copy-text mt-2 line-clamp-2 max-w-sm text-xs leading-5 text-white/78 sm:text-sm">
+                    <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm leading-6 text-white/80 sm:text-base">
                       {text.summary}
                     </p>
                     <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -1170,7 +985,7 @@ function DestinationDragCarousel({
                           dragRef.current.didDrag = false;
                           stopMomentum();
                         }}
-                        className="group/btn relative z-10 inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
+                        className="group/btn relative z-10 inline-flex min-h-10 items-center justify-center gap-2 bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
                       >
                         {detailsLabel}
                         <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
@@ -1187,7 +1002,8 @@ function DestinationDragCarousel({
   );
 }
 
-function StaysAndVillasSection() {
+function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
+  const { contentLocale } = useLanguage();
   return (
     <section id="stays" className="bg-white px-6 py-16 lg:px-10 lg:py-20">
       <div className="mx-auto max-w-7xl">
@@ -1196,7 +1012,7 @@ function StaysAndVillasSection() {
             <p className="nav-text text-xs uppercase text-[#b89422]">
               Вилла
             </p>
-            <h2 className="site-heading mt-2 text-[clamp(2rem,5vw,4.8rem)] leading-none text-[#11100b]">
+            <h2 className="site-heading mt-2 text-[clamp(1.5rem,3vw,2.6rem)] leading-tight text-[#11100b]">
               Вилла
             </h2>
           </div>
@@ -1207,7 +1023,7 @@ function StaysAndVillasSection() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-3">
-          {STAY_OPTIONS.map((stay) => {
+          {stays.map((stay) => {
             const requestHref = `/plan?mode=villa&trip=${encodeURIComponent(
               `villa-${stay.id}`
             )}&title=${encodeURIComponent(stay.title)}`;
@@ -1215,18 +1031,18 @@ function StaysAndVillasSection() {
             return (
               <article
                 key={stay.id}
-                className="overflow-hidden rounded-[1.35rem] border border-[#eadfac] bg-[#fffdf3] shadow-[0_20px_70px_rgba(17,16,11,0.08)]"
+                className="overflow-hidden border border-[#eadfac] bg-[#fffdf3] shadow-[0_20px_70px_rgba(17,16,11,0.08)]"
               >
                 <div className="grid h-[280px] grid-cols-[1.45fr_0.9fr] gap-2 p-2">
                   <div
-                    className="rounded-[1rem] bg-cover bg-center"
+                    className="bg-cover bg-center"
                     style={{ backgroundImage: `url('${stay.images[0]}')` }}
                   />
                   <div className="grid gap-2">
                     {stay.images.slice(1, 3).map((image) => (
                       <div
                         key={image}
-                        className="rounded-[1rem] bg-cover bg-center"
+                        className="bg-cover bg-center"
                         style={{ backgroundImage: `url('${image}')` }}
                       />
                     ))}
@@ -1245,7 +1061,7 @@ function StaysAndVillasSection() {
                     </span>
                   </div>
 
-                  <h3 className="site-heading text-3xl leading-tight text-[#11100b]">
+                  <h3 className="site-heading text-xl leading-tight text-[#11100b]">
                     {stay.title}
                   </h3>
                   <p className="mt-2 min-h-12 text-sm leading-6 text-[#11100b]/62">
@@ -1253,7 +1069,7 @@ function StaysAndVillasSection() {
                   </p>
 
                   <dl className="mt-5 grid grid-cols-2 gap-2">
-                    <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <div className="border border-[#eadfac] bg-white px-3 py-3">
                       <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
                         <CalendarDays className="h-4 w-4" />
                         Хоног
@@ -1262,7 +1078,7 @@ function StaysAndVillasSection() {
                         {stay.nights} хоног
                       </dd>
                     </div>
-                    <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <div className="border border-[#eadfac] bg-white px-3 py-3">
                       <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
                         <UsersRound className="h-4 w-4" />
                         Хүний тоо
@@ -1271,7 +1087,7 @@ function StaysAndVillasSection() {
                         {stay.guests} хүн
                       </dd>
                     </div>
-                    <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <div className="border border-[#eadfac] bg-white px-3 py-3">
                       <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
                         <BedDouble className="h-4 w-4" />
                         Өрөөний тоо
@@ -1280,20 +1096,20 @@ function StaysAndVillasSection() {
                         {stay.rooms} өрөө
                       </dd>
                     </div>
-                    <div className="rounded-lg border border-[#eadfac] bg-white px-3 py-3">
+                    <div className="border border-[#eadfac] bg-white px-3 py-3">
                       <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
                         <MapPinned className="h-4 w-4" />
                         Үнэ
                       </dt>
                       <dd className="mt-2 text-sm font-semibold text-[#11100b]">
-                        {stay.price}
+                        {formatPriceString(stay.price, contentLocale)}
                       </dd>
                     </div>
                   </dl>
 
                   <Link
                     href={requestHref}
-                    className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#11100b] px-5 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#2b281d]"
+                    className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 bg-[#11100b] px-5 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#2b281d]"
                   >
                     Захиалах хүсэлт
                     <ArrowRight className="h-4 w-4" />
@@ -1312,9 +1128,13 @@ export function FeaturedAdventures({
   adventures = ADVENTURES,
   beforeList,
   outboundTripImages = {},
+  stays = DEFAULT_STAYS,
+  pageMode = "all",
 }: FeaturedAdventuresProps) {
   const [selected, setSelected] = useState<Adventure | null>(null);
-  const [scope, setScope] = useState<TripScope>("all");
+  const [scope, setScope] = useState<TripScope>(
+    pageMode === "domestic" ? "domestic" : "all"
+  );
   const [sortMode] = useState<SortMode>("recommended");
   const [query, setQuery] = useState("");
   const [activeHeroImage, setActiveHeroImage] = useState(0);
@@ -1405,6 +1225,10 @@ export function FeaturedAdventures({
       const isDomestic = adventure.country === "Mongolia";
       const isCorporate = isCorporateAdventure(adventure);
       const searchText = getAdventureSearchText(adventure);
+      const matchesPageMode =
+        pageMode === "all" ||
+        (pageMode === "domestic" && isDomestic) ||
+        (pageMode === "outbound" && (!isDomestic || isCorporate));
 
       const matchesScope =
         scope === "all" ||
@@ -1414,7 +1238,7 @@ export function FeaturedAdventures({
       const matchesQuery =
         !normalizedQuery || searchText.includes(normalizedQuery);
 
-      return matchesScope && matchesQuery;
+      return matchesPageMode && matchesScope && matchesQuery;
     });
 
     const sortedMatches = [...matches];
@@ -1446,39 +1270,67 @@ export function FeaturedAdventures({
     }
 
     return sortedMatches;
-  }, [allAdventures, query, scope, sortMode]);
+  }, [allAdventures, pageMode, query, scope, sortMode]);
 
   const groupedFilteredAdventures = useMemo(() => {
     const outbound = filteredAdventures.filter(
-      (adventure) => adventure.country !== "Mongolia"
+      (adventure) =>
+        adventure.country !== "Mongolia" && !isCorporateAdventure(adventure)
     );
     const corporate = filteredAdventures.filter(isCorporateAdventure);
     const domestic = filteredAdventures.filter(
       (adventure) => adventure.country === "Mongolia"
     );
 
-    return [
-      {
-        id: "outbound-trips",
-        title: sectionCopy.outbound,
-        adventures: outbound,
-      },
-      {
-        id: "corporate-trips",
-        title: sectionCopy.corporate,
-        adventures: corporate,
-      },
-      {
-        id: "domestic-trips",
-        title: sectionCopy.domestic,
-        adventures: domestic,
-      },
-    ].filter((group) => group.adventures.length > 0);
+    const groups =
+      pageMode === "domestic"
+        ? [
+            {
+              id: "domestic-trips",
+              title: sectionCopy.domestic,
+              adventures: domestic,
+            },
+          ]
+        : pageMode === "outbound"
+          ? [
+              {
+                id: "outbound-trips",
+                title: sectionCopy.directions,
+                adventures: outbound,
+              },
+              {
+                id: "corporate-trips",
+                title: sectionCopy.corporate,
+                adventures: corporate,
+              },
+            ]
+          : [
+              {
+                id: "outbound-trips",
+                title: sectionCopy.outboundDirection,
+                adventures: outbound,
+              },
+              {
+                id: "corporate-trips",
+                title: sectionCopy.corporate,
+                adventures: corporate,
+              },
+              {
+                id: "domestic-trips",
+                title: sectionCopy.domesticDirection,
+                adventures: domestic,
+              },
+            ];
+
+    return groups.filter((group) => group.adventures.length > 0);
   }, [
     filteredAdventures,
     sectionCopy.corporate,
     sectionCopy.domestic,
-    sectionCopy.outbound,
+    sectionCopy.directions,
+    sectionCopy.domesticDirection,
+    sectionCopy.outboundDirection,
+    pageMode,
   ]);
   function handleTripSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1547,6 +1399,11 @@ export function FeaturedAdventures({
         id="all"
         className="bg-white"
       >
+        <ToursCategoryNavigation
+          mode={pageMode}
+          copy={sectionCopy}
+          staysCount={stays.length}
+        />
         {groupedFilteredAdventures.length > 0 ? (
           groupedFilteredAdventures.map((group) => (
             <DestinationDragCarousel
@@ -1570,7 +1427,7 @@ export function FeaturedAdventures({
         )}
       </div>
 
-      <StaysAndVillasSection />
+      {pageMode !== "domestic" ? <StaysAndVillasSection stays={stays} /> : null}
 
       {beforeList}
 

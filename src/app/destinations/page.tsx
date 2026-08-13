@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Trips | Nomadabe",
+  title: "Аяллын чиглэлүүд",
   description:
     "Browse Nomadabe domestic and outbound trips by country, city, and travel style.",
 };

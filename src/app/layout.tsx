@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import { AiChatbot } from "@/components/ai-chatbot";
 import { LanguageProvider } from "@/components/language-provider";
 import { PlaneCursor } from "@/components/plane-cursor";
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 // Self-hosted via next/font so Cyrillic + Latin load reliably (no flaky
@@ -15,10 +16,44 @@ const siteFont = Montserrat({
   variable: "--font-site",
 });
 
+const SITE_NAME = "Nomadabe Travel";
+const SITE_DESCRIPTION =
+  "Бизнес, expo, амралт зугаалга болон захиалгат аяллыг Улаанбаатараас төлөвлөн зохион байгуулна.";
+
 export const metadata: Metadata = {
-  title: "Nomadabe",
-  description:
-    "Бизнес, expo, амралт зугаалга болон захиалгат аяллыг Улаанбаатараас төлөвлөн зохион байгуулна.",
+  // Lets every page use relative OpenGraph/canonical URLs.
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "mn_MN",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: "/",
+    images: [
+      {
+        url: "/nomadabe-hero-panorama.webp",
+        width: 1200,
+        height: 630,
+        alt: SITE_NAME,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: ["/nomadabe-hero-panorama.webp"],
+  },
 };
 
 // Temporarily disabled while the n8n AI gateway is offline.
