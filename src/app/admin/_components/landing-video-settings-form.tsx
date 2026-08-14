@@ -20,7 +20,6 @@ export function LandingVideoSettingsForm({ settings }: { settings: SiteSettings 
   return (
     <form
       action={saveSiteSettingsAction}
-      encType="multipart/form-data"
       className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
     >
       <div className="grid gap-4 lg:grid-cols-[1fr_300px]">

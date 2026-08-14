@@ -20,8 +20,11 @@ export function TripForm({
   trip?: Adventure;
   categoryOptions: CategoryOption[];
 }) {
+  // No encType here: React sets multipart automatically for a form whose action
+  // is a Server Action, and specifying it logs "Cannot specify a encType or
+  // method for a form that specifies a function as the action."
   return (
-    <form action={saveTripAction} encType="multipart/form-data" className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
+    <form action={saveTripAction} className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4">
       {trip ? <input type="hidden" name="id" defaultValue={trip.id} /> : null}
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm">
         <div>
