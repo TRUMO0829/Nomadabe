@@ -155,7 +155,7 @@ export const ADVENTURES: Adventure[] = [
     tags: ["Business", "Expo", "Import"],
     rating: 4.9,
     reviews: 38,
-    category: "festival",
+    category: "business",
     summary:
       "Импортын бизнес эхлүүлэх, шинэ бараа бүтээгдэхүүн судлах, үйлдвэрлэгчтэй шууд холбогдох зорилготой expo аялал.",
     idealFor: [
@@ -193,7 +193,7 @@ export const ADVENTURES: Adventure[] = [
     tags: ["Energy", "Expo", "Technology"],
     rating: 4.8,
     reviews: 21,
-    category: "festival",
+    category: "business",
     summary:
       "Нарны эрчим хүч, шинэ технологи, тоног төхөөрөмжийн нийлүүлэгчтэй холбогдох бизнес аялал.",
     idealFor: ["Эрчим хүчний бизнес эрхлэгч", "Тоног төхөөрөмж судалж буй хүн"],
@@ -240,7 +240,7 @@ export const ADVENTURES: Adventure[] = [
     tags: ["Domestic", "Festival", "Culture"],
     rating: 4.9,
     reviews: 44,
-    category: "custom",
+    category: "festival",
     summary:
       "Festival-focused Mongolia experience with cultural events, city highlights, local food, and flexible day programs.",
     idealFor: ["Culture lovers", "Families", "Friend groups"],
