@@ -3,9 +3,19 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { CalendarDays, MapPin } from "lucide-react";
+import { ArrowRight, CalendarDays, MapPin } from "lucide-react";
 import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
+import {
+  CARD_CTA,
+  CARD_FRAME,
+  CARD_FRAME_LIGHT,
+  CardMedia,
+  CardMeta,
+  CardOverlay,
+  CardTitle,
+} from "@/components/ui/card-recipe";
+import { cn } from "@/lib/utils";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 import ParticleText from "./ui/particle-text-canvas";
@@ -298,44 +308,32 @@ function FeaturedTripsScrollStack({
           return (
             <article
               key={adventure.id}
-              className="overflow-hidden border border-border bg-card shadow-sm"
+              className={CARD_FRAME_LIGHT}
             >
               <div className="relative aspect-[4/5] overflow-hidden">
-                <Image
-                  src={image}
-                  alt={text.title}
-                  fill
-                  sizes="100vw"
-                  quality={90}
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/18 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <div className="trip-meta-text mb-3 flex flex-wrap gap-2 text-[10px] uppercase text-white">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-black/36 px-2.5 py-1 backdrop-blur">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {text.location}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-black/36 px-2.5 py-1 backdrop-blur">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      {adventure.days} {copy.day}
-                    </span>
-                  </div>
-                  <h3 className="trip-header-title trip-header-title--compact max-w-[14ch] text-balance text-white">
-                    {text.title}
-                  </h3>
-                </div>
+                <CardMedia src={image} alt={text.title} sizes="100vw" />
+                <CardOverlay>
+                  <CardMeta
+                    items={[
+                      { label: text.country },
+                      { label: text.location, icon: MapPin },
+                      { label: `${adventure.days} ${copy.day}`, icon: CalendarDays },
+                    ]}
+                  />
+                  <CardTitle>{text.title}</CardTitle>
+                </CardOverlay>
               </div>
-              <div className="space-y-4 p-5">
-                <p className="trip-copy-text text-sm leading-7 text-black">
+              <div className="flex flex-1 flex-col gap-4 p-5">
+                <p className="trip-copy-text line-clamp-3 text-sm text-[#11100b]/70">
                   {text.summary}
                 </p>
                 <button
                   type="button"
                   onClick={() => onSelect(adventure)}
-                  className="inline-flex min-h-11 items-center justify-center border border-accent bg-accent px-5 text-xs uppercase text-accent-foreground transition-colors hover:bg-white hover:text-black"
+                  className={cn(CARD_CTA, "mt-auto self-start")}
                 >
                   {copy.details}
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </button>
               </div>
             </article>
@@ -390,36 +388,38 @@ function FeaturedTripsGrid({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-70px" }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="group relative isolate aspect-[4/5] w-full overflow-hidden bg-[#11100b] text-left shadow-[0_18px_46px_rgba(17,16,11,0.09)] sm:aspect-[5/4] lg:aspect-[4/3]"
+                className={cn(
+                  CARD_FRAME,
+                  "aspect-[4/5] w-full sm:aspect-[5/4] lg:aspect-[4/3]"
+                )}
               >
-                <div className="absolute inset-0 overflow-hidden bg-[#11100b]">
-                  <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    priority={index === 0}
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    quality={90}
-                    className="object-cover object-center opacity-85 transition duration-700 ease-out group-hover:scale-[1.035]"
+                <CardMedia
+                  src={image}
+                  alt={title}
+                  priority={index === 0}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+                <CardOverlay>
+                  <CardMeta
+                    items={[
+                      { label: text.country },
+                      { label: text.location, icon: MapPin },
+                      { label: `${adventure.days} ${copy.day}`, icon: CalendarDays },
+                    ]}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-br from-black/48 via-black/18 to-black/4" />
-                  <div className="absolute left-8 right-8 top-10 z-10 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] sm:left-10 sm:right-10 sm:top-12">
-                    <h3 className="max-w-[14ch] text-balance text-[clamp(1.75rem,4.2vw,3.25rem)] leading-[0.98] text-white">
-                      {title}
-                    </h3>
-                    <div className="mt-5 h-px w-[min(22rem,78%)] bg-white/88" />
-                    <p className="mt-5 line-clamp-3 max-w-[32rem] text-xs leading-5 text-white sm:text-[13px] sm:leading-5">
-                      {summary}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => onSelect(adventure)}
-                      className="nav-text mt-6 inline-flex text-sm text-accent transition-colors hover:text-white"
-                    >
-                      {copy.details}
-                    </button>
-                  </div>
-                </div>
+                  <CardTitle>{title}</CardTitle>
+                  <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm text-white/80">
+                    {summary}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(adventure)}
+                    className={cn(CARD_CTA, "mt-4 self-start")}
+                  >
+                    {copy.details}
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </button>
+                </CardOverlay>
               </motion.article>
             );
           })}

@@ -296,12 +296,34 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
         <section
           className="relative flex min-h-screen items-end overflow-hidden px-4 pb-12 pt-28 sm:px-6 lg:px-10"
           style={{
-            backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.72)), url(${heroImage})`,
+            // Darker at the top than before so the navbar and the trip's
+            // country/duration line stay readable against a bright sky.
+            backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.46), rgba(0,0,0,0.22) 34%, rgba(0,0,0,0.78)), url(${heroImage})`,
             backgroundPosition: "center",
             backgroundSize: "cover",
           }}
         >
           <div className="relative z-10 mx-auto w-full max-w-[1500px] text-white">
+            {/* The trip name is the page's H1. Before this the hero showed only
+                a photo and four stat cards, so neither a visitor nor a search
+                engine could tell which trip the page was about. */}
+            <div className="mb-8 max-w-[min(100%,52rem)]">
+              <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] uppercase text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
+                <span className="text-[#FFD400]">{text.country}</span>
+                <span aria-hidden="true" className="text-white/40">
+                  ·
+                </span>
+                <span>{text.location}</span>
+                <span aria-hidden="true" className="text-white/40">
+                  ·
+                </span>
+                <span>{adventure.days} хоног</span>
+              </p>
+              <h1 className="trip-header-title trip-header-title--hero mt-4 text-balance text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.5)]">
+                {text.title}
+              </h1>
+            </div>
+
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="border border-white/30 bg-black/28 p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-md">
                 <CalendarDays className="h-5 w-5 text-[#FFD400]" />
@@ -343,13 +365,16 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
 
         <section className="mx-auto grid max-w-[1500px] gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_420px] lg:px-10 lg:py-24">
           <div className="space-y-12">
+            {/* The trip name is now the H1 in the hero, so this section only
+                needs a quiet label — a second display-size heading here just
+                competed with it. */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8a6f12]">
                 Аяллын дэлгэрэнгүй
               </p>
-              <h2 className="mt-4 max-w-3xl text-balance text-[clamp(2.25rem,5vw,5.25rem)] font-medium leading-[0.96]">
-                Таны аялалд багтах гол мэдээлэл
-              </h2>
+              <p className="mt-4 max-w-[52ch] text-base leading-7 text-black/70">
+                {text.summary}
+              </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">

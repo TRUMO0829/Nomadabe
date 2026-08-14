@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react";
 import { getAdventureText, type Adventure } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
+import {
+  CARD_CTA,
+  CARD_FRAME,
+  CardMedia,
+  CardMeta,
+  CardOverlay,
+  CardTitle,
+} from "@/components/ui/card-recipe";
+import { cn } from "@/lib/utils";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 import { formatPrice } from "@/lib/currency";
@@ -339,61 +347,39 @@ export function OutboundTripsCarousel({
                 key={adventure.id}
                 type="button"
                 onClick={() => setSelected(adventure)}
-                className={[
-                  "group relative block overflow-hidden border border-white/10 text-left transition-colors hover:border-[rgba(255,212,0,0.55)]",
+                className={cn(
+                  CARD_FRAME,
                   featured
                     ? "h-[clamp(20rem,40vw,30rem)] lg:col-span-2"
-                    : "h-[clamp(18rem,30vw,26rem)]",
-                ].join(" ")}
+                    : "h-[clamp(18rem,30vw,26rem)]"
+                )}
               >
-                <Image
+                <CardMedia
                   src={image}
                   alt={text.title}
-                  fill
                   sizes={featured ? "100vw" : "(max-width: 1024px) 100vw, 50vw"}
-                  quality={90}
-                  className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />
 
                 {price ? (
-                  <span className="trip-meta-text absolute right-5 top-5 rounded-full bg-white/95 px-4 py-2 text-xs text-[#11100b] backdrop-blur">
+                  <span className="trip-meta-text absolute right-5 top-5 z-10 border border-white/25 bg-black/45 px-3 py-1.5 text-[10px] uppercase text-white backdrop-blur">
                     {price}
                   </span>
                 ) : null}
 
-                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-                  <div className="trip-meta-text flex items-center gap-3 text-xs uppercase tracking-[0.22em] text-white/80">
-                    <span style={{ color: ACCENT }}>{text.country}</span>
-                  </div>
-                  <h3
-                    className="mt-3 max-w-[20ch] text-balance text-2xl leading-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.5)] sm:text-3xl"
-                    style={{ textTransform: "none" }}
-                  >
-                    {text.title}
-                  </h3>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-2.5">
-                    <span className="trip-meta-text inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs text-white backdrop-blur">
-                      <CalendarDays className="h-3.5 w-3.5" style={{ color: ACCENT }} />
-                      {adventure.days} {copy.day}
-                    </span>
-                    {text.location ? (
-                      <span className="trip-meta-text inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs text-white backdrop-blur">
-                        <MapPin className="h-3.5 w-3.5" style={{ color: ACCENT }} />
-                        {text.location}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <span
-                    className="trip-meta-text mt-5 inline-flex items-center gap-2 text-sm"
-                    style={{ color: ACCENT, textTransform: "none" }}
-                  >
+                <CardOverlay>
+                  <CardMeta
+                    items={[
+                      { label: text.country },
+                      { label: text.location, icon: MapPin },
+                      { label: `${adventure.days} ${copy.day}`, icon: CalendarDays },
+                    ]}
+                  />
+                  <CardTitle>{text.title}</CardTitle>
+                  <span className={cn(CARD_CTA, "mt-4 self-start")}>
                     {copy.details}
                     <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </span>
-                </div>
+                </CardOverlay>
               </button>
             );
           })}

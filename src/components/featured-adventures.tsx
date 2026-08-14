@@ -30,6 +30,15 @@ import {
   type AdventureTranslations,
 } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
+import {
+  CARD_CTA,
+  CARD_FRAME,
+  CARD_FRAME_LIGHT,
+  CardMedia,
+  CardMeta,
+  CardOverlay,
+  CardTitle,
+} from "@/components/ui/card-recipe";
 import { cn } from "@/lib/utils";
 import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
@@ -940,58 +949,47 @@ function DestinationDragCarousel({
                 onClick={(event) => handleCardClick(event, adventure)}
                 className="group relative m-0 flex min-w-[82vw] shrink-0 cursor-pointer flex-col transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
               >
-                <div className="relative aspect-[4/6.05] overflow-hidden bg-[#e8e8e8] shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-shadow duration-300 group-hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]">
-                  <div
-                    className="h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
-                    style={{ backgroundImage: `url(${getHighResolutionImageUrl(adventure.image)})` }}
+                <div className={cn(CARD_FRAME, "aspect-[4/6.05]")}>
+                  <CardMedia
+                    src={getHighResolutionImageUrl(adventure.image)}
+                    alt={text.title}
+                    sizes="(max-width: 768px) 82vw, 26rem"
                   />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/82 via-black/22 to-transparent"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col px-5 pb-5 text-white sm:px-6 sm:pb-6">
-                    <p className="trip-meta-text flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] uppercase text-white/72">
-                      <span>{text.country}</span>
-                      <span className="inline-flex items-center gap-1">
-                        <MapPinned className="h-3.5 w-3.5 text-accent" />
-                        {text.location}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <CalendarDays className="h-3.5 w-3.5 text-accent" />
-                        {adventure.days} {dayLabel}
-                      </span>
-                    </p>
-                    <h3 className="trip-header-title trip-header-title--compact mt-2 max-w-[15ch] text-balance !text-[clamp(1.9rem,3.4vw,3.4rem)] !leading-[1.04] text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.45)]">
-                      {text.title}
-                    </h3>
-                    <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm leading-6 text-white/80 sm:text-base">
+                  <CardOverlay>
+                    <CardMeta
+                      items={[
+                        { label: text.country },
+                        { label: text.location, icon: MapPinned },
+                        { label: `${adventure.days} ${dayLabel}`, icon: CalendarDays },
+                      ]}
+                    />
+                    <CardTitle>{text.title}</CardTitle>
+                    <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm text-white/80">
                       {text.summary}
                     </p>
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
-                      <Link
-                        href={`/tours/${adventure.slug}`}
-                        onPointerDown={(event) => {
-                          event.stopPropagation();
-                          stopMomentum();
+                    <Link
+                      href={`/tours/${adventure.slug}`}
+                      onPointerDown={(event) => {
+                        event.stopPropagation();
+                        stopMomentum();
+                        dragRef.current.didDrag = false;
+                      }}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (dragRef.current.didDrag) {
+                          event.preventDefault();
                           dragRef.current.didDrag = false;
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          if (dragRef.current.didDrag) {
-                            event.preventDefault();
-                            dragRef.current.didDrag = false;
-                            return;
-                          }
-                          dragRef.current.didDrag = false;
-                          stopMomentum();
-                        }}
-                        className="group/btn relative z-10 inline-flex min-h-10 items-center justify-center gap-2 bg-accent px-5 text-[10px] uppercase tracking-wider text-accent-foreground transition-all duration-200 hover:gap-3 hover:shadow-[0_8px_22px_rgba(255,212,0,0.45)]"
-                      >
-                        {detailsLabel}
-                        <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
-                      </Link>
-                    </div>
-                  </div>
+                          return;
+                        }
+                        dragRef.current.didDrag = false;
+                        stopMomentum();
+                      }}
+                      className={cn(CARD_CTA, "group/btn mt-4 self-start")}
+                    >
+                      {detailsLabel}
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+                    </Link>
+                  </CardOverlay>
                 </div>
               </article>
             );
@@ -1029,42 +1027,29 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
             )}&title=${encodeURIComponent(stay.title)}`;
 
             return (
-              <article
-                key={stay.id}
-                className="overflow-hidden border border-[#eadfac] bg-[#fffdf3] shadow-[0_20px_70px_rgba(17,16,11,0.08)]"
-              >
-                <div className="grid h-[280px] grid-cols-[1.45fr_0.9fr] gap-2 p-2">
-                  <div
-                    className="bg-cover bg-center"
-                    style={{ backgroundImage: `url('${stay.images[0]}')` }}
+              <article key={stay.id} className={CARD_FRAME_LIGHT}>
+                {/* Same image treatment as every trip card: one photo, one
+                    scrim, the meta row and title sitting over it. */}
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <CardMedia
+                    src={stay.images[0]}
+                    alt={stay.title}
+                    sizes="(max-width: 1024px) 100vw, 33vw"
                   />
-                  <div className="grid gap-2">
-                    {stay.images.slice(1, 3).map((image) => (
-                      <div
-                        key={image}
-                        className="bg-cover bg-center"
-                        style={{ backgroundImage: `url('${image}')` }}
-                      />
-                    ))}
-                  </div>
+                  <CardOverlay>
+                    <CardMeta
+                      items={[
+                        { label: stay.type, icon: Home },
+                        { label: stay.location, icon: MapPinned },
+                        { label: `${stay.images.length} зураг`, icon: Camera },
+                      ]}
+                    />
+                    <CardTitle>{stay.title}</CardTitle>
+                  </CardOverlay>
                 </div>
 
-                <div className="px-5 pb-5 pt-3">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <span className="nav-text inline-flex items-center gap-2 rounded-full border border-[#d8c56d] px-3 py-1.5 text-[10px] uppercase text-[#8a6f12]">
-                      <Home className="h-3.5 w-3.5" />
-                      {stay.type}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#11100b]/56">
-                      <Camera className="h-4 w-4 text-[#b89422]" />
-                      {stay.images.length} зураг
-                    </span>
-                  </div>
-
-                  <h3 className="site-heading text-xl leading-tight text-[#11100b]">
-                    {stay.title}
-                  </h3>
-                  <p className="mt-2 min-h-12 text-sm leading-6 text-[#11100b]/62">
+                <div className="px-5 pb-5 pt-4">
+                  <p className="trip-copy-text line-clamp-3 text-sm text-[#11100b]/70">
                     {stay.summary}
                   </p>
 
@@ -1107,12 +1092,9 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
                     </div>
                   </dl>
 
-                  <Link
-                    href={requestHref}
-                    className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 bg-[#11100b] px-5 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#2b281d]"
-                  >
+                  <Link href={requestHref} className={cn(CARD_CTA, "mt-5 self-start")}>
                     Захиалах хүсэлт
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Link>
                 </div>
               </article>
