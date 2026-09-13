@@ -196,9 +196,19 @@ const DEFAULT_FROM = "Nomadabe Travel <ariunbold@nomadabe.mn>";
 // Resend requires "email@domain" or "Name <email@domain>". If the configured
 // value is missing or malformed (the cause of past "Invalid `from` field"
 // failures), fall back to a known-valid sender instead of failing every email.
+const ADDRESS = "[^@\\s<>]+@[^@\\s<>]+\\.[^@\\s<>]+";
+const FROM_PATTERN = new RegExp(`^(?:${ADDRESS}|[^<>]*<${ADDRESS}>)$`);
+
+function getConfiguredFrom() {
+  return (process.env.EMAIL_FROM || process.env.MAIL_FROM || "").trim();
+}
+
+export function isConfiguredFromValid() {
+  return FROM_PATTERN.test(getConfiguredFrom());
+}
+
 function resolveFromAddress() {
-  const configured = (process.env.EMAIL_FROM || process.env.MAIL_FROM || "").trim();
-  return /[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+/.test(configured) ? configured : DEFAULT_FROM;
+  return isConfiguredFromValid() ? getConfiguredFrom() : DEFAULT_FROM;
 }
 
 function normalizeEmail(input: SendEmailInput) {

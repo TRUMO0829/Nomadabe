@@ -1,5 +1,6 @@
 import { ok } from "@/lib/server/api";
 import { getAdminStore } from "@/lib/server/admin-store";
+import { isConfiguredFromValid } from "@/lib/server/mail";
 import {
   getMissingSupabaseEnvNames,
   isSupabaseConfigured,
@@ -17,7 +18,8 @@ export async function GET() {
     },
     mail: {
       resendConfigured: Boolean(process.env.RESEND_API_KEY),
-      fromConfigured: Boolean(process.env.MAIL_FROM),
+      fromConfigured: Boolean(process.env.EMAIL_FROM || process.env.MAIL_FROM),
+      fromValid: isConfiguredFromValid(),
     },
     n8n: {
       chatConfigured: Boolean(process.env.N8N_CHAT_WEBHOOK_URL),
