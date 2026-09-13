@@ -28,6 +28,7 @@ export default async function ToursPage() {
         <ToursExperience
           adventures={adventures}
           outboundTripImages={siteSettings.outboundTripImages}
+          stays={siteSettings.stays}
         />
         <CtaFooter />
       </main>

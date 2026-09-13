@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -13,6 +14,8 @@ import {
   Trash2,
   UserRound,
 } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { canOptimizeImage } from "@/lib/image-quality";
 import { cn } from "@/lib/utils";
 
 type Customer = {
@@ -49,24 +52,29 @@ type ProfileData = {
 
 type InquiryFilter = "all" | "active" | "traveled";
 
+const PANEL = "border border-border bg-card p-6 shadow-card";
+const CHIP = "inline-flex items-center gap-1 bg-card px-2.5 py-1.5 ring-1 ring-border";
+
 const statusCopy: Record<Inquiry["status"], { label: string; className: string }> = {
   new: {
     label: "Хүлээгдэж буй",
-    className: "bg-white text-[var(--foreground)] ring-1 ring-[var(--border)]",
+    className: "bg-card text-foreground ring-1 ring-border",
   },
   contacted: {
     label: "Хүлээгдэж буй",
-    className: "bg-[var(--muted)] text-[var(--foreground)]",
+    className: "bg-muted text-foreground",
   },
   confirmed: {
     label: "Явсан",
-    className: "bg-emerald-600 text-white",
+    className: "bg-success text-white",
   },
   closed: {
     label: "Явсан",
-    className: "bg-[var(--primary)] text-white",
+    className: "bg-primary text-white",
   },
 };
+
+const DELETE_ERROR = "Хүлээгдэж буй аяллыг устгаж чадсангүй.";
 
 export function ProfilePageClient() {
   const [data, setData] = useState<ProfileData | null>(null);
@@ -148,7 +156,7 @@ export function ProfilePageClient() {
       };
 
       if (!response.ok || !result.ok) {
-        throw new Error(result.error?.message ?? "Could not delete pending trip.");
+        throw new Error(result.error?.message ?? DELETE_ERROR);
       }
 
       setData((current) => {
@@ -169,7 +177,7 @@ export function ProfilePageClient() {
         };
       });
     } catch (caught) {
-      setDeleteError(caught instanceof Error ? caught.message : "Could not delete pending trip.");
+      setDeleteError(caught instanceof Error ? caught.message : DELETE_ERROR);
     } finally {
       setDeletingId(null);
     }
@@ -177,9 +185,10 @@ export function ProfilePageClient() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--background)] px-5 pt-28 text-[var(--foreground)]">
-        <div className="mx-auto max-w-6xl">
-          <div className="h-40 animate-pulse rounded-md border border-[var(--border)] bg-white" />
+      <main className="min-h-screen bg-background px-5 pt-28 text-foreground">
+        <div role="status" className="mx-auto max-w-6xl">
+          <div className="h-40 border border-border bg-card motion-safe:animate-pulse" />
+          <span className="sr-only">Ачаалж байна…</span>
         </div>
       </main>
     );
@@ -187,29 +196,25 @@ export function ProfilePageClient() {
 
   if (error || !data) {
     return (
-      <main className="min-h-screen bg-[var(--background)] px-5 pt-28 text-[var(--foreground)]">
-        <section className="mx-auto max-w-3xl rounded-md border border-[var(--border)] bg-white p-8 shadow-sm">
-          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[var(--accent)]">
-            <UserRound className="h-6 w-6" />
+      <main className="min-h-screen bg-background px-5 pt-28 text-foreground">
+        <section className={cn(PANEL, "mx-auto max-w-3xl p-8")}>
+          <div className="flex h-12 w-12 items-center justify-center bg-accent">
+            <UserRound aria-hidden="true" className="h-6 w-6" />
           </div>
-          <h1 className="mt-5 text-3xl font-black uppercase">Нэвтрэх шаардлагатай</h1>
-          <p className="mt-3 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+          <h1 className="mt-5 text-3xl">Нэвтрэх шаардлагатай</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
             Профайл болон аяллын хүсэлтүүдээ харахын тулд эхлээд нэвтэрнэ үү.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button
+            <Button
               type="button"
               onClick={() => window.dispatchEvent(new Event("nomadabe:open-signup-prompt"))}
-              className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-black uppercase text-[var(--accent-foreground)]"
             >
-              <UserRound className="h-4 w-4" />
+              <UserRound aria-hidden="true" className="h-4 w-4" />
               Нэвтрэх
-            </button>
-            <Link
-              href="/tours"
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--border)] px-5 py-3 text-sm font-black uppercase"
-            >
-              <Plane className="h-4 w-4" />
+            </Button>
+            <Link href="/tours" className={buttonVariants({ variant: "outline" })}>
+              <Plane aria-hidden="true" className="h-4 w-4" />
               Аяллууд харах
             </Link>
           </div>
@@ -219,20 +224,20 @@ export function ProfilePageClient() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--background)] px-5 pb-16 pt-28 text-[var(--foreground)]">
+    <main className="min-h-screen bg-background px-5 pb-16 pt-28 text-foreground">
       <div className="mx-auto max-w-7xl">
-        <section className="grid gap-5 lg:grid-cols-[360px_1fr]">
-          <aside className="rounded-md border border-[var(--border)] bg-white p-6 shadow-sm">
+        <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+          <aside className={PANEL}>
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-md bg-[var(--primary)] text-xl font-black text-[var(--accent)]">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center bg-primary text-xl text-accent">
                 {initials}
               </div>
               <div className="min-w-0">
-                <h1 className="truncate text-2xl font-black uppercase">
+                <h1 className="truncate text-2xl">
                   {data.customer.name || "Миний профайл"}
                 </h1>
-                <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-[var(--muted-foreground)]">
-                  <Mail className="h-4 w-4 shrink-0" />
+                <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail aria-hidden="true" className="h-4 w-4 shrink-0" />
                   <span className="truncate">{data.customer.email}</span>
                 </div>
               </div>
@@ -260,57 +265,44 @@ export function ProfilePageClient() {
             </div>
 
             <div className="mt-6 space-y-2">
-              <button
-                type="button"
-                onClick={loadProfile}
-                className="flex w-full items-center justify-center gap-2 rounded-md border border-[var(--border)] px-4 py-3 text-sm font-black uppercase transition-colors hover:border-[var(--accent)]"
-              >
-                <RefreshCw className="h-4 w-4" />
+              <Button type="button" variant="outline" onClick={loadProfile} className="w-full">
+                <RefreshCw aria-hidden="true" className="h-4 w-4" />
                 Шинэчлэх
-              </button>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="flex w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 py-3 text-sm font-black uppercase text-white transition-colors hover:bg-black"
-              >
-                <LogOut className="h-4 w-4" />
+              </Button>
+              <Button type="button" variant="dark" onClick={handleLogout} className="w-full">
+                <LogOut aria-hidden="true" className="h-4 w-4" />
                 Гарах
-              </button>
+              </Button>
             </div>
           </aside>
 
-          <section className="rounded-md border border-[var(--border)] bg-white p-6 shadow-sm">
+          <section className={cn(PANEL, "min-w-0")}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-black uppercase text-[var(--muted-foreground)]">
+                <p className="text-xs uppercase text-muted-foreground">
                   Миний аяллын хүсэлтүүд
                 </p>
-                <h2 className="mt-1 text-2xl font-black uppercase">Бүртгэлийн түүх</h2>
+                <h2 className="mt-1 text-2xl">Бүртгэлийн түүх</h2>
               </div>
-              <Link
-                href="/tours"
-                className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-4 py-2.5 text-sm font-black uppercase text-[var(--accent-foreground)]"
-              >
-                <Plane className="h-4 w-4" />
+              <Link href="/tours" className={buttonVariants({ size: "sm" })}>
+                <Plane aria-hidden="true" className="h-4 w-4" />
                 Шинэ аялал
               </Link>
             </div>
 
             {data.inquiries.length === 0 ? (
-              <div className="mt-6 rounded-md border border-dashed border-[var(--border)] bg-[var(--background)] p-8 text-center">
-                <Plane className="mx-auto h-9 w-9 text-[var(--muted-foreground)]" />
-                <h3 className="mt-4 text-lg font-black uppercase">Аяллын хүсэлт алга</h3>
-                <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+              <div className="mt-6 border border-dashed border-border bg-background p-8 text-center">
+                <Plane aria-hidden="true" className="mx-auto h-9 w-9 text-muted-foreground" />
+                <h3 className="mt-4 text-lg">Аяллын хүсэлт алга</h3>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
                   Та аялал сонгоод бүртгүүлэхэд энд статус болон мэдээлэл нь харагдана.
                 </p>
               </div>
             ) : filteredInquiries.length === 0 ? (
-              <div className="mt-6 rounded-md border border-dashed border-[var(--border)] bg-[var(--background)] p-8 text-center">
-                <Plane className="mx-auto h-9 w-9 text-[var(--muted-foreground)]" />
-                <h3 className="mt-4 text-lg font-black uppercase">
-                  Энэ ангилалд аялал алга
-                </h3>
-                <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+              <div className="mt-6 border border-dashed border-border bg-background p-8 text-center">
+                <Plane aria-hidden="true" className="mx-auto h-9 w-9 text-muted-foreground" />
+                <h3 className="mt-4 text-lg">Энэ ангилалд аялал алга</h3>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
                   Өөр ангилал сонгоод бүртгэлийн түүхээ харна уу.
                 </p>
               </div>
@@ -327,7 +319,9 @@ export function ProfilePageClient() {
               </div>
             )}
             {deleteError ? (
-              <p className="mt-4 text-sm font-semibold text-red-600">{deleteError}</p>
+              <p role="alert" className="mt-4 text-sm text-destructive">
+                {deleteError}
+              </p>
             ) : null}
           </section>
         </section>
@@ -353,17 +347,17 @@ function ProfileMetric({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "rounded-md border p-3 text-center transition-colors",
+        "min-w-0 border p-3 text-center transition-colors",
         active
-          ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-          : "border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)]"
+          ? "border-primary bg-primary text-white"
+          : "border-border bg-background hover:border-input"
       )}
     >
-      <div className="text-xl font-black">{value}</div>
+      <div className="text-xl">{value}</div>
       <div
         className={cn(
-          "mt-1 text-[11px] font-bold uppercase",
-          active ? "text-white/75" : "text-[var(--muted-foreground)]"
+          "mt-1 break-words text-[11px] uppercase",
+          active ? "text-white/75" : "text-muted-foreground"
         )}
       >
         {label}
@@ -385,68 +379,69 @@ function InquiryCard({
   const canDelete = isActiveInquiry(inquiry);
 
   return (
-    <article className="grid gap-4 rounded-md border border-[var(--border)] bg-[var(--background)] p-4 sm:grid-cols-[112px_1fr]">
-      <div
-        aria-hidden="true"
-        className="min-h-28 rounded-md bg-[var(--muted)] bg-cover bg-center"
-        style={inquiry.tripImage ? { backgroundImage: `url(${inquiry.tripImage})` } : undefined}
-      />
+    <article className="grid gap-4 border border-border bg-background p-4 sm:grid-cols-[112px_minmax(0,1fr)]">
+      <div className="relative min-h-28 overflow-hidden bg-muted">
+        {inquiry.tripImage ? (
+          <Image
+            src={inquiry.tripImage}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 100vw, 112px"
+            unoptimized={!canOptimizeImage(inquiry.tripImage)}
+            className="object-cover"
+          />
+        ) : null}
+      </div>
       <div className="min-w-0">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="truncate text-lg font-black uppercase">{inquiry.tripTitle}</h3>
-            <p className="mt-1 text-sm font-semibold text-[var(--muted-foreground)]">
+            <h3 className="truncate text-lg">{inquiry.tripTitle}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
               {inquiry.tripLocation || getInquiryTypeLabel(inquiry.inquiryType)}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-black uppercase",
+                "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs uppercase",
                 status.className
               )}
             >
               {isTraveledInquiry(inquiry) ? (
-                <CheckCircle2 className="h-3.5 w-3.5" />
+                <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />
               ) : (
-                <Clock3 className="h-3.5 w-3.5" />
+                <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
               )}
               {status.label}
             </span>
             {canDelete ? (
               <button
                 type="button"
-                aria-label="Delete pending trip"
+                aria-label={`Хүлээгдэж буй аяллыг устгах: ${inquiry.tripTitle}`}
                 disabled={deleting}
                 onClick={() => onDelete(inquiry.id)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-foreground)] transition-colors hover:bg-white disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex h-10 w-10 items-center justify-center border border-input bg-card text-foreground transition-colors hover:border-destructive hover:text-destructive disabled:cursor-wait disabled:opacity-60"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 aria-hidden="true" className="h-4 w-4" />
               </button>
             ) : null}
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold uppercase text-[var(--muted-foreground)]">
-          <span className="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1.5 ring-1 ring-[var(--border)]">
-            <CalendarDays className="h-3.5 w-3.5" />
+        <div className="mt-4 flex flex-wrap gap-2 text-xs uppercase text-muted-foreground">
+          <span className={CHIP}>
+            <CalendarDays aria-hidden="true" className="h-3.5 w-3.5" />
             {formatDate(inquiry.createdAt)}
           </span>
           {inquiry.preferredDate ? (
-            <span className="rounded-md bg-white px-2.5 py-1.5 ring-1 ring-[var(--border)]">
-              Явах: {inquiry.preferredDate}
-            </span>
+            <span className={CHIP}>Явах: {inquiry.preferredDate}</span>
           ) : null}
           {inquiry.travelers ? (
-            <span className="rounded-md bg-white px-2.5 py-1.5 ring-1 ring-[var(--border)]">
-              {inquiry.travelers} хүн
-            </span>
+            <span className={CHIP}>{inquiry.travelers} хүн</span>
           ) : null}
         </div>
 
-        <p className="mt-3 line-clamp-2 text-sm font-medium leading-6 text-[var(--foreground)]/75">
-          {inquiry.message}
-        </p>
+        <p className="mt-3 line-clamp-2 text-sm text-foreground/75">{inquiry.message}</p>
       </div>
     </article>
   );

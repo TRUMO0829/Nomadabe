@@ -18,12 +18,9 @@ export async function POST(request: Request) {
 
   try {
     const payload = await request.json();
+    // Guests may book too; a signed-in customer just gets the booking linked
+    // to their account and their email filled in.
     const customer = await getCustomerFromRequest(request);
-
-    if (!customer) {
-      return apiError("UNAUTHORIZED", "Аялал захиалахын тулд эхлээд нэвтэрнэ үү.", 401);
-    }
-
     const tripSlug = getTripSlug(payload);
 
     if (!tripSlug) {
@@ -39,8 +36,8 @@ export async function POST(request: Request) {
 
     const validation = validateInquiry({
       ...asRecord(payload),
-      email: getString(asRecord(payload).email) || customer.email || "",
-      customerId: customer.id,
+      email: getString(asRecord(payload).email) || customer?.email || "",
+      customerId: customer?.id,
       tripSlug,
       inquiryType: "trip",
     });

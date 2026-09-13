@@ -5,14 +5,16 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
-  type WheelEvent as ReactWheelEvent,
+  Suspense,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BedDouble,
@@ -21,13 +23,13 @@ import {
   Home,
   MapPinned,
   Search,
+  Tag,
   UsersRound,
 } from "lucide-react";
 import {
   ADVENTURES,
   getAdventureText,
   type Adventure,
-  type AdventureTranslations,
 } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import {
@@ -39,30 +41,27 @@ import {
   CardOverlay,
   CardTitle,
 } from "@/components/ui/card-recipe";
+import { Container, SectionHeading } from "@/components/ui/section";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
-import { formatPriceString } from "@/lib/currency";
+import { formatPrice, formatPriceString } from "@/lib/currency";
 import { type StayOption, DEFAULT_STAYS } from "@/lib/site-settings";
-import { OUTBOUND_OPTIONS } from "./outbound-trips-carousel";
+import { OUTBOUND_OPTIONS, buildStaticOutboundAdventure } from "@/lib/outbound-trips";
 
 type TripScope = "all" | "outbound" | "domestic" | "corporate";
-type SortMode =
-  | "recommended"
-  | "price-low"
-  | "price-high"
-  | "days-low"
-  | "days-high";
+type PageMode = "all" | "outbound" | "domestic";
 
 type FeaturedAdventuresProps = {
   adventures?: Adventure[];
   beforeList?: ReactNode;
   outboundTripImages?: Record<string, string>;
   stays?: StayOption[];
-  pageMode?: "all" | "outbound" | "domestic";
+  pageMode?: PageMode;
 };
 
 const SEARCH_LOCALES = ["mn", "en", "zh", "ja", "ko"] as const;
+type SearchLocale = (typeof SEARCH_LOCALES)[number];
 
 const TOURS_BACKGROUNDS = [
   "/nomadabe-hero-panorama.webp",
@@ -71,161 +70,17 @@ const TOURS_BACKGROUNDS = [
   "/hero-autumn.webp",
 ];
 
-function compareTripPrice(
-  left: Adventure,
-  right: Adventure,
-  direction: "asc" | "desc"
-) {
-  const leftHasPrice = left.price > 0;
-  const rightHasPrice = right.price > 0;
+/** Long enough to read the heading before the photo changes underneath it. */
+const HERO_SLIDE_INTERVAL_MS = 7000;
 
-  if (leftHasPrice !== rightHasPrice) {
-    return leftHasPrice ? -1 : 1;
-  }
-
-  if (!leftHasPrice && !rightHasPrice) {
-    return 0;
-  }
-
-  return direction === "asc"
-    ? left.price - right.price
-    : right.price - left.price;
-}
-
-function compareTripDays(
-  left: Adventure,
-  right: Adventure,
-  direction: "asc" | "desc"
-) {
-  return direction === "asc"
-    ? left.days - right.days
-    : right.days - left.days;
-}
-
-function getOutboundOptionTitle(
-  option: (typeof OUTBOUND_OPTIONS)[number],
-  locale: (typeof SEARCH_LOCALES)[number]
-) {
-  switch (locale) {
-    case "mn":
-      return option.titleMn;
-    case "zh":
-      return option.titleZh;
-    case "ja":
-      return option.titleJa;
-    case "ko":
-      return option.titleKo;
-    case "en":
-    default:
-      return option.titleEn;
-  }
-}
-
-function getOutboundOptionCountry(
-  option: (typeof OUTBOUND_OPTIONS)[number],
-  locale: (typeof SEARCH_LOCALES)[number]
-) {
-  switch (locale) {
-    case "mn":
-      return option.countryMn;
-    case "zh":
-      return option.countryZh;
-    case "ja":
-      return option.countryJa;
-    case "ko":
-      return option.countryKo;
-    case "en":
-    default:
-      return option.countryEn;
-  }
-}
-
-function parseMntPrice(price: string) {
-  const numericPrice = Number(price.replace(/[^\d]/g, ""));
-  return Number.isFinite(numericPrice) ? numericPrice : 0;
-}
+/** How long a touch interaction keeps a carousel's auto-scroll paused. */
+const TOUCH_RESUME_DELAY_MS = 4000;
 
 function normalizeSearchText(value: string) {
   return value
     .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase();
-}
-
-function getOutboundOptionSummary(
-  option: (typeof OUTBOUND_OPTIONS)[number],
-  locale: (typeof SEARCH_LOCALES)[number]
-) {
-  const country = getOutboundOptionCountry(option, locale);
-
-  switch (locale) {
-    case "mn":
-      return `${country} чиглэлийн ${option.days} хоногийн аялал. Хотын үзвэр, амралт, зураг авах цэг, өдөр бүрийн маршрут, буудал болон тээврийн зохион байгуулалтыг Nomadabe баг төлөвлөнө.`;
-    case "zh":
-    case "ja":
-    case "ko":
-    case "en":
-    default:
-      return `${option.days}-day ${country} travel package with daily routing, city highlights, leisure time, photo spots, accommodation guidance, and transport planning by the Nomadabe team.`;
-  }
-}
-
-function getOutboundOptionDetails(locale: (typeof SEARCH_LOCALES)[number]) {
-  const isMn = locale === "mn";
-
-  return {
-    idealFor: isMn
-      ? ["Гэр бүл", "Найз нөхөд", "Жижиг групп", "Анх удаа аялагч"]
-      : ["Families", "Friends", "Small groups", "First-time visitors"],
-    includes: isMn
-      ? [
-          "Өдөр бүрийн маршрут",
-          "Буудал, тээврийн чиглүүлэг",
-          "Аяллын зөвлөгөө",
-          "Хөтөч/орчуулгын мэдээлэл",
-          "eSIM, даатгалын зөвлөмж",
-        ]
-      : [
-          "Daily itinerary planning",
-          "Hotel and transport guidance",
-          "Travel consulting",
-          "Guide and interpreter options",
-          "eSIM and insurance guidance",
-        ],
-    businessSupport: isMn
-      ? [
-          "Бизнес уулзалт, expo эсвэл бүтээгдэхүүн судалгааны зорилготой бол тусгай хөтөлбөр нэмэх боломжтой.",
-          "Нийлүүлэгч, худалдан авалт, логистикийн анхан шатны зөвлөгөөг аяллын төлөвлөгөөнд уялдуулна.",
-        ]
-      : [
-          "Business meetings, expo visits, or product research can be added as a custom track.",
-          "Supplier, purchasing, and logistics guidance can be aligned with the travel plan.",
-        ],
-  };
-}
-
-function getOutboundOptionTranslations(
-  option: (typeof OUTBOUND_OPTIONS)[number]
-): AdventureTranslations {
-  return SEARCH_LOCALES.reduce<AdventureTranslations>((translations, locale) => {
-    if (locale === "mn") {
-      return translations;
-    }
-
-    const country = getOutboundOptionCountry(option, locale);
-
-    translations[locale] = {
-      title: getOutboundOptionTitle(option, locale),
-      location: country,
-      country,
-      groupSize: "Small group",
-      tags: ["Outbound", country],
-      summary: getOutboundOptionSummary(option, locale),
-      ...getOutboundOptionDetails(locale),
-    };
-
-    return translations;
-  }, {});
 }
 
 function getAdventureSearchText(adventure: Adventure) {
@@ -290,13 +145,20 @@ function isCorporateAdventure(adventure: Adventure) {
   ].some((keyword) => corporateText.includes(keyword));
 }
 
+function parseTripScope(value: string | null): TripScope | null {
+  return value === "all" ||
+    value === "domestic" ||
+    value === "outbound" ||
+    value === "corporate"
+    ? value
+    : null;
+}
+
 const SECTION_COPY = {
   mn: {
-    eyebrow: "Аяллууд",
-    title: "Бүх аяллаа нэг дороос хайж сонго.",
-    body:
+    heroTitle: "Аяллууд",
+    heroBody:
       "Гадаад болон дотоод аяллуудыг чиглэл, нэр, аяллын төрлөөр нь хурдан хайж үзээрэй.",
-    all: "Бүх аялал",
     outbound: "Гадаад аялал",
     domestic: "Дотоод аялал",
     corporate: "Байгууллагын аялал",
@@ -308,19 +170,17 @@ const SECTION_COPY = {
     outboundDescription: "Чиглэлүүд, байгууллагын аялал болон вилла сонголтууд.",
     domesticDescription: "Монгол доторх амралт, байгаль, соёлын аяллууд.",
     subcategoryTitle: "Дэд категори",
-    search: "Аялал хайх...",
-    listTitle: "Бүх аяллын жагсаалт",
-    listBody: "Сонгосон аяллаа дарж дэлгэрэнгүй мэдээлэл, үнэ, багцын нөхцөлийг хараарай.",
     result: "аялал",
-    searchAction: "Хайлт цэвэрлэх эсвэл хайх талбарт очих",
     flexible: "Тохиролцоно",
+    priceOnRequest: "Үнэ тохиролцоно",
+    searchLabel: "Аялал хайх",
+    searchPlaceholder: "Чиглэл хайх",
+    searchSubmit: "Хайх",
   },
   en: {
-    eyebrow: "Trips",
-    title: "Find every trip in one place.",
-    body:
+    heroTitle: "Trips",
+    heroBody:
       "Search outbound and domestic trips by destination, name, or travel style.",
-    all: "All trips",
     outbound: "Outbound trips",
     domestic: "Domestic trips",
     corporate: "Corporate trips",
@@ -332,19 +192,16 @@ const SECTION_COPY = {
     outboundDescription: "Destinations, corporate trips, and villa options.",
     domesticDescription: "Trips across Mongolia for nature, leisure, and culture.",
     subcategoryTitle: "Subcategories",
-    search: "Search trips...",
-    listTitle: "All available trips",
-    listBody: "Open a trip to view details, pricing, inclusions, and planning notes.",
     result: "trips",
-    searchAction: "Clear filters or focus search",
     flexible: "Flexible",
+    priceOnRequest: "Price on request",
+    searchLabel: "Search trips",
+    searchPlaceholder: "Search destinations",
+    searchSubmit: "Search",
   },
   zh: {
-    eyebrow: "旅游",
-    title: "在一个地方搜索并选择所有旅行。",
-    body:
-      "按目的地、名称或旅行类型快速查看出境和蒙古国内旅行。",
-    all: "全部旅行",
+    heroTitle: "旅游",
+    heroBody: "按目的地、名称或旅行类型快速查看出境和蒙古国内旅行。",
     outbound: "出境旅行",
     domestic: "蒙古国内旅行",
     corporate: "企业旅行",
@@ -356,19 +213,17 @@ const SECTION_COPY = {
     outboundDescription: "目的地、企业旅行和别墅选择。",
     domesticDescription: "蒙古国内自然、休闲和文化旅行。",
     subcategoryTitle: "子分类",
-    search: "搜索旅行...",
-    listTitle: "全部旅行列表",
-    listBody: "点击旅行查看详细信息、价格和套餐条件。",
     result: "个行程",
-    searchAction: "清除筛选或定位到搜索框",
     flexible: "可协商",
+    priceOnRequest: "价格面议",
+    searchLabel: "搜索旅行",
+    searchPlaceholder: "搜索目的地",
+    searchSubmit: "搜索",
   },
   ja: {
-    eyebrow: "ツアー",
-    title: "すべてのツアーを一か所で検索・選択。",
-    body:
+    heroTitle: "ツアー",
+    heroBody:
       "海外旅行とモンゴル国内旅行を、目的地、名前、旅行タイプで素早く探せます。",
-    all: "すべてのツアー",
     outbound: "海外ツアー",
     domestic: "国内ツアー",
     corporate: "法人向けツアー",
@@ -380,19 +235,17 @@ const SECTION_COPY = {
     outboundDescription: "目的地、法人向けツアー、ヴィラ選択。",
     domesticDescription: "モンゴル国内の自然、休暇、文化ツアー。",
     subcategoryTitle: "サブカテゴリ",
-    search: "ツアーを検索...",
-    listTitle: "すべてのツアー一覧",
-    listBody: "ツアーを開くと詳細、料金、含まれる条件を確認できます。",
     result: "件",
-    searchAction: "絞り込みを解除、または検索欄へ移動",
     flexible: "相談可能",
+    priceOnRequest: "料金はお問い合わせ",
+    searchLabel: "ツアーを検索",
+    searchPlaceholder: "目的地を検索",
+    searchSubmit: "検索",
   },
   ko: {
-    eyebrow: "여행",
-    title: "모든 여행을 한곳에서 검색하고 선택하세요.",
-    body:
+    heroTitle: "여행",
+    heroBody:
       "해외 및 몽골 국내 여행을 목적지, 이름, 여행 유형으로 빠르게 찾아보세요.",
-    all: "전체 여행",
     outbound: "해외 여행",
     domestic: "몽골 국내 여행",
     corporate: "기업 여행",
@@ -404,141 +257,145 @@ const SECTION_COPY = {
     outboundDescription: "목적지, 기업 여행, 빌라 옵션.",
     domesticDescription: "몽골 국내 자연, 휴식, 문화 여행.",
     subcategoryTitle: "하위 카테고리",
-    search: "여행 검색...",
-    listTitle: "전체 여행 목록",
-    listBody: "여행을 눌러 자세한 정보, 가격, 패키지 조건을 확인하세요.",
     result: "개 여행",
-    searchAction: "필터 초기화 또는 검색창으로 이동",
     flexible: "협의 가능",
-  },
-} as const;
-
-const TRIP_SEARCH_COPY = {
-  mn: {
-    where: "Хаашаа",
-    wherePlaceholder: "Чиглэл хайх",
-    whereHint: "Манай аяллын чиглэлүүд",
-    allDestinations: "All",
-    when: "Хэзээ",
-    whenPlaceholder: "Огноо нэмэх",
-    who: "Хэн",
-    whoPlaceholder: "Зочид нэмэх",
-    search: "Хайх",
-    dates: "Огноо",
-    flexible: "Уян хатан",
-    suggestionsEmpty: "Ийм чиглэл олдсонгүй",
-    guests: "зочид",
-    adults: "Том хүн",
-    adultsHint: "13 ба түүнээс дээш",
-    children: "Хүүхэд",
-    childrenHint: "2-12 нас",
-    infants: "Нярай",
-    infantsHint: "2-оос доош",
-    pets: "Амьтан",
-    petsHint: "Үйлчилгээний амьтан авч явах уу?",
-  },
-  en: {
-    where: "Where",
-    wherePlaceholder: "Search destinations",
-    whereHint: "Available trip destinations",
-    allDestinations: "All",
-    when: "When",
-    whenPlaceholder: "Add dates",
-    who: "Who",
-    whoPlaceholder: "Add guests",
-    search: "Search",
-    dates: "Dates",
-    flexible: "Flexible",
-    suggestionsEmpty: "No destinations found",
-    guests: "guests",
-    adults: "Adults",
-    adultsHint: "Ages 13 or above",
-    children: "Children",
-    childrenHint: "Ages 2-12",
-    infants: "Infants",
-    infantsHint: "Under 2",
-    pets: "Pets",
-    petsHint: "Bringing a service animal?",
-  },
-  zh: {
-    where: "地点",
-    wherePlaceholder: "搜索目的地",
-    whereHint: "可选旅行目的地",
-    allDestinations: "All",
-    when: "时间",
-    whenPlaceholder: "添加日期",
-    who: "人数",
-    whoPlaceholder: "添加客人",
-    search: "搜索",
-    dates: "日期",
-    flexible: "灵活",
-    suggestionsEmpty: "未找到目的地",
-    guests: "位客人",
-    adults: "成人",
-    adultsHint: "13岁及以上",
-    children: "儿童",
-    childrenHint: "2-12岁",
-    infants: "婴儿",
-    infantsHint: "2岁以下",
-    pets: "宠物",
-    petsHint: "携带服务动物？",
-  },
-  ja: {
-    where: "行き先",
-    wherePlaceholder: "目的地を検索",
-    whereHint: "選べる旅行先",
-    allDestinations: "All",
-    when: "日程",
-    whenPlaceholder: "日付を追加",
-    who: "人数",
-    whoPlaceholder: "ゲストを追加",
-    search: "検索",
-    dates: "日付",
-    flexible: "柔軟に探す",
-    suggestionsEmpty: "目的地が見つかりません",
-    guests: "名",
-    adults: "大人",
-    adultsHint: "13歳以上",
-    children: "子ども",
-    childrenHint: "2-12歳",
-    infants: "乳幼児",
-    infantsHint: "2歳未満",
-    pets: "ペット",
-    petsHint: "サービス動物を同伴しますか？",
-  },
-  ko: {
-    where: "어디로",
-    wherePlaceholder: "목적지 검색",
-    whereHint: "가능한 여행 목적지",
-    allDestinations: "All",
-    when: "언제",
-    whenPlaceholder: "날짜 추가",
-    who: "누구와",
-    whoPlaceholder: "게스트 추가",
-    search: "검색",
-    dates: "날짜",
-    flexible: "유연한 일정",
-    suggestionsEmpty: "목적지를 찾을 수 없습니다",
-    guests: "명",
-    adults: "성인",
-    adultsHint: "13세 이상",
-    children: "어린이",
-    childrenHint: "2-12세",
-    infants: "유아",
-    infantsHint: "2세 미만",
-    pets: "반려동물",
-    petsHint: "서비스 동물을 동반하시나요?",
+    priceOnRequest: "가격 문의",
+    searchLabel: "여행 검색",
+    searchPlaceholder: "목적지 검색",
+    searchSubmit: "검색",
   },
 } as const;
 
 type SectionCopy = (typeof SECTION_COPY)[keyof typeof SECTION_COPY];
+
+const STAYS_COPY: Record<
+  SearchLocale,
+  {
+    eyebrow: string;
+    title: string;
+    body: string;
+    nights: string;
+    guests: string;
+    rooms: string;
+    price: string;
+    request: string;
+    formatNights: (count: number) => string;
+    formatGuests: (count: number) => string;
+    formatRooms: (count: number) => string;
+    formatPhotos: (count: number) => string;
+  }
+> = {
+  mn: {
+    eyebrow: "Байр сууц",
+    title: "Вилла",
+    body: "Аяллын маршрут, төсөв, хүний тоо, өрөөний хэрэгцээнд тааруулж вилла сонголтыг нэг дор төлөвлөнө.",
+    nights: "Хоног",
+    guests: "Хүний тоо",
+    rooms: "Өрөөний тоо",
+    price: "Үнэ",
+    request: "Захиалах хүсэлт",
+    formatNights: (count) => `${count} хоног`,
+    formatGuests: (count) => `${count} хүн`,
+    formatRooms: (count) => `${count} өрөө`,
+    formatPhotos: (count) => `${count} зураг`,
+  },
+  en: {
+    eyebrow: "Stays",
+    title: "Villas",
+    body: "We plan villa options around your route, budget, group size, and room needs, all in one place.",
+    nights: "Nights",
+    guests: "Guests",
+    rooms: "Rooms",
+    price: "Price",
+    request: "Request booking",
+    formatNights: (count) => `${count} ${count === 1 ? "night" : "nights"}`,
+    formatGuests: (count) => `${count} ${count === 1 ? "guest" : "guests"}`,
+    formatRooms: (count) => `${count} ${count === 1 ? "room" : "rooms"}`,
+    formatPhotos: (count) => `${count} ${count === 1 ? "photo" : "photos"}`,
+  },
+  zh: {
+    eyebrow: "住宿",
+    title: "别墅",
+    body: "根据您的路线、预算、人数和房间需求，一站式规划别墅住宿。",
+    nights: "晚数",
+    guests: "人数",
+    rooms: "房间数",
+    price: "价格",
+    request: "提交预订申请",
+    formatNights: (count) => `${count}晚`,
+    formatGuests: (count) => `${count}人`,
+    formatRooms: (count) => `${count}间`,
+    formatPhotos: (count) => `${count}张照片`,
+  },
+  ja: {
+    eyebrow: "宿泊",
+    title: "ヴィラ",
+    body: "旅程、ご予算、人数、必要な部屋数に合わせて、ヴィラ選びをまとめてプランニングします。",
+    nights: "泊数",
+    guests: "人数",
+    rooms: "部屋数",
+    price: "料金",
+    request: "予約をリクエスト",
+    formatNights: (count) => `${count}泊`,
+    formatGuests: (count) => `${count}名`,
+    formatRooms: (count) => `${count}室`,
+    formatPhotos: (count) => `${count}枚の写真`,
+  },
+  ko: {
+    eyebrow: "숙소",
+    title: "빌라",
+    body: "여행 동선, 예산, 인원, 객실 수에 맞춰 빌라 선택을 한 번에 계획해 드립니다.",
+    nights: "숙박일",
+    guests: "인원",
+    rooms: "객실 수",
+    price: "가격",
+    request: "예약 요청",
+    formatNights: (count) => `${count}박`,
+    formatGuests: (count) => `${count}명`,
+    formatRooms: (count) => `${count}실`,
+    formatPhotos: (count) => `사진 ${count}장`,
+  },
+};
+
+/**
+ * Keeps the search box and scope filter in step with `?search=` / `?scope=`.
+ * It lives in its own Suspense boundary so reading the URL does not push the
+ * whole (statically rendered) tours page onto client-side rendering, and it
+ * reacts to client-side navigations such as the navbar search, which no
+ * longer reloads the page.
+ */
+function TourSearchParamsSync({
+  onSearch,
+  onScope,
+}: {
+  onSearch: (value: string) => void;
+  onScope: (value: TripScope) => void;
+}) {
+  const searchParams = useSearchParams();
+  const search = searchParams.get("search")?.trim() ?? "";
+  const scope = parseTripScope(searchParams.get("scope"));
+
+  useEffect(() => {
+    if (search) {
+      onSearch(search);
+    }
+  }, [onSearch, search]);
+
+  useEffect(() => {
+    if (scope) {
+      onScope(scope);
+    }
+  }, [onScope, scope]);
+
+  return null;
+}
 
 function ToursCategoryNavigation({
   mode,
   copy,
   staysCount,
 }: {
-  mode: "all" | "outbound" | "domestic";
+  mode: PageMode;
   copy: SectionCopy;
   staysCount: number;
 }) {
@@ -579,8 +436,8 @@ function ToursCategoryNavigation({
         ];
 
   return (
-    <div className="mx-auto w-full max-w-[1500px] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-12">
-      <p className="nav-text text-xs uppercase text-[#b89422]">
+    <Container className="pt-10 lg:pt-12">
+      <p className="nav-text text-xs uppercase text-accent-text">
         {mode === "outbound" ? copy.subcategoryTitle : copy.categoryTitle}
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -588,46 +445,49 @@ function ToursCategoryNavigation({
           <Link
             key={card.href}
             href={card.href}
-            className="group border border-[#eadfac] bg-[#fffdf3] p-5 text-[#11100b] transition-colors hover:border-[#11100b]"
+            className="group border border-border bg-background p-5 text-foreground transition-colors hover:border-foreground"
           >
             <div className="flex items-center justify-between gap-5">
               <h3 className="site-heading text-xl leading-tight">
                 {card.title}
               </h3>
-              <ArrowRight className="h-5 w-5 shrink-0 text-[#b89422] transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="h-5 w-5 shrink-0 text-accent-text transition-transform group-hover:translate-x-1" />
             </div>
-            <p className="mt-3 text-sm leading-6 text-[#11100b]/60">
+            <p className="mt-3 text-sm leading-6 text-foreground/60">
               {card.body}
             </p>
           </Link>
         ))}
       </div>
-    </div>
+    </Container>
   );
 }
 
 function DestinationDragCarousel({
   id,
   title,
-  resultLabel,
   adventures,
   locale,
+  copy,
   dayLabel,
   detailsLabel,
-  onSelect,
 }: {
   id: string;
   title: string;
-  resultLabel: string;
   adventures: Adventure[];
-  locale: keyof typeof SECTION_COPY;
+  locale: SearchLocale;
+  copy: SectionCopy;
   dayLabel: string;
   detailsLabel: string;
-  onSelect: (adventure: Adventure) => void;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
   const [isDragging, setIsDragging] = useState(false);
-  const [autoPaused, setAutoPaused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [hasFocusWithin, setHasFocusWithin] = useState(false);
+  const [isTouchPaused, setIsTouchPaused] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const touchResumeTimer = useRef(0);
   const dragRef = useRef({
     active: false,
     startX: 0,
@@ -638,6 +498,7 @@ function DestinationDragCarousel({
     frame: 0,
   });
   const adventureCount = adventures.length;
+  const hasCards = adventureCount > 0;
   const adventureSignature = useMemo(
     () => adventures.map((adventure) => adventure.id).join("|"),
     [adventures]
@@ -645,13 +506,32 @@ function DestinationDragCarousel({
 
   useEffect(() => {
     const dragState = dragRef.current;
+    const timer = touchResumeTimer;
 
     return () => {
       if (dragState.frame) {
         window.cancelAnimationFrame(dragState.frame);
       }
+      window.clearTimeout(timer.current);
     };
   }, []);
+
+  // Only auto-scroll while the carousel is actually on screen.
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+
+    if (!scroller || !hasCards) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry?.isIntersecting ?? false),
+      { threshold: 0.1 }
+    );
+    observer.observe(scroller);
+
+    return () => observer.disconnect();
+  }, [hasCards]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -668,14 +548,21 @@ function DestinationDragCarousel({
     dragRef.current.active = false;
     dragRef.current.velocity = 0;
     dragRef.current.didDrag = false;
-    setIsDragging(false);
     scroller.scrollLeft = 0;
   }, [adventureSignature]);
+
+  const autoScrollPaused =
+    prefersReducedMotion === true ||
+    !isInView ||
+    isDragging ||
+    isHovered ||
+    hasFocusWithin ||
+    isTouchPaused;
 
   useEffect(() => {
     const scroller = scrollerRef.current;
 
-    if (!scroller || adventureCount <= 1 || isDragging || autoPaused) {
+    if (!scroller || adventureCount <= 1 || autoScrollPaused) {
       return;
     }
 
@@ -712,7 +599,7 @@ function DestinationDragCarousel({
     frame = window.requestAnimationFrame(step);
 
     return () => window.cancelAnimationFrame(frame);
-  }, [adventureCount, adventureSignature, autoPaused, isDragging]);
+  }, [adventureCount, adventureSignature, autoScrollPaused]);
 
   function stopMomentum() {
     if (dragRef.current.frame) {
@@ -754,13 +641,21 @@ function DestinationDragCarousel({
 
     scroller.classList.remove("snap-none");
     scroller.classList.add("snap-x", "snap-mandatory");
-    scroller.scrollTo({ left: nearestScroll, behavior: "smooth" });
+    scroller.scrollTo({
+      left: nearestScroll,
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
   }
 
   function startMomentum() {
     const scroller = scrollerRef.current;
 
     if (!scroller) {
+      return;
+    }
+
+    if (prefersReducedMotion) {
+      snapToNearestCard();
       return;
     }
 
@@ -795,13 +690,17 @@ function DestinationDragCarousel({
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    dragRef.current.didDrag = false;
+
     if (event.pointerType !== "mouse") {
+      // Touch and pen scroll natively; just hold the auto-scroll off so it
+      // does not fight the finger.
+      window.clearTimeout(touchResumeTimer.current);
+      setIsTouchPaused(true);
       return;
     }
 
-    const scroller = scrollerRef.current;
-
-    if (!scroller) {
+    if (event.button !== 0 || !scrollerRef.current) {
       return;
     }
 
@@ -811,11 +710,6 @@ function DestinationDragCarousel({
     dragRef.current.lastX = event.clientX;
     dragRef.current.lastTime = event.timeStamp;
     dragRef.current.velocity = 0;
-    dragRef.current.didDrag = false;
-    setIsDragging(true);
-    scroller.classList.add("snap-none");
-    scroller.classList.remove("snap-x", "snap-mandatory");
-    scroller.setPointerCapture(event.pointerId);
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
@@ -825,14 +719,27 @@ function DestinationDragCarousel({
       return;
     }
 
-    const now = event.timeStamp;
-    const deltaX = event.clientX - dragRef.current.lastX;
-    const elapsed = Math.max(1, now - dragRef.current.lastTime);
-    const deltaScroll = -deltaX;
-
-    if (Math.abs(event.clientX - dragRef.current.startX) > 4) {
+    // Only a real drag captures the pointer. Capturing on pointerdown would
+    // retarget a plain click to the scroller, and the card link under the
+    // cursor would never receive it.
+    if (
+      !dragRef.current.didDrag &&
+      Math.abs(event.clientX - dragRef.current.startX) > 4
+    ) {
       dragRef.current.didDrag = true;
+      setIsDragging(true);
+      scroller.classList.add("snap-none");
+      scroller.classList.remove("snap-x", "snap-mandatory");
+      scroller.setPointerCapture(event.pointerId);
     }
+
+    if (!dragRef.current.didDrag) {
+      return;
+    }
+
+    const now = event.timeStamp;
+    const deltaScroll = -(event.clientX - dragRef.current.lastX);
+    const elapsed = Math.max(1, now - dragRef.current.lastTime);
 
     scroller.scrollLeft += deltaScroll;
     dragRef.current.velocity = deltaScroll / elapsed;
@@ -841,6 +748,15 @@ function DestinationDragCarousel({
   }
 
   function endPointerDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== "mouse") {
+      window.clearTimeout(touchResumeTimer.current);
+      touchResumeTimer.current = window.setTimeout(
+        () => setIsTouchPaused(false),
+        TOUCH_RESUME_DELAY_MS
+      );
+      return;
+    }
+
     const scroller = scrollerRef.current;
 
     if (!dragRef.current.active || !scroller) {
@@ -854,6 +770,10 @@ function DestinationDragCarousel({
       scroller.releasePointerCapture(event.pointerId);
     }
 
+    if (!dragRef.current.didDrag) {
+      return;
+    }
+
     if (Math.abs(dragRef.current.velocity) > 0.05) {
       startMomentum();
     } else {
@@ -861,137 +781,101 @@ function DestinationDragCarousel({
     }
   }
 
-  function handleWheel(event: ReactWheelEvent<HTMLDivElement>) {
-    const scroller = scrollerRef.current;
-
-    if (!scroller || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
-      return;
-    }
-
-    const maxScroll = scroller.scrollWidth - scroller.clientWidth;
-    const nextScroll = scroller.scrollLeft + event.deltaY;
-
-    if (nextScroll <= 0 || nextScroll >= maxScroll) {
+  // A drag that ends over a card must not also follow its link.
+  function handleClickCapture(event: ReactMouseEvent<HTMLDivElement>) {
+    if (!dragRef.current.didDrag) {
+      stopMomentum();
       return;
     }
 
     event.preventDefault();
-    scroller.scrollLeft = nextScroll;
+    event.stopPropagation();
+    dragRef.current.didDrag = false;
   }
 
-  function openAdventureDetails(adventure: Adventure) {
-    stopMomentum();
-    onSelect(adventure);
-  }
-
-  function handleCardClick(
-    event: ReactMouseEvent<HTMLElement>,
-    adventure: Adventure
-  ) {
-    if ((event.target as HTMLElement).closest("a")) {
-      return;
-    }
-
-    if (dragRef.current.didDrag) {
-      event.preventDefault();
-      event.stopPropagation();
-      dragRef.current.didDrag = false;
-      return;
-    }
-
-    openAdventureDetails(adventure);
-  }
-
-  if (adventureCount === 0) {
+  if (!hasCards) {
     return null;
   }
 
   return (
-    <section
-      id={id}
-      className="overflow-hidden bg-white py-10 lg:py-12"
-    >
-      <div className="text-[#050505]">
-        <div className="tours-list-copy mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
-          <h2 className="section-header-title tours-list-title max-w-[13ch] text-balance text-black">
-            {title}
-          </h2>
-          <div className="tours-list-count mt-5 inline-flex border border-black bg-white px-3 py-2 text-xs uppercase text-black">
-            {adventureCount} {resultLabel}
+    <section id={id} className="overflow-hidden bg-white py-10 lg:py-12">
+      <div className="text-ink">
+        <Container>
+          <SectionHeading tone="light" title={title} />
+          <div className="mt-5 inline-flex border border-foreground bg-white px-3 py-2 text-xs uppercase text-foreground">
+            {adventureCount} {copy.result}
           </div>
-        </div>
+        </Container>
 
         <div
           ref={scrollerRef}
           className={cn(
-            "mx-auto mt-8 flex w-full max-w-[1500px] cursor-grab scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 active:cursor-grabbing sm:scroll-px-6 sm:gap-5 sm:px-6 lg:mt-10 lg:scroll-px-8 lg:gap-6 lg:px-8",
+            "mx-auto mt-8 flex w-full max-w-7xl cursor-grab scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 pt-2 sm:scroll-px-8 sm:gap-5 sm:px-8 lg:mt-10 lg:scroll-px-12 lg:gap-6 lg:px-12",
             "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-            "[-webkit-overflow-scrolling:touch] [touch-action:pan-x]",
+            "[-webkit-overflow-scrolling:touch]",
             isDragging && "cursor-grabbing select-none"
           )}
-          onMouseEnter={() => setAutoPaused(true)}
-          onMouseLeave={() => setAutoPaused(false)}
-          onFocus={() => setAutoPaused(true)}
-          onBlur={() => setAutoPaused(false)}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onFocus={() => setHasFocusWithin(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+              setHasFocusWithin(false);
+            }
+          }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={endPointerDrag}
           onPointerCancel={endPointerDrag}
-          onWheel={handleWheel}
+          onClickCapture={handleClickCapture}
+          // Native link/image dragging would swallow the pointer drag.
+          onDragStart={(event) => event.preventDefault()}
         >
           {adventures.map((adventure) => {
             const text = getAdventureText(adventure, locale);
+            const price =
+              adventure.price > 0
+                ? formatPrice(adventure.price, locale, adventure.currency || undefined)
+                : copy.priceOnRequest;
 
             return (
-              <article
+              <Link
                 key={adventure.id}
+                href={`/tours/${adventure.slug}`}
                 data-carousel-card
-                onClick={(event) => handleCardClick(event, adventure)}
-                className="group relative m-0 flex min-w-[82vw] shrink-0 cursor-pointer flex-col transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
+                className={cn(
+                  CARD_FRAME,
+                  "aspect-[4/6.05] min-w-[82vw] shrink-0 sm:min-w-[52vw] md:min-w-[38vw] lg:min-w-[30vw] xl:min-w-[24rem] 2xl:min-w-[26rem]"
+                )}
               >
-                <div className={cn(CARD_FRAME, "aspect-[4/6.05]")}>
-                  <CardMedia
-                    src={getHighResolutionImageUrl(adventure.image)}
-                    alt={text.title}
-                    sizes="(max-width: 768px) 82vw, 26rem"
+                <CardMedia
+                  src={getHighResolutionImageUrl(adventure.image)}
+                  alt={text.title}
+                  sizes="(max-width: 768px) 82vw, 26rem"
+                />
+
+                <span className="trip-meta-text absolute right-5 top-5 z-10 border border-white/25 bg-black/45 px-3 py-1.5 text-[10px] uppercase text-white backdrop-blur">
+                  {price}
+                </span>
+
+                <CardOverlay>
+                  <CardMeta
+                    items={[
+                      { label: text.country },
+                      { label: text.location, icon: MapPinned },
+                      { label: `${adventure.days} ${dayLabel}`, icon: CalendarDays },
+                    ]}
                   />
-                  <CardOverlay>
-                    <CardMeta
-                      items={[
-                        { label: text.country },
-                        { label: text.location, icon: MapPinned },
-                        { label: `${adventure.days} ${dayLabel}`, icon: CalendarDays },
-                      ]}
-                    />
-                    <CardTitle>{text.title}</CardTitle>
-                    <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm text-white/80">
-                      {text.summary}
-                    </p>
-                    <Link
-                      href={`/tours/${adventure.slug}`}
-                      onPointerDown={(event) => {
-                        event.stopPropagation();
-                        stopMomentum();
-                        dragRef.current.didDrag = false;
-                      }}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        if (dragRef.current.didDrag) {
-                          event.preventDefault();
-                          dragRef.current.didDrag = false;
-                          return;
-                        }
-                        dragRef.current.didDrag = false;
-                        stopMomentum();
-                      }}
-                      className={cn(CARD_CTA, "group/btn mt-4 self-start")}
-                    >
-                      {detailsLabel}
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
-                    </Link>
-                  </CardOverlay>
-                </div>
-              </article>
+                  <CardTitle>{text.title}</CardTitle>
+                  <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm text-white/80">
+                    {text.summary}
+                  </p>
+                  <span className={cn(CARD_CTA, "mt-4 self-start")}>
+                    {detailsLabel}
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
+                </CardOverlay>
+              </Link>
             );
           })}
         </div>
@@ -1002,21 +886,30 @@ function DestinationDragCarousel({
 
 function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
   const { contentLocale } = useLanguage();
+  const copy = STAYS_COPY[contentLocale];
+
+  if (stays.length === 0) {
+    return null;
+  }
+
+  const facts = (stay: StayOption) => [
+    { icon: CalendarDays, label: copy.nights, value: copy.formatNights(stay.nights) },
+    { icon: UsersRound, label: copy.guests, value: copy.formatGuests(stay.guests) },
+    { icon: BedDouble, label: copy.rooms, value: copy.formatRooms(stay.rooms) },
+    {
+      icon: Tag,
+      label: copy.price,
+      value: formatPriceString(stay.price, contentLocale),
+    },
+  ];
+
   return (
-    <section id="stays" className="bg-white px-6 py-16 lg:px-10 lg:py-20">
-      <div className="mx-auto max-w-7xl">
+    <section id="stays" className="scroll-mt-24 bg-white py-16 lg:py-20">
+      <Container>
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="nav-text text-xs uppercase text-[#b89422]">
-              Вилла
-            </p>
-            <h2 className="site-heading mt-2 text-[clamp(1.5rem,3vw,2.6rem)] leading-tight text-[#11100b]">
-              Вилла
-            </h2>
-          </div>
-          <p className="max-w-xl text-sm leading-6 text-[#11100b]/58">
-            Аяллын маршрут, төсөв, хүний тоо, өрөөний хэрэгцээнд тааруулж
-            вилла сонголтыг нэг дор төлөвлөнө.
+          <SectionHeading tone="light" eyebrow={copy.eyebrow} title={copy.title} />
+          <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+            {copy.body}
           </p>
         </div>
 
@@ -1030,18 +923,23 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
               <article key={stay.id} className={CARD_FRAME_LIGHT}>
                 {/* Same image treatment as every trip card: one photo, one
                     scrim, the meta row and title sitting over it. */}
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <CardMedia
-                    src={stay.images[0]}
-                    alt={stay.title}
-                    sizes="(max-width: 1024px) 100vw, 33vw"
-                  />
+                <div className="relative aspect-[4/3] overflow-hidden bg-foreground">
+                  {stay.images[0] ? (
+                    <CardMedia
+                      src={stay.images[0]}
+                      alt={stay.title}
+                      sizes="(max-width: 1024px) 100vw, 33vw"
+                    />
+                  ) : null}
                   <CardOverlay>
                     <CardMeta
                       items={[
                         { label: stay.type, icon: Home },
                         { label: stay.location, icon: MapPinned },
-                        { label: `${stay.images.length} зураг`, icon: Camera },
+                        {
+                          label: copy.formatPhotos(stay.images.length),
+                          icon: Camera,
+                        },
                       ]}
                     />
                     <CardTitle>{stay.title}</CardTitle>
@@ -1049,51 +947,26 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
                 </div>
 
                 <div className="px-5 pb-5 pt-4">
-                  <p className="trip-copy-text line-clamp-3 text-sm text-[#11100b]/70">
+                  <p className="trip-copy-text line-clamp-3 text-sm text-foreground/70">
                     {stay.summary}
                   </p>
 
                   <dl className="mt-5 grid grid-cols-2 gap-2">
-                    <div className="border border-[#eadfac] bg-white px-3 py-3">
-                      <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
-                        <CalendarDays className="h-4 w-4" />
-                        Хоног
-                      </dt>
-                      <dd className="mt-2 text-sm font-semibold text-[#11100b]">
-                        {stay.nights} хоног
-                      </dd>
-                    </div>
-                    <div className="border border-[#eadfac] bg-white px-3 py-3">
-                      <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
-                        <UsersRound className="h-4 w-4" />
-                        Хүний тоо
-                      </dt>
-                      <dd className="mt-2 text-sm font-semibold text-[#11100b]">
-                        {stay.guests} хүн
-                      </dd>
-                    </div>
-                    <div className="border border-[#eadfac] bg-white px-3 py-3">
-                      <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
-                        <BedDouble className="h-4 w-4" />
-                        Өрөөний тоо
-                      </dt>
-                      <dd className="mt-2 text-sm font-semibold text-[#11100b]">
-                        {stay.rooms} өрөө
-                      </dd>
-                    </div>
-                    <div className="border border-[#eadfac] bg-white px-3 py-3">
-                      <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-[#8a6f12]">
-                        <MapPinned className="h-4 w-4" />
-                        Үнэ
-                      </dt>
-                      <dd className="mt-2 text-sm font-semibold text-[#11100b]">
-                        {formatPriceString(stay.price, contentLocale)}
-                      </dd>
-                    </div>
+                    {facts(stay).map(({ icon: Icon, label, value }) => (
+                      <div key={label} className="border border-border bg-white px-3 py-3">
+                        <dt className="nav-text flex items-center gap-2 text-[10px] uppercase text-accent-text">
+                          <Icon className="h-4 w-4" aria-hidden="true" />
+                          {label}
+                        </dt>
+                        <dd className="mt-2 text-sm font-semibold text-foreground">
+                          {value}
+                        </dd>
+                      </div>
+                    ))}
                   </dl>
 
                   <Link href={requestHref} className={cn(CARD_CTA, "mt-5 self-start")}>
-                    Захиалах хүсэлт
+                    {copy.request}
                     <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Link>
                 </div>
@@ -1101,7 +974,7 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
             );
           })}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }
@@ -1113,49 +986,36 @@ export function FeaturedAdventures({
   stays = DEFAULT_STAYS,
   pageMode = "all",
 }: FeaturedAdventuresProps) {
-  const [selected, setSelected] = useState<Adventure | null>(null);
   const [scope, setScope] = useState<TripScope>(
     pageMode === "domestic" ? "domestic" : "all"
   );
-  const [sortMode] = useState<SortMode>("recommended");
   const [query, setQuery] = useState("");
   const [activeHeroImage, setActiveHeroImage] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
   const gallerySectionRef = useRef<HTMLDivElement>(null);
   const { contentLocale, t } = useLanguage();
   const sectionCopy = SECTION_COPY[contentLocale];
-  const searchCopy = TRIP_SEARCH_COPY[contentLocale];
+
+  const heroTitle =
+    pageMode === "outbound"
+      ? sectionCopy.outbound
+      : pageMode === "domestic"
+        ? sectionCopy.domestic
+        : sectionCopy.heroTitle;
+  const heroBody =
+    pageMode === "outbound"
+      ? sectionCopy.outboundDescription
+      : pageMode === "domestic"
+        ? sectionCopy.domesticDescription
+        : sectionCopy.heroBody;
+  // Under reduced motion the slideshow never advances; show the first photo.
+  const visibleHeroImage = prefersReducedMotion ? 0 : activeHeroImage;
 
   const staticOutboundAdventures = useMemo<Adventure[]>(
     () =>
-      OUTBOUND_OPTIONS.map((option, index) => {
-        const title = getOutboundOptionTitle(option, "mn");
-        const country = getOutboundOptionCountry(option, "mn");
-        const modalDetails = getOutboundOptionDetails("mn");
-
-        return {
-          id: `static-outbound-${option.id}`,
-          slug: `static-outbound-${option.id}`,
-          title,
-          location: country,
-          country,
-          days: option.days,
-          groupSize: "Жижиг групп",
-          difficulty: "Easy",
-          price: parseMntPrice(option.price),
-          currency: "MNT",
-          image: outboundTripImages[option.id] || option.image,
-          tags: ["Гадаад", country],
-          rating: 4.8,
-          reviews: 18 + index * 4,
-          category: "outbound",
-          summary: getOutboundOptionSummary(option, "mn"),
-          idealFor: modalDetails.idealFor,
-          includes: modalDetails.includes,
-          businessSupport: modalDetails.businessSupport,
-          nextDeparture: sectionCopy.flexible,
-          translations: getOutboundOptionTranslations(option),
-        };
-      }),
+      OUTBOUND_OPTIONS.map((option) =>
+        buildStaticOutboundAdventure(option, outboundTripImages[option.id], sectionCopy.flexible)
+      ),
     [outboundTripImages, sectionCopy.flexible]
   );
 
@@ -1163,50 +1023,53 @@ export function FeaturedAdventures({
     () => [...staticOutboundAdventures, ...adventures],
     [adventures, staticOutboundAdventures]
   );
+
+  // Hero slideshow: slow, paused while the tab is hidden, off entirely under
+  // prefers-reduced-motion.
   useEffect(() => {
-    const interval = window.setInterval(() => {
-      setActiveHeroImage((current) => (current + 1) % TOURS_BACKGROUNDS.length);
-    }, 3000);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const searchQuery = params.get("search")?.trim();
-    const scopeQuery = params.get("scope");
-    const nextScope =
-      scopeQuery === "all" ||
-      scopeQuery === "domestic" ||
-      scopeQuery === "outbound" ||
-      scopeQuery === "corporate"
-        ? scopeQuery
-        : null;
-
-    if (!searchQuery && !nextScope) {
+    if (prefersReducedMotion) {
       return;
     }
 
-    const timerId = window.setTimeout(() => {
-      if (nextScope) {
-        setScope(nextScope);
-      }
+    let interval = 0;
 
-      if (searchQuery) {
-        setQuery(searchQuery);
+    const start = () => {
+      if (!interval) {
+        interval = window.setInterval(() => {
+          setActiveHeroImage((current) => (current + 1) % TOURS_BACKGROUNDS.length);
+        }, HERO_SLIDE_INTERVAL_MS);
       }
-    }, 0);
+    };
+    const stop = () => {
+      window.clearInterval(interval);
+      interval = 0;
+    };
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        start();
+      }
+    };
 
-    return () => window.clearTimeout(timerId);
-  }, []);
+    if (!document.hidden) {
+      start();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [prefersReducedMotion]);
 
   const filteredAdventures = useMemo(() => {
     const normalizedQuery = normalizeSearchText(query.trim());
 
-    const matches = allAdventures.filter((adventure) => {
+    return allAdventures.filter((adventure) => {
       const isDomestic = adventure.country === "Mongolia";
       const isCorporate = isCorporateAdventure(adventure);
-      const searchText = getAdventureSearchText(adventure);
       const matchesPageMode =
         pageMode === "all" ||
         (pageMode === "domestic" && isDomestic) ||
@@ -1218,41 +1081,12 @@ export function FeaturedAdventures({
         (scope === "outbound" && !isDomestic) ||
         (scope === "corporate" && isCorporate);
       const matchesQuery =
-        !normalizedQuery || searchText.includes(normalizedQuery);
+        !normalizedQuery ||
+        getAdventureSearchText(adventure).includes(normalizedQuery);
 
       return matchesPageMode && matchesScope && matchesQuery;
     });
-
-    const sortedMatches = [...matches];
-
-    switch (sortMode) {
-      case "price-low":
-        sortedMatches.sort((left, right) =>
-          compareTripPrice(left, right, "asc")
-        );
-        break;
-      case "price-high":
-        sortedMatches.sort((left, right) =>
-          compareTripPrice(left, right, "desc")
-        );
-        break;
-      case "days-low":
-        sortedMatches.sort((left, right) =>
-          compareTripDays(left, right, "asc")
-        );
-        break;
-      case "days-high":
-        sortedMatches.sort((left, right) =>
-          compareTripDays(left, right, "desc")
-        );
-        break;
-      case "recommended":
-      default:
-        break;
-    }
-
-    return sortedMatches;
-  }, [allAdventures, pageMode, query, scope, sortMode]);
+  }, [allAdventures, pageMode, query, scope]);
 
   const groupedFilteredAdventures = useMemo(() => {
     const outbound = filteredAdventures.filter(
@@ -1314,73 +1148,93 @@ export function FeaturedAdventures({
     sectionCopy.outboundDirection,
     pageMode,
   ]);
+
   function handleTripSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     gallerySectionRef.current?.scrollIntoView({
-      behavior: "smooth",
+      behavior: prefersReducedMotion ? "auto" : "smooth",
       block: "start",
     });
   }
 
   return (
     <section id="adventures" className="bg-background">
-      <div className="relative min-h-[calc(100svh/var(--site-scale))] overflow-visible bg-primary text-primary-foreground">
+      <Suspense fallback={null}>
+        <TourSearchParamsSync onSearch={setQuery} onScope={setScope} />
+      </Suspense>
+
+      <div className="relative flex min-h-svh flex-col justify-center bg-primary text-white">
         <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-          {TOURS_BACKGROUNDS.map((image, index) => (
-            <motion.div
-              key={image}
-              initial={false}
-              animate={{ opacity: activeHeroImage === index ? 1 : 0 }}
-              transition={{ duration: 1.1, ease: "easeInOut" }}
-              className="absolute inset-0 scale-105 bg-cover bg-center"
-              style={{ backgroundImage: `url('${getHighResolutionImageUrl(image)}')` }}
-            />
-          ))}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/38 to-primary/82" />
+          {TOURS_BACKGROUNDS.map((image, index) =>
+            prefersReducedMotion && index > 0 ? null : (
+              <motion.div
+                key={image}
+                initial={false}
+                animate={{ opacity: visibleHeroImage === index ? 1 : 0 }}
+                transition={{ duration: 1.1, ease: "easeInOut" }}
+                className="absolute inset-0 scale-105"
+              >
+                <Image
+                  src={getHighResolutionImageUrl(image)}
+                  alt=""
+                  fill
+                  sizes="100vw"
+                  priority={index === 0}
+                  quality={90}
+                  className="object-cover object-center"
+                />
+              </motion.div>
+            )
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-primary/82" />
           <div className="absolute inset-0 bg-primary/10" />
         </div>
 
-        <div className="absolute inset-x-0 top-[42vh] z-30 px-6 sm:top-[44vh] lg:px-10">
+        <Container className="relative z-30 pb-16 pt-32 lg:pt-36">
+          <SectionHeading
+            as="h1"
+            align="center"
+            tone="dark"
+            title={heroTitle}
+            description={heroBody}
+            className="[&_h1]:drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)]"
+          />
+
           <form
+            id="tour-search"
+            role="search"
+            aria-label={sectionCopy.searchLabel}
             onSubmit={handleTripSearchSubmit}
-            className="relative mx-auto max-w-3xl text-white"
+            className="relative mx-auto mt-10 max-w-3xl scroll-mt-32"
           >
-            <div className="grid overflow-hidden rounded-[1.75rem] border border-white/32 bg-white/[0.035] shadow-[0_14px_44px_rgba(17,16,11,0.09)] backdrop-blur-[0.5px] sm:rounded-full lg:grid-cols-[1fr_auto]">
-              <div className="flex min-h-[60px] flex-col justify-center border-b border-white/24 px-5 py-3 transition-colors sm:border-b-0 lg:border-r">
-                <label
-                  htmlFor="trip-where-search"
-                  className="sr-only"
-                >
-                  {searchCopy.wherePlaceholder}
+            <div className="grid border border-white/40 bg-black/25 shadow-floating backdrop-blur-sm transition-colors focus-within:border-white/80 sm:grid-cols-[1fr_auto]">
+              <div className="flex min-h-[60px] items-center gap-3 border-b border-white/24 px-5 py-3 sm:border-b-0 sm:border-r">
+                <Search aria-hidden="true" className="h-5 w-5 shrink-0 text-white/80" />
+                <label htmlFor="trip-where-search" className="sr-only">
+                  {sectionCopy.searchLabel}
                 </label>
                 <input
                   id="trip-where-search"
+                  type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder={searchCopy.wherePlaceholder}
-                  className="min-w-0 appearance-none border-0 bg-transparent p-0 text-sm text-white shadow-none outline-none [background:transparent] placeholder:text-white/62 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-lg"
+                  placeholder={sectionCopy.searchPlaceholder}
+                  className="min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-sm text-white shadow-none outline-none placeholder:text-white/70 selection:bg-white/20 focus:ring-0 lg:text-lg"
                 />
               </div>
 
-              <div className="flex items-center justify-end px-2.5 pb-2.5 sm:pb-2.5 lg:p-2.5">
-                <button
-                  type="submit"
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-6 text-xs uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
-                >
-                  <Search className="h-5 w-5" />
-                  <span>{searchCopy.search}</span>
-                </button>
+              <div className="flex items-center p-2.5">
+                <Button type="submit" variant="outline-light" className="w-full sm:w-auto">
+                  {sectionCopy.searchSubmit}
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </form>
-        </div>
+        </Container>
       </div>
 
-      <div
-        ref={gallerySectionRef}
-        id="all"
-        className="bg-white"
-      >
+      <div ref={gallerySectionRef} id="all" className="scroll-mt-24 bg-white">
         <ToursCategoryNavigation
           mode={pageMode}
           copy={sectionCopy}
@@ -1392,28 +1246,28 @@ export function FeaturedAdventures({
               key={group.id}
               id={group.id}
               title={group.title}
-              resultLabel={sectionCopy.result}
               adventures={group.adventures}
               locale={contentLocale}
+              copy={sectionCopy}
               dayLabel={t.featured.days}
               detailsLabel={t.featured.details}
-              onSelect={setSelected}
             />
           ))
         ) : (
-          <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
-            <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
+          <Container className="py-12">
+            <div
+              role="status"
+              className="border border-border bg-card p-8 text-center text-muted-foreground"
+            >
               {t.featured.noResults}
             </div>
-          </div>
+          </Container>
         )}
       </div>
 
       {pageMode !== "domestic" ? <StaysAndVillasSection stays={stays} /> : null}
 
       {beforeList}
-
-      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
     </section>
   );
 }

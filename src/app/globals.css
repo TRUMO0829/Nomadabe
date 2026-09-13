@@ -1,9 +1,9 @@
 @import "tailwindcss" source("../");
 
 :root {
-  --site-scale: 0.85;
   --background: #FFFDF3;
   --foreground: #11100B;
+  --ink: #0B0A07;
   --card: #FFFFFF;
   --muted: #FFF3BF;
   --muted-foreground: #5F5340;
@@ -11,9 +11,21 @@
   --primary-foreground: #FFFDF3;
   --accent: #FFD400;
   --accent-foreground: #11100B;
+  /* Amber reads at only 1.4:1 as text on cream. This gold is its readable
+     stand-in for eyebrows and meta text on light surfaces (6:1). */
+  --accent-text: #7A5F00;
   --secondary: #FFC400;
+  --secondary-foreground: #11100B;
+  --destructive: #B42318;
+  --destructive-foreground: #FFFFFF;
+  --success: #067647;
   --border: #E8DDAE;
+  /* --border is decorative. Form controls need a 3:1 outline (WCAG 1.4.11). */
+  --input: #9B8C5C;
   --ring: #FFD400;
+  --elevation-1: 0 10px 30px rgba(17, 16, 11, 0.08);
+  --elevation-2: 0 12px 40px rgba(17, 16, 11, 0.18);
+  --elevation-3: 0 24px 60px rgba(17, 16, 11, 0.22);
   /* Montserrat for latin+cyrillic; system CJK fonts render zh/ja/ko glyphs
      per-glyph so other languages never fall back to tofu / break layout. */
   --site-font: var(--font-site), "Apple SD Gothic Neo", "Hiragino Sans",
@@ -25,6 +37,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
   --color-card: var(--card);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
@@ -32,9 +45,18 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-text: var(--accent-text);
   --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
   --color-border: var(--border);
+  --color-input: var(--input);
   --color-ring: var(--ring);
+  --shadow-card: var(--elevation-1);
+  --shadow-raised: var(--elevation-2);
+  --shadow-floating: var(--elevation-3);
   --font-sans: var(--site-font);
   --font-display: var(--site-font);
 }
@@ -56,9 +78,14 @@ html {
      scrollIntoView({behavior:"smooth"}) and window.scrollTo({behavior:"smooth"})
      were dead too; only instant scrolling moved the page. An instant jump that
      works beats a smooth scroll that does not. */
-  font-family: var(--site-font) !important;
   overflow-x: hidden;
   text-rendering: geometricPrecision;
+  /* The site is designed at 85% scale. It used to get there with `zoom: 0.85`,
+     which also shrank viewport units and forced calc(100svh / scale)
+     workarounds everywhere. Scaling the root font size keeps the same
+     rem-based density, leaves vh/svh alone, and still honours a visitor's own
+     browser font-size setting. */
+  font-size: 85%;
 }
 
 body {
@@ -68,50 +95,14 @@ body {
     var(--background);
   background-size: 42px 42px;
   color: var(--foreground);
-  font-family: var(--site-font) !important;
-  font-weight: 200;
+  font-weight: 300;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-@supports (zoom: 1) {
-  html {
-    zoom: var(--site-scale);
-  }
-
-  body {
-    width: auto;
-  }
-}
-
-.font-display,
-.font-sans,
-.font-serif,
-.font-mono {
-  font-family: var(--site-font) !important;
-}
-
-.hero-heading,
-.hero-heading * {
-  font-family: var(--site-font) !important;
-}
-
-.home-hero-screen {
-  min-height: 100svh;
-}
-
+.home-hero-screen,
 .about-screen {
   min-height: 100svh;
-}
-
-@supports (zoom: 1) {
-  .home-hero-screen {
-    min-height: calc(100svh / var(--site-scale));
-  }
-
-  .about-screen {
-    min-height: calc(100svh / var(--site-scale));
-  }
 }
 
 h1,
@@ -139,49 +130,28 @@ b {
 .font-light,
 .font-extralight,
 .font-thin {
-  font-weight: 200 !important;
+  font-weight: 300 !important;
 }
 
-button,
-input,
-select,
-textarea {
-  font-family: var(--site-font) !important;
-  letter-spacing: 1.6px !important;
-  word-spacing: 1.6px !important;
-}
-
-/* Press feedback on every button (login, admin, everywhere). */
-button:not(:disabled) {
+/* Press feedback on buttons. Whole cards are buttons too (.group); they have
+   their own hover lift, and shrinking a whole card on click looked broken. */
+button:not(:disabled):not(.group) {
   transition: transform 0.14s ease, opacity 0.14s ease, box-shadow 0.14s ease;
 }
-button:not(:disabled):hover {
+button:not(:disabled):not(.group):hover {
   transform: translateY(-1px);
 }
-button:not(:disabled):active {
+button:not(:disabled):not(.group):active {
   transform: scale(0.95);
-}
-@media (prefers-reduced-motion: reduce) {
-  button:not(:disabled):hover,
-  button:not(:disabled):active {
-    transform: none;
-  }
-}
-
-body *,
-body *::before,
-body *::after {
-  font-family: var(--site-font) !important;
 }
 
 body :where(p, li, dd, dt, span, input, textarea, select) {
-  font-weight: 200;
+  font-weight: 300;
 }
 
 body :where(h1, h2, h3, h4, h5, h6, p, li, dd, dt, span, a, button, summary, label, input, textarea, select),
 body [class*="leading-"],
 .trip-header-title,
-.hero-heading,
 .site-heading,
 .section-header-title,
 .trip-meta-text,
@@ -191,24 +161,16 @@ body [class*="leading-"],
   word-spacing: 1.6px !important;
 }
 
-body :where(p, li, dd, dt) {
-  letter-spacing: 1.6px !important;
-}
-
 body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 .trip-header-title,
-.hero-heading,
 .site-heading,
 .section-header-title,
 .trip-meta-text,
 .nav-text {
   font-weight: 400 !important;
-  letter-spacing: 1.6px !important;
-  word-spacing: 1.6px !important;
 }
 
 .section-header-title {
-  font-family: var(--site-font) !important;
   font-size: clamp(1.85rem, 4vw, 3.8rem) !important;
   font-weight: 400 !important;
   line-height: 1.6 !important;
@@ -216,7 +178,7 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
 }
 
 .site-navbar .nav-text {
-  font-weight: 200 !important;
+  font-weight: 300 !important;
 }
 
 .footer-accent-icon,
@@ -236,12 +198,6 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
   fill: none !important;
 }
 
-.domestic-section-title {
-  font-size: clamp(1.5rem, 3.1vw, 2.9rem) !important;
-  line-height: 1.6 !important;
-  white-space: nowrap;
-}
-
 .trip-header-title {
   font-size: clamp(1.5rem, 3.55vw, 3.05rem) !important;
   line-height: 1.6 !important;
@@ -253,73 +209,17 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
   line-height: 1.6 !important;
 }
 
-.domestic-trip-title {
-  font-size: clamp(1.5rem, 3.15vw, 3rem) !important;
-  line-height: 1.6 !important;
-}
-
 .trip-header-title--compact {
   font-size: clamp(1.25rem, 2.65vw, 2rem) !important;
   line-height: 1.6 !important;
-}
-
-.testimonial-column {
-  overflow: hidden;
-}
-
-.testimonial-column-track {
-  animation: testimonial-column-scroll var(--testimonial-duration, 15s) linear infinite;
-  will-change: transform;
-}
-
-.testimonial-column:hover .testimonial-column-track,
-.testimonial-column:focus-within .testimonial-column-track {
-  animation-play-state: paused;
-}
-
-@keyframes testimonial-column-scroll {
-  to {
-    transform: translateY(-50%);
-  }
-}
-
-.flow-frame {
-  height: calc(100svh / var(--site-scale));
-  min-height: calc(640px / var(--site-scale));
-  overflow: hidden;
-}
-
-.flow-panel {
-  height: calc(100svh / var(--site-scale));
-  min-height: calc(640px / var(--site-scale));
-  width: calc(100vw / var(--site-scale));
-  min-width: calc(100vw / var(--site-scale));
-  overflow: hidden;
-}
-
-.flow-image-fill {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
 }
 
 .text-balance {
   text-wrap: balance;
 }
 
-.hero-title-mark {
-  text-shadow:
-    0 2px 0 rgba(17, 16, 11, 0.78),
-    0 7px 18px rgba(0, 0, 0, 0.58);
-  -webkit-text-stroke: 1px rgba(255, 253, 243, 0.55);
-}
-
 .hero-credit-watermark {
   font-family: "Times New Roman", Georgia, serif !important;
-  letter-spacing: 1.6px !important;
-  word-spacing: 1.6px !important;
 }
 
 @keyframes premiumHeroProgress {
@@ -342,55 +242,35 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
   }
 }
 
-.trip-marquee {
-  overflow: hidden;
-  width: 100%;
-}
-
-.trip-marquee-track {
-  display: flex;
-  width: max-content;
-  gap: 1.5rem;
-  animation: trip-marquee var(--marquee-duration, 32s) linear infinite;
-  will-change: transform;
-}
-
-.trip-marquee:hover .trip-marquee-track,
-.trip-marquee:focus-within .trip-marquee-track {
-  animation-play-state: paused;
-}
-
-.trip-marquee-track--reverse {
-  animation-direction: reverse;
-}
-
-@keyframes trip-marquee {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-
-  to {
-    transform: translate3d(calc(-50% - 0.75rem), 0, 0);
-  }
-}
-
 ::selection {
   background: var(--accent);
   color: var(--accent-foreground);
 }
 
-@media (pointer: fine) {
-  body.plane-cursor-enabled,
-  body.plane-cursor-enabled *,
-  body.plane-cursor-enabled input,
-  body.plane-cursor-enabled textarea,
-  body.plane-cursor-enabled select,
-  body.plane-cursor-enabled button,
-  body.plane-cursor-enabled summary,
-  body.plane-cursor-enabled label,
-  body.plane-cursor-enabled input::-webkit-calendar-picker-indicator,
-  body.plane-cursor-enabled input::-webkit-inner-spin-button,
-  body.plane-cursor-enabled input::-webkit-outer-spin-button {
-    cursor: none !important;
+/* One visible focus indicator everywhere. It is unlayered, so it also wins
+   over the Tailwind `outline-none` utilities scattered through components.
+   A dark outline plus an amber halo stays visible on cream and on black. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .testimonial-column-track {
+    animation: none !important;
+  }
+
+  button:not(:disabled):not(.group):hover,
+  button:not(:disabled):not(.group):active {
+    transform: none;
   }
 }

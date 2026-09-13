@@ -1,156 +1,31 @@
 # UI Components Library
 
-## Overview
-This folder contains reusable, animated UI components built with Next.js, React, Tailwind CSS, and TypeScript.
+Shared building blocks for the public site. Tokens (colours, shadows, focus
+ring) live in `src/app/globals.css`; these components only use those tokens.
 
-## Available Components
+## Components
 
-### 1. **ParticleTextCanvas** (`particle-text-canvas.tsx`)
-Interactive particle animation that responds to mouse movement.
+- **`button.tsx`** — `Button` / `buttonVariants`, the site's one button. Square
+  corners. `default` (amber) is the primary action; `dark`, `outline`,
+  `outline-light`, `secondary`, `destructive`, `ghost` and `link` step down
+  from it. Use `buttonVariants(...)` on a `<Link>` for link-buttons.
+- **`section.tsx`** — `Container` (one max width and gutter for every section)
+  and `SectionHeading` (amber-rule eyebrow + uppercase heading; `tone="dark"`
+  on dark bands, `tone="light"` on cream/white).
+- **`card-recipe.tsx`** — the shared trip/stay card: `CARD_FRAME`,
+  `CARD_FRAME_LIGHT`, `CardMedia`, `CardOverlay`, `CardMeta`, `CardTitle`,
+  `CARD_CTA`. A card is one link and lifts on hover in one place.
+- **`dialog.tsx`** — Radix dialog primitives.
 
-**Features:**
-- Animated text particles that react to cursor position
-- Smooth particle physics simulation
-- Responsive canvas auto-resizing
-- Uses 2D canvas API for high performance
+## Conventions
 
-**Usage:**
-```tsx
-import ParticleText from "@/components/ui/particle-text-canvas";
-
-export default function Demo() {
-  return <ParticleText />;
-}
-```
-
-**Best for:**
-- Hero sections
-- Landing pages
-- Interactive backgrounds
-- Engaging visual effects
-
----
-
-### 2. **CardsParallax** (`scroll-cards.tsx`)
-Beautiful parallax scroll card component with image backgrounds and text overlays.
-
-**Features:**
-- Sticky card positioning during scroll
-- Full-viewport card height
-- Gradient overlays for text readability
-- Optional action buttons with callbacks
-- Responsive image handling (Unsplash ready)
-
-**Usage:**
-```tsx
-import { CardsParallax, type iCardItem } from "@/components/ui/scroll-cards";
-
-const items: iCardItem[] = [
-  {
-    title: "Everest Camp",
-    description: "Experience the ultimate trek",
-    tag: "trekking",
-    src: "https://images.unsplash.com/photo-...",
-    link: "/trips/everest",
-    color: "white",
-    textColor: "white",
-    actionLabel: "Explore"
-  }
-];
-
-export default function Demo() {
-  return <CardsParallax items={items} />;
-}
-```
-
-**Best for:**
-- Trip showcases
-- Service highlights
-- Portfolio sections
-- Featured experiences
-
----
-
-### 3. **BlurTextAnimation** (`blur-text-animation.tsx`)
-Cinematic text animation with blur, brightness, and 3D transform effects.
-
-**Features:**
-- Word-by-word animation with staggered timing
-- Customizable blur, scale, and 3D transforms
-- Auto-repeating animation loop
-- Fully configurable text and animation properties
-- Smooth cubic-bezier transitions
-
-**Usage:**
-```tsx
-import BlurTextAnimation from "@/components/ui/blur-text-animation";
-
-export default function Demo() {
-  return (
-    <BlurTextAnimation 
-      text="Your custom text here"
-      fontSize="text-4xl md:text-5xl lg:text-6xl"
-      textColor="text-white"
-      animationDelay={4000}
-    />
-  );
-}
-```
-
-**Props:**
-- `text?: string` - Main text to animate
-- `fontSize?: string` - Tailwind font size class
-- `textColor?: string` - Tailwind color class
-- `animationDelay?: number` - Delay between animations in ms
-- `className?: string` - Additional wrapper classes
-
-**Best for:**
-- Marketing headlines
-- Landing page taglines
-- Feature announcements
-- Cinematic introductions
-
----
-
-## Setup Notes
-
-✅ **All dependencies are already installed:**
-- TypeScript
-- Tailwind CSS 4
-- Next.js 16
-- React 19
-- Lucide React (for icons if needed)
-
-✅ **Path Alias:**
-- `@/*` maps to `./src/*`
-- Components can be imported as `@/components/ui/...`
-
-✅ **Image Support:**
-- Unsplash images are pre-configured
-- Use `https://images.unsplash.com/...` URLs directly
-
-## Integration Tips
-
-1. **For Nomadabe's "Онцлох Аяллууд" section:**
-   - Use `CardsParallax` with featured trips data
-   - Use `BlurTextAnimation` for section headlines in Mongolian
-   - Add particle effect as page background
-
-2. **Performance:**
-   - Particle canvas is heavy; use once per page
-   - Lazy load image-heavy scroll-cards
-   - Consider component visibility optimization
-
-3. **Styling:**
-   - All components use Tailwind utility classes
-   - Colors are customizable via props or inline styles
-   - Gradient overlays ensure text readability
-
-4. **Mobile Responsiveness:**
-   - Scroll-cards adapts to mobile screens
-   - Particle canvas scales to viewport
-   - Text animation uses responsive font sizes
-
-## Example Integration
-
-See usage examples in component files or create demo pages in `/src/app/`.
+- Use token utilities (`bg-background`, `text-foreground`, `bg-ink`,
+  `text-accent-text`, `border-border`, `border-input`, `shadow-card`…) instead
+  of hex values. Amber (`text-accent`) is only readable as text on dark
+  backgrounds; use `text-accent-text` on light ones.
+- Panels and cards have square corners; only small chips may be `rounded-full`.
+- Don't add per-element focus styles or `outline-none` workarounds: the global
+  `:focus-visible` rule covers every interactive element.
+- Motion must respect reduced motion. framer-motion does automatically (the
+  app is wrapped in `MotionConfig reducedMotion="user"`); for JS loops use
+  `useReducedMotion()`.

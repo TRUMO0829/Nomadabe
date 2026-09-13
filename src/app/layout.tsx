@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { AiChatbot } from "@/components/ai-chatbot";
+import { ContactDock } from "@/components/contact-dock";
 import { LanguageProvider } from "@/components/language-provider";
-import { PlaneCursor } from "@/components/plane-cursor";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -69,8 +69,8 @@ export default function RootLayout({
     <html lang="mn" className={`${siteFont.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <LanguageProvider>
-          <PlaneCursor />
           {children}
+          <ContactDock raised={CHATBOT_ENABLED} />
           {CHATBOT_ENABLED ? <AiChatbot /> : null}
         </LanguageProvider>
       </body>

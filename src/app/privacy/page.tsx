@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     <>
       <SignupPromptModal autoOpen={false} />
       <Navbar surface="light" />
-      <main className="flex-1 bg-[#0b0a07]">
+      <main className="flex-1 bg-ink">
         <LegalPage kind="privacy" />
         <CtaFooter />
       </main>

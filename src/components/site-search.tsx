@@ -1,7 +1,10 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
 
 const SITE_SEARCH_COPY = {
@@ -34,6 +37,7 @@ const SITE_SEARCH_COPY = {
 
 export function SiteSearch({ compact = false }: { compact?: boolean }) {
   const { contentLocale } = useLanguage();
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const copy = SITE_SEARCH_COPY[contentLocale];
 
@@ -41,34 +45,41 @@ export function SiteSearch({ compact = false }: { compact?: boolean }) {
     event.preventDefault();
 
     const trimmedQuery = query.trim();
-    window.location.href = trimmedQuery
-      ? `/tours?search=${encodeURIComponent(trimmedQuery)}`
-      : "/tours";
+    // Client-side navigation; the tours page reads ?search= from the URL and
+    // updates its results without a full reload.
+    router.push(
+      trimmedQuery
+        ? `/tours?search=${encodeURIComponent(trimmedQuery)}#all`
+        : "/tours"
+    );
   }
 
   return (
     <form
+      role="search"
       onSubmit={handleSearch}
       aria-label={copy.label}
-      className={[
-        "flex w-full items-center gap-2 rounded-full bg-white/18 p-1.5 text-left shadow-[0_8px_22px_rgba(0,0,0,0.18)] backdrop-blur-[2px]",
-        compact ? "max-w-[min(92vw,560px)]" : "max-w-[min(92vw,620px)]",
-      ].join(" ")}
+      className={cn(
+        "flex w-full items-center gap-2 border border-white/30 bg-white/18 p-1.5 text-left shadow-raised backdrop-blur-[2px]",
+        compact ? "max-w-[min(92vw,560px)]" : "max-w-[min(92vw,620px)]"
+      )}
     >
-      <Search className="ml-3 h-4 w-4 shrink-0 text-white/86 drop-shadow sm:ml-4" />
+      <Search
+        aria-hidden="true"
+        className="ml-3 h-4 w-4 shrink-0 text-white/86 drop-shadow sm:ml-4"
+      />
       <input
+        type="search"
+        aria-label={copy.label}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={copy.placeholder}
         className="min-w-0 flex-1 bg-transparent text-sm font-bold text-white outline-none drop-shadow placeholder:text-white/78"
       />
-      <button
-        type="submit"
-        className="inline-flex shrink-0 items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary"
-      >
+      <Button type="submit" size="sm" className="shrink-0">
         {copy.button}
-        <ArrowRight className="h-4 w-4" />
-      </button>
+        <ArrowRight aria-hidden="true" className="h-4 w-4" />
+      </Button>
     </form>
   );
 }

@@ -1,58 +1,53 @@
 "use client";
 
-import Image from "next/image";
-import { useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import Link from "next/link";
+import { motion } from "framer-motion";
 import { ArrowRight, CalendarDays, MapPin } from "lucide-react";
 import { ADVENTURES, getAdventureText, type Adventure } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
 import {
   CARD_CTA,
   CARD_FRAME,
-  CARD_FRAME_LIGHT,
   CardMedia,
   CardMeta,
   CardOverlay,
   CardTitle,
 } from "@/components/ui/card-recipe";
+import { Container, SectionHeading } from "@/components/ui/section";
 import { cn } from "@/lib/utils";
-import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
-import ParticleText from "./ui/particle-text-canvas";
 
 const COPY = {
   mn: {
-    eyebrow: "Онцлох аяллууд",
+    eyebrow: "Сонгосон маршрут",
     title: "Онцлох аяллууд",
-    subtitle:
-      "Сонгосон аяллаа дарж дэлгэрэнгүй мэдээлэл, үнэ, багцын нөхцөлийг хараарай.",
+    subtitle: "Аяллаа сонгоод дэлгэрэнгүй мэдээлэл, үнэ, багцын нөхцөлийг хараарай.",
     details: "Дэлгэрэнгүй",
     day: "хоног",
   },
   en: {
-    eyebrow: "Featured trips",
+    eyebrow: "Hand-picked",
     title: "Featured trips",
-    subtitle:
-      "Open a trip to view details, pricing, inclusions, and planning notes.",
+    subtitle: "Open a trip to view details, pricing, inclusions, and planning notes.",
     details: "Details",
     day: "days",
   },
   zh: {
-    eyebrow: "精选旅行",
+    eyebrow: "精选推荐",
     title: "精选旅行",
     subtitle: "打开行程即可查看详情、价格、包含项目和规划说明。",
     details: "详情",
     day: "天",
   },
   ja: {
-    eyebrow: "注目ツアー",
+    eyebrow: "おすすめ",
     title: "注目ツアー",
     subtitle: "ツアーを開くと、詳細、料金、含まれる内容、計画メモを確認できます。",
     details: "詳細",
     day: "日",
   },
   ko: {
-    eyebrow: "추천 여행",
+    eyebrow: "추천 코스",
     title: "추천 여행",
     subtitle: "여행을 열어 상세 정보, 가격, 포함 사항, 일정 메모를 확인하세요.",
     details: "자세히",
@@ -62,7 +57,6 @@ const COPY = {
 
 type FeaturedTripsCarouselProps = {
   adventures?: Adventure[];
-  variant?: "editorial" | "compact";
 };
 
 function uniqueBySlug(trips: Adventure[]) {
@@ -90,412 +84,89 @@ function getFeaturedTrips(adventures: Adventure[]) {
     .slice(0, 4);
 }
 
-function FeaturedTripScrollPanel({
-  adventure,
-  copy,
-  index,
-  onSelect,
-}: {
-  adventure: Adventure;
-  copy: (typeof COPY)[keyof typeof COPY];
-  index: number;
-  onSelect: (adventure: Adventure) => void;
-}) {
-  const { contentLocale } = useLanguage();
-  const panelRef = useRef<HTMLElement>(null);
-  const text = getAdventureText(adventure, contentLocale);
-  const image = getHighResolutionImageUrl(adventure.image);
-  const imageOnRight = index % 2 === 1;
-  const { scrollYProgress } = useScroll({
-    target: panelRef,
-    offset: ["start start", "end end"],
-  });
-  const imageClipPath = useTransform(
-    scrollYProgress,
-    [0, 0.42, 0.74, 1],
-    imageOnRight
-      ? [
-          "inset(16vh 3vw 30vh 68vw round 30px)",
-          "inset(7vh 1vw 7vh 24vw round 18px)",
-          "inset(-3vh -3vw -3vh -3vw round 0px)",
-          "inset(-3vh -3vw -3vh -3vw round 0px)",
-        ]
-      : [
-          "inset(16vh 68vw 30vh 3vw round 30px)",
-          "inset(7vh 24vw 7vh 1vw round 18px)",
-          "inset(-3vh -3vw -3vh -3vw round 0px)",
-          "inset(-3vh -3vw -3vh -3vw round 0px)",
-        ],
-  );
-  const imageScale = useTransform(scrollYProgress, [0, 0.74], [1.02, 1.08]);
-  const textY = useTransform(scrollYProgress, [0.16, 0.34, 1], [36, 0, 0]);
-  const textX = useTransform(
-    scrollYProgress,
-    [0.16, 0.34, 1],
-    imageOnRight ? [-40, 0, 0] : [40, 0, 0],
-  );
-  const textOpacity = useTransform(scrollYProgress, [0, 1], [1, 1]);
-  const panelBackground = useTransform(
-    scrollYProgress,
-    [0, 0.52, 0.74, 1],
-    [
-      "rgba(255,255,255,0.96)",
-      "rgba(255,255,255,0.9)",
-      "rgba(255,255,255,0)",
-      "rgba(255,255,255,0)",
-    ],
-  );
-  const panelBorderColor = useTransform(
-    scrollYProgress,
-    [0, 0.74, 1],
-    [
-      "rgba(234,223,172,1)",
-      "rgba(255,255,255,0.28)",
-      "rgba(255,255,255,0.28)",
-    ],
-  );
-  const panelTextColor = useTransform(
-    scrollYProgress,
-    [0, 0.58, 0.74, 1],
-    ["#11100b", "#11100b", "#fffdf3", "#fffdf3"],
-  );
-  const panelMutedColor = useTransform(
-    scrollYProgress,
-    [0, 0.58, 0.74, 1],
-    ["#11100b", "#11100b", "#fffdf3", "#fffdf3"],
-  );
-  const panelAccentColor = useTransform(
-    scrollYProgress,
-    [0, 0.58, 0.74, 1],
-    ["#b89422", "#b89422", "#f0d57a", "#f0d57a"],
-  );
-  const chipBackground = useTransform(
-    scrollYProgress,
-    [0, 0.74, 1],
-    ["rgba(255,255,255,1)", "rgba(0,0,0,0.28)", "rgba(0,0,0,0.28)"],
-  );
-  const chipBorderColor = useTransform(
-    scrollYProgress,
-    [0, 0.74, 1],
-    ["rgba(234,223,172,1)", "rgba(255,255,255,0.42)", "rgba(255,255,255,0.42)"],
-  );
-
-  return (
-    <section
-      ref={panelRef}
-      className="relative hidden h-[calc(280svh/var(--site-scale))] bg-white lg:block"
-    >
-      <div className="sticky top-0 h-[calc(100svh/var(--site-scale))] overflow-hidden bg-white">
-        <motion.div
-          className="absolute inset-0 z-0 overflow-hidden shadow-[0_36px_100px_rgba(17,16,11,0.18)] will-change-transform"
-          style={{
-            clipPath: imageClipPath,
-          }}
-        >
-          <motion.div className="relative h-full w-full" style={{ scale: imageScale }}>
-            <Image
-              src={image}
-              alt={text.title}
-              fill
-              priority={index === 0}
-              sizes="100vw"
-              quality={90}
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/44 via-black/10 to-transparent" />
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          className="absolute top-[20vh] z-10 w-[min(32vw,460px)] rounded-[22px] border p-[clamp(1rem,1.8vw,1.8rem)] shadow-[0_22px_70px_rgba(17,16,11,0.16)] backdrop-blur"
-          style={{
-            left: imageOnRight ? "clamp(1.5rem, 5vw, 6rem)" : "auto",
-            right: imageOnRight ? "auto" : "clamp(1.5rem, 5vw, 6rem)",
-            backgroundColor: panelBackground,
-            borderColor: panelBorderColor,
-            color: panelTextColor,
-            opacity: textOpacity,
-            x: textX,
-            y: textY,
-          }}
-        >
-          <div className="max-w-xl">
-            <div className="trip-meta-text mb-4 flex flex-wrap gap-2 text-xs">
-              <motion.span
-                className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 shadow-[0_12px_32px_rgba(17,16,11,0.06)]"
-                style={{ backgroundColor: chipBackground, borderColor: chipBorderColor }}
-              >
-                <motion.span style={{ color: panelAccentColor }}>
-                  <MapPin className="h-3.5 w-3.5" />
-                </motion.span>
-                {text.location}
-              </motion.span>
-              <motion.span
-                className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 shadow-[0_12px_32px_rgba(17,16,11,0.06)]"
-                style={{ backgroundColor: chipBackground, borderColor: chipBorderColor }}
-              >
-                <motion.span style={{ color: panelAccentColor }}>
-                  <CalendarDays className="h-3.5 w-3.5" />
-                </motion.span>
-                {adventure.days} {copy.day}
-              </motion.span>
-            </div>
-
-            <h3 className="trip-header-title trip-header-title--hero max-w-[12ch] text-balance !text-[clamp(1.75rem,3.4vw,3.25rem)] !leading-[0.96]">
-              {text.title}
-            </h3>
-            <motion.p
-              className="trip-copy-text mt-4 max-w-xl text-sm leading-7 lg:text-base"
-              style={{ color: panelMutedColor }}
-            >
-              {text.summary}
-            </motion.p>
-            <button
-              type="button"
-              onClick={() => onSelect(adventure)}
-              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-accent bg-accent px-6 text-xs uppercase text-accent-foreground transition-colors hover:bg-white hover:text-[#11100b]"
-            >
-              {copy.details}
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function FeaturedTripsScrollStack({
-  copy,
-  featuredTrips,
-  onSelect,
-}: {
-  copy: (typeof COPY)[keyof typeof COPY];
-  featuredTrips: Adventure[];
-  onSelect: (adventure: Adventure) => void;
-}) {
-  const { contentLocale } = useLanguage();
-
-  return (
-    <section id="trips" className="bg-white text-black">
-      <div className="relative hidden min-h-[calc(58svh/var(--site-scale))] items-center justify-center bg-white px-6 pt-24 lg:flex">
-        <h2 className="sr-only">{copy.title}</h2>
-        <ParticleText
-          text={copy.title}
-          colors={["#11100b", "#8f7020", "#ffd400"]}
-          particleGap={3}
-          particleSize={1.35}
-          mouseRadius={170}
-          className="h-[clamp(5rem,11vw,9rem)] w-full max-w-5xl"
-          canvasClassName="pointer-events-auto"
-        />
-      </div>
-
-      {featuredTrips.map((adventure, index) => (
-        <FeaturedTripScrollPanel
-          key={adventure.id}
-          adventure={adventure}
-          copy={copy}
-          index={index}
-          onSelect={onSelect}
-        />
-      ))}
-
-      <div className="space-y-5 bg-white px-4 py-8 sm:px-6 lg:hidden">
-        {featuredTrips.map((adventure) => {
-          const text = getAdventureText(adventure, contentLocale);
-          const image = getHighResolutionImageUrl(adventure.image);
-
-          return (
-            <article
-              key={adventure.id}
-              className={CARD_FRAME_LIGHT}
-            >
-              <div className="relative aspect-[4/5] overflow-hidden">
-                <CardMedia src={image} alt={text.title} sizes="100vw" />
-                <CardOverlay>
-                  <CardMeta
-                    items={[
-                      { label: text.country },
-                      { label: text.location, icon: MapPin },
-                      { label: `${adventure.days} ${copy.day}`, icon: CalendarDays },
-                    ]}
-                  />
-                  <CardTitle>{text.title}</CardTitle>
-                </CardOverlay>
-              </div>
-              <div className="flex flex-1 flex-col gap-4 p-5">
-                <p className="trip-copy-text line-clamp-3 text-sm text-[#11100b]/70">
-                  {text.summary}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onSelect(adventure)}
-                  className={cn(CARD_CTA, "mt-auto self-start")}
-                >
-                  {copy.details}
-                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                </button>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function FeaturedTripsGrid({
-  copy,
-  featuredTrips,
-  onSelect,
-}: {
-  copy: (typeof COPY)[keyof typeof COPY];
-  featuredTrips: Adventure[];
-  onSelect: (adventure: Adventure) => void;
-}) {
-  const { contentLocale } = useLanguage();
-
-  return (
-    <section id="trips" className="bg-[#f4f5f8] px-4 py-8 text-[#1d1d1f] sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1500px]">
-        <div className="mx-auto max-w-3xl px-4 py-8 text-center lg:py-10">
-          <h2 className="!normal-case text-[clamp(2.1rem,4vw,4.25rem)] leading-[1.02] text-[#1d1d1f]">
-            {copy.title}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#6e6e73] sm:text-base">
-            {copy.subtitle}
-          </p>
-        </div>
-
-        <div className="grid justify-items-center gap-7 md:grid-cols-2">
-          {featuredTrips.map((adventure, index) => {
-            const text = getAdventureText(adventure, contentLocale);
-            const isFestivalCard = adventure.slug === "mongolia-festival-experience";
-            const title =
-              contentLocale === "mn" && isFestivalCard
-                ? "Монгол Фестивалийн аялал"
-                : text.title;
-            const summary =
-              contentLocale === "mn" && isFestivalCard
-                ? "Наадам, хотын соёлын арга хэмжээ, үндэсний хоол, музей болон өдөр бүрийн уян хатан хөтөлбөртэй festival аялал."
-                : text.summary;
-            const image = getHighResolutionImageUrl(adventure.image);
-
-            return (
-              <motion.article
-                key={adventure.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-70px" }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                className={cn(
-                  CARD_FRAME,
-                  "aspect-[4/5] w-full sm:aspect-[5/4] lg:aspect-[4/3]"
-                )}
-              >
-                <CardMedia
-                  src={image}
-                  alt={title}
-                  priority={index === 0}
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-                <CardOverlay>
-                  <CardMeta
-                    items={[
-                      { label: text.country },
-                      { label: text.location, icon: MapPin },
-                      { label: `${adventure.days} ${copy.day}`, icon: CalendarDays },
-                    ]}
-                  />
-                  <CardTitle>{title}</CardTitle>
-                  <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm text-white/80">
-                    {summary}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => onSelect(adventure)}
-                    className={cn(CARD_CTA, "mt-4 self-start")}
-                  >
-                    {copy.details}
-                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </button>
-                </CardOverlay>
-              </motion.article>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function FeaturedTripsCarousel({
-  adventures = ADVENTURES,
-  variant = "editorial",
-}: FeaturedTripsCarouselProps) {
+export function FeaturedTripsCarousel({ adventures = ADVENTURES }: FeaturedTripsCarouselProps) {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
-  const [selected, setSelected] = useState<Adventure | null>(null);
-  const featuredTrips = getFeaturedTrips(adventures).slice(
-    0,
-    variant === "compact" ? 4 : 3,
-  );
-
-  function handleFeaturedRegister() {
-    setSelected(null);
-
-    window.setTimeout(() => {
-      const requestSection = document.getElementById("contact");
-
-      if (!requestSection) {
-        window.location.href = "/plan#contact";
-        return;
-      }
-
-      requestSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.history.replaceState(
-        null,
-        "",
-        `${window.location.pathname}${window.location.search}#contact`
-      );
-    }, 0);
-
-    return true;
-  }
+  const featuredTrips = getFeaturedTrips(adventures);
+  // Built-in sample trips fill the grid when the catalogue has too few
+  // featured ones, but only catalogue trips have a /tours/<slug> page; the
+  // rest go straight to the planning form instead of a 404.
+  const slugsWithPage = new Set(adventures.map((adventure) => adventure.slug));
 
   if (featuredTrips.length === 0) {
     return null;
   }
 
-  if (variant === "compact") {
-    return (
-      <>
-        <FeaturedTripsGrid
-          copy={copy}
-          featuredTrips={featuredTrips}
-          onSelect={setSelected}
-        />
-        <AdventureModal
-          adventure={selected}
-          onClose={() => setSelected(null)}
-          onRegisterClick={handleFeaturedRegister}
-        />
-      </>
-    );
-  }
-
   return (
-    <>
-      <FeaturedTripsScrollStack
-        copy={copy}
-        featuredTrips={featuredTrips}
-        onSelect={setSelected}
-      />
-      <AdventureModal
-        adventure={selected}
-        onClose={() => setSelected(null)}
-        onRegisterClick={handleFeaturedRegister}
-      />
-    </>
+    <section id="trips" className="bg-background py-16 lg:py-20">
+      <Container>
+        <SectionHeading
+          tone="light"
+          align="center"
+          eyebrow={copy.eyebrow}
+          title={copy.title}
+          description={copy.subtitle}
+        />
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          {featuredTrips.map((adventure, index) => {
+            const text = getAdventureText(adventure, contentLocale);
+            const isFestivalCard = adventure.slug === "mongolia-festival-experience";
+            const title =
+              contentLocale === "mn" && isFestivalCard ? "Монгол Фестивалийн аялал" : text.title;
+            const summary =
+              contentLocale === "mn" && isFestivalCard
+                ? "Наадам, хотын соёлын арга хэмжээ, үндэсний хоол, музей болон өдөр бүрийн уян хатан хөтөлбөртэй фестивалийн аялал."
+                : text.summary;
+            const image = getHighResolutionImageUrl(adventure.image);
+            const slug = encodeURIComponent(adventure.slug);
+            const href = slugsWithPage.has(adventure.slug)
+              ? `/tours/${slug}`
+              : `/plan?trip=${slug}`;
+
+            return (
+              <motion.div
+                key={adventure.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-70px" }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
+              >
+                <Link
+                  href={href}
+                  className={cn(CARD_FRAME, "aspect-[4/5] w-full sm:aspect-[5/4] lg:aspect-[4/3]")}
+                >
+                  <CardMedia
+                    src={image}
+                    alt={title}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  <CardOverlay>
+                    <CardMeta
+                      items={[
+                        { label: text.country },
+                        { label: text.location, icon: MapPin },
+                        { label: `${adventure.days} ${copy.day}`, icon: CalendarDays },
+                      ]}
+                    />
+                    <CardTitle>{title}</CardTitle>
+                    <p className="trip-copy-text mt-3 line-clamp-2 max-w-md text-sm text-white/80">
+                      {summary}
+                    </p>
+                    <span className={cn(CARD_CTA, "mt-4 self-start")}>
+                      {copy.details}
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                      />
+                    </span>
+                  </CardOverlay>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      </Container>
+    </section>
   );
 }

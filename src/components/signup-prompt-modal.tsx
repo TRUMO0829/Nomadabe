@@ -230,6 +230,22 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
     };
   }, [autoOpen]);
 
+  // Escape closes the dialog, like every other modal on the web.
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
@@ -369,22 +385,25 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-md overflow-hidden rounded-lg border border-border bg-card shadow-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="signup-prompt-title"
+            className="relative max-h-full w-full max-w-md overflow-y-auto border border-border bg-card shadow-floating"
           >
             <button
               type="button"
               aria-label={copy.close}
               onClick={() => setOpen(false)}
-              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-md bg-white/90 text-foreground shadow-sm transition-colors hover:bg-accent"
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center bg-white/90 text-foreground shadow-sm transition-colors hover:bg-accent"
             >
               <X className="h-5 w-5" />
             </button>
 
             <div className="bg-primary px-7 pb-7 pt-14 text-primary-foreground">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-accent text-accent-foreground">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center bg-accent text-accent-foreground">
                 <UserRound className="h-6 w-6" />
               </div>
-              <h2 className="font-display text-3xl font-semibold leading-tight">
+              <h2 id="signup-prompt-title" className="font-display text-3xl">
                 {copy.title}
               </h2>
               <p className="mt-3 text-sm font-medium leading-relaxed text-primary-foreground/78">
@@ -393,7 +412,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
             </div>
 
             <div className="p-7">
-              <div className="mb-5 grid grid-cols-2 rounded-lg border border-border bg-background p-1">
+              <div className="mb-5 grid grid-cols-2 border border-border bg-background p-1">
                 {[
                   { key: "login", label: copy.login },
                   { key: "register", label: copy.register },
@@ -411,7 +430,7 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                       setMessage("");
                     }}
                     className={cn(
-                      "rounded-md px-4 py-2 text-sm font-black transition-colors",
+                      "px-4 py-2 text-sm transition-colors",
                       mode === item.key
                         ? "bg-accent text-accent-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -424,17 +443,19 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
 
               <form className="space-y-3" onSubmit={handleSubmit}>
                 {mode === "register" && registerStep === "form" && (
-                  <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
-                    <UserRound className="h-4 w-4 text-accent" />
+                  <label className="flex items-center gap-3 border border-input px-4 py-3">
+                    <UserRound aria-hidden="true" className="h-4 w-4 text-accent-text" />
                     <input
                       name="name"
                       placeholder={copy.name}
+                      aria-label={copy.name}
+                      autoComplete="name"
                       className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                     />
                   </label>
                 )}
-                <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
-                  <Mail className="h-4 w-4 text-accent" />
+                <label className="flex items-center gap-3 border border-input px-4 py-3">
+                  <Mail aria-hidden="true" className="h-4 w-4 text-accent-text" />
                   <input
                     key={`${mode}-${resetStep}-${registerStep}-${resetEmail}-${registerData.email}`}
                     name="email"
@@ -452,19 +473,23 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                     }
                     required
                     placeholder={copy.email}
+                    aria-label={copy.email}
+                    autoComplete="email"
                     className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                   />
                 </label>
                 {((mode === "reset" && resetStep === "confirm") ||
                   (mode === "register" && registerStep === "code")) && (
-                  <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
-                    <Mail className="h-4 w-4 text-accent" />
+                  <label className="flex items-center gap-3 border border-input px-4 py-3">
+                    <Mail aria-hidden="true" className="h-4 w-4 text-accent-text" />
                     <input
                       name="code"
                       inputMode="numeric"
                       pattern="[0-9]{6}"
                       required
                       placeholder={copy.resetCode}
+                      aria-label={copy.resetCode}
+                      autoComplete="one-time-code"
                       className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                     />
                   </label>
@@ -472,34 +497,39 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
                 {(mode === "login" ||
                   (mode === "reset" && resetStep === "confirm") ||
                   (mode === "register" && registerStep === "form")) && (
-                  <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
-                    <LockKeyhole className="h-4 w-4 text-accent" />
+                  <label className="flex items-center gap-3 border border-input px-4 py-3">
+                    <LockKeyhole aria-hidden="true" className="h-4 w-4 text-accent-text" />
                     <input
                       name="password"
                       type="password"
                       required
                       placeholder={mode === "reset" ? copy.newPassword : copy.password}
+                      aria-label={mode === "reset" ? copy.newPassword : copy.password}
+                      autoComplete={mode === "login" ? "current-password" : "new-password"}
                       className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                     />
                   </label>
                 )}
                 {((mode === "reset" && resetStep === "confirm") ||
                   (mode === "register" && registerStep === "form")) && (
-                  <label className="flex items-center gap-3 rounded-md border border-border px-4 py-3">
-                    <LockKeyhole className="h-4 w-4 text-accent" />
+                  <label className="flex items-center gap-3 border border-input px-4 py-3">
+                    <LockKeyhole aria-hidden="true" className="h-4 w-4 text-accent-text" />
                     <input
                       name="confirmPassword"
                       type="password"
                       required
                       placeholder={copy.confirmPassword}
+                      aria-label={copy.confirmPassword}
+                      autoComplete="new-password"
                       className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium placeholder:text-muted-foreground"
                     />
                   </label>
                 )}
 
                 <button
+                  type="submit"
                   disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-5 py-3.5 text-sm font-black text-accent-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
+                  className="flex w-full items-center justify-center gap-2 bg-accent px-5 py-3.5 text-sm text-accent-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {loading
                     ? "..."
@@ -533,12 +563,12 @@ export function SignupPromptModal({ autoOpen = true }: SignupPromptModalProps) {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="mt-3 w-full rounded-md border border-border px-5 py-3 text-sm font-black text-foreground transition-colors hover:border-accent"
+                className="mt-3 w-full border border-input px-5 py-3 text-sm text-foreground transition-colors hover:bg-muted"
               >
                 {copy.guest}
               </button>
 
-              <p className="mt-4 text-center text-xs font-medium text-muted-foreground">
+              <p role="status" aria-live="polite" className="mt-4 text-center text-xs text-muted-foreground">
                 {message || (submitted ? copy.success : copy.optional)}
               </p>
             </div>

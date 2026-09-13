@@ -24,11 +24,11 @@ export function ToursExperience({
       outboundTripImages={outboundTripImages}
       stays={stays}
       pageMode={pageMode}
-      beforeList={pageMode === "all" ? (
-        <>
-          <FeaturedTripsCarousel adventures={adventures} variant="compact" />
-        </>
-      ) : null}
+      beforeList={
+        pageMode === "all" ? (
+          <FeaturedTripsCarousel adventures={adventures} />
+        ) : null
+      }
     />
   );
 }

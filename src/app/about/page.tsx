@@ -24,7 +24,7 @@ export default async function AboutPage() {
     <>
       <SignupPromptModal autoOpen={false} />
       <Navbar surface="light" logoPlacement="center" logoSize="compact" />
-      <main className="flex-1 bg-[#0b0a07]">
+      <main className="flex-1 bg-ink">
         <AboutShowcase aboutSection={aboutSection} teamMembers={teamMembers} />
         <CtaFooter />
       </main>

@@ -14,22 +14,21 @@ import { cn } from "@/lib/utils";
  * dimensions.
  *
  * House style: square corners, hairline border, amber accent, bottom-anchored
- * text over a single scrim strength.
+ * text over a single scrim strength. A card is one link: the whole frame is the
+ * click target, and it lifts on hover in exactly one place (here).
  */
-
-export const ACCENT = "#FFD400";
 
 /** Outer frame. Square corners and a hairline border, everywhere. */
 export const CARD_FRAME =
-  "group relative isolate block overflow-hidden border border-white/12 bg-[#11100b] text-left " +
-  "shadow-[0_10px_30px_rgba(17,16,11,0.10)] transition-all duration-300 " +
-  "hover:-translate-y-1 hover:border-[rgba(255,212,0,0.55)] hover:shadow-[0_24px_60px_rgba(17,16,11,0.22)]";
+  "group relative isolate block overflow-hidden border border-white/12 bg-foreground text-left " +
+  "shadow-card transition-all duration-300 " +
+  "hover:-translate-y-1 hover:border-accent/55 hover:shadow-floating";
 
 /** Frame for cards that sit on a light surface and carry a text body below. */
 export const CARD_FRAME_LIGHT =
-  "group relative isolate flex flex-col overflow-hidden border border-[#eadfac] bg-[#fffdf3] text-left " +
-  "shadow-[0_10px_30px_rgba(17,16,11,0.08)] transition-all duration-300 " +
-  "hover:-translate-y-1 hover:border-[#d8c56d] hover:shadow-[0_24px_60px_rgba(17,16,11,0.18)]";
+  "group relative isolate flex flex-col overflow-hidden border border-border bg-background text-left " +
+  "shadow-card transition-all duration-300 " +
+  "hover:-translate-y-1 hover:border-input hover:shadow-floating";
 
 /**
  * A single scrim for the whole site, with explicit stops rather than Tailwind's
@@ -139,13 +138,13 @@ export function CardMeta({
             "trip-meta-text inline-flex items-center gap-1.5 border px-2.5 py-1 text-[10px] uppercase",
             tone === "overlay"
               ? "border-white/25 bg-black/35 text-white backdrop-blur"
-              : "border-[#eadfac] bg-white text-[#8a6f12]"
+              : "border-border bg-white text-accent-text"
           )}
         >
           {Icon ? (
             <Icon
-              className="h-3.5 w-3.5"
-              style={{ color: tone === "overlay" ? ACCENT : "#b89422" }}
+              aria-hidden="true"
+              className={cn("h-3.5 w-3.5", tone === "overlay" ? "text-accent" : "text-accent-text")}
             />
           ) : null}
           {label}
@@ -170,7 +169,7 @@ export function CardTitle({
         "trip-header-title trip-header-title--compact mt-3 max-w-[16ch] text-balance",
         tone === "overlay"
           ? "text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.5)]"
-          : "text-[#11100b]",
+          : "text-foreground",
         className
       )}
     >

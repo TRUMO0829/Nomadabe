@@ -1,14 +1,6 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Аяллын чиглэлүүд",
-  description:
-    "Browse Nomadabe domestic and outbound trips by country, city, and travel style.",
-};
-
-export const dynamic = "force-dynamic";
-
+// The old destinations index now lives on /tours; this route only redirects.
 export default function DestinationsPage() {
   redirect("/tours");
 }

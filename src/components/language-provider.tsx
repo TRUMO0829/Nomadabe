@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { MotionConfig } from "framer-motion";
 import {
   DEFAULT_LOCALE,
   getCopyLocale,
@@ -85,9 +86,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     [contentLocale, locale, setLocale]
   );
 
+  // Every framer-motion animation on the site honours the visitor's
+  // reduced-motion setting from here, instead of each component checking.
   return (
     <LanguageContext.Provider value={value}>
-      {children}
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </LanguageContext.Provider>
   );
 }

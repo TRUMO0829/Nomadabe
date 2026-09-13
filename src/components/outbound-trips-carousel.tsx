@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react";
 import { getAdventureText, type Adventure } from "@/lib/adventures";
 import { getHighResolutionImageUrl } from "@/lib/image-quality";
@@ -12,29 +12,27 @@ import {
   CardOverlay,
   CardTitle,
 } from "@/components/ui/card-recipe";
+import { SectionHeading } from "@/components/ui/section";
 import { cn } from "@/lib/utils";
-import { AdventureModal } from "./adventure-modal";
 import { useLanguage } from "./language-provider";
 import { formatPrice } from "@/lib/currency";
+import { OUTBOUND_OPTIONS, buildStaticOutboundAdventure } from "@/lib/outbound-trips";
 
-const ACCENT = "#FFD400";
+// The /tours lists still import the packaged options from here.
+export { OUTBOUND_OPTIONS } from "@/lib/outbound-trips";
 
 const COPY = {
   mn: {
     eyebrow: "Гадаад чиглэлийн аяллууд",
     title: "Гадаад аяллын чиглэлүүд",
-    body:
-      "Хятад, Япон, Солонгос, Турк зэрэг эрэлттэй чиглэлүүдийн аяллын багцууд.",
-    quote: "Санал авах",
+    body: "Хятад, Япон, Солонгос, Турк зэрэг эрэлттэй чиглэлүүдийн аяллын багцууд.",
     details: "Дэлгэрэнгүй",
     day: "хоног",
   },
   en: {
     eyebrow: "Outbound trips",
     title: "Outbound travel routes",
-    body:
-      "Popular travel packages across China, Japan, South Korea, Turkey, and more.",
-    quote: "Request quote",
+    body: "Popular travel packages across China, Japan, South Korea, Turkey, and more.",
     details: "Details",
     day: "days",
   },
@@ -42,7 +40,6 @@ const COPY = {
     eyebrow: "出境旅行",
     title: "出境旅行路线",
     body: "中国、日本、韩国、土耳其等热门目的地的旅行套餐。",
-    quote: "获取报价",
     details: "详情",
     day: "天",
   },
@@ -50,7 +47,6 @@ const COPY = {
     eyebrow: "海外ツアー",
     title: "海外旅行ルート",
     body: "中国、日本、韓国、トルコなど人気目的地の旅行プラン。",
-    quote: "見積もり依頼",
     details: "詳細",
     day: "日",
   },
@@ -58,167 +54,15 @@ const COPY = {
     eyebrow: "해외 여행",
     title: "해외 여행 루트",
     body: "중국, 일본, 한국, 튀르키예 등 인기 목적지의 여행 패키지.",
-    quote: "견적 요청",
     details: "자세히",
     day: "일",
   },
 } as const;
 
-export const OUTBOUND_OPTIONS = [
-  {
-    id: "zhangjiajie",
-    countryMn: "Хятад",
-    countryEn: "China",
-    countryZh: "中国",
-    countryJa: "中国",
-    countryKo: "중국",
-    titleMn: "Жанжиажэ аялал /Аватар/",
-    titleEn: "Zhangjiajie Avatar trip",
-    titleZh: "张家界阿凡达之旅",
-    titleJa: "張家界アバター旅行",
-    titleKo: "장자제 아바타 여행",
-    days: 8,
-    price: "2,990,000₮",
-    image:
-      "https://images.unsplash.com/photo-1561031454-4f1331bd2a34?w=2400&q=90&auto=format&fit=crop",
-  },
-  {
-    id: "shanghai",
-    countryMn: "Хятад",
-    countryEn: "China",
-    countryZh: "中国",
-    countryJa: "中国",
-    countryKo: "중국",
-    titleMn: "Шанхай хотын аяллын хөтөлбөр",
-    titleEn: "Shanghai city travel program",
-    titleZh: "上海城市旅行项目",
-    titleJa: "上海シティ旅行プログラム",
-    titleKo: "상하이 도시 여행 프로그램",
-    days: 6,
-    price: "3,390,000₮",
-    image:
-      "https://images.unsplash.com/photo-1748078096261-5eff2aee113f?w=2400&q=90&auto=format&fit=crop",
-  },
-  {
-    id: "japan",
-    countryMn: "Япон",
-    countryEn: "Japan",
-    countryZh: "日本",
-    countryJa: "日本",
-    countryKo: "일본",
-    titleMn: "Япон 4 хотын аялал",
-    titleEn: "Japan four-city trip",
-    titleZh: "日本四城之旅",
-    titleJa: "日本4都市旅行",
-    titleKo: "일본 4개 도시 여행",
-    days: 5,
-    price: "4,990,000₮",
-    image:
-      "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=2400&q=90&auto=format&fit=crop",
-  },
-  {
-    id: "jeju",
-    countryMn: "БНСУ",
-    countryEn: "South Korea",
-    countryZh: "韩国",
-    countryJa: "韓国",
-    countryKo: "대한민국",
-    titleMn: "Жэжү арлын аялал",
-    titleEn: "Jeju island trip",
-    titleZh: "济州岛之旅",
-    titleJa: "済州島旅行",
-    titleKo: "제주도 여행",
-    days: 5,
-    price: "4,290,000₮",
-    image:
-      "https://images.unsplash.com/photo-1667971286457-144269b0e4d8?w=2400&q=90&auto=format&fit=crop",
-  },
-  {
-    id: "turkey",
-    countryMn: "Турк",
-    countryEn: "Turkey",
-    countryZh: "土耳其",
-    countryJa: "トルコ",
-    countryKo: "튀르키예",
-    titleMn: "Анталья, Памуккале, Истанбул",
-    titleEn: "Antalya, Pamukkale, Istanbul",
-    titleZh: "安塔利亚、棉花堡、伊斯坦布尔",
-    titleJa: "アンタルヤ、パムッカレ、イスタンブール",
-    titleKo: "안탈리아, 파묵칼레, 이스탄불",
-    days: 8,
-    price: "4,690,000₮",
-    image:
-      "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=2400&q=90&auto=format&fit=crop",
-  },
-  {
-    id: "taiwan",
-    countryMn: "Тайвань",
-    countryEn: "Taiwan",
-    countryZh: "台湾",
-    countryJa: "台湾",
-    countryKo: "대만",
-    titleMn: "Тайвань Тайбэй аялал",
-    titleEn: "Taiwan Taipei trip",
-    titleZh: "台湾台北之旅",
-    titleJa: "台湾・台北旅行",
-    titleKo: "대만 타이베이 여행",
-    days: 7,
-    price: "6,790,000₮",
-    image:
-      "https://images.unsplash.com/photo-1748104433499-3d492d0337cb?w=2400&q=90&auto=format&fit=crop",
-  },
-];
-
 type OutboundTripsCarouselProps = {
   adventures?: Adventure[];
   outboundTripImages?: Record<string, string>;
 };
-
-function parseMntPrice(price: string) {
-  const numericPrice = Number(price.replace(/[^\d]/g, ""));
-  return Number.isFinite(numericPrice) ? numericPrice : 0;
-}
-
-function getStaticOutboundDetails(
-  option: (typeof OUTBOUND_OPTIONS)[number],
-  country: string,
-  locale: keyof typeof COPY
-) {
-  const isMn = locale === "mn";
-
-  return {
-    summary: isMn
-      ? `${country} чиглэлийн ${option.days} хоногийн аялал. Хотын үзвэр, амралт, зураг авах цэг, өдөр бүрийн маршрут, буудал болон тээврийн зохион байгуулалтыг Nomadabe баг төлөвлөнө.`
-      : `${option.days}-day ${country} travel package with daily routing, city highlights, leisure time, photo spots, accommodation guidance, and transport planning by the Nomadabe team.`,
-    idealFor: isMn
-      ? ["Гэр бүл", "Найз нөхөд", "Жижиг групп", "Анх удаа аялагч"]
-      : ["Families", "Friends", "Small groups", "First-time visitors"],
-    includes: isMn
-      ? [
-          "Өдөр бүрийн маршрут",
-          "Буудал, тээврийн чиглүүлэг",
-          "Аяллын зөвлөгөө",
-          "Хөтөч/орчуулгын мэдээлэл",
-          "eSIM, даатгалын зөвлөмж",
-        ]
-      : [
-          "Daily itinerary planning",
-          "Hotel and transport guidance",
-          "Travel consulting",
-          "Guide and interpreter options",
-          "eSIM and insurance guidance",
-        ],
-    businessSupport: isMn
-      ? [
-          "Бизнес уулзалт, expo эсвэл бүтээгдэхүүн судалгааны зорилготой бол тусгай хөтөлбөр нэмэх боломжтой.",
-          "Нийлүүлэгч, худалдан авалт, логистикийн анхан шатны зөвлөгөөг аяллын төлөвлөгөөнд уялдуулна.",
-        ]
-      : [
-          "Business meetings, expo visits, or product research can be added as a custom track.",
-          "Supplier, purchasing, and logistics guidance can be aligned with the travel plan.",
-        ],
-  };
-}
 
 export function OutboundTripsCarousel({
   adventures = [],
@@ -226,88 +70,15 @@ export function OutboundTripsCarousel({
 }: OutboundTripsCarouselProps) {
   const { contentLocale } = useLanguage();
   const copy = COPY[contentLocale];
-  const [selected, setSelected] = useState<Adventure | null>(null);
-  const backendOptions = adventures
-    .filter((adventure) => adventure.country !== "Mongolia")
-    .map((adventure) => {
-      const text = getAdventureText(adventure, contentLocale);
-
-      return {
-        id: `trip-${adventure.id}`,
-        countryMn: text.country,
-        countryEn: text.country,
-        countryZh: text.country,
-        countryJa: text.country,
-        countryKo: text.country,
-        titleMn: text.title,
-        titleEn: text.title,
-        titleZh: text.title,
-        titleJa: text.title,
-        titleKo: text.title,
-        days: adventure.days,
-        price:
-          adventure.price > 0
-            ? formatPrice(adventure.price, contentLocale)
-            : "",
-        image: adventure.image,
-        adventure,
-      };
-    });
-  const staticOptions = OUTBOUND_OPTIONS.map((option) => ({
-    ...option,
-    image: outboundTripImages[option.id] || option.image,
-  }));
-  const options = [...staticOptions, ...backendOptions].slice(0, 3);
-  const cardRows = options.map((option, idx) => {
-    const title = {
-      mn: option.titleMn,
-      en: option.titleEn,
-      zh: option.titleZh,
-      ja: option.titleJa,
-      ko: option.titleKo,
-    }[contentLocale];
-    const country = {
-      mn: option.countryMn,
-      en: option.countryEn,
-      zh: option.countryZh,
-      ja: option.countryJa,
-      ko: option.countryKo,
-    }[contentLocale];
-    const backendAdventure = (option as { adventure?: Adventure }).adventure;
-    const staticDetails = getStaticOutboundDetails(
-      option,
-      country,
-      contentLocale
-    );
-    const adventureForModal: Adventure = backendAdventure
-      ? backendAdventure
-      : {
-          id: `static-outbound-${option.id}`,
-          slug: `static-outbound-${option.id}`,
-          title,
-          location: country,
-          country,
-          days: option.days,
-          groupSize: "Жижиг групп",
-          difficulty: "Easy",
-          price: parseMntPrice(option.price),
-          currency: "MNT",
-          image: option.image,
-          tags: ["Гадаад", country],
-          rating: 4.8,
-          reviews: 18 + idx * 4,
-          category: "outbound",
-          summary: staticDetails.summary,
-          idealFor: staticDetails.idealFor,
-          includes: staticDetails.includes,
-          businessSupport: staticDetails.businessSupport,
-          nextDeparture: "",
-        };
-    return adventureForModal;
-  });
+  const cards = [
+    ...OUTBOUND_OPTIONS.map((option) =>
+      buildStaticOutboundAdventure(option, outboundTripImages[option.id])
+    ),
+    ...adventures.filter((adventure) => adventure.country !== "Mongolia"),
+  ].slice(0, 3);
 
   return (
-    <section className="relative overflow-hidden bg-[#0B0A07] text-[#FFFDF3]">
+    <section className="relative overflow-hidden bg-ink text-background">
       {/* ambient yellow glow */}
       <div
         aria-hidden="true"
@@ -321,32 +92,20 @@ export function OutboundTripsCarousel({
       />
 
       <div className="relative mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
-        <span
-          className="inline-flex items-center gap-2.5 text-xs tracking-[0.3em]"
-          style={{ color: ACCENT }}
-        >
-          <span className="h-px w-8" style={{ background: ACCENT }} />
-          {copy.eyebrow}
-        </span>
-        <h2 className="mt-5 max-w-2xl text-3xl leading-tight sm:text-4xl lg:text-5xl">
-          {copy.title}
-        </h2>
+        <SectionHeading eyebrow={copy.eyebrow} title={copy.title} description={copy.body} />
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
-          {cardRows.map((adventure, index) => {
+          {cards.map((adventure, index) => {
             const text = getAdventureText(adventure, contentLocale);
             const featured = index === 0;
             const price =
-              adventure.price > 0
-                ? formatPrice(adventure.price, contentLocale)
-                : null;
+              adventure.price > 0 ? formatPrice(adventure.price, contentLocale) : null;
             const image = getHighResolutionImageUrl(adventure.image);
 
             return (
-              <button
+              <Link
                 key={adventure.id}
-                type="button"
-                onClick={() => setSelected(adventure)}
+                href={`/tours/${encodeURIComponent(adventure.slug)}`}
                 className={cn(
                   CARD_FRAME,
                   featured
@@ -377,16 +136,17 @@ export function OutboundTripsCarousel({
                   <CardTitle>{text.title}</CardTitle>
                   <span className={cn(CARD_CTA, "mt-4 self-start")}>
                     {copy.details}
-                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    <ArrowUpRight
+                      aria-hidden="true"
+                      className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    />
                   </span>
                 </CardOverlay>
-              </button>
+              </Link>
             );
           })}
         </div>
       </div>
-
-      <AdventureModal adventure={selected} onClose={() => setSelected(null)} />
     </section>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -13,23 +14,22 @@ import {
   MessageCircle,
   Route,
   ShieldCheck,
-  UsersRound,
 } from "lucide-react";
 import { ADVENTURES, type Adventure } from "@/lib/adventures";
+import { SectionHeading } from "@/components/ui/section";
 import { useLanguage } from "./language-provider";
 
 const COPY = {
   mn: {
-    eyebrow: "Travel desk",
+    eyebrow: "Аялал төлөвлөлт",
     title: "Аяллыг жагсаалтаас биш, зорилгоос нь эхлүүлье.",
     body:
       "Nomadabe баг таны аяллын зорилго, хугацаа, хүний тоо, хэрэгтэй дэмжлэгийг нэг дор цэгцэлж маршрут, буудал, унаа, зөвлөгөөг төлөвлөнө.",
     boardTitle: "Аялал төлөвлөлтийн самбар",
     boardSubtitle: "Эхний мэдээллээ өгөөд бодит маршрут болгож авна.",
-    live: "Шинэ хүсэлт",
     totalTrips: "боломжит аялал",
     goal: "Зорилго",
-    goalValue: "Амралт, бизнес, expo эсвэл гэр бүл",
+    goalValue: "Амралт, бизнес, үзэсгэлэн эсвэл гэр бүл",
     duration: "Хугацаа",
     durationValue: "3-14 хоног, уян хатан огноо",
     support: "Дэмжлэг",
@@ -42,13 +42,12 @@ const COPY = {
     villas: "Вилла & амралт",
   },
   en: {
-    eyebrow: "Travel desk",
+    eyebrow: "Trip planning",
     title: "Start with the purpose, not a long trip list.",
     body:
       "Nomadabe turns your goal, timing, group size, and support needs into a clear route with hotels, transport, consulting, and next steps.",
     boardTitle: "Trip planning board",
     boardSubtitle: "Share the first details and turn them into a real route.",
-    live: "New request",
     totalTrips: "available trips",
     goal: "Goal",
     goalValue: "Leisure, business, expo, or family",
@@ -64,13 +63,12 @@ const COPY = {
     villas: "Villas & stays",
   },
   zh: {
-    eyebrow: "Travel desk",
+    eyebrow: "旅行规划",
     title: "先从旅行目的开始，而不是从长列表开始。",
     body:
       "Nomadabe 会把目的、时间、人数和所需支持整理成路线、酒店、交通、咨询和下一步。",
     boardTitle: "旅行规划看板",
     boardSubtitle: "先提供基础信息，再生成真实路线。",
-    live: "新需求",
     totalTrips: "可选行程",
     goal: "目的",
     goalValue: "休闲、商务、展会或家庭",
@@ -86,13 +84,12 @@ const COPY = {
     villas: "别墅与度假",
   },
   ja: {
-    eyebrow: "Travel desk",
+    eyebrow: "旅行プランニング",
     title: "長いリストではなく、旅の目的から始めます。",
     body:
       "Nomadabe は目的、日程、人数、必要なサポートを整理し、ルート、ホテル、移動、相談、次のステップにします。",
     boardTitle: "旅行計画ボード",
     boardSubtitle: "最初の情報から具体的なルートへ。",
-    live: "新規依頼",
     totalTrips: "候補ツアー",
     goal: "目的",
     goalValue: "休暇、ビジネス、展示会、家族旅行",
@@ -108,13 +105,12 @@ const COPY = {
     villas: "ヴィラ・滞在",
   },
   ko: {
-    eyebrow: "Travel desk",
+    eyebrow: "여행 플래닝",
     title: "긴 여행 목록보다 목적부터 시작합니다.",
     body:
       "Nomadabe는 목적, 일정, 인원, 필요한 지원을 정리해 루트, 호텔, 교통, 컨설팅, 다음 단계로 만듭니다.",
     boardTitle: "여행 계획 보드",
     boardSubtitle: "첫 정보를 실제 일정으로 바꿉니다.",
-    live: "새 요청",
     totalTrips: "가능한 여행",
     goal: "목적",
     goalValue: "휴식, 비즈니스, 전시회, 가족",
@@ -182,50 +178,44 @@ export function TravelOptionsCarousel({
   ];
 
   return (
-    <section className="relative overflow-hidden bg-[#0f0e0a] text-[#fffdf3]">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center opacity-38"
-        style={{ backgroundImage: "url('/hero-autumn.webp')" }}
+    <section className="relative overflow-hidden bg-ink text-background">
+      <Image
+        src="/hero-autumn.webp"
+        alt=""
+        fill
+        sizes="100vw"
+        className="object-cover object-center opacity-40"
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,14,10,0.96),rgba(15,14,10,0.82)_48%,rgba(15,14,10,0.66))]"
+        className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,10,7,0.96),rgba(11,10,7,0.82)_48%,rgba(11,10,7,0.66))]"
       />
-      <div className="relative mx-auto grid min-h-[calc(100svh/var(--site-scale))] w-full max-w-7xl items-center gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:px-12">
+      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-5 py-20 sm:px-8 lg:min-h-svh lg:grid-cols-[0.9fr_1.1fr] lg:px-12">
         <div>
-          <p className="nav-text text-xs uppercase text-[#ffd400]">
-            {copy.eyebrow}
-          </p>
-          <h2 className="mt-5 max-w-3xl text-balance text-[clamp(2.2rem,5vw,5.3rem)] leading-[1.02]">
-            {copy.title}
-          </h2>
-          <p className="mt-6 max-w-2xl text-sm leading-7 text-white/70 sm:text-base">
-            {copy.body}
-          </p>
+          <SectionHeading
+            eyebrow={copy.eyebrow}
+            title={copy.title}
+            description={copy.body}
+          />
           <div className="mt-8 flex flex-wrap gap-3">
-            <span className="inline-flex items-center gap-2 border border-white/16 bg-white/7 px-4 py-3 text-xs uppercase text-white/74">
-              <Globe2 className="h-4 w-4 text-[#ffd400]" />
+            <span className="inline-flex items-center gap-2 border border-white/16 bg-white/7 px-4 py-3 text-xs uppercase text-white/80">
+              <Globe2 className="h-4 w-4 text-accent" aria-hidden="true" />
               {tripCount} {copy.totalTrips}
-            </span>
-            <span className="inline-flex items-center gap-2 border border-white/16 bg-white/7 px-4 py-3 text-xs uppercase text-white/74">
-              <UsersRound className="h-4 w-4 text-[#ffd400]" />
-              {copy.live}
             </span>
           </div>
         </div>
 
-        <div className="border border-white/14 bg-black/24 p-4 shadow-[0_28px_90px_rgba(0,0,0,0.28)] backdrop-blur-md sm:p-6">
+        <div className="border border-white/14 bg-black/24 p-4 shadow-floating backdrop-blur-md sm:p-6">
           <div className="flex flex-col gap-3 border-b border-white/12 pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="nav-text text-[11px] uppercase text-[#ffd400]">
+              <p className="nav-text text-[11px] uppercase text-accent">
                 {copy.boardTitle}
               </p>
               <h3 className="mt-2 text-2xl leading-tight text-white sm:text-3xl">
                 {copy.boardSubtitle}
               </h3>
             </div>
-            <MapPinned className="h-8 w-8 text-[#ffd400]" />
+            <MapPinned className="h-8 w-8 text-accent" aria-hidden="true" />
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -234,21 +224,19 @@ export function TravelOptionsCarousel({
 
               return (
                 <div key={item.label} className="border border-white/12 bg-white/[0.055] p-4">
-                  <div className="flex items-center gap-2 text-[11px] uppercase text-white/50">
-                    <Icon className="h-4 w-4 text-[#ffd400]" />
+                  <div className="flex items-center gap-2 text-[11px] uppercase text-white/65">
+                    <Icon className="h-4 w-4 text-accent" aria-hidden="true" />
                     {item.label}
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-white/82">
-                    {item.value}
-                  </p>
+                  <p className="mt-3 text-sm text-white/85">{item.value}</p>
                 </div>
               );
             })}
           </div>
 
-          <div className="mt-5 border border-[#ffd400]/26 bg-[#ffd400]/9 p-4">
-            <div className="flex items-center gap-2 text-[11px] uppercase text-[#ffd400]">
-              <CheckCircle2 className="h-4 w-4" />
+          <div className="mt-5 border border-accent/26 bg-accent/9 p-4">
+            <div className="flex items-center gap-2 text-[11px] uppercase text-accent">
+              <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               {copy.actionsTitle}
             </div>
             <div className="mt-4 grid gap-2">
@@ -259,13 +247,13 @@ export function TravelOptionsCarousel({
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="group flex min-h-12 items-center justify-between gap-4 bg-[#fffdf3] px-4 text-xs uppercase text-[#11100b] transition-colors hover:bg-[#ffd400]"
+                    className="group flex min-h-12 items-center justify-between gap-4 bg-background px-4 text-xs uppercase text-foreground transition-colors hover:bg-accent"
                   >
                     <span className="inline-flex items-center gap-2">
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-4 w-4" aria-hidden="true" />
                       {link.label}
                     </span>
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
                   </Link>
                 );
               })}

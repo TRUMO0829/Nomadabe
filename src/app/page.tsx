@@ -1,10 +1,12 @@
 import { Hero } from "@/components/hero";
+import { Navbar } from "@/components/navbar";
 import { Testimonials } from "@/components/testimonials";
 import { CtaFooter } from "@/components/cta-footer";
 import { SignupPromptModal } from "@/components/signup-prompt-modal";
 import { TravelOptionsCarousel } from "@/components/travel-options-carousel";
 import { FeaturedTripsCarousel } from "@/components/featured-trips-carousel";
 import { OutboundTripsCarousel } from "@/components/outbound-trips-carousel";
+import { TrustStrip } from "@/components/trust-strip";
 import { getAdminStore, getSiteReviews } from "@/lib/server/admin-store";
 import { getPublicReviews, toPublicSiteSettings } from "@/lib/site-settings";
 
@@ -23,14 +25,16 @@ export default async function Home() {
   return (
     <>
       <SignupPromptModal autoOpen={false} />
+      <Navbar revealOnScroll />
       <main className="flex-1">
         <Hero settings={toPublicSiteSettings(siteSettings)} />
+        <TrustStrip />
         <TravelOptionsCarousel adventures={adventures} />
         <OutboundTripsCarousel
           adventures={adventures}
           outboundTripImages={siteSettings.outboundTripImages}
         />
-        <FeaturedTripsCarousel adventures={adventures} variant="compact" />
+        <FeaturedTripsCarousel adventures={adventures} />
         <Testimonials reviews={getPublicReviews(reviews)} />
         <CtaFooter />
       </main>

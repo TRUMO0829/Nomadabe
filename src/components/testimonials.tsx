@@ -1,152 +1,93 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ImagePlus, Send, Star } from "lucide-react";
+import Image from "next/image";
 import type { FormEvent } from "react";
-import { useMemo, useRef, useState } from "react";
-import {
-  TestimonialsColumn,
-  type TestimonialColumnItem,
-} from "@/components/ui/testimonials-columns-1";
+import { useRef, useState } from "react";
+import { ImagePlus, Send, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Container, SectionHeading } from "@/components/ui/section";
+import { cn } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
 import type { SiteReview } from "@/lib/site-settings";
-
-const REVIEW_PROFILES: Array<{
-  email: string;
-  role: string;
-  text: string;
-  avatar: TestimonialColumnItem["avatar"];
-}> = [
-  {
-    email: "nomin.b***@gmail.com",
-    role: "Canton Fair - 7 өдөр",
-    text:
-      "Анх удаа Canton Fair-д явсан болохоор бүртгэл, павильон, уулзалтын цаг бүгдийг нь урьдчилж цэгцэлж өгсөн нь хамгийн их хэрэг болсон.",
-    avatar: { initials: "Н", background: "#1a73e8", foreground: "#ffffff", gender: "female" },
-  },
-  {
-    email: "temuulen.a***@gmail.com",
-    role: "Шанхай бизнес аялал - 5 өдөр",
-    text:
-      "Нислэг хойшлоход буудал, тосолт, дараагийн өдрийн маршрутыг хурдан өөрчилж өгсөн. Ажлын уулзалтуудаа алдалгүй амжуулсан.",
-    avatar: { initials: "Т", background: "#0f9d58", foreground: "#ffffff", gender: "male" },
-  },
-  {
-    email: "saruul.e***@gmail.com",
-    role: "Жэжү гэр бүлийн аялал - 6 өдөр",
-    text:
-      "Хүүхдүүдтэй явсан болохоор хөтөлбөр нь хэт шахуу биш, буудал нь далайд ойр байсан нь таалагдсан. Өдөр бүрийн мэдээлэл тодорхой ирдэг байсан.",
-    avatar: { initials: "С", background: "#fbbc04", foreground: "#202124", gender: "female" },
-  },
-  {
-    email: "enkhjin.m***@gmail.com",
-    role: "Япон 4 хотын аялал - 5 өдөр",
-    text:
-      "Галт тэрэг, хот хоорондын шилжилт дээр санаа зовж байсан ч бүх цагийн хуваарь ойлгомжтой байсан. Хөтөч нь маш тайван тайлбарладаг.",
-    avatar: { initials: "Э", background: "#db4437", foreground: "#ffffff", gender: "female" },
-  },
-  {
-    email: "munkhorgil.b***@gmail.com",
-    role: "Тайвань үзэсгэлэн аялал - 7 өдөр",
-    text:
-      "Үзэсгэлэнгийн дараах ханган нийлүүлэгчийн уулзалтуудыг тусад нь тохируулж өгсөн. Зөвхөн аялал биш бизнес талдаа бодит үр дүнтэй байлаа.",
-    avatar: { initials: "М", background: "#673ab7", foreground: "#ffffff", gender: "male" },
-  },
-  {
-    email: "anuka.d***@gmail.com",
-    role: "Турк амралт аялал - 8 өдөр",
-    text:
-      "Үнэ дотор юу багтсан, юуг тусад нь төлөхийг эхнээс нь тодорхой хэлсэн. Очоод гэнэтийн нэмэлт зардал гараагүй нь итгэл төрүүлсэн.",
-    avatar: { initials: "А", background: "#00acc1", foreground: "#ffffff", gender: "female" },
-  },
-  {
-    email: "bilguun.o***@gmail.com",
-    role: "Хятад үйлдвэртэй уулзах аялал - 4 өдөр",
-    text:
-      "Орчуулагч, тээврийн зохицуулалт сайн байсан. Үйлдвэр дээр очих цаг, буцах зам, хот доторх хөдөлгөөн бүгд төлөвлөгөөний дагуу явсан.",
-    avatar: { initials: "Б", background: "#e8710a", foreground: "#ffffff", gender: "male" },
-  },
-  {
-    email: "oyuka.r***@gmail.com",
-    role: "Монгол фестивалийн аялал - 6 өдөр",
-    text:
-      "Гадаад найзуудтайгаа явсан, хөтөч нь ёс заншил, наадмын хөтөлбөрийг ойлгомжтой тайлбарласан. Зураг авах цэгүүд хүртэл сайн сонгосон байсан.",
-    avatar: { initials: "О", background: "#d81b60", foreground: "#ffffff", gender: "female" },
-  },
-  {
-    email: "tulga.s***@gmail.com",
-    role: "Захиалгат маршрут - 3 өдөр",
-    text:
-      "Богино хугацаанд багийнхаа төсөв, уулзалтын зорилгод тааруулж маршрут гаргуулсан. Хариу хурдан, зохион байгуулалт нь цэгцтэй.",
-    avatar: { initials: "Т", background: "#3c4043", foreground: "#ffffff", gender: "male" },
-  },
-];
 
 type TestimonialsProps = {
   reviews?: SiteReview[];
 };
 
-const REVIEW_FORM_COPY = {
+const MAX_VISIBLE_REVIEWS = 6;
+
+const REVIEW_COPY = {
   mn: {
+    kicker: "Бодит сэтгэгдэл",
+    empty:
+      "Одоогоор нийтлэгдсэн сэтгэгдэл алга. Манайхаар аялсан бол анхны сэтгэгдлийг та үлдээгээрэй.",
     write: "Сэтгэгдэл үлдээх",
     name: "Нэр",
     trip: "Аяллын нэр",
     rating: "Үнэлгээ",
     star: "од",
-    message: "Сэтгэгдлээ бичнэ үү",
-    image: "Зураг",
+    message: "Сэтгэгдэл",
+    image: "Зураг нэмэх",
     location: "Хот / улс",
     saving: "Хадгалж байна",
     saved: "Баярлалаа. Сэтгэгдлийг чинь хянаад удахгүй нийтэлнэ.",
     error: "Сэтгэгдэл хадгалж чадсангүй.",
   },
   en: {
+    kicker: "Real reviews",
+    empty: "No reviews published yet. If you have travelled with us, be the first to leave one.",
     write: "Write a review",
     name: "Name",
     trip: "Trip name",
     rating: "Rating",
     star: "stars",
-    message: "Write your review",
-    image: "Photo",
+    message: "Your review",
+    image: "Add a photo",
     location: "City / country",
     saving: "Saving",
     saved: "Thank you. Your review will appear once our team reviews it.",
     error: "Could not save the review.",
   },
   zh: {
+    kicker: "真实评价",
+    empty: "暂无已发布的评价。如果您曾与我们同行，欢迎留下第一条评价。",
     write: "留下评价",
     name: "姓名",
     trip: "行程名称",
     rating: "评分",
     star: "星",
-    message: "写下您的评价",
-    image: "照片",
+    message: "您的评价",
+    image: "添加照片",
     location: "城市 / 国家",
     saving: "正在保存",
     saved: "谢谢。您的评价将在审核后显示。",
     error: "无法保存评价。",
   },
   ja: {
+    kicker: "お客様の声",
+    empty: "まだ公開されたレビューはありません。ご旅行された方はぜひ最初のレビューをお寄せください。",
     write: "レビューを書く",
     name: "お名前",
     trip: "ツアー名",
     rating: "評価",
     star: "つ星",
-    message: "レビューを書いてください",
-    image: "写真",
+    message: "レビュー",
+    image: "写真を追加",
     location: "都市 / 国",
     saving: "保存中",
     saved: "ありがとうございます。確認後に公開されます。",
     error: "レビューを保存できませんでした。",
   },
   ko: {
+    kicker: "실제 후기",
+    empty: "아직 게시된 후기가 없습니다. 함께 여행하셨다면 첫 후기를 남겨 주세요.",
     write: "후기 작성",
     name: "이름",
     trip: "여행명",
     rating: "평점",
     star: "점",
-    message: "후기를 작성해 주세요",
-    image: "사진",
+    message: "후기",
+    image: "사진 추가",
     location: "도시 / 국가",
     saving: "저장 중",
     saved: "감사합니다. 확인 후 게시됩니다.",
@@ -154,49 +95,24 @@ const REVIEW_FORM_COPY = {
   },
 } as const;
 
+const FIELD_CLASS =
+  "mt-1.5 h-12 w-full border border-input bg-white px-4 text-sm text-foreground";
+const LABEL_CLASS = "block text-xs uppercase text-muted-foreground";
+
+/**
+ * Only reviews real travellers submitted and an admin approved. The section
+ * used to pad itself with nine written-in-house quotes under masked Gmail
+ * addresses; showing those as customer reviews misleads visitors.
+ */
 export function Testimonials({ reviews = [] }: TestimonialsProps) {
   const { contentLocale, t } = useLanguage();
-  const copy = t.testimonials;
-  const formCopy = REVIEW_FORM_COPY[contentLocale];
+  const copy = REVIEW_COPY[contentLocale];
   const formRef = useRef<HTMLFormElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
-
-  const staticTestimonials: TestimonialColumnItem[] = REVIEW_PROFILES.map((profile, index) => {
-    const quote = copy.quotes[index % copy.quotes.length];
-
-    return {
-      text: contentLocale === "mn" ? profile.text : quote.body,
-      email: profile.email,
-      avatar: profile.avatar,
-      role: contentLocale === "mn" ? profile.role : quote.trip,
-    };
-  });
-
-  const testimonials: TestimonialColumnItem[] = useMemo(() => {
-    const storedReviews = reviews.map((review) => ({
-      text: review.message,
-      email: review.name,
-      avatar: {
-        initials: review.name.slice(0, 1).toUpperCase() || "N",
-        background: "#ffd400",
-        foreground: "#11100b",
-        gender: "female" as const,
-      },
-      role: [review.trip, review.location].filter(Boolean).join(" - ") || "Nomadabe traveller",
-      imageUrl: review.imageUrl,
-    }));
-
-    return storedReviews.length > 0
-      ? [...storedReviews, ...staticTestimonials.slice(storedReviews.length)]
-      : staticTestimonials;
-  }, [reviews, staticTestimonials]);
-
-  const firstColumn = testimonials.slice(0, 3);
-  const secondColumn = testimonials.slice(3, 6);
-  const thirdColumn = testimonials.slice(6, 9);
+  const visibleReviews = reviews.slice(0, MAX_VISIBLE_REVIEWS);
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -212,132 +128,150 @@ export function Testimonials({ reviews = [] }: TestimonialsProps) {
       const payload = await response.json();
 
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error?.message || formCopy.error);
+        throw new Error(payload?.error?.message || copy.error);
       }
 
       // Not added to the list: reviews stay hidden until an admin approves them.
       formRef.current?.reset();
-      setStatus(formCopy.saved);
+      setStatus(copy.saved);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : formCopy.error);
+      setStatus(error instanceof Error ? error.message : copy.error);
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  function scrollToReviewForm() {
+  function openReviewForm() {
     setIsReviewFormOpen(true);
     window.setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      formRef.current?.scrollIntoView({ block: "center" });
       nameInputRef.current?.focus();
     }, 80);
   }
 
   return (
-    <section id="journal" className="relative bg-white px-4 py-10 lg:px-8 lg:py-12">
-      <div className="relative z-10 mx-auto w-full max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          viewport={{ once: true }}
-          className="mx-auto flex max-w-[520px] flex-col items-center justify-center text-center"
-        >
-          <h2 className="text-balance text-2xl font-semibold leading-tight text-foreground sm:text-3xl lg:text-4xl">
-            {copy.eyebrow}
-          </h2>
-          <button
-            type="button"
-            onClick={scrollToReviewForm}
-            className="nav-text mt-5 inline-flex h-12 items-center justify-center rounded-full bg-[#11100b] px-8 text-xs uppercase tracking-[0.12em] text-white shadow-[0_14px_36px_rgba(17,16,11,0.16)] transition hover:-translate-y-0.5 hover:bg-[#2a271d]"
-          >
-            {formCopy.write}
-          </button>
-        </motion.div>
-
-        <div className="mx-auto mt-8 grid max-h-[430px] w-full max-w-5xl grid-cols-1 gap-4 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_16%,black_84%,transparent)] md:grid-cols-3">
-          <TestimonialsColumn testimonials={firstColumn} className="w-full" duration={15} />
-          <TestimonialsColumn
-            testimonials={secondColumn}
-            className="hidden w-full md:block"
-            duration={19}
-          />
-          <TestimonialsColumn
-            testimonials={thirdColumn}
-            className="hidden w-full md:block"
-            duration={17}
-          />
+    <section id="journal" className="bg-card py-16 lg:py-20">
+      <Container>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <SectionHeading tone="light" eyebrow={copy.kicker} title={t.testimonials.eyebrow} />
+          <Button type="button" variant="dark" onClick={openReviewForm} className="self-start lg:self-auto">
+            {copy.write}
+          </Button>
         </div>
 
+        {visibleReviews.length > 0 ? (
+          <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {visibleReviews.map((review) => (
+              <li key={review.id} className="flex flex-col border border-border bg-white p-5 shadow-card">
+                {review.imageUrl ? (
+                  <div className="relative mb-4 aspect-[4/3] overflow-hidden bg-muted">
+                    <Image
+                      src={review.imageUrl}
+                      alt={[review.name, review.trip].filter(Boolean).join(" — ")}
+                      fill
+                      sizes="(min-width: 1024px) 380px, (min-width: 768px) 50vw, 92vw"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : null}
+                <StarRating rating={review.rating} />
+                <p className="mt-3 flex-1 text-sm text-foreground/85">{review.message}</p>
+                <div className="mt-4 border-t border-border pt-3">
+                  <p className="text-sm text-foreground">{review.name}</p>
+                  {review.trip || review.location ? (
+                    <p className="text-xs text-muted-foreground">
+                      {[review.trip, review.location].filter(Boolean).join(" · ")}
+                    </p>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-10 max-w-2xl text-base text-muted-foreground">{copy.empty}</p>
+        )}
+
         {isReviewFormOpen ? (
-          <motion.form
+          <form
             id="write-review"
             ref={formRef}
             onSubmit={submitReview}
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto mt-8 grid w-full max-w-5xl scroll-mt-28 gap-3 rounded-xl border border-[#eadfac] bg-[#fffdf3] p-4 shadow-sm shadow-primary/10 md:grid-cols-[1fr_1fr_auto]"
+            className="mt-10 grid scroll-mt-28 gap-4 border border-border bg-background p-5 shadow-card md:grid-cols-[1fr_1fr_12rem]"
           >
-            <input
-              ref={nameInputRef}
-              name="name"
-              required
-              minLength={2}
-              placeholder={formCopy.name}
-              className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
-            />
-            <input
-              name="trip"
-              placeholder={formCopy.trip}
-              className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
-            />
-            <select
-              name="rating"
-              defaultValue="5"
-              className="h-12 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-semibold text-foreground outline-none transition focus:border-primary"
-              aria-label={formCopy.rating}
-            >
-              {[5, 4, 3, 2, 1].map((rating) => (
-                <option key={rating} value={rating}>
-                  {rating} {formCopy.star}
-                </option>
-              ))}
-            </select>
-            <textarea
-              name="message"
-              required
-              minLength={8}
-              placeholder={formCopy.message}
-              className="min-h-24 rounded-lg border border-[#eadfac] bg-white px-4 py-3 text-sm font-medium leading-6 text-foreground outline-none transition focus:border-primary md:col-span-2"
-            />
-            <label className="flex h-24 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[#d8c56d] bg-white px-4 text-sm font-semibold text-foreground/70 transition hover:border-primary hover:text-foreground">
-              <ImagePlus className="h-5 w-5 text-primary" />
-              {formCopy.image}
+            <label className={LABEL_CLASS}>
+              {copy.name}
+              <input
+                ref={nameInputRef}
+                name="name"
+                required
+                minLength={2}
+                autoComplete="name"
+                className={FIELD_CLASS}
+              />
+            </label>
+            <label className={LABEL_CLASS}>
+              {copy.trip}
+              <input name="trip" className={FIELD_CLASS} />
+            </label>
+            <label className={LABEL_CLASS}>
+              {copy.rating}
+              <select name="rating" defaultValue="5" className={FIELD_CLASS}>
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <option key={rating} value={rating}>
+                    {rating} {copy.star}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={cn(LABEL_CLASS, "md:col-span-2")}>
+              {copy.message}
+              <textarea
+                name="message"
+                required
+                minLength={8}
+                className="mt-1.5 min-h-28 w-full border border-input bg-white px-4 py-3 text-sm text-foreground"
+              />
+            </label>
+            <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-input bg-white px-4 text-center text-xs uppercase text-muted-foreground transition-colors hover:text-foreground md:mt-6">
+              <ImagePlus className="h-5 w-5" aria-hidden="true" />
+              {copy.image}
               <input name="image" type="file" accept="image/*" className="sr-only" />
             </label>
-            <div className="flex flex-col gap-3 md:col-span-3 md:flex-row md:items-center">
-              <input
-                name="location"
-                placeholder={formCopy.location}
-                className="h-12 flex-1 rounded-lg border border-[#eadfac] bg-white px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary"
-              />
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#11100b] px-6 text-sm font-semibold text-white transition hover:bg-[#2a271d] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Star className="h-4 w-4" />
-                {isSubmitting ? formCopy.saving : formCopy.write}
-                <Send className="h-4 w-4" />
-              </button>
+            <div className="flex flex-col gap-4 md:col-span-3 md:flex-row md:items-end">
+              <label className={cn(LABEL_CLASS, "flex-1")}>
+                {copy.location}
+                <input name="location" className={FIELD_CLASS} />
+              </label>
+              <Button type="submit" variant="dark" disabled={isSubmitting}>
+                {isSubmitting ? copy.saving : copy.write}
+                <Send className="h-4 w-4" aria-hidden="true" />
+              </Button>
             </div>
-            {status ? (
-              <p className="text-sm font-medium text-foreground/70 md:col-span-3">{status}</p>
-            ) : null}
-          </motion.form>
+            <p role="status" className="text-sm text-foreground/75 md:col-span-3">
+              {status}
+            </p>
+          </form>
         ) : null}
-      </div>
+      </Container>
     </section>
+  );
+}
+
+function StarRating({ rating }: { rating: number }) {
+  const value = Math.max(0, Math.min(5, Math.round(rating)));
+
+  return (
+    <div className="flex items-center gap-1" role="img" aria-label={`${value} / 5`}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          aria-hidden="true"
+          className={cn(
+            "h-4 w-4",
+            star <= value ? "fill-accent text-accent-text" : "text-border"
+          )}
+        />
+      ))}
+    </div>
   );
 }

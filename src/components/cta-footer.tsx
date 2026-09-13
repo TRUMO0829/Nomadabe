@@ -1,23 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { LEGAL_COPY, type LegalPageKind } from "@/components/legal-page";
 import { PlanningRequestSection } from "./planning-request-section";
 import { useLanguage } from "./language-provider";
+
+export const WHATSAPP_URL = "https://wa.me/97699103258";
+export const PRIMARY_PHONE = { label: "+976 9910 3258", href: "tel:+97699103258" } as const;
 
 const SOCIALS = [
   {
@@ -33,7 +23,7 @@ const SOCIALS = [
   {
     label: "WhatsApp",
     icon: "whatsapp",
-    href: "https://wa.me/97699103258",
+    href: WHATSAPP_URL,
   },
   {
     label: "WeChat",
@@ -43,181 +33,101 @@ const SOCIALS = [
 ] as const;
 
 const CONTACT_EMAIL = "info@nomadabe.mn";
-const MINISTER_TOWER_ADDRESS =
-  "Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia, Ulaanbaatar, Mongolia, 976";
 const MINISTER_TOWER_MAP_URL =
   "https://www.google.com/maps/place/Minister+Tower/@47.9153226,106.917978,425m/data=!3m2!1e3!4b1!4m6!3m5!1s0x5d9693649ea1b323:0x8bb14a35346801cd!8m2!3d47.9153226!4d106.9205583!16s%2Fg%2F11ss8zbb4r?hl=en-US&entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D";
 const OYU_INTELLIGENCE_URL = "https://www.oyu-intelligence.com/";
 
 const CONTACTS = [
   { type: "email", label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
-  { type: "whatsapp", label: "WhatsApp +976 9910 3258", href: "https://wa.me/97699103258" },
-  { type: "wechat", label: "WeChat Ariunbold", href: "weixin://dl/chat?Ariunbold" },
-  { type: "phone", label: "+976 9910 3258", href: "tel:+97699103258" },
+  { type: "phone", label: PRIMARY_PHONE.label, href: PRIMARY_PHONE.href },
   { type: "phone", label: "+976 9918 9317", href: "tel:+97699189317" },
-  {
-    type: "address",
-    label: MINISTER_TOWER_ADDRESS,
-    href: MINISTER_TOWER_MAP_URL,
-  },
 ] as const;
 
 const FOOTER_COPY = {
   mn: {
-    tagline: "Travel agency",
-    description:
-      "Монгол болон дэлхийн чиглэлүүдэд бизнес, expo, амралт зугаалга, захиалгат аяллыг төлөвлөж зохион байгуулна.",
-    linksTitle: "Холбоосууд",
-    contactTitle: "Төлөвлөх",
-    mapTitle: "Байршил",
+    tagline: "Аяллын зөвлөх үйлчилгээ",
+    menu: "Цэс",
+    contacts: "Холбоо барих",
+    socials: "Сошиал холбоос",
+    rights: "Бүх эрх хуулиар хамгаалагдсан.",
     links: [
       { label: "Бидний тухай", href: "/about" },
       { label: "Түгээмэл асуултууд", href: "/faq" },
       { label: "Аяллууд", href: "/tours" },
-      { label: "Төлөвлөх", href: "/plan" },
+      { label: "Захиалга", href: "/plan" },
     ],
-    contacts: CONTACTS,
-    mapButton: "Google Maps нээх",
     legal: [
       { label: "Үйлчилгээний нөхцөл", href: "/terms" },
       { label: "Нууцлалын бодлого", href: "/privacy" },
     ],
   },
   en: {
-    tagline: "Travel agency",
-    description:
-      "Business, expo, leisure, and custom travel across Mongolia and global destinations, planned with care.",
-    linksTitle: "Links",
-    contactTitle: "Contact",
-    mapTitle: "Location",
+    tagline: "Travel consulting",
+    menu: "Menu",
+    contacts: "Contact",
+    socials: "Social links",
+    rights: "All rights reserved.",
     links: [
       { label: "About us", href: "/about" },
       { label: "FAQ", href: "/faq" },
       { label: "Trips", href: "/tours" },
-      { label: "Contact", href: "/plan" },
+      { label: "Booking", href: "/plan" },
     ],
-    contacts: CONTACTS,
-    mapButton: "Open in Google Maps",
     legal: [
       { label: "Terms of service", href: "/terms" },
       { label: "Privacy policy", href: "/privacy" },
     ],
   },
   zh: {
-    tagline: "Travel agency",
-    description:
-      "我们为蒙古及全球目的地提供商务考察、展会行程、休闲度假和定制旅行规划。",
-    linksTitle: "链接",
-    contactTitle: "联系方式",
-    mapTitle: "位置",
+    tagline: "旅行咨询",
+    menu: "菜单",
+    contacts: "联系方式",
+    socials: "社交链接",
+    rights: "版权所有。",
     links: [
       { label: "关于我们", href: "/about" },
       { label: "常见问题", href: "/faq" },
       { label: "旅行", href: "/tours" },
-      { label: "联系", href: "/plan" },
+      { label: "预订", href: "/plan" },
     ],
-    contacts: CONTACTS,
-    mapButton: "打开 Google Maps",
     legal: [
       { label: "服务条款", href: "/terms" },
       { label: "隐私政策", href: "/privacy" },
     ],
   },
   ja: {
-    tagline: "Travel agency",
-    description:
-      "モンゴル国内外のビジネス視察、展示会、レジャー、オーダーメイド旅行を丁寧にプランニングします。",
-    linksTitle: "リンク",
-    contactTitle: "お問い合わせ",
-    mapTitle: "所在地",
+    tagline: "旅行コンサルティング",
+    menu: "メニュー",
+    contacts: "連絡先",
+    socials: "SNSリンク",
+    rights: "無断転載を禁じます。",
     links: [
       { label: "私たちについて", href: "/about" },
       { label: "FAQ", href: "/faq" },
       { label: "ツアー", href: "/tours" },
-      { label: "お問い合わせ", href: "/plan" },
+      { label: "予約", href: "/plan" },
     ],
-    contacts: CONTACTS,
-    mapButton: "Google Maps を開く",
     legal: [
       { label: "利用規約", href: "/terms" },
       { label: "プライバシーポリシー", href: "/privacy" },
     ],
   },
   ko: {
-    tagline: "Travel agency",
-    description:
-      "몽골 국내외 비즈니스 답사, 엑스포 일정, 휴양, 맞춤 여행을 목적에 맞게 세심하게 설계합니다.",
-    linksTitle: "링크",
-    contactTitle: "연락처",
-    mapTitle: "위치",
+    tagline: "여행 컨설팅",
+    menu: "메뉴",
+    contacts: "연락처",
+    socials: "소셜 링크",
+    rights: "모든 권리 보유.",
     links: [
       { label: "회사 소개", href: "/about" },
       { label: "FAQ", href: "/faq" },
       { label: "여행", href: "/tours" },
-      { label: "연락하기", href: "/plan" },
+      { label: "예약", href: "/plan" },
     ],
-    contacts: CONTACTS,
-    mapButton: "Google Maps 열기",
     legal: [
       { label: "서비스 약관", href: "/terms" },
       { label: "개인정보 처리방침", href: "/privacy" },
     ],
-  },
-} as const;
-
-const FOOTER_COLUMN_COPY = {
-  mn: {
-    menu: "Цэс",
-    contacts: "Холбоосууд",
-    socials: "Сошиал холбоос",
-  },
-  en: {
-    menu: "Menu",
-    contacts: "Contacts",
-    socials: "Social links",
-  },
-  zh: {
-    menu: "菜单",
-    contacts: "联系方式",
-    socials: "社交链接",
-  },
-  ja: {
-    menu: "メニュー",
-    contacts: "連絡先",
-    socials: "SNSリンク",
-  },
-  ko: {
-    menu: "메뉴",
-    contacts: "연락처",
-    socials: "소셜 링크",
-  },
-} as const;
-
-const LEGAL_DIALOG_COPY = {
-  mn: {
-    close: "Хаах",
-    agree: "Зөвшөөрөх",
-    readAll: "Зөвшөөрөхөөс өмнө бүх нөхцөлийг уншина уу.",
-  },
-  en: {
-    close: "Cancel",
-    agree: "I agree",
-    readAll: "Read all terms before accepting.",
-  },
-  zh: {
-    close: "关闭",
-    agree: "同意",
-    readAll: "接受前请阅读全部内容。",
-  },
-  ja: {
-    close: "閉じる",
-    agree: "同意する",
-    readAll: "同意する前にすべてお読みください。",
-  },
-  ko: {
-    close: "닫기",
-    agree: "동의",
-    readAll: "동의하기 전에 전체 내용을 읽어 주세요.",
   },
 } as const;
 
@@ -229,13 +139,12 @@ type CtaFooterProps = {
 export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
   const { contentLocale } = useLanguage();
   const footer = FOOTER_COPY[contentLocale];
-  const footerColumns = FOOTER_COLUMN_COPY[contentLocale];
 
   return (
     <>
       {showPlanningSection ? <PlanningRequestSection /> : null}
 
-      <footer className="bg-[#080807] text-white">
+      <footer className="bg-ink text-white">
         <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
           <div className="grid gap-12 lg:grid-cols-[1.35fr_0.85fr_1.15fr_0.85fr]">
             <div>
@@ -254,43 +163,39 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                 href={MINISTER_TOWER_MAP_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-10 flex max-w-sm gap-4 text-sm leading-7 text-white/56 transition-colors hover:text-accent"
+                className="mt-10 flex max-w-sm gap-4 text-sm text-white/72 transition-colors hover:text-accent"
               >
                 <MapPin className="mt-1 h-5 w-5 shrink-0 text-accent" />
                 <span>Minister Tower, Olympic Street 15, Ulaanbaatar, Mongolia</span>
               </a>
 
-              <p className="mt-8 text-xs uppercase tracking-[0.44em] text-white/28">
-                Travel consulting
-              </p>
+              <p className="mt-8 text-xs uppercase text-white/55">{footer.tagline}</p>
             </div>
 
-            <nav>
-              <FooterColumnTitle>{footerColumns.menu}</FooterColumnTitle>
+            <nav aria-label={footer.menu}>
+              <FooterColumnTitle>{footer.menu}</FooterColumnTitle>
               <ul className="space-y-4">
                 {footer.links.map((link) => (
                   <li key={link.href}>
-                    <a
+                    <Link
                       href={link.href}
-                      className="text-base text-white/44 transition-colors hover:text-accent"
+                      className="text-base text-white/72 transition-colors hover:text-accent"
                     >
                       {link.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
             </nav>
 
             <div>
-              <FooterColumnTitle>{footerColumns.contacts}</FooterColumnTitle>
+              <FooterColumnTitle>{footer.contacts}</FooterColumnTitle>
               <ul className="space-y-4">
-                {CONTACTS.filter(
-                  (contact) => contact.type === "email" || contact.type === "phone"
-                ).map((contact) => (
+                {CONTACTS.map((contact) => (
                   <li key={`${contact.type}-${contact.label}`}>
                     <a
                       href={contact.href}
-                      className="group flex gap-3 text-base leading-6 text-white/44"
+                      className="group flex gap-3 text-base text-white/72"
                     >
                       <span className="footer-accent-icon mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center transition-transform group-hover:scale-110">
                         {contact.type === "phone" ? (
@@ -309,7 +214,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </div>
 
             <div>
-              <FooterColumnTitle>{footerColumns.socials}</FooterColumnTitle>
+              <FooterColumnTitle>{footer.socials}</FooterColumnTitle>
               <ul className="space-y-4">
                 {SOCIALS.map((social) => (
                   <li key={social.label}>
@@ -317,7 +222,7 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
                       href={social.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="group flex items-center gap-3 text-base text-white/44"
+                      className="group flex items-center gap-3 text-base text-white/72"
                     >
                       <span className="footer-accent-icon flex h-6 w-6 items-center justify-center transition-transform group-hover:scale-110">
                         <SocialIcon icon={social.icon} />
@@ -332,17 +237,16 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
             </div>
           </div>
 
-          <div className="relative mt-14 border-t border-white/10 pt-7 text-xs text-white/45">
+          <div className="relative mt-14 border-t border-white/10 pt-7 text-xs text-white/60">
             <div className="relative z-10 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
               <a
                 href={OYU_INTELLIGENCE_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex w-fit items-center gap-3 transition-colors hover:text-accent"
+                className="inline-flex w-fit items-center gap-3 uppercase transition-colors hover:text-accent"
               >
                 <span>
-                  © {new Date().getFullYear()} OYU INTELLIGENCE LLC. БҮХ ЭРХ ХУУЛИАР
-                  ХАМГААЛАГДСАН.
+                  © {new Date().getFullYear()} OYU INTELLIGENCE LLC. {footer.rights}
                 </span>
                 <span className="relative h-10 w-10 shrink-0 opacity-90">
                   <Image
@@ -356,12 +260,13 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
               </a>
               <div className="flex flex-wrap gap-6">
                 {footer.legal.map((link) => (
-                  <LegalDialogLink
+                  <Link
                     key={link.href}
                     href={link.href}
-                    label={link.label}
-                    locale={contentLocale}
-                  />
+                    className="transition-colors hover:text-accent"
+                  >
+                    {link.label}
+                  </Link>
                 ))}
               </div>
             </div>
@@ -375,112 +280,13 @@ export function CtaFooter({ showPlanningSection = false }: CtaFooterProps) {
 function FooterColumnTitle({ children }: { children: string }) {
   return (
     <div className="mb-7">
-      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-white/68">
-        {children}
-      </h3>
+      <h2 className="text-sm uppercase text-white/80">{children}</h2>
       <span className="mt-5 block h-px w-full bg-white/12" />
     </div>
   );
 }
 
-function LegalDialogLink({
-  href,
-  label,
-  locale,
-}: {
-  href: string;
-  label: string;
-  locale: keyof typeof LEGAL_DIALOG_COPY;
-}) {
-  const [hasReadToBottom, setHasReadToBottom] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const kind: LegalPageKind = href === "/privacy" ? "privacy" : "terms";
-  const copy = LEGAL_COPY[locale]?.[kind] ?? LEGAL_COPY.mn[kind];
-  const dialogCopy = LEGAL_DIALOG_COPY[locale] ?? LEGAL_DIALOG_COPY.mn;
-
-  const handleScroll = () => {
-    const content = contentRef.current;
-
-    if (!content) {
-      return;
-    }
-
-    const maxScroll = content.scrollHeight - content.clientHeight;
-    const scrollPercentage = maxScroll <= 0 ? 1 : content.scrollTop / maxScroll;
-
-    if (scrollPercentage >= 0.99 && !hasReadToBottom) {
-      setHasReadToBottom(true);
-    }
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      return;
-    }
-
-    setHasReadToBottom(false);
-    window.setTimeout(handleScroll, 0);
-  };
-
-  return (
-    <Dialog onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <button
-          type="button"
-          className="text-left transition-colors hover:text-accent"
-        >
-          {label}
-        </button>
-      </DialogTrigger>
-      <DialogContent className="flex max-h-[min(700px,86vh)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl [&>button:last-child]:top-3.5">
-        <DialogHeader className="contents space-y-0 text-left">
-          <DialogTitle className="border-b border-border px-6 py-4 text-base">
-            {copy.title}
-          </DialogTitle>
-          <div
-            ref={contentRef}
-            onScroll={handleScroll}
-            className="overflow-y-auto"
-          >
-            <DialogDescription asChild>
-              <div className="px-6 py-4">
-                <p className="text-sm leading-6 text-foreground/72">{copy.subtitle}</p>
-                <p className="mt-3 text-xs leading-5 text-muted-foreground">{copy.updated}</p>
-                <div className="mt-6 space-y-5 text-sm leading-6 text-foreground/78">
-                  {copy.sections.map((section) => (
-                    <section key={section.title} className="space-y-1.5">
-                      <p className="font-semibold text-foreground">{section.title}</p>
-                      <p>{section.body}</p>
-                    </section>
-                  ))}
-                </div>
-              </div>
-            </DialogDescription>
-          </div>
-        </DialogHeader>
-        <DialogFooter className="border-t border-border px-6 py-4 sm:items-center">
-          {!hasReadToBottom ? (
-            <span className="grow text-xs text-muted-foreground max-sm:text-center">
-              {dialogCopy.readAll}
-            </span>
-          ) : null}
-          <DialogClose asChild>
-            <Button type="button" variant="outline">
-              {dialogCopy.close}
-            </Button>
-          </DialogClose>
-          <DialogClose asChild>
-            <Button type="button" disabled={!hasReadToBottom}>
-              {dialogCopy.agree}
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function SocialIcon({ icon }: { icon: (typeof SOCIALS)[number]["icon"] }) {
+export function SocialIcon({ icon }: { icon: (typeof SOCIALS)[number]["icon"] }) {
   if (icon === "facebook") {
     return (
       <svg
@@ -538,4 +344,3 @@ function SocialIcon({ icon }: { icon: (typeof SOCIALS)[number]["icon"] }) {
     </svg>
   );
 }
-
