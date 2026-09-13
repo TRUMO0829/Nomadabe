@@ -14,7 +14,10 @@ export default function AdminLoginPage() {
 
       <div className="relative mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl flex-col">
         <header className="flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3 text-white">
+          <Link
+            href="/"
+            className="flex items-center gap-3 rounded-md text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--primary)]"
+          >
             <span
               aria-hidden="true"
               className="h-11 w-11 rounded-md bg-black bg-[url('/nomadabe-mark.webp')] bg-center bg-no-repeat shadow-sm ring-1 ring-white/20 [background-position:center_35%] [background-size:175%]"
@@ -28,7 +31,7 @@ export default function AdminLoginPage() {
           </Link>
           <Link
             href="/"
-            className="rounded-md border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-white/15"
+            className="rounded-md border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--primary)]"
           >
             Веб рүү буцах
           </Link>
@@ -39,9 +42,10 @@ export default function AdminLoginPage() {
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--accent)]">
               Удирдлагын төв
             </p>
-            <h2 className="mt-4 font-display text-3xl leading-tight text-balance sm:text-5xl">
+            {/* The page's h1 comes first; the login card's heading is an h2. */}
+            <h1 className="mt-4 font-display text-3xl leading-tight text-balance sm:text-5xl">
               Бүртгэлтэй админ и-мэйлээр нэвтэрнэ.
-            </h2>
+            </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-white/72">
               Нэвтэрсний дараа вебсайт засвар, хөтөлбөр нэмэх/хасах, хэрэглэгчийн
               бүртгэл хянах, мэйл илгээх хэсгүүдийг харна.

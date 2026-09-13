@@ -106,38 +106,9 @@ const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
   },
 ];
 
-const DEFAULT_REVIEWS: SiteReview[] = [
-  {
-    id: "review-nomin-canton",
-    name: "Номин",
-    location: "Ulaanbaatar",
-    trip: "Canton Fair - 7 өдөр",
-    message:
-      "Анх удаа Canton Fair-д явсан болохоор бүртгэл, павильон, уулзалтын цаг бүгдийг нь урьдчилж цэгцэлж өгсөн нь хамгийн их хэрэг болсон.",
-    rating: 5,
-    createdAt: "2026-01-12T00:00:00.000Z",
-  },
-  {
-    id: "review-temuulen-shanghai",
-    name: "Тэмүүлэн",
-    location: "Ulaanbaatar",
-    trip: "Шанхай бизнес аялал - 5 өдөр",
-    message:
-      "Нислэг хойшлоход буудал, тосолт, дараагийн өдрийн маршрутыг хурдан өөрчилж өгсөн. Ажлын уулзалтуудаа алдалгүй амжуулсан.",
-    rating: 5,
-    createdAt: "2026-01-18T00:00:00.000Z",
-  },
-  {
-    id: "review-saruul-jeju",
-    name: "Саруул",
-    location: "Ulaanbaatar",
-    trip: "Жэжү гэр бүлийн аялал - 6 өдөр",
-    message:
-      "Хүүхдүүдтэй явсан болохоор хөтөлбөр нь хэт шахуу биш, буудал нь далайд ойр байсан нь таалагдсан. Өдөр бүрийн мэдээлэл тодорхой ирдэг байсан.",
-    rating: 5,
-    createdAt: "2026-02-02T00:00:00.000Z",
-  },
-];
+// No built-in reviews. These used to be three sample quotes shown to visitors
+// as real customer reviews whenever the reviews table was empty.
+const DEFAULT_REVIEWS: SiteReview[] = [];
 
 const DEFAULT_OUTBOUND_TRIP_IMAGES: Record<string, string> = {
   zhangjiajie:
@@ -339,7 +310,17 @@ async function getGalleryImagesFromForm(formData: FormData, fallbackImages: stri
     formData.getAll("galleryImagesUpload").filter(isUploadedPoster).map(uploadTripPoster)
   );
 
-  if (currentUrls.length === 0 && addedImages.length === 0 && legacyUploads.length === 0) {
+  // The admin form uploads straight to Storage and submits the final list as
+  // galleryImageUrl values, plus this marker so that removing every image
+  // yields an empty gallery instead of silently keeping the old one.
+  const listSubmitted = formData.has("galleryImagesSubmitted");
+
+  if (
+    !listSubmitted &&
+    currentUrls.length === 0 &&
+    addedImages.length === 0 &&
+    legacyUploads.length === 0
+  ) {
     return fallbackImages;
   }
 
@@ -1319,7 +1300,7 @@ function parseTripFromFields(fields: FieldReader, existingTrips: Adventure[]) {
   const existing = existingTrips.find((trip) => trip.id === id);
 
   if (!title || !slug) {
-    throw new Error("Trip title and slug are required.");
+    throw new Error("Аяллын нэр болон вэб хаяг (slug) заавал шаардлагатай.");
   }
 
   return {
@@ -1403,7 +1384,7 @@ function parseServiceFromFields(fields: FieldReader) {
   const title = fields.get("title");
 
   if (!title) {
-    throw new Error("Service title is required.");
+    throw new Error("Үйлчилгээний нэр заавал шаардлагатай.");
   }
 
   return {
@@ -1419,7 +1400,7 @@ function parseTeamMemberFromFields(fields: FieldReader) {
   const role = fields.get("role");
 
   if (!name || !role) {
-    throw new Error("Team member name and role are required.");
+    throw new Error("Багийн гишүүний нэр болон албан тушаал заавал шаардлагатай.");
   }
 
   return {

@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/server/admin-auth";
+import { ADMIN_SESSION_COOKIE } from "@/lib/server/admin-auth";
 import {
   deleteSiteReviewById,
   deleteTripById,
@@ -15,247 +15,227 @@ import {
   upsertServiceFromForm,
   upsertTripFromForm,
 } from "@/lib/server/admin-store";
-import { getInquiries, isInquiryStatus, updateInquiryStatus } from "@/lib/server/inquiries";
-import { sendEmail, sendEmailFromForm } from "@/lib/server/mail";
+import {
+  getInquiries,
+  INQUIRY_STATUS_LABELS,
+  isInquiryStatus,
+  updateInquiryStatus,
+} from "@/lib/server/inquiries";
+import { sendEmail, sendEmailFromForm, type EmailLog } from "@/lib/server/mail";
+import { createSignedUpload } from "@/lib/server/storage";
 import { getErrorMessage } from "@/lib/server/supabase-rest";
 import { isTripTranslationConfigured } from "@/lib/server/translate-trip";
+import type { ActionResult } from "./_components/action-state";
+import { requireAdmin } from "./_lib/require-admin";
 
-export async function saveTripAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(() => upsertTripFromForm(formData));
+/*
+ * Every form action has the useActionState signature (previousState, formData)
+ * and returns { ok, message } instead of redirecting, so a failed save leaves
+ * the admin's typed values in place. Only login/logout navigate.
+ */
 
-  if (error) {
-    redirectWithStatus(error);
-  }
+type PreviousState = ActionResult | null;
+type Outcome = string | { ok?: boolean; message: string; id?: string };
 
-  revalidatePath("/");
-  revalidatePath("/tours");
-  revalidatePath("/tours/domestic");
-  revalidatePath("/tours/outbound");
-  revalidatePath("/tours/[slug]", "page");
-  revalidatePath("/sitemap.xml");
-  revalidatePath("/admin");
-  redirectWithStatus(
-    isTripTranslationConfigured()
-      ? "Хөтөлбөр хадгалагдаж, орчуулгууд шинэчлэгдлээ."
-      : "Хөтөлбөр хадгалагдлаа. LibreTranslate URL тохируулбал дараагийн хадгалалтаар орчуулга автоматаар үүснэ."
-  );
-}
+export async function saveTripAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
 
-export async function deleteTripAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(async () => {
-    const id = formData.get("id");
+  return runAction(async () => {
+    const trip = await upsertTripFromForm(formData);
+    revalidateTripPages();
+    revalidateAdmin();
 
-    if (typeof id === "string" && id) {
-      await deleteTripById(id);
-    }
+    return {
+      id: trip.id,
+      message: isTripTranslationConfigured()
+        ? "Хөтөлбөр хадгалагдаж, орчуулгууд шинэчлэгдлээ."
+        : "Хөтөлбөр хадгалагдлаа. Орчуулгын үйлчилгээ (LibreTranslate) тохируулбал дараагийн хадгалалтаар орчуулга автоматаар үүснэ.",
+    };
   });
-
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/");
-  revalidatePath("/tours");
-  revalidatePath("/tours/domestic");
-  revalidatePath("/tours/outbound");
-  revalidatePath("/tours/[slug]", "page");
-  revalidatePath("/sitemap.xml");
-  revalidatePath("/admin");
-  redirectWithStatus("Хөтөлбөр устгагдлаа.");
 }
 
-export async function saveSiteSettingsAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(() => updateSiteSettingsFromForm(formData));
+export async function deleteTripAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
 
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/");
-  revalidatePath("/about");
-  revalidatePath("/faq");
-  revalidatePath("/admin");
-  redirectWithStatus("Вебийн тохиргоо хадгалагдлаа.");
-}
-
-export async function saveServiceAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(() => upsertServiceFromForm(formData));
-
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/");
-  revalidatePath("/admin");
-  redirectWithStatus("Үйлчилгээ хадгалагдлаа.");
-}
-
-export async function deleteServiceAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(async () => {
-    const id = formData.get("id");
-
-    if (typeof id === "string" && id) {
-      await deleteServiceById(id);
-    }
+  return runAction(async () => {
+    await deleteTripById(requireId(formData));
+    revalidateTripPages();
+    revalidateAdmin();
+    return "Хөтөлбөр устгагдлаа.";
   });
-
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/");
-  revalidatePath("/admin");
-  redirectWithStatus("Үйлчилгээ устгагдлаа.");
 }
 
-export async function saveTeamMemberAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(() => upsertTeamMemberFromForm(formData));
+export async function saveSiteSettingsAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
 
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/about");
-  revalidatePath("/admin");
-  redirectWithStatus("Багийн гишүүн хадгалагдлаа.");
-}
-
-export async function deleteTeamMemberAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(async () => {
-    const id = formData.get("id");
-
-    if (typeof id === "string" && id) {
-      await deleteTeamMemberById(id);
-    }
+  return runAction(async () => {
+    await updateSiteSettingsFromForm(formData);
+    revalidatePath("/");
+    revalidatePath("/about");
+    revalidatePath("/faq");
+    revalidateAdmin();
+    return "Вебийн тохиргоо хадгалагдлаа.";
   });
-
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/about");
-  revalidatePath("/admin");
-  redirectWithStatus("Багийн гишүүн устгагдлаа.");
 }
 
-export async function setReviewApprovalAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(async () => {
-    const id = formData.get("id");
-    const approve = formData.get("approve");
+/**
+ * Called by media-upload-field before a file is sent: returns a one-time URL
+ * the browser uploads to directly (see createSignedUpload). Not a form action.
+ */
+export async function createMediaUploadAction(kind: string, contentType: string, size: number) {
+  await requireAdmin();
 
-    if (typeof id === "string" && id) {
-      await setSiteReviewApproval(id, approve === "true");
-    }
+  try {
+    return { ok: true as const, ...(await createSignedUpload(kind, contentType, size)) };
+  } catch (error) {
+    return { ok: false as const, error: getErrorMessage(error) };
+  }
+}
+
+export async function saveServiceAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
+
+  return runAction(async () => {
+    await upsertServiceFromForm(formData);
+    revalidatePath("/");
+    revalidateAdmin();
+    return "Үйлчилгээ хадгалагдлаа.";
   });
-
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/");
-  revalidatePath("/admin");
-  redirectWithStatus(
-    formData.get("approve") === "true"
-      ? "Сэтгэгдэл нийтлэгдлээ."
-      : "Сэтгэгдэл нуугдлаа."
-  );
 }
 
-export async function deleteReviewAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(async () => {
-    const id = formData.get("id");
+export async function deleteServiceAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
 
-    if (typeof id === "string" && id) {
-      await deleteSiteReviewById(id);
-    }
+  return runAction(async () => {
+    await deleteServiceById(requireId(formData));
+    revalidatePath("/");
+    revalidateAdmin();
+    return "Үйлчилгээ устгагдлаа.";
   });
-
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/");
-  revalidatePath("/admin");
-  redirectWithStatus("Сэтгэгдэл устгагдлаа.");
 }
 
-export async function updateInquiryStatusAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(async () => {
-    const id = formData.get("id");
-    const status = formData.get("status");
+export async function saveTeamMemberAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
 
-    if (typeof id === "string" && typeof status === "string" && isInquiryStatus(status)) {
-      const inquiry = await updateInquiryStatus(id, status);
-
-      if (inquiry.email) {
-        await sendEmail({
-          to: inquiry.email,
-          subject: `Nomadabe хүсэлтийн төлөв: ${status}`,
-          body: `Сайн байна уу ${inquiry.name},\n\nТаны Nomadabe Travel-д илгээсэн хүсэлтийн төлөв шинэчлэгдлээ: ${status}.\n\nМанай баг аяллын дараагийн мэдээллээр тантай холбогдоно.\n\nNomadabe Travel`,
-        });
-      }
-    }
+  return runAction(async () => {
+    await upsertTeamMemberFromForm(formData);
+    revalidatePath("/about");
+    revalidateAdmin();
+    return "Багийн гишүүн хадгалагдлаа.";
   });
-
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/admin");
-  redirectWithStatus("Бүртгэлийн төлөв шинэчлэгдлээ.");
 }
 
-export async function sendAdminEmailAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(() => sendEmailFromForm(formData));
+export async function deleteTeamMemberAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
 
-  if (error) {
-    redirectWithStatus(error);
-  }
-
-  revalidatePath("/admin");
-  redirectWithStatus("Мэйл илгээх хүсэлт боловсруулагдлаа.");
-}
-
-export async function emailLatestInquiryAction(formData: FormData) {
-  await assertAdminAction();
-  const error = await getActionError(async () => {
-    const subject = formData.get("subject");
-    const body = formData.get("body");
-    const inquiries = await getInquiries();
-    const latestWithEmail = inquiries.find((inquiry) => inquiry.email);
-
-    if (
-      latestWithEmail?.email &&
-      typeof subject === "string" &&
-      typeof body === "string" &&
-      subject.trim() &&
-      body.trim()
-    ) {
-      await sendEmail({
-        to: latestWithEmail.email,
-        subject,
-        body,
-      });
-    }
+  return runAction(async () => {
+    await deleteTeamMemberById(requireId(formData));
+    revalidatePath("/about");
+    revalidateAdmin();
+    return "Багийн гишүүн устгагдлаа.";
   });
+}
 
-  if (error) {
-    redirectWithStatus(error);
-  }
+export async function setReviewApprovalAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
+  const approve = formData.get("approve") === "true";
 
-  revalidatePath("/admin");
-  redirectWithStatus("Сүүлийн бүртгэл рүү хурдан хариу илгээгдлээ.");
+  return runAction(async () => {
+    await setSiteReviewApproval(requireId(formData), approve);
+    revalidatePath("/");
+    revalidateAdmin();
+    return approve ? "Сэтгэгдэл нийтлэгдлээ." : "Сэтгэгдэл нуугдлаа.";
+  });
+}
+
+export async function deleteReviewAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
+
+  return runAction(async () => {
+    await deleteSiteReviewById(requireId(formData));
+    revalidatePath("/");
+    revalidateAdmin();
+    return "Сэтгэгдэл устгагдлаа.";
+  });
+}
+
+/**
+ * Changing a status only emails the customer when the admin ticks
+ * "notifyCustomer" — it used to email on every change, with the raw English
+ * status in the text.
+ */
+export async function updateInquiryStatusAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
+
+  return runAction(async () => {
+    const id = requireId(formData);
+    const status = getString(formData, "status");
+    const notify = formData.get("notifyCustomer") === "on";
+
+    if (!isInquiryStatus(status)) {
+      throw new Error("Төлөв буруу байна.");
+    }
+
+    const inquiry = await updateInquiryStatus(id, status);
+    const label = INQUIRY_STATUS_LABELS[status];
+    const saved = `${inquiry.name}: төлөв „${label}“ боллоо.`;
+    revalidateAdmin();
+
+    if (!notify) {
+      return saved;
+    }
+
+    if (!inquiry.email) {
+      return { ok: false, message: `${saved} Гэхдээ и-мэйл хаяггүй тул мэдэгдэл илгээгдсэнгүй.` };
+    }
+
+    const log = await sendEmail({
+      to: inquiry.email,
+      subject: `Nomadabe: таны хүсэлтийн төлөв — ${label}`,
+      body: `Сайн байна уу, ${inquiry.name}.\n\nТаны Nomadabe Travel-д илгээсэн хүсэлтийн төлөв шинэчлэгдлээ: ${label}.\n\nМанай баг аяллын дараагийн мэдээллээр тантай холбогдоно.\n\nNomadabe Travel`,
+    });
+    const email = describeEmail(log);
+    return { ok: email.ok, message: `${saved} ${email.message}` };
+  });
+}
+
+export async function sendAdminEmailAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
+
+  return runAction(async () => {
+    const log = await sendEmailFromForm(formData);
+    revalidateAdmin();
+    return describeEmail(log);
+  });
+}
+
+/**
+ * Sends the ready-made reply to the inquiry the admin saw on screen (its id is
+ * in the form), not to whatever happens to be newest when the request lands.
+ */
+export async function sendQuickReplyAction(_previous: PreviousState, formData: FormData) {
+  await requireAdmin();
+
+  return runAction(async () => {
+    const inquiryId = getString(formData, "inquiryId");
+    const subject = getString(formData, "subject");
+    const body = getString(formData, "body");
+    const inquiry = inquiryId
+      ? (await getInquiries()).find((item) => item.id === inquiryId)
+      : undefined;
+
+    if (!inquiry?.email) {
+      return { ok: false, message: "И-мэйл хаягтай бүртгэл олдсонгүй. Мэйл илгээгдсэнгүй." };
+    }
+
+    if (!subject || !body) {
+      throw new Error("Мэйлийн гарчиг болон агуулга хоосон байна.");
+    }
+
+    const log = await sendEmail({ to: inquiry.email, subject, body });
+    revalidateAdmin();
+    return describeEmail(log);
+  });
 }
 
 export async function logoutAdminAction() {
@@ -269,30 +249,61 @@ export async function logoutAdminAction() {
   redirect("/admin/login");
 }
 
-export async function refreshAdminAction() {
-  await assertAdminAction();
-  revalidatePath("/admin");
-  redirectWithStatus("Админ самбар шинэчлэгдлээ.");
-}
-
-async function assertAdminAction() {
-  const cookieStore = await cookies();
-  const admin = await verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
-
-  if (!admin) {
-    redirect("/admin/login");
+function describeEmail(log: EmailLog): { ok: boolean; message: string } {
+  if (log.status === "sent") {
+    return { ok: true, message: `${log.to} руу мэйл илгээгдлээ.` };
   }
+
+  if (log.status === "queued") {
+    return {
+      ok: true,
+      message: `Мэйл үйлчилгээ (Resend) тохируулаагүй тул ${log.to} руу илгээх мэйл зөвхөн түүхэнд хадгалагдлаа.`,
+    };
+  }
+
+  return {
+    ok: false,
+    message: `${log.to} руу мэйл илгээж чадсангүй${log.error ? `: ${log.error}` : "."}`,
+  };
 }
 
-function redirectWithStatus(message: string) {
-  redirect(`/admin?status=${encodeURIComponent(message)}`);
-}
-
-async function getActionError(work: () => Promise<unknown>) {
+async function runAction(work: () => Promise<Outcome>): Promise<ActionResult> {
   try {
-    await work();
-    return "";
+    const outcome = await work();
+
+    return typeof outcome === "string"
+      ? { ok: true, message: outcome }
+      : { ok: outcome.ok ?? true, message: outcome.message, id: outcome.id };
   } catch (error) {
-    return `Алдаа: ${getErrorMessage(error)}`;
+    return { ok: false, message: getErrorMessage(error) };
   }
+}
+
+function revalidateAdmin() {
+  // Every admin sub-route shares this layout, so one call refreshes them all.
+  revalidatePath("/admin", "layout");
+}
+
+function revalidateTripPages() {
+  revalidatePath("/");
+  revalidatePath("/tours");
+  revalidatePath("/tours/domestic");
+  revalidatePath("/tours/outbound");
+  revalidatePath("/tours/[slug]", "page");
+  revalidatePath("/sitemap.xml");
+}
+
+function getString(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function requireId(formData: FormData) {
+  const id = getString(formData, "id");
+
+  if (!id) {
+    throw new Error("Бичлэгийн дугаар (id) олдсонгүй.");
+  }
+
+  return id;
 }

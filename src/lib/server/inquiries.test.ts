@@ -1,5 +1,52 @@
 import { describe, expect, it } from "vitest";
-import { validateInquiry } from "./inquiries";
+import {
+  filterInquiries,
+  getInquiryStatusLabel,
+  validateInquiry,
+  type InquiryRecord,
+} from "./inquiries";
+
+function makeInquiry(overrides: Partial<InquiryRecord>): InquiryRecord {
+  return {
+    id: "1",
+    name: "Бат",
+    email: "bat@example.com",
+    inquiryType: "custom",
+    message: "Говь руу 5 хоногийн аялал төлөвлөж байна.",
+    status: "new",
+    createdAt: "2026-09-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+describe("filterInquiries", () => {
+  const inquiries = [
+    makeInquiry({ id: "1", name: "Бат", email: "bat@example.com", status: "new" }),
+    makeInquiry({ id: "2", name: "Сараа", email: "SARAA@Mail.mn", status: "contacted" }),
+    makeInquiry({ id: "3", name: "Дорж", email: undefined, status: "closed" }),
+  ];
+
+  it("returns everything without filters", () => {
+    expect(filterInquiries(inquiries, {})).toHaveLength(3);
+  });
+
+  it("matches name or email case-insensitively", () => {
+    expect(filterInquiries(inquiries, { query: "saraa@mail" }).map((item) => item.id)).toEqual(["2"]);
+    expect(filterInquiries(inquiries, { query: "дорж" }).map((item) => item.id)).toEqual(["3"]);
+  });
+
+  it("filters by status and ignores an unknown status", () => {
+    expect(filterInquiries(inquiries, { status: "closed" }).map((item) => item.id)).toEqual(["3"]);
+    expect(filterInquiries(inquiries, { status: "bogus" })).toHaveLength(3);
+  });
+});
+
+describe("getInquiryStatusLabel", () => {
+  it("translates known statuses and passes unknown ones through", () => {
+    expect(getInquiryStatusLabel("contacted")).toBe("Холбогдсон");
+    expect(getInquiryStatusLabel("other")).toBe("other");
+  });
+});
 
 const validInquiry = {
   name: "Бат",

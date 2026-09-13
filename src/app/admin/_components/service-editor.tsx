@@ -1,50 +1,45 @@
+"use client";
+
 import { Plus, Save, Trash2 } from "lucide-react";
 import type { TravelService } from "@/lib/adventures";
-import { ConfirmSubmitButton } from "@/components/admin-confirm-button";
 import { deleteServiceAction, saveServiceAction } from "../actions";
-import { TextField, TextareaField } from "./primitives";
+import { AdminForm, SubmitButton } from "./admin-form";
+import { Disclosure, TextField, TextareaField } from "./primitives";
 
-/**
- * Travel services (the "what we arrange" list). Like the team editor, the
- * actions existed but had no form behind them.
- */
+/** Travel services (the "what we arrange" list). */
 export function ServiceForm({ service }: { service?: TravelService }) {
   const isEdit = Boolean(service);
 
   return (
-    <form
+    <AdminForm
       action={saveServiceAction}
+      resetOnSuccess={!isEdit}
+      aria-label={isEdit ? `${service?.title} — засах` : "Шинэ үйлчилгээ"}
       className="rounded-md border border-[var(--border)] bg-[var(--background)] p-4"
     >
       {isEdit ? <input type="hidden" name="id" defaultValue={service?.id} /> : null}
 
       <div className="grid gap-3">
         <TextField label="Нэр" name="title" defaultValue={service?.title} required />
-        <TextareaField
-          label="Тайлбар"
-          name="description"
-          defaultValue={service?.description}
-          rows={2}
-        />
+        <TextareaField label="Тайлбар" name="description" defaultValue={service?.description} rows={2} />
         <TextareaField
           label="Онцлох зүйлс"
           name="highlights"
           defaultValue={service?.highlights?.join(", ")}
           rows={2}
-          placeholder="Таслалаар тусгаарлана. Жишээ: Виз, Даатгал, Орчуулга"
+          placeholder="Виз, Даатгал, Орчуулга"
+          hint="Таслалаар тусгаарлана."
         />
       </div>
 
       <div className="mt-4">
-        <button
-          type="submit"
-          className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white"
+        <SubmitButton
+          icon={isEdit ? <Save aria-hidden="true" className="h-4 w-4" /> : <Plus aria-hidden="true" className="h-4 w-4" />}
         >
-          {isEdit ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           {isEdit ? "Хадгалах" : "Үйлчилгээ нэмэх"}
-        </button>
+        </SubmitButton>
       </div>
-    </form>
+    </AdminForm>
   );
 }
 
@@ -61,25 +56,22 @@ export function ServiceRow({ service }: { service: TravelService }) {
         </span>
       </div>
 
-      <details>
-        <summary className="cursor-pointer text-sm font-semibold text-[var(--muted-foreground)]">
-          Засах
-        </summary>
-        <div className="mt-3">
-          <ServiceForm service={service} />
-        </div>
-      </details>
+      <Disclosure title="Засах">
+        <ServiceForm service={service} />
+      </Disclosure>
 
-      <form action={deleteServiceAction}>
-        <input type="hidden" name="id" defaultValue={service.id} />
-        <ConfirmSubmitButton
-          className="inline-flex h-9 items-center gap-2 rounded-md border border-[var(--border)] px-3 text-xs font-semibold text-[var(--foreground)]"
-          message={`${service.title}-г устгах уу?`}
+      <AdminForm action={deleteServiceAction}>
+        <input type="hidden" name="id" value={service.id} />
+        <SubmitButton
+          variant="destructive"
+          size="sm"
+          icon={<Trash2 aria-hidden="true" className="h-3.5 w-3.5" />}
+          pendingLabel="Устгаж байна…"
+          confirmMessage={`„${service.title}“ үйлчилгээг устгах уу?`}
         >
-          <Trash2 className="h-3.5 w-3.5" />
           Устгах
-        </ConfirmSubmitButton>
-      </form>
+        </SubmitButton>
+      </AdminForm>
     </div>
   );
 }

@@ -278,6 +278,45 @@ export function isInquiryStatus(value: string): value is InquiryStatus {
   return ["new", "contacted", "confirmed", "closed"].includes(value);
 }
 
+/** Mongolian labels for the admin UI and customer emails. */
+export const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
+  new: "Шинэ",
+  contacted: "Холбогдсон",
+  confirmed: "Баталгаажсан",
+  closed: "Хаагдсан",
+};
+
+export function getInquiryStatusLabel(status: string) {
+  return isInquiryStatus(status) ? INQUIRY_STATUS_LABELS[status] : status;
+}
+
+/**
+ * Admin list filter: case-insensitive match on name or email, plus an optional
+ * exact status. An empty query or status means "no filter".
+ */
+export function filterInquiries(
+  inquiries: InquiryRecord[],
+  { query, status }: { query?: string; status?: string }
+) {
+  const needle = query?.trim().toLocaleLowerCase() ?? "";
+  const statusFilter = status && isInquiryStatus(status) ? status : undefined;
+
+  return inquiries.filter((inquiry) => {
+    if (statusFilter && inquiry.status !== statusFilter) {
+      return false;
+    }
+
+    if (!needle) {
+      return true;
+    }
+
+    return (
+      inquiry.name.toLocaleLowerCase().includes(needle) ||
+      (inquiry.email?.toLocaleLowerCase().includes(needle) ?? false)
+    );
+  });
+}
+
 async function writeInquiries(inquiries: InquiryRecord[]) {
   await mkdir(DATA_DIR, { recursive: true });
   const sorted = [...inquiries].sort((left, right) => left.createdAt.localeCompare(right.createdAt));

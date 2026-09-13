@@ -8,10 +8,18 @@ export type CategoryOption = { value: string; label: string };
 // their raw value — see getCategoryLabel.
 export const defaultCategoryLabels: Record<BuiltInTravelCategory, string> = {
   business: "Бизнес",
-  festival: "Festival",
+  festival: "Наадам, фестиваль",
   leisure: "Амралт",
   custom: "Захиалгат",
 };
+
+/**
+ * Departure dates are stored as YYYY-MM or YYYY-MM-DD. A departure counts as
+ * upcoming from its own day (or month) onward.
+ */
+export function isUpcomingDeparture(value: string | undefined, todayIso: string) {
+  return Boolean(value) && String(value) >= todayIso.slice(0, String(value).length);
+}
 
 export function getDateInputValue(value?: string) {
   if (!value) {
@@ -90,8 +98,9 @@ export function formatStatusLabel(value: string) {
     failed: "Амжилтгүй",
     trip: "Аялал",
     business: "Бизнес",
-    festival: "Festival",
-    expo: "Экспо",
+    festival: "Фестиваль",
+    expo: "Үзэсгэлэн",
+    villa: "Вилла",
     custom: "Захиалгат",
     general: "Ерөнхий",
     leisure: "Амралт",

@@ -13,17 +13,30 @@ type ApiResult = {
   };
 };
 
+type Message = { tone: "info" | "error"; text: string } | null;
+
+const FIELD_WRAPPER_CLASS =
+  "mt-2 flex items-center gap-3 rounded-md border border-[var(--border)] px-4 py-3 focus-within:border-[var(--foreground)] focus-within:ring-2 focus-within:ring-[var(--foreground)]";
+const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--foreground)] focus-visible:ring-offset-2";
+
+/** Where to go after login: the admin page the middleware bounced us from. */
+function getNextPath() {
+  const next = new URLSearchParams(window.location.search).get("next");
+  return next && next.startsWith("/admin") && !next.startsWith("/admin/login") ? next : "/admin";
+}
+
 export function AdminLoginForm() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<Message>(null);
   const [loading, setLoading] = useState(false);
 
   async function requestCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
-    setMessage("");
+    setMessage(null);
 
     try {
       const response = await fetch("/api/admin/auth/request-code", {
@@ -38,13 +51,14 @@ export function AdminLoginForm() {
       }
 
       setStep("code");
-      setMessage(
-        result.data?.devCode
-          ? `Код илгээгдлээ. Dev code: ${result.data.devCode}`
-          : "Нэвтрэх код и-мэйл рүү илгээгдлээ."
-      );
+      setMessage({
+        tone: "info",
+        text: result.data?.devCode
+          ? `Код илгээгдлээ. Туршилтын горимын код: ${result.data.devCode}`
+          : "Нэвтрэх код и-мэйл рүү илгээгдлээ.",
+      });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Код илгээж чадсангүй.");
+      setMessage({ tone: "error", text: error instanceof Error ? error.message : "Код илгээж чадсангүй." });
     } finally {
       setLoading(false);
     }
@@ -53,7 +67,7 @@ export function AdminLoginForm() {
   async function verifyCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
-    setMessage("");
+    setMessage(null);
 
     try {
       const response = await fetch("/api/admin/auth/verify", {
@@ -67,10 +81,9 @@ export function AdminLoginForm() {
         throw new Error(result.error?.message || "Нэвтрэлт амжилтгүй боллоо.");
       }
 
-      window.location.href = "/admin";
+      window.location.href = getNextPath();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Нэвтрэлт амжилтгүй боллоо.");
-    } finally {
+      setMessage({ tone: "error", text: error instanceof Error ? error.message : "Нэвтрэлт амжилтгүй боллоо." });
       setLoading(false);
     }
   }
@@ -78,13 +91,13 @@ export function AdminLoginForm() {
   return (
     <div className="w-full max-w-md overflow-hidden rounded-lg border border-[var(--border)] bg-white shadow-2xl">
       <div className="bg-[var(--primary)] px-7 py-8 text-white">
-        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-[var(--accent)] text-[var(--accent-foreground)]">
+        <div aria-hidden="true" className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-[var(--accent)] text-[var(--accent-foreground)]">
           <ShieldCheck className="h-6 w-6" />
         </div>
         <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--accent)]">
-          Nomadabe Admin
+          Nomadabe админ
         </p>
-        <h1 className="mt-2 font-display text-4xl leading-none">Админ нэвтрэх</h1>
+        <h2 className="mt-2 font-display text-4xl leading-none">Админ нэвтрэх</h2>
         <p className="mt-3 text-sm leading-6 text-white/70">
           Зөвшөөрөгдсөн админ и-мэйлээр код авч вебсайт, хөтөлбөр, хэрэглэгчийн
           бүртгэлээ удирдана.
@@ -98,10 +111,12 @@ export function AdminLoginForm() {
               <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
                 Админ и-мэйл
               </span>
-              <span className="mt-2 flex items-center gap-3 rounded-md border border-[var(--border)] px-4 py-3">
-                <Mail className="h-4 w-4 text-[var(--accent-foreground)]" />
+              <span className={FIELD_WRAPPER_CLASS}>
+                <Mail aria-hidden="true" className="h-4 w-4 text-[var(--accent-foreground)]" />
                 <input
                   type="email"
+                  name="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="admin@nomadabe.mn"
@@ -113,10 +128,10 @@ export function AdminLoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-foreground)] transition-colors hover:bg-[var(--secondary)] disabled:opacity-70"
+              className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-foreground)] transition-colors hover:bg-[var(--secondary)] disabled:opacity-70 ${FOCUS_RING}`}
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-              Код авах
+              {loading ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <ArrowRight aria-hidden="true" className="h-4 w-4" />}
+              {loading ? "Илгээж байна…" : "Код авах"}
             </button>
           </form>
         ) : (
@@ -125,10 +140,13 @@ export function AdminLoginForm() {
               <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
                 6 оронтой код
               </span>
-              <span className="mt-2 flex items-center gap-3 rounded-md border border-[var(--border)] px-4 py-3">
-                <LockKeyhole className="h-4 w-4 text-[var(--accent-foreground)]" />
+              <span className={FIELD_WRAPPER_CLASS}>
+                <LockKeyhole aria-hidden="true" className="h-4 w-4 text-[var(--accent-foreground)]" />
                 <input
+                  name="code"
                   inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]{6}"
                   maxLength={6}
                   value={code}
                   onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
@@ -141,30 +159,38 @@ export function AdminLoginForm() {
             <button
               type="submit"
               disabled={loading || code.length !== 6}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-foreground)] transition-colors hover:bg-[var(--secondary)] disabled:opacity-70"
+              className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-foreground)] transition-colors hover:bg-[var(--secondary)] disabled:opacity-70 ${FOCUS_RING}`}
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-              Нэвтрэх
+              {loading ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <ShieldCheck aria-hidden="true" className="h-4 w-4" />}
+              {loading ? "Шалгаж байна…" : "Нэвтрэх"}
             </button>
             <button
               type="button"
               onClick={() => {
                 setStep("email");
                 setCode("");
-                setMessage("");
+                setMessage(null);
               }}
-              className="w-full rounded-md border border-[var(--border)] px-4 py-3 text-sm font-bold text-[var(--foreground)] transition-colors hover:border-[var(--accent)]"
+              className={`w-full rounded-md border border-[var(--border)] px-4 py-3 text-sm font-bold text-[var(--foreground)] transition-colors hover:border-[var(--foreground)] ${FOCUS_RING}`}
             >
               И-мэйл солих
             </button>
           </form>
         )}
 
-        {message ? (
-          <p className="mt-4 rounded-md bg-[var(--muted)] px-4 py-3 text-sm font-semibold text-[var(--foreground)]">
-            {message}
-          </p>
-        ) : null}
+        {/* Always rendered so screen readers announce the message when it appears. */}
+        <div aria-live="polite" role="status" className="mt-4 empty:hidden">
+          {message ? (
+            <p
+              className={`rounded-md px-4 py-3 text-sm font-semibold ${
+                message.tone === "error" ? "bg-red-50 text-red-800" : "bg-[var(--muted)] text-[var(--foreground)]"
+              }`}
+            >
+              {message.tone === "error" ? <span className="sr-only">Алдаа: </span> : null}
+              {message.text}
+            </p>
+          ) : null}
+        </div>
       </div>
     </div>
   );

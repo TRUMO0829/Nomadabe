@@ -102,17 +102,17 @@ export function AdminItineraryEditor({
       <input type="hidden" name="itinerary" value={serialize(days)} />
 
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           Аяллын хөтөлбөр (өдөр / цагаар)
         </span>
-        <span className="text-xs font-medium text-[var(--muted-foreground)]">
+        <span className="text-xs font-medium text-muted-foreground">
           Хоосон бол автоматаар үүснэ
         </span>
       </div>
 
       <div className="mt-3 space-y-3">
         {days.length === 0 ? (
-          <p className="rounded-md border border-dashed border-[var(--border)] bg-white px-4 py-4 text-sm font-medium text-[var(--muted-foreground)]">
+          <p className="rounded-md border border-dashed border-border bg-white px-4 py-4 text-sm font-medium text-muted-foreground">
             Өдөр бүрийн маршрут, цагийн хуваарийг өөрөө оруулах бол доороос &laquo;Өдөр нэмэх&raquo; дарна уу.
             Оруулаагүй бол аялал автоматаар үүснэ.
           </p>
@@ -121,22 +121,22 @@ export function AdminItineraryEditor({
         {days.map((day, dayIndex) => (
           <div
             key={dayIndex}
-            className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+            className="rounded-md border border-border bg-white p-4 shadow-sm"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-bold text-[var(--accent-foreground)]">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
                 {dayIndex + 1}
               </span>
               <input
                 value={day.title}
                 onChange={(event) => setDayTitle(dayIndex, event.target.value)}
                 placeholder={`Өдөр ${dayIndex + 1} — гарчиг (ж: Улаанбаатар → Бээжин)`}
-                className="h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+                className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
               />
               <button
                 type="button"
                 onClick={() => removeDay(dayIndex)}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--foreground)] hover:text-[var(--foreground)]"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground hover:border-foreground hover:text-foreground"
                 aria-label="Өдрийг устгах"
               >
                 <Trash2 className="h-4 w-4" />
@@ -147,24 +147,24 @@ export function AdminItineraryEditor({
               {day.items.map((item, itemIndex) => (
                 <div key={itemIndex} className="flex items-center gap-2">
                   <div className="relative w-28 shrink-0">
-                    <Clock className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--muted-foreground)]" />
+                    <Clock className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <input
                       value={item.time}
                       onChange={(event) => setItem(dayIndex, itemIndex, { time: event.target.value })}
                       placeholder="09:00"
-                      className="h-9 w-full rounded-md border border-[var(--border)] bg-white pl-7 pr-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+                      className="h-9 w-full rounded-md border border-border bg-white pl-7 pr-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
                     />
                   </div>
                   <input
                     value={item.text}
                     onChange={(event) => setItem(dayIndex, itemIndex, { text: event.target.value })}
                     placeholder="Хөтөлбөр (ж: Нисэх буудал, зочид буудалд байрлах)"
-                    className="h-9 w-full rounded-md border border-[var(--border)] bg-white px-3 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+                    className="h-9 w-full rounded-md border border-border bg-white px-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
                   />
                   <button
                     type="button"
                     onClick={() => removeItem(dayIndex, itemIndex)}
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
                     aria-label="Цагийг устгах"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -175,7 +175,7 @@ export function AdminItineraryEditor({
               <button
                 type="button"
                 onClick={() => addItem(dayIndex)}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Цаг нэмэх
@@ -188,7 +188,7 @@ export function AdminItineraryEditor({
       <button
         type="button"
         onClick={addDay}
-        className="mt-3 inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] hover:border-[var(--foreground)]"
+        className="mt-3 inline-flex h-10 items-center gap-2 rounded-md border border-border bg-white px-4 text-sm font-semibold text-foreground hover:border-foreground"
       >
         <Plus className="h-4 w-4" />
         Өдөр нэмэх
