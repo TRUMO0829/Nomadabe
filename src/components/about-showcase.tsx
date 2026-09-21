@@ -19,6 +19,7 @@ import type {
   AboutSectionSettings,
   TeamMember,
 } from "@/lib/site-settings";
+import { Surface } from "@/components/ui/surface";
 import { useLanguage } from "./language-provider";
 
 type AboutShowcaseProps = {
@@ -27,8 +28,6 @@ type AboutShowcaseProps = {
 };
 
 const WORK_ICONS = [Compass, CalendarCheck, Route, Handshake] as const;
-
-const ACCENT = "#FFD400";
 
 const CERTIFICATION_ITEMS = [
   "Монголын аялал жуулчлалын холбооны гишүүн байгууллага",
@@ -59,21 +58,21 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
   const showFaq = copy.faq.isVisible !== false && faqItems.length > 0;
 
   return (
-    <section className="relative overflow-hidden bg-[#0B0A07] text-[#FFFDF3]">
-      {/* ambient accent glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-32 right-[-10%] h-[420px] w-[420px] rounded-full blur-[120px]"
-        style={{ background: "rgba(255,212,0,0.22)" }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-0 left-[-12%] h-[360px] w-[360px] rounded-full blur-[120px]"
-        style={{ background: "rgba(255,212,0,0.12)" }}
-      />
-
+    <section className="relative overflow-hidden">
       {/* ───────────────────────── HERO ───────────────────────── */}
-      <div className="about-screen relative">
+      <div className="surface-dark about-screen relative overflow-hidden bg-background text-foreground">
+        {/* ambient accent glow — inside the hero, where there is a dark ground
+            for it to glow against */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-32 right-[-10%] h-[420px] w-[420px] rounded-full blur-[120px]"
+          style={{ background: "rgba(255,212,0,0.22)" }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-0 left-[-12%] h-[360px] w-[360px] rounded-full blur-[120px]"
+          style={{ background: "rgba(255,212,0,0.12)" }}
+        />
         {/* nature backdrop */}
         <div
           aria-hidden="true"
@@ -111,7 +110,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
               className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 font-sans text-[10px] tracking-[0.22em] text-[#FFF3BF]"
               style={{ background: "rgba(255,212,0,0.08)" }}
             >
-              <MapPin className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+              <MapPin className="h-3.5 w-3.5" style={{ color: "var(--accent-text)" }} />
               {L("УЛААНБААТАР · МОНГОЛ · TRAVEL", "ULAANBAATAR · MONGOLIA · TRAVEL")}
             </motion.span>
 
@@ -119,7 +118,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
               variants={fadeUp}
               transition={{ duration: 0.6 }}
               className="mt-6 font-sans text-[11px] tracking-[0.26em]"
-              style={{ color: ACCENT }}
+              style={{ color: "var(--accent-text)" }}
             >
               {copy.eyebrow}
             </motion.p>
@@ -135,7 +134,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             <motion.p
               variants={fadeUp}
               transition={{ duration: 0.7 }}
-              className="mt-5 max-w-lg font-sans text-sm leading-relaxed text-[#D8D2C2] sm:text-base"
+              className="mt-5 max-w-lg font-sans text-sm leading-relaxed text-muted-foreground sm:text-base"
             >
               {copy.body}
             </motion.p>
@@ -148,14 +147,14 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
               <Link
                 href="/plan"
                 className="group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-xs font-medium text-[#11100B] transition-transform duration-200 hover:scale-[1.03]"
-                style={{ background: ACCENT }}
+                style={{ background: "var(--accent)" }}
               >
                 {L("Аялал төлөвлөх", "Plan a trip")}
                 <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-xs font-medium text-[#FFFDF3] transition-colors duration-200 hover:bg-white/5"
+                className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-xs font-medium text-foreground transition-colors duration-200 hover:bg-white/5"
               >
                 {L("Аяллууд үзэх", "Explore tours")}
               </Link>
@@ -182,14 +181,14 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
               <span
                 className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[10px] tracking-[0.22em] text-[#11100B]"
-                style={{ background: ACCENT }}
+                style={{ background: "var(--accent)" }}
               >
                 <Compass className="h-3.5 w-3.5" />
                 NOMADABE TRAVEL TEAM
               </span>
             </div>
 
-            <p className="px-3 pt-5 text-xs leading-relaxed text-[#CFC9B9] sm:text-sm">
+            <p className="px-3 pt-5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
               {copy.who.text}
             </p>
 
@@ -201,10 +200,10 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                     key={stat.label}
                     className="rounded-2xl bg-white/[0.03] px-3 py-3 text-center"
                   >
-                    <div className="text-xl sm:text-2xl" style={{ color: ACCENT }}>
+                    <div className="text-xl sm:text-2xl" style={{ color: "var(--accent-text)" }}>
                       {stat.value}
                     </div>
-                    <div className="mt-1 text-[10px] leading-tight text-[#A9A491]">
+                    <div className="mt-1 text-[10px] leading-tight text-muted-foreground">
                       {stat.label}
                     </div>
                   </div>
@@ -214,9 +213,16 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
           </motion.div>
           </div>
         </div>
+
+        {/* Bottom edge of the dark hero — the fixed navbar watches this. */}
+        <span
+          aria-hidden="true"
+          data-nav-sentinel=""
+          className="pointer-events-none absolute bottom-0 left-0 h-px w-px"
+        />
       </div>
 
-      <Band bg="/nomadabe-hero-panorama.webp">
+      <Surface>
         <div className="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <Kicker>{L("Баталгаажуулалт", "Certification")}</Kicker>
@@ -226,7 +232,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 "Member of the Mongolian Tourism Association."
               )}
             </h2>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#D8D2C2]">
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
               {L(
                 "2023 оны холбооны шийдвэр, үйл ажиллагааны ангиллын дагуу Nomadabe Adventure Seekers ХХК нь олон улсын аялал жуулчлалын тур операторын чиглэлээр бүртгэлтэй.",
                 "Based on the association's 2023 certification and activity classification, Nomadabe Adventure Seekers LLC is recognized for international tour operator services."
@@ -234,22 +240,22 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             </p>
           </div>
 
-          <div className="rounded-[28px] border border-white/12 bg-[#0B0A07]/62 p-5 shadow-[0_28px_90px_rgba(0,0,0,0.24)] backdrop-blur-md">
+          <div className="rounded-[28px] border border-border bg-card p-5 shadow-[0_18px_50px_rgba(17,16,11,0.08)]">
             <div className="flex items-start gap-4">
               <span
                 className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
-                style={{ background: "rgba(255,212,0,0.14)" }}
+                style={{ background: "var(--primary)" }}
               >
-                <Award className="h-6 w-6" style={{ color: ACCENT }} />
+                <Award className="h-6 w-6" style={{ color: "var(--accent-text)" }} />
               </span>
               <div>
-                <p className="text-xs tracking-[0.24em]" style={{ color: ACCENT }}>
+                <p className="text-xs tracking-[0.24em]" style={{ color: "var(--accent-text)" }}>
                   CERTIFICATE
                 </p>
-                <h3 className="mt-2 text-2xl leading-tight text-[#FFFDF3]">
+                <h3 className="mt-2 text-2xl leading-tight text-foreground">
                   Nomadabe Adventure Seekers ХХК
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#B8B2A2]">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   {L(
                     "Гадаад болон дотоод чиглэлийн аяллыг мэргэжлийн түвшинд төлөвлөж, зохион байгуулах баталгаатай аяллын баг.",
                     "A certified travel team for professionally planned inbound and outbound travel."
@@ -262,13 +268,13 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
               {CERTIFICATION_ITEMS.map((item) => (
                 <div
                   key={item}
-                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
+                  className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3"
                 >
                   <span
                     className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ background: ACCENT }}
+                    style={{ background: "var(--accent-text)" }}
                   />
-                  <span className="text-sm leading-relaxed text-[#E7E2D4]">
+                  <span className="text-sm leading-relaxed text-muted-foreground">
                     {item}
                   </span>
                 </div>
@@ -276,13 +282,13 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             </div>
           </div>
         </div>
-      </Band>
+      </Surface>
 
       {/* ───────────────────────── VALUES ───────────────────────── */}
       {showValues && (
-        <Band bg="/hero-spring.webp">
+        <Surface photo="/hero-spring.webp">
           <Kicker>{copy.values.label}</Kicker>
-          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 sm:grid-cols-2">
+          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-border bg-border sm:grid-cols-2">
             {values.map((item, index) => (
               <motion.div
                 key={item.title}
@@ -291,26 +297,37 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 viewport={{ once: true, amount: 0.3 }}
                 variants={fadeUp}
                 transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
-                className="bg-[#0B0A07]/85 p-7 backdrop-blur-md sm:p-9"
+                className="bg-card p-7 sm:p-9"
               >
-                <span className="text-sm tracking-[0.2em]" style={{ color: ACCENT }}>
+                <span className="text-sm tracking-[0.2em]" style={{ color: "var(--accent-text)" }}>
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-4 text-xl leading-snug sm:text-2xl">{item.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-[#B8B2A2]">{item.body}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
               </motion.div>
             ))}
           </div>
-        </Band>
+        </Surface>
       )}
+
+      {/* ──────────────────── PHOTOGRAPHIC BREATHER ──────────────────── */}
+      {/* A dark full-bleed landscape between two runs of light reading copy.
+          It carries no text: its job is to keep the page photographic and to
+          give the eye somewhere to rest on a long scroll. */}
+      <Surface
+        tone="dark"
+        height="band"
+        photo="/hero-winter.webp"
+        hairline={false}
+      />
 
       {/* ───────────────────────── WORK ───────────────────────── */}
       {showWork && (
-        <Band bg="/hero-winter.webp">
+        <Surface>
           <Kicker>{copy.work.label}</Kicker>
           <h2 className="mt-5 max-w-3xl text-3xl leading-tight sm:text-4xl">{copy.work.title}</h2>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#B8B2A2]">{copy.work.body}</p>
-          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 sm:grid-cols-2">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">{copy.work.body}</p>
+          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-border bg-border sm:grid-cols-2">
             {work.map((item, index) => {
               const Icon = WORK_ICONS[index % WORK_ICONS.length];
               return (
@@ -321,26 +338,26 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                   viewport={{ once: true, amount: 0.3 }}
                   variants={fadeUp}
                   transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
-                  className="bg-[#0B0A07]/85 p-7 backdrop-blur-md sm:p-9"
+                  className="bg-card p-7 sm:p-9"
                 >
                   <span
                     className="inline-flex h-11 w-11 items-center justify-center rounded-full"
-                    style={{ background: "rgba(255,212,0,0.14)" }}
+                    style={{ background: "var(--primary)" }}
                   >
-                    <Icon className="h-5 w-5" style={{ color: ACCENT }} />
+                    <Icon className="h-5 w-5" style={{ color: "var(--accent-text)" }} />
                   </span>
                   <h3 className="mt-5 text-xl leading-snug sm:text-2xl">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-[#B8B2A2]">{item.body}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
                 </motion.div>
               );
             })}
           </div>
-        </Band>
+        </Surface>
       )}
 
       {/* ───────────────────────── TEAM ───────────────────────── */}
       {showTeam && (
-        <Band bg="/nomadabe-hero-panorama.webp">
+        <Surface photo="/nomadabe-hero-panorama.webp">
           <Kicker>{copy.team.label}</Kicker>
           <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:max-w-4xl">
             {team.map((member, index) => (
@@ -353,7 +370,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 transition={{ duration: 0.5, delay: (index % 3) * 0.08 }}
                 className="group flex flex-col items-center text-center"
               >
-                <div className="relative h-[min(72vw,320px)] w-[min(72vw,320px)] overflow-hidden rounded-full border border-white/18 bg-[#0B0A07]/42 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-[1px] transition-transform duration-300 group-hover:-translate-y-1 sm:h-72 sm:w-72">
+                <div className="relative h-[min(72vw,320px)] w-[min(72vw,320px)] overflow-hidden rounded-full border border-border bg-card shadow-[0_18px_50px_rgba(17,16,11,0.08)] transition-transform duration-300 group-hover:-translate-y-1 sm:h-72 sm:w-72">
                   {member.image ? (
                     <Image
                       src={member.image}
@@ -371,81 +388,49 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                       />
                       <div
                         aria-hidden="true"
-                        className="absolute inset-0 bg-gradient-to-t from-[#0B0A07] via-[#0B0A07]/55 to-[#0B0A07]/25"
+                        className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/25"
                       />
-                      <span className="relative text-6xl" style={{ color: ACCENT }}>
+                      <span className="relative text-6xl" style={{ color: "var(--accent-text)" }}>
                         {member.name.charAt(0)}
                       </span>
                     </div>
                   )}
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-t from-[#0B0A07]/62 via-transparent to-white/8"
+                    className="absolute inset-0 bg-gradient-to-t from-background/62 via-transparent to-white/8"
                   />
                 </div>
-                <div className="mt-5 rounded-full border border-white/12 bg-[#0B0A07]/44 px-7 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-[1px]">
+                <div className="mt-5 rounded-full border border-border bg-[#0B0A07]/44 px-7 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-[1px]">
                   <h3 className="text-lg font-medium">{member.name}</h3>
-                  <p className="mt-1 text-sm font-medium" style={{ color: ACCENT }}>
+                  <p className="mt-1 text-sm font-medium" style={{ color: "var(--accent-text)" }}>
                     {member.role}
                   </p>
                   {member.bio ? (
-                    <p className="mt-3 max-w-xs text-sm leading-6 text-[#B8B2A2]">{member.bio}</p>
+                    <p className="mt-3 max-w-xs text-sm leading-6 text-muted-foreground">{member.bio}</p>
                   ) : null}
                 </div>
               </motion.div>
             ))}
           </div>
-        </Band>
+        </Surface>
       )}
 
       {/* ───────────────────────── FAQ ───────────────────────── */}
       {showFaq && (
-        <Band bg="/hero-autumn.webp">
+        <Surface>
           <Kicker>{copy.faq.eyebrow}</Kicker>
           <h2 className="mt-5 text-3xl leading-tight sm:text-4xl">{copy.faq.title}</h2>
           {copy.faq.subtitle && (
-            <p className="mt-3 text-base text-[#B8B2A2]">{copy.faq.subtitle}</p>
+            <p className="mt-3 text-base text-muted-foreground">{copy.faq.subtitle}</p>
           )}
-          <div className="mt-9 divide-y divide-white/10 overflow-hidden rounded-3xl border border-white/10">
+          <div className="mt-9 divide-y divide-border overflow-hidden rounded-3xl border border-border">
             {faqItems.map((item, index) => (
               <FaqRow key={item.question} item={item} defaultOpen={index === 0} />
             ))}
           </div>
-        </Band>
+        </Surface>
       )}
     </section>
-  );
-}
-
-function Band({ children, bg }: { children: React.ReactNode; bg?: string }) {
-  return (
-    <div className="about-screen relative overflow-hidden">
-      {bg && (
-        <>
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('${bg}')` }}
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to bottom, rgba(11,10,7,0.95) 0%, rgba(11,10,7,0.8) 50%, rgba(11,10,7,0.95) 100%)",
-            }}
-          />
-        </>
-      )}
-      <div className="about-screen relative mx-auto flex w-full max-w-7xl flex-col justify-center px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-        {/* content-width hairline divider — aligns with the section content */}
-        <div
-          aria-hidden="true"
-          className="absolute left-5 right-5 top-0 h-px bg-white/10 sm:left-8 sm:right-8 lg:left-12 lg:right-12"
-        />
-        {children}
-      </div>
-    </div>
   );
 }
 
@@ -453,9 +438,9 @@ function Kicker({ children }: { children: React.ReactNode }) {
   return (
     <span
       className="inline-flex items-center gap-2.5 text-xs tracking-[0.3em]"
-      style={{ color: ACCENT }}
+      style={{ color: "var(--accent-text)" }}
     >
-      <span className="h-px w-8" style={{ background: ACCENT }} />
+      <span className="h-px w-8" style={{ background: "var(--accent-text)" }} />
       {children}
     </span>
   );
@@ -470,21 +455,21 @@ function FaqRow({
 }) {
   const [open, setOpen] = useState(Boolean(defaultOpen));
   return (
-    <div className="bg-[#0B0A07]/82 backdrop-blur-md">
+    <div className="bg-card">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left transition-colors hover:bg-white/[0.02]"
+        className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left transition-colors hover:bg-muted"
       >
         <span className="text-base sm:text-lg">{item.question}</span>
         <span
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
-          style={{ background: "rgba(255,212,0,0.14)" }}
+          style={{ background: "var(--primary)" }}
         >
           {open ? (
-            <Minus className="h-4 w-4" style={{ color: ACCENT }} />
+            <Minus className="h-4 w-4" style={{ color: "var(--accent-text)" }} />
           ) : (
-            <Plus className="h-4 w-4" style={{ color: ACCENT }} />
+            <Plus className="h-4 w-4" style={{ color: "var(--accent-text)" }} />
           )}
         </span>
       </button>
@@ -494,7 +479,7 @@ function FaqRow({
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="overflow-hidden"
       >
-        <p className="px-6 pb-6 text-sm leading-relaxed text-[#B8B2A2]">{item.answer}</p>
+        <p className="px-6 pb-6 text-sm leading-relaxed text-muted-foreground">{item.answer}</p>
       </motion.div>
     </div>
   );

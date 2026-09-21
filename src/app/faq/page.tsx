@@ -18,8 +18,8 @@ export default async function FrequentlyAskedQuestionsPage() {
   return (
     <>
       <SignupPromptModal autoOpen={false} />
-      <Navbar surface="light" />
-      <main className="flex-1 bg-[#0b0a07]">
+      <Navbar />
+      <main className="flex-1 bg-background">
         <FaqPage aboutSection={aboutSection} />
         <CtaFooter />
       </main>

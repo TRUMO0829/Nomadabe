@@ -96,7 +96,7 @@ function openSignupPrompt() {
 
 type NavbarProps = {
   showHomeSearch?: boolean;
-  surface?: "auto" | "light";
+  surface?: "auto" | "dark" | "light";
   logoPlacement?: "left" | "center";
   logoSize?: "default" | "compact";
 };
@@ -122,7 +122,44 @@ export function Navbar({
     { href: "/about", label: navCopy.about },
     { href: "/plan", label: navCopy.booking },
   ];
-  const useLightHeader = surface === "light";
+  /*
+   * The header is fixed and transparent, so its colour depends on whatever is
+   * behind it at this scroll position, not on the route. A page marks the
+   * bottom edge of its dark hero with data-nav-sentinel (see <Surface
+   * navSentinel>); while that edge is still below the header the bar is over
+   * dark, after it the bar is over light content.
+   *
+   * A page with no sentinel stays "over dark" forever, which is exactly what
+   * every page did before — that is what keeps /plan, /profile and
+   * /tours/[slug] untouched until they opt in.
+   */
+  const forcedTone = surface === "auto" ? null : surface === "dark";
+  const [detectedOverDark, setDetectedOverDark] = useState(true);
+  const overDark = forcedTone ?? detectedOverDark;
+
+  useEffect(() => {
+    if (forcedTone !== null) {
+      return;
+    }
+
+    const sentinel = document.querySelector("[data-nav-sentinel]");
+
+    if (!sentinel) {
+      // No sentinel: the page never declares a dark hero, so leave the bar
+      // exactly as it behaved before this existed.
+      return;
+    }
+
+    // Negative top margin ≈ the header height, so the switch happens as the
+    // hero's bottom edge slides under the bar rather than off the viewport.
+    const observer = new IntersectionObserver(
+      ([entry]) => setDetectedOverDark(entry.boundingClientRect.top > 0),
+      { rootMargin: "-72px 0px 0px 0px", threshold: 0 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [forcedTone]);
 
   useEffect(() => {
     let cancelled = false;
@@ -175,7 +212,15 @@ export function Navbar({
 
   return (
     <header
-      className="site-navbar fixed top-0 inset-x-0 z-50 bg-transparent transition-all duration-300"
+      className={cn(
+        "site-navbar fixed top-0 inset-x-0 z-50 transition-all duration-300",
+        // The logo only exists as a white mark, so over light content the bar
+        // itself has to supply the dark ground — that covers the logo, the
+        // links and the burger in one move, with no second asset.
+        overDark
+          ? "bg-transparent"
+          : "bg-[var(--ink-deep)]/92 shadow-[0_10px_30px_rgba(17,16,11,0.18)] backdrop-blur-md"
+      )}
     >
       <div className="relative flex h-16 w-full items-center px-6 transition-all duration-300 lg:h-16 lg:items-start lg:px-8 lg:pt-2">
         <Link
@@ -198,9 +243,9 @@ export function Navbar({
             className={cn(
               "w-auto object-contain transition-all duration-300",
               logoSize === "compact" ? "h-20 lg:h-24" : "h-24 lg:h-28",
-              useLightHeader
+              overDark
                 ? "drop-shadow-[0_2px_12px_rgba(0,0,0,0.88)]"
-                : "drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
+                : "drop-shadow-none"
             )}
           />
         </Link>
@@ -212,9 +257,9 @@ export function Navbar({
             // The gold is kept for hover and the open-search state.
             "absolute right-4 top-3 hidden items-center overflow-visible text-white backdrop-blur-[10px] transition-all duration-300 lg:right-6 lg:flex xl:right-8",
             "rounded-[1rem] px-3 py-2",
-            useLightHeader
-              ? "bg-[#050504]/20 shadow-[0_14px_34px_rgba(17,16,11,0.12)]"
-              : "bg-[#050504]/22 shadow-[0_14px_34px_rgba(0,0,0,0.16)]"
+            overDark
+              ? "bg-[#050504]/22 shadow-[0_14px_34px_rgba(0,0,0,0.16)]"
+              : "bg-transparent shadow-none"
           )}
         >
           <nav className="relative z-10 flex items-center">
@@ -366,7 +411,7 @@ export function Navbar({
           onClick={() => setOpen((v) => !v)}
           className={cn(
             "order-3 ml-auto rounded-md p-2 lg:hidden",
-            useLightHeader ? "bg-card/90 text-foreground shadow-sm" : "text-white"
+            "text-white"
           )}
         >
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

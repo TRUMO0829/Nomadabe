@@ -14,6 +14,19 @@
   --secondary: #FFC400;
   --border: #E8DDAE;
   --ring: #FFD400;
+  /* The fourth near-black the site already used (about/faq/legal shells) but
+     never named. */
+  --ink-deep: #0B0A07;
+  /* The colour a photographic band washes its image toward. Flipped by the
+     surface scopes below, which is what lets one <Surface photo> render as a
+     dark band on one page and a cream-washed band on the next. */
+  --scrim-strong: rgba(11, 10, 7, 0.95);
+  --scrim-soft: rgba(11, 10, 7, 0.78);
+  /* Gold as a TEXT colour. --accent stays the brand fill on both grounds, but
+     #FFD400 on cream is about 1.2:1 and unreadable, so a light scope darkens
+     the text-only variant. Use this for labels, rules and small marks; use
+     --accent for fills. */
+  --accent-text: #FFD400;
   /* Montserrat for latin+cyrillic; system CJK fonts render zh/ja/ko glyphs
      per-glyph so other languages never fall back to tofu / break layout. */
   --site-font: var(--font-site), "Apple SD Gothic Neo", "Hiragino Sans",
@@ -37,6 +50,47 @@
   --color-ring: var(--ring);
   --font-sans: var(--site-font);
   --font-display: var(--site-font);
+}
+
+/*
+ * Surface scopes — the ground a band of content sits on.
+ *
+ * These are NOT dark mode. Both appear on the same page at the same time: a
+ * page is a dark photographic hero followed by light reading content. Wiring
+ * them to prefers-color-scheme would flip the light bands of /about back to
+ * dark and undo the whole point of them.
+ *
+ * A scope changes the ground and what sits on it. It never changes the brand:
+ * --primary, --accent, --secondary and --ring are deliberately absent, so a
+ * gold CTA stays gold on either ground.
+ *
+ * Values are re-declared rather than inherited because a light band nests
+ * inside a dark root on /about and has to be able to climb back out.
+ */
+.surface-light {
+  --background: #FFFDF3;
+  --foreground: #11100B;
+  --card: #FFFFFF;
+  --muted: #FFF3BF;
+  --muted-foreground: #5F5340;
+  --border: #E8DDAE;
+  --scrim-strong: rgba(255, 253, 243, 0.94);
+  --scrim-soft: rgba(255, 253, 243, 0.78);
+  --accent-text: #B89422;
+  color-scheme: light;
+}
+
+.surface-dark {
+  --background: var(--ink-deep);
+  --foreground: #FFFDF3;
+  --card: rgba(11, 10, 7, 0.62);
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: #B8B2A2;
+  --border: rgba(255, 255, 255, 0.12);
+  --scrim-strong: rgba(11, 10, 7, 0.95);
+  --scrim-soft: rgba(11, 10, 7, 0.78);
+  --accent-text: #FFD400;
+  color-scheme: dark;
 }
 
 *,

@@ -1698,6 +1698,14 @@ export function FeaturedAdventures({
             </div>
           </form>
         </div>
+
+        {/* Bottom edge of the dark hero — the fixed navbar watches this to
+            decide whether it is sitting over dark or over light content. */}
+        <span
+          aria-hidden="true"
+          data-nav-sentinel=""
+          className="pointer-events-none absolute bottom-0 left-0 h-px w-px"
+        />
       </div>
 
       <div
