@@ -399,6 +399,76 @@ export async function upsertFactsFromForm(formData: FormData) {
 }
 
 /**
+ * Saves the team shown on /about. One form holds the whole list, the same way
+ * the facts editor works: a row with both its name and role cleared is
+ * dropped, "Устгах" removes it outright, and the order field decides the
+ * running order on the page.
+ */
+export async function upsertTeamFromForm(formData: FormData) {
+  const store = await getAdminStore();
+  const current = store.siteSettings.teamMembers;
+  const count = Number(formData.get("teamCount")) || current.length;
+  const next: TeamMember[] = [];
+
+  const readImage = async (fileKey: string, currentUrl: string) => {
+    const upload = formData.get(fileKey);
+    return isUploadedPoster(upload) ? uploadTripPoster(upload) : currentUrl;
+  };
+
+  for (let i = 0; i < count; i += 1) {
+    if (formData.has(`team_${i}_delete`)) {
+      continue;
+    }
+
+    const str = (key: string) => {
+      const value = formData.get(`team_${i}_${key}`);
+      return typeof value === "string" ? value.trim() : "";
+    };
+
+    const base = current[i];
+    const name = str("name");
+    const role = str("role");
+
+    if (!name && !role) {
+      continue;
+    }
+
+    const bio = str("bio");
+
+    next.push({
+      id: str("id") || base?.id || slugify(name) || randomUUID(),
+      name,
+      role,
+      image: await readImage(`team_${i}_image`, str("imageUrl") || base?.image || ""),
+      imageAlt: name || role || undefined,
+      ...(bio ? { bio } : {}),
+      order: Number(str("order")) || i + 1,
+      isVisible: formData.has(`team_${i}_visible`),
+    });
+  }
+
+  const newName = String(formData.get("newTeam_name") ?? "").trim();
+  const newRole = String(formData.get("newTeam_role") ?? "").trim();
+
+  if (newName || newRole) {
+    const newBio = String(formData.get("newTeam_bio") ?? "").trim();
+
+    next.push({
+      id: slugify(newName) || randomUUID(),
+      name: newName,
+      role: newRole,
+      image: await readImage("newTeam_image", ""),
+      imageAlt: newName || newRole || undefined,
+      ...(newBio ? { bio: newBio } : {}),
+      order: next.length + 1,
+      isVisible: true,
+    });
+  }
+
+  return updateSiteSettings({ teamMembers: next });
+}
+
+/**
  * Saves the FAQ shown on /faq. The Mongolian list owns the structure — how
  * many questions there are, their order and whether they're visible — and the
  * other languages hold translations of the same questions, matched by their

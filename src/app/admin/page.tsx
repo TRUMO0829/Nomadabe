@@ -47,12 +47,13 @@ import {
   saveSiteSettingsAction,
   saveFactsAction,
   saveFaqAction,
+  saveTeamAction,
   saveStaysAction,
   saveTripAction,
   sendAdminEmailAction,
   updateInquiryStatusAction,
 } from "./actions";
-import type { AboutSectionSettings, StayOption, TravelFact } from "@/lib/site-settings";
+import type { AboutSectionSettings, StayOption, TeamMember, TravelFact } from "@/lib/site-settings";
 import { getCustomers } from "@/lib/server/customer-auth";
 import { getEmailLogs } from "@/lib/server/mail";
 import { getErrorMessage } from "@/lib/server/supabase-rest";
@@ -72,6 +73,7 @@ const navItems = [
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
   { label: "Веб тохиргоо", href: "#web-settings", icon: Gauge },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
+  { label: "Багийн гишүүд", href: "#team", icon: UserCheck },
   { label: "Түгээмэл асуулт", href: "#faq", icon: HelpCircle },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
 ];
@@ -303,6 +305,15 @@ export default async function AdminDashboard({
                     action={`Нийт ${siteSettings?.facts.length ?? 0}`}
                   />
                   <FactsEditor facts={siteSettings?.facts ?? []} />
+                </section>
+
+                <section id="team" className="scroll-mt-6 space-y-4">
+                  <SectionHeader
+                    eyebrow="Бидний тухай"
+                    title="Багийн гишүүд"
+                    action={`Нийт ${siteSettings?.teamMembers.length ?? 0}`}
+                  />
+                  <TeamEditor members={siteSettings?.teamMembers ?? []} />
                 </section>
 
                 <section id="faq" className="scroll-mt-6 space-y-4">
@@ -1272,6 +1283,130 @@ function FaqEditor({ aboutSection }: { aboutSection: AboutSectionSettings }) {
         className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--primary)] px-6 text-sm font-semibold text-white shadow-sm hover:opacity-90"
       >
         Түгээмэл асуултуудыг хадгалах
+      </button>
+    </form>
+  );
+}
+
+/**
+ * Team editor for the "Бидний тухай" page. The whole list is one form, so a
+ * single save reorders, hides, edits and deletes in one go — the same shape as
+ * the facts and FAQ editors above.
+ */
+function TeamEditor({ members }: { members: TeamMember[] }) {
+  return (
+    <form action={saveTeamAction} encType="multipart/form-data" className="space-y-5">
+      <input type="hidden" name="teamCount" defaultValue={members.length} />
+
+      {members.map((member, i) => (
+        <div
+          key={member.id}
+          className="space-y-3 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+        >
+          <input type="hidden" name={`team_${i}_id`} defaultValue={member.id} />
+          <input type="hidden" name={`team_${i}_imageUrl`} defaultValue={member.image ?? ""} />
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+              Гишүүн {i + 1}
+            </span>
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="flex items-center gap-2 text-xs font-semibold text-[var(--muted-foreground)]">
+                Эрэмбэ
+                <input
+                  type="number"
+                  min={1}
+                  name={`team_${i}_order`}
+                  defaultValue={member.order ?? i + 1}
+                  className="h-9 w-16 rounded-md border border-[var(--border)] bg-white px-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-xs font-semibold text-[var(--foreground)]">
+                <input
+                  type="checkbox"
+                  name={`team_${i}_visible`}
+                  defaultChecked={member.isVisible !== false}
+                  className="h-4 w-4 accent-[var(--accent)]"
+                />
+                Вебэд харагдана
+              </label>
+              <label className="flex items-center gap-2 text-xs font-semibold text-red-600">
+                <input type="checkbox" name={`team_${i}_delete`} className="h-4 w-4" />
+                Устгах
+              </label>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TextField label="Нэр" name={`team_${i}_name`} defaultValue={member.name} />
+            <TextField label="Албан тушаал" name={`team_${i}_role`} defaultValue={member.role} />
+          </div>
+          <TextareaField
+            label="Танилцуулга"
+            name={`team_${i}_bio`}
+            defaultValue={member.bio ?? ""}
+            rows={3}
+            placeholder="Богино намтар. Хоосон бол вебэд нэр, албан тушаал хоёр л гарна."
+          />
+
+          <div className="flex flex-wrap items-center gap-4 rounded-md border border-dashed border-[var(--border)] p-3">
+            {member.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={member.image}
+                alt={member.imageAlt || member.name}
+                className="h-20 w-20 shrink-0 rounded-full object-cover ring-1 ring-[var(--border)]"
+              />
+            ) : (
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--muted)] text-xs text-[var(--muted-foreground)]">
+                Зураг алга
+              </div>
+            )}
+            <div className="min-w-[220px] flex-1">
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                Зураг солих (компьютерээс)
+              </span>
+              <input
+                type="file"
+                name={`team_${i}_image`}
+                accept="image/png,image/jpeg,image/webp,image/avif"
+                className="mt-2 w-full text-xs"
+              />
+              <p className="mt-2 text-xs font-medium text-[var(--muted-foreground)]">
+                Дугуй хүрээнд таарах тул дөрвөлжин зураг тохиромжтой.
+              </p>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <div className="space-y-3 rounded-md border-2 border-dashed border-[var(--accent)] bg-[var(--muted)]/40 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+          Шинэ гишүүн нэмэх
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <TextField label="Нэр" name="newTeam_name" placeholder="Жишээ: D. Saruul" />
+          <TextField label="Албан тушаал" name="newTeam_role" placeholder="Жишээ: Travel Manager" />
+        </div>
+        <TextareaField label="Танилцуулга" name="newTeam_bio" rows={3} />
+        <div>
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+            Зураг (компьютерээс)
+          </span>
+          <input
+            type="file"
+            name="newTeam_image"
+            accept="image/png,image/jpeg,image/webp,image/avif"
+            className="mt-2 w-full text-xs"
+          />
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--primary)] px-6 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+      >
+        Багийн гишүүдийг хадгалах
       </button>
     </form>
   );

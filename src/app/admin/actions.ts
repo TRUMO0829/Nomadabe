@@ -15,6 +15,7 @@ import {
   upsertStaysFromForm,
   upsertFactsFromForm,
   upsertFaqFromForm,
+  upsertTeamFromForm,
 } from "@/lib/server/admin-store";
 import { getInquiries, isInquiryStatus, updateInquiryStatus } from "@/lib/server/inquiries";
 import { sendEmail, sendEmailFromForm } from "@/lib/server/mail";
@@ -65,6 +66,19 @@ export async function saveFaqAction(formData: FormData) {
   revalidatePath("/about");
   revalidatePath("/admin");
   redirectWithStatus("Түгээмэл асуултууд хадгалагдлаа.");
+}
+
+export async function saveTeamAction(formData: FormData) {
+  await assertAdminAction();
+  const error = await getActionError(() => upsertTeamFromForm(formData));
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
+  revalidatePath("/about");
+  revalidatePath("/admin");
+  redirectWithStatus("Багийн гишүүд хадгалагдлаа.");
 }
 
 export async function saveStaysAction(formData: FormData) {

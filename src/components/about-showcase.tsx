@@ -388,6 +388,9 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                   <p className="mt-1 text-sm font-medium" style={{ color: ACCENT }}>
                     {member.role}
                   </p>
+                  {member.bio ? (
+                    <p className="mt-3 max-w-xs text-sm leading-6 text-[#B8B2A2]">{member.bio}</p>
+                  ) : null}
                 </div>
               </motion.div>
             ))}
