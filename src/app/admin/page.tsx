@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Gauge,
+  HelpCircle,
   Inbox,
   LayoutDashboard,
   Mail,
@@ -45,12 +46,13 @@ import {
   refreshAdminAction,
   saveSiteSettingsAction,
   saveFactsAction,
+  saveFaqAction,
   saveStaysAction,
   saveTripAction,
   sendAdminEmailAction,
   updateInquiryStatusAction,
 } from "./actions";
-import type { StayOption, TravelFact } from "@/lib/site-settings";
+import type { AboutSectionSettings, StayOption, TravelFact } from "@/lib/site-settings";
 import { getCustomers } from "@/lib/server/customer-auth";
 import { getEmailLogs } from "@/lib/server/mail";
 import { getErrorMessage } from "@/lib/server/supabase-rest";
@@ -70,6 +72,7 @@ const navItems = [
   { label: "Хэрэглэгчид", href: "#customers", icon: UserCheck },
   { label: "Веб тохиргоо", href: "#web-settings", icon: Gauge },
   { label: "Хөтөлбөрүүд", href: "#programs", icon: Plane },
+  { label: "Түгээмэл асуулт", href: "#faq", icon: HelpCircle },
   { label: "Мэйл илгээх", href: "#mail-sender", icon: Mail },
 ];
 
@@ -300,6 +303,15 @@ export default async function AdminDashboard({
                     action={`Нийт ${siteSettings?.facts.length ?? 0}`}
                   />
                   <FactsEditor facts={siteSettings?.facts ?? []} />
+                </section>
+
+                <section id="faq" className="scroll-mt-6 space-y-4">
+                  <SectionHeader
+                    eyebrow="Түгээмэл асуулт"
+                    title="FAQ засварлах"
+                    action={`Нийт ${siteSettings?.aboutSection.mn.faq.items.length ?? 0}`}
+                  />
+                  {siteSettings ? <FaqEditor aboutSection={siteSettings.aboutSection} /> : null}
                 </section>
               </div>
 
@@ -1121,6 +1133,145 @@ function FactsEditor({ facts }: { facts: TravelFact[] }) {
         className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--primary)] px-6 text-sm font-semibold text-white shadow-sm hover:opacity-90"
       >
         Баримтуудыг хадгалах
+      </button>
+    </form>
+  );
+}
+
+/**
+ * FAQ editor for /faq.
+ *
+ * The Mongolian list is the source of truth: it decides how many questions
+ * there are, their order and whether each is shown. The other languages get a
+ * collapsed block of the same questions, matched by position, and any one left
+ * blank falls back to the Mongolian text so the page never renders an empty
+ * question.
+ */
+function FaqEditor({ aboutSection }: { aboutSection: AboutSectionSettings }) {
+  const items = aboutSection.mn.faq.items;
+
+  return (
+    <form action={saveFaqAction} className="space-y-5">
+      <input type="hidden" name="faqCount" defaultValue={items.length} />
+
+      <div className="grid gap-3 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm sm:grid-cols-2">
+        <TextField
+          label="Хуудасны гарчиг"
+          name="faq_mn_title"
+          defaultValue={aboutSection.mn.faq.title}
+          placeholder="Түгээмэл асуултууд"
+        />
+        <TextField
+          label="Дэд гарчиг"
+          name="faq_mn_subtitle"
+          defaultValue={aboutSection.mn.faq.subtitle ?? ""}
+          placeholder="Таны сонирхсон асуултын хариулт энд байх магадгүй"
+        />
+      </div>
+
+      {items.map((item, i) => (
+        <div
+          key={`${item.question}-${i}`}
+          className="space-y-3 rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+              Асуулт {i + 1}
+            </span>
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="flex items-center gap-2 text-xs font-semibold text-[var(--muted-foreground)]">
+                Эрэмбэ
+                <input
+                  type="number"
+                  min={1}
+                  name={`faq_${i}_order`}
+                  defaultValue={item.order ?? i + 1}
+                  className="h-9 w-16 rounded-md border border-[var(--border)] bg-white px-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-xs font-semibold text-[var(--foreground)]">
+                <input
+                  type="checkbox"
+                  name={`faq_${i}_visible`}
+                  defaultChecked={item.isVisible !== false}
+                  className="h-4 w-4 accent-[var(--accent)]"
+                />
+                Вебэд харагдана
+              </label>
+              <label className="flex items-center gap-2 text-xs font-semibold text-red-600">
+                <input type="checkbox" name={`faq_${i}_delete`} className="h-4 w-4" />
+                Устгах
+              </label>
+            </div>
+          </div>
+
+          <TextField label="Асуулт (MN)" name={`faq_${i}_question`} defaultValue={item.question} />
+          <TextareaField
+            label="Хариулт (MN)"
+            name={`faq_${i}_answer`}
+            defaultValue={item.answer}
+            rows={3}
+          />
+
+          <details className="rounded-md border border-[var(--border)] bg-[var(--muted)]/40">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-3 py-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                Орчуулга
+              </span>
+              <span className="text-xs font-medium text-[var(--muted-foreground)]">
+                Хоосон бол монгол эх хэвээр гарна
+              </span>
+            </summary>
+            <div className="space-y-3 border-t border-[var(--border)] p-3">
+              {translationLanguages.map((language) => {
+                const translated = aboutSection[language.code].faq.items[i];
+
+                return (
+                  <div key={language.code} className="grid gap-2 sm:grid-cols-2">
+                    <TextField
+                      label={`Асуулт (${language.code.toUpperCase()})`}
+                      name={`faq_${language.code}_${i}_question`}
+                      defaultValue={translated?.question ?? ""}
+                    />
+                    <TextareaField
+                      label={`Хариулт (${language.code.toUpperCase()})`}
+                      name={`faq_${language.code}_${i}_answer`}
+                      defaultValue={translated?.answer ?? ""}
+                      rows={2}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </details>
+        </div>
+      ))}
+
+      <div className="space-y-3 rounded-md border-2 border-dashed border-[var(--accent)] bg-[var(--muted)]/40 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+          Шинэ асуулт нэмэх
+        </p>
+        <TextField
+          label="Асуулт (MN)"
+          name="newFaq_question"
+          placeholder="Жишээ: Төлбөрөө хэрхэн хийх вэ?"
+        />
+        <TextareaField
+          label="Хариулт (MN)"
+          name="newFaq_answer"
+          rows={3}
+          placeholder="Дансаар болон картаар төлөх боломжтой."
+        />
+        <p className="text-xs font-medium text-[var(--muted-foreground)]">
+          Хадгалсны дараа энэ асуулт жагсаалтад нэмэгдэж, орчуулгыг нь тэндээс оруулна.
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--primary)] px-6 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+      >
+        Түгээмэл асуултуудыг хадгалах
       </button>
     </form>
   );

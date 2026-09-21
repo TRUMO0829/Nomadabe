@@ -398,6 +398,103 @@ export async function upsertFactsFromForm(formData: FormData) {
   return updateSiteSettings({ facts: next });
 }
 
+/**
+ * Saves the FAQ shown on /faq. The Mongolian list owns the structure — how
+ * many questions there are, their order and whether they're visible — and the
+ * other languages hold translations of the same questions, matched by their
+ * position in the list. A question the admin hasn't translated yet falls back
+ * to the Mongolian text rather than rendering blank.
+ */
+export async function upsertFaqFromForm(formData: FormData) {
+  const store = await getAdminStore();
+  const about = store.siteSettings.aboutSection;
+  const currentItems = about.mn.faq.items;
+  const count = Number(formData.get("faqCount")) || currentItems.length;
+
+  const str = (key: string) => {
+    const value = formData.get(key);
+    return typeof value === "string" ? value.trim() : "";
+  };
+
+  // `index` is the row's slot in the saved list, which is how each translation
+  // is looked up. A brand-new question has no slot yet, hence -1.
+  const kept: Array<{
+    index: number;
+    question: string;
+    answer: string;
+    order: number;
+    isVisible: boolean;
+  }> = [];
+
+  for (let i = 0; i < count; i += 1) {
+    if (formData.has(`faq_${i}_delete`)) {
+      continue;
+    }
+
+    const question = str(`faq_${i}_question`);
+    const answer = str(`faq_${i}_answer`);
+
+    if (!question && !answer) {
+      continue;
+    }
+
+    kept.push({
+      index: i,
+      question,
+      answer,
+      order: Number(str(`faq_${i}_order`)) || i + 1,
+      isVisible: formData.has(`faq_${i}_visible`),
+    });
+  }
+
+  const newQuestion = str("newFaq_question");
+  const newAnswer = str("newFaq_answer");
+
+  if (newQuestion || newAnswer) {
+    kept.push({
+      index: -1,
+      question: newQuestion,
+      answer: newAnswer,
+      order: kept.length + 1,
+      isVisible: true,
+    });
+  }
+
+  kept.sort((left, right) => left.order - right.order);
+
+  const aboutSection = { ...about };
+
+  for (const language of LANGUAGES) {
+    const locale = language.code;
+    const localeFaq = about[locale].faq;
+    const isSource = locale === "mn";
+
+    const items: AboutFaqItem[] = kept.map((row, position) => {
+      const translated = row.index >= 0 ? localeFaq.items[row.index] : undefined;
+      const question = isSource
+        ? row.question
+        : str(`faq_${locale}_${row.index}_question`) || translated?.question || row.question;
+      const answer = isSource
+        ? row.answer
+        : str(`faq_${locale}_${row.index}_answer`) || translated?.answer || row.answer;
+
+      return { question, answer, order: position + 1, isVisible: row.isVisible };
+    });
+
+    aboutSection[locale] = {
+      ...about[locale],
+      faq: {
+        ...localeFaq,
+        title: str(`faq_${locale}_title`) || localeFaq.title,
+        subtitle: str(`faq_${locale}_subtitle`) || undefined,
+        items,
+      },
+    };
+  }
+
+  return updateSiteSettings({ aboutSection });
+}
+
 export async function updateSiteSettingsFromForm(formData: FormData) {
   const settings: Partial<SiteSettings> = {};
 
