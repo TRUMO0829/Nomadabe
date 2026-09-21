@@ -1672,7 +1672,7 @@ export function FeaturedAdventures({
               {/* No lg:border-r — the vertical rule between the field and the
                   button is gone. border-b is the stacked-layout separator on
                   phones, where the button sits underneath. */}
-              <div className="flex min-h-[54px] flex-col justify-center border-b border-white/24 px-[18px] py-[11px] transition-colors sm:border-b-0">
+              <div className="flex min-h-[40px] flex-col justify-center border-b border-white/24 px-[18px] py-2 transition-colors sm:border-b-0">
                 <label
                   htmlFor="trip-where-search"
                   className="sr-only"
@@ -1684,16 +1684,16 @@ export function FeaturedAdventures({
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder={searchCopy.wherePlaceholder}
-                  className="min-w-0 appearance-none border-0 bg-transparent p-0 text-sm text-white shadow-none outline-none [background:transparent] placeholder:text-white/50 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-lg"
+                  className="min-w-0 appearance-none border-0 bg-transparent p-0 text-sm text-white shadow-none outline-none [background:transparent] placeholder:text-white/50 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-base"
                 />
               </div>
 
-              <div className="flex items-center justify-end px-[9px] pb-[9px] sm:pb-[9px] lg:p-[9px]">
+              <div className="flex items-center justify-end px-2 pb-2 sm:pb-2 lg:p-2">
                 <button
                   type="submit"
-                  className="inline-flex min-h-[43px] w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-[22px] text-xs uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
+                  className="inline-flex min-h-[30px] w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-5 text-[11px] uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
                 >
-                  <Search className="h-[18px] w-[18px]" />
+                  <Search className="h-4 w-4" />
                   <span>{searchCopy.search}</span>
                 </button>
               </div>
