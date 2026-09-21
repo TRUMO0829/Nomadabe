@@ -207,7 +207,10 @@ export function Navbar({
 
         <div
           className={cn(
-            "absolute right-4 top-3 hidden items-center overflow-visible text-[#ffd400] backdrop-blur-[10px] transition-all duration-300 lg:right-6 lg:flex xl:right-8",
+            // Every item in the bar inherits this colour, so one change turns
+            // the links, the login and search buttons, and the globe white.
+            // The gold is kept for hover and the open-search state.
+            "absolute right-4 top-3 hidden items-center overflow-visible text-white backdrop-blur-[10px] transition-all duration-300 lg:right-6 lg:flex xl:right-8",
             "rounded-[1rem] px-3 py-2",
             useLightHeader
               ? "bg-[#050504]/20 shadow-[0_14px_34px_rgba(17,16,11,0.12)]"
