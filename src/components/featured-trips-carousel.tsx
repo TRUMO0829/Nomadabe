@@ -360,11 +360,13 @@ function FeaturedTripsGrid({
   return (
     <section id="trips" className="bg-[#f4f5f8] px-4 py-8 text-[#1d1d1f] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1500px]">
-        <div className="mx-auto max-w-3xl px-4 py-8 text-center lg:py-10">
-          <h2 className="!normal-case text-[clamp(2.1rem,4vw,4.25rem)] leading-[1.02] text-[#1d1d1f]">
+        {/* Same heading treatment, gutters and left alignment as the trip
+            groups on /tours, so the page reads as one list of sections. */}
+        <div className="px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+          <h2 className="section-header-title tours-list-title text-black">
             {copy.title}
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#6e6e73] sm:text-base">
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#6e6e73] sm:text-base">
             {copy.subtitle}
           </p>
         </div>

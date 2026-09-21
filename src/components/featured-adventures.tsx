@@ -1315,14 +1315,12 @@ function DestinationDragCarousel({
 function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
   const { contentLocale } = useLanguage();
   return (
-    <section id="stays" className="bg-white px-6 py-16 lg:px-10 lg:py-20">
-      <div className="mx-auto max-w-7xl">
+    <section id="stays" className="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+      <div className="mx-auto max-w-[1500px]">
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="nav-text text-xs uppercase text-[#b89422]">
-              Вилла
-            </p>
-            <h2 className="site-heading mt-2 text-[clamp(1.5rem,3vw,2.6rem)] leading-tight text-[#11100b]">
+            {/* Same heading treatment as the trip groups above. */}
+            <h2 className="section-header-title tours-list-title text-black">
               Вилла сонголтууд
             </h2>
           </div>
@@ -1667,14 +1665,14 @@ export function FeaturedAdventures({
         <div className="absolute inset-x-0 top-[42vh] z-30 px-6 sm:top-[44vh] lg:px-10">
           <form
             onSubmit={handleTripSearchSubmit}
-            // 43.2rem is max-w-3xl (48rem) less 10%.
-            className="relative mx-auto max-w-[43.2rem] text-white"
+            // 38.88rem is max-w-3xl (48rem) less 10%, then less 10% again.
+            className="relative mx-auto max-w-[38.88rem] text-white"
           >
-            <div className="grid overflow-hidden rounded-[1.75rem] border border-white/32 bg-white/[0.035] shadow-[0_14px_44px_rgba(17,16,11,0.09)] backdrop-blur-[0.5px] sm:rounded-full lg:grid-cols-[1fr_auto]">
+            <div className="grid overflow-hidden rounded-[1.75rem] border border-white bg-white/[0.035] shadow-[0_14px_44px_rgba(17,16,11,0.09)] backdrop-blur-[0.5px] sm:rounded-full lg:grid-cols-[1fr_auto]">
               {/* No lg:border-r — the vertical rule between the field and the
                   button is gone. border-b is the stacked-layout separator on
                   phones, where the button sits underneath. */}
-              <div className="flex min-h-[60px] flex-col justify-center border-b border-white/24 px-5 py-3 transition-colors sm:border-b-0">
+              <div className="flex min-h-[54px] flex-col justify-center border-b border-white/24 px-[18px] py-[11px] transition-colors sm:border-b-0">
                 <label
                   htmlFor="trip-where-search"
                   className="sr-only"
@@ -1690,12 +1688,12 @@ export function FeaturedAdventures({
                 />
               </div>
 
-              <div className="flex items-center justify-end px-2.5 pb-2.5 sm:pb-2.5 lg:p-2.5">
+              <div className="flex items-center justify-end px-[9px] pb-[9px] sm:pb-[9px] lg:p-[9px]">
                 <button
                   type="submit"
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-6 text-xs uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
+                  className="inline-flex min-h-[43px] w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/5 px-[22px] text-xs uppercase text-white transition-colors hover:bg-white/14 lg:w-auto"
                 >
-                  <Search className="h-5 w-5" />
+                  <Search className="h-[18px] w-[18px]" />
                   <span>{searchCopy.search}</span>
                 </button>
               </div>
