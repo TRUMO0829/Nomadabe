@@ -96,10 +96,29 @@
   color-scheme: dark;
 }
 
+/*
+ * The default border colour has to live in @layer base.
+ *
+ * Unlayered normal declarations outrank every layer, so while this sat
+ * outside a layer it beat all of Tailwind's border-colour utilities no matter
+ * how specific they were — border-white, border-black and border-[#hex] alike
+ * all rendered as this gold. In base it is a default again: utilities win,
+ * and an element with a bare `border` still picks up the token.
+ */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--border);
+  }
+}
+
+/* Typography stays unlayered: these are !important, and for important
+   declarations the layer order reverses, so moving them would make them
+   harder to override rather than easier. */
 *,
 *::before,
 *::after {
-  border-color: var(--border);
   font-family: var(--site-font) !important;
   letter-spacing: 1.6px !important;
   word-spacing: 1.6px !important;
