@@ -404,11 +404,15 @@ function FeaturedTripsGrid({
                   />
                   <div className="absolute inset-0 bg-gradient-to-br from-black/48 via-black/18 to-black/4" />
                   <div className="absolute left-8 right-8 top-10 z-10 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] sm:left-10 sm:right-10 sm:top-12">
-                    <h3 className="max-w-[14ch] text-balance text-[clamp(1.75rem,4.2vw,3.25rem)] leading-[0.98] text-white">
+                    {/* Same title and summary sizing as the trip cards in
+                        DestinationDragCarousel. At clamp(1.75rem,4.2vw,3.25rem)
+                        a long title such as "CANTON FAIR АЯЛЛЫН БҮРТГЭЛ
+                        ЭХЭЛЛЭЭ" ran past the bottom of the card. */}
+                    <h3 className="trip-header-title trip-header-title--compact max-w-[80%] text-balance !text-[clamp(0.95rem,1.7vw,1.4rem)] !leading-[1.15] text-white">
                       {title}
                     </h3>
                     <div className="mt-5 h-px w-[min(22rem,78%)] bg-white/88" />
-                    <p className="mt-5 line-clamp-3 max-w-[32rem] text-xs leading-5 text-white sm:text-[13px] sm:leading-5">
+                    <p className="mt-5 line-clamp-3 max-w-[80%] text-xs leading-5 text-white sm:text-sm">
                       {summary}
                     </p>
                     <button
