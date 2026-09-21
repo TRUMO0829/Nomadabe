@@ -246,10 +246,10 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
                 style={{ background: "var(--primary)" }}
               >
-                <Award className="h-6 w-6" style={{ color: "var(--accent-text)" }} />
+                <Award className="h-6 w-6" style={{ color: "var(--accent)" }} />
               </span>
               <div>
-                <p className="text-xs tracking-[0.24em]" style={{ color: "var(--accent-text)" }}>
+                <p className="text-xs tracking-[0.24em] text-muted-foreground">
                   CERTIFICATE
                 </p>
                 <h3 className="mt-2 text-2xl leading-tight text-foreground">
@@ -299,7 +299,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
                 className="bg-card p-7 sm:p-9"
               >
-                <span className="text-sm tracking-[0.2em]" style={{ color: "var(--accent-text)" }}>
+                <span className="text-sm tracking-[0.2em] text-muted-foreground">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-4 text-xl leading-snug sm:text-2xl">{item.title}</h3>
@@ -333,7 +333,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                     className="inline-flex h-11 w-11 items-center justify-center rounded-full"
                     style={{ background: "var(--primary)" }}
                   >
-                    <Icon className="h-5 w-5" style={{ color: "var(--accent-text)" }} />
+                    <Icon className="h-5 w-5" style={{ color: "var(--accent)" }} />
                   </span>
                   <h3 className="mt-5 text-xl leading-snug sm:text-2xl">{item.title}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
@@ -391,7 +391,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                 </div>
                 <div className="mt-5 rounded-full border border-border bg-card px-7 py-4 shadow-[0_18px_50px_rgba(17,16,11,0.08)]">
                   <h3 className="text-lg font-medium">{member.name}</h3>
-                  <p className="mt-1 text-sm font-medium" style={{ color: "var(--accent-text)" }}>
+                  <p className="mt-1 text-sm font-medium text-muted-foreground">
                     {member.role}
                   </p>
                   {member.bio ? (
@@ -426,8 +426,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
 function Kicker({ children }: { children: React.ReactNode }) {
   return (
     <span
-      className="inline-flex items-center gap-2.5 text-xs tracking-[0.3em]"
-      style={{ color: "var(--accent-text)" }}
+      className="inline-flex items-center gap-2.5 text-xs tracking-[0.3em] text-muted-foreground"
     >
       <span className="h-px w-8" style={{ background: "var(--accent-text)" }} />
       {children}
@@ -456,9 +455,9 @@ function FaqRow({
           style={{ background: "var(--primary)" }}
         >
           {open ? (
-            <Minus className="h-4 w-4" style={{ color: "var(--accent-text)" }} />
+            <Minus className="h-4 w-4" style={{ color: "var(--accent)" }} />
           ) : (
-            <Plus className="h-4 w-4" style={{ color: "var(--accent-text)" }} />
+            <Plus className="h-4 w-4" style={{ color: "var(--accent)" }} />
           )}
         </span>
       </button>
