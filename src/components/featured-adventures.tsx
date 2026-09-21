@@ -1205,7 +1205,11 @@ function DestinationDragCarousel({
     >
       <div className="text-[#050505]">
         <div className="tours-list-copy mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
-          <h2 className="section-header-title tours-list-title max-w-[13ch] text-balance text-black">
+          {/* No width cap and no wrapping: 13ch is about 268px at the old
+              size, so a three-word heading like "МОНГОЛ ОРНООР АЯЛАХ" broke
+              onto three lines. The size comes down to keep the longest
+              heading on one line at phone width too. */}
+          <h2 className="section-header-title tours-list-title text-black">
             {title}
           </h2>
           <div className="tours-list-count mt-5 inline-flex border border-black bg-white px-3 py-2 text-xs uppercase text-black">
@@ -1319,7 +1323,7 @@ function StaysAndVillasSection({ stays }: { stays: StayOption[] }) {
               Вилла
             </p>
             <h2 className="site-heading mt-2 text-[clamp(1.5rem,3vw,2.6rem)] leading-tight text-[#11100b]">
-              Вилла
+              Вилла сонголтууд
             </h2>
           </div>
           <p className="max-w-xl text-sm leading-6 text-[#11100b]/58">

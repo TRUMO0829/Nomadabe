@@ -266,6 +266,17 @@ body :where(h1, h2, h3, h4, h5, h6, button, summary, label),
   text-transform: uppercase;
 }
 
+/* The /tours group headings. Declared after .section-header-title so it wins
+   on source order — both are one class deep and both !important, and the
+   Tailwind utility layer is emitted earlier in the sheet, so a !text-[...]
+   class on the element would silently lose. 13ch used to cap the width here,
+   which broke "МОНГОЛ ОРНООР АЯЛАХ" onto three lines. */
+.tours-list-title {
+  font-size: clamp(1.1rem, 1.9vw, 1.75rem) !important;
+  white-space: nowrap;
+  max-width: none;
+}
+
 .site-navbar .nav-text {
   font-weight: 200 !important;
 }
