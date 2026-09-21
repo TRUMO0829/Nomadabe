@@ -228,8 +228,8 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#D8D2C2]">
               {L(
-                "2023 оны холбооны шийдвэр, үйл ажиллагааны ангиллын дагуу Nomadabe Adventure Silkres ХХК нь олон улсын аялал жуулчлалын тур операторын чиглэлээр бүртгэлтэй.",
-                "Based on the association's 2023 certification and activity classification, Nomadabe Adventure Silkres LLC is recognized for international tour operator services."
+                "2023 оны холбооны шийдвэр, үйл ажиллагааны ангиллын дагуу Nomadabe Adventure Seekers ХХК нь олон улсын аялал жуулчлалын тур операторын чиглэлээр бүртгэлтэй.",
+                "Based on the association's 2023 certification and activity classification, Nomadabe Adventure Seekers LLC is recognized for international tour operator services."
               )}
             </p>
           </div>
@@ -247,7 +247,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                   CERTIFICATE
                 </p>
                 <h3 className="mt-2 text-2xl leading-tight text-[#FFFDF3]">
-                  Nomadabe Adventure Silkres ХХК
+                  Nomadabe Adventure Seekers ХХК
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-[#B8B2A2]">
                   {L(
