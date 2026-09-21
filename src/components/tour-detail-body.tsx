@@ -181,7 +181,29 @@ export function TourDetailBody({ adventure }: Props) {
                   </div>
                   <div>
                     <h4 className="text-xl font-medium">{step.title}</h4>
-                    <p className="mt-3 text-sm font-medium leading-7 text-black/76">{step.body}</p>
+                    {step.body ? (
+                      <p className="mt-3 text-sm font-medium leading-7 text-black/76">{step.body}</p>
+                    ) : null}
+                    {/* Admin-entered day/time rows. Without this the whole
+                        hour-by-hour programme stayed invisible on this page,
+                        even though the modal already showed it. */}
+                    {step.items && step.items.length > 0 ? (
+                      <ul className="mt-3 space-y-2">
+                        {step.items.map((item, index) => (
+                          <li
+                            key={index}
+                            className="flex gap-3 text-sm font-medium leading-7 text-black/76"
+                          >
+                            {item.time ? (
+                              <span className="shrink-0 font-semibold tabular-nums text-[#8a6f12]">
+                                {item.time}
+                              </span>
+                            ) : null}
+                            <span className="min-w-0">{item.text}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                 </div>
               ))}
