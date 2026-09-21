@@ -1262,10 +1262,15 @@ function DestinationDragCarousel({
                         {adventure.days} {dayLabel}
                       </span>
                     </p>
-                    <h3 className="trip-header-title trip-header-title--compact mt-1.5 max-w-[16ch] text-balance !text-[clamp(0.95rem,1.7vw,1.4rem)] !leading-[1.15] text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.45)]">
+                    {/* Title and summary share one 80% column, leaving 20% of
+                        the card clear. The title used to be capped at 16ch,
+                        which is measured in glyph widths and so ignored the
+                        1.6px letter-spacing — it came out near 64% of the card
+                        and broke a four-word title onto four lines. */}
+                    <h3 className="trip-header-title trip-header-title--compact mt-1.5 max-w-[80%] text-balance !text-[clamp(0.95rem,1.7vw,1.4rem)] !leading-[1.15] text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.45)]">
                       {text.title}
                     </h3>
-                    <p className="trip-copy-text mt-2 line-clamp-2 max-w-md text-xs leading-5 text-white/75 sm:text-sm">
+                    <p className="trip-copy-text mt-2 line-clamp-2 max-w-[80%] text-xs leading-5 text-white/75 sm:text-sm">
                       {text.summary}
                     </p>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
