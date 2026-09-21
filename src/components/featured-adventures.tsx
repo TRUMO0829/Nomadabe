@@ -283,6 +283,70 @@ function isCorporateAdventure(adventure: Adventure) {
   ].some((keyword) => corporateText.includes(keyword));
 }
 
+type TripGroup = "outbound" | "corporate" | "domestic";
+
+/**
+ * The group the admin asked for in the trip's "Ангилал" field, or null when
+ * the category doesn't name one (the built-in festival/leisure/custom values,
+ * say). Matching runs on the raw lowercased category rather than
+ * normalizeSearchText, because NFKD rewrites й into и and would quietly break
+ * a keyword like "байгууллага".
+ */
+function getChosenTripGroup(category: string): TripGroup | null {
+  const text = category.toLocaleLowerCase("mn");
+
+  if (!text.trim()) {
+    return null;
+  }
+
+  // Checked most specific first: "гадаад" names a direction, and a direction
+  // beats the corporate keyword guess below.
+  if (["гадаад", "outbound", "abroad"].some((word) => text.includes(word))) {
+    return "outbound";
+  }
+
+  if (["дотоод", "domestic"].some((word) => text.includes(word))) {
+    return "domestic";
+  }
+
+  if (
+    ["бизнес", "business", "байгууллага", "corporate", "үзэсгэлэн", "expo"].some((word) =>
+      text.includes(word)
+    )
+  ) {
+    return "corporate";
+  }
+
+  return null;
+}
+
+/*
+ * Which section a trip belongs to. An explicit category wins; otherwise these
+ * fall back to the country + keyword guess the page has always used, so trips
+ * with a category like "festival" or "custom" are grouped exactly as before.
+ * A trip can still land in two groups (a Mongolian business trip shows under
+ * both corporate and domestic) — only an explicit category narrows it to one.
+ */
+function isOutboundTrip(adventure: Adventure) {
+  const chosen = getChosenTripGroup(adventure.category);
+
+  return chosen
+    ? chosen === "outbound"
+    : adventure.country !== "Mongolia" && !isCorporateAdventure(adventure);
+}
+
+function isCorporateTrip(adventure: Adventure) {
+  const chosen = getChosenTripGroup(adventure.category);
+
+  return chosen ? chosen === "corporate" : isCorporateAdventure(adventure);
+}
+
+function isDomesticTrip(adventure: Adventure) {
+  const chosen = getChosenTripGroup(adventure.category);
+
+  return chosen ? chosen === "domestic" : adventure.country === "Mongolia";
+}
+
 const SECTION_COPY = {
   mn: {
     eyebrow: "Аяллууд",
@@ -1459,13 +1523,14 @@ export function FeaturedAdventures({
     const normalizedQuery = normalizeSearchText(query.trim());
 
     const matches = allAdventures.filter((adventure) => {
-      const isDomestic = adventure.country === "Mongolia";
-      const isCorporate = isCorporateAdventure(adventure);
+      const isDomestic = isDomesticTrip(adventure);
+      const isCorporate = isCorporateTrip(adventure);
+      const isOutbound = isOutboundTrip(adventure);
       const searchText = getAdventureSearchText(adventure);
       const matchesPageMode =
         pageMode === "all" ||
         (pageMode === "domestic" && isDomestic) ||
-        (pageMode === "outbound" && (!isDomestic || isCorporate));
+        (pageMode === "outbound" && (isOutbound || isCorporate));
 
       const matchesScope =
         scope === "all" ||
@@ -1510,14 +1575,9 @@ export function FeaturedAdventures({
   }, [allAdventures, pageMode, query, scope, sortMode]);
 
   const groupedFilteredAdventures = useMemo(() => {
-    const outbound = filteredAdventures.filter(
-      (adventure) =>
-        adventure.country !== "Mongolia" && !isCorporateAdventure(adventure)
-    );
-    const corporate = filteredAdventures.filter(isCorporateAdventure);
-    const domestic = filteredAdventures.filter(
-      (adventure) => adventure.country === "Mongolia"
-    );
+    const outbound = filteredAdventures.filter(isOutboundTrip);
+    const corporate = filteredAdventures.filter(isCorporateTrip);
+    const domestic = filteredAdventures.filter(isDomesticTrip);
 
     const groups =
       pageMode === "domestic"
