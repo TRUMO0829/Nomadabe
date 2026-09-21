@@ -359,7 +359,7 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
       {showTeam && (
         <Surface photo="/nomadabe-hero-panorama.webp">
           <Kicker>{copy.team.label}</Kicker>
-          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:max-w-4xl">
+          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {team.map((member, index) => (
               <motion.div
                 key={member.id}
@@ -388,19 +388,19 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
                       />
                       <div
                         aria-hidden="true"
-                        className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/25"
+                        className="absolute inset-0 bg-gradient-to-t from-[#0B0A07] via-[#0B0A07]/55 to-[#0B0A07]/25"
                       />
-                      <span className="relative text-6xl" style={{ color: "var(--accent-text)" }}>
+                      <span className="relative text-6xl" style={{ color: "var(--accent)" }}>
                         {member.name.charAt(0)}
                       </span>
                     </div>
                   )}
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-t from-background/62 via-transparent to-white/8"
+                    className="absolute inset-0 bg-gradient-to-t from-[#0B0A07]/62 via-transparent to-white/8"
                   />
                 </div>
-                <div className="mt-5 rounded-full border border-border bg-[#0B0A07]/44 px-7 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-[1px]">
+                <div className="mt-5 rounded-full border border-border bg-card px-7 py-4 shadow-[0_18px_50px_rgba(17,16,11,0.08)]">
                   <h3 className="text-lg font-medium">{member.name}</h3>
                   <p className="mt-1 text-sm font-medium" style={{ color: "var(--accent-text)" }}>
                     {member.role}
