@@ -310,17 +310,6 @@ export function AboutShowcase({ aboutSection, teamMembers }: AboutShowcaseProps)
         </Surface>
       )}
 
-      {/* ──────────────────── PHOTOGRAPHIC BREATHER ──────────────────── */}
-      {/* A dark full-bleed landscape between two runs of light reading copy.
-          It carries no text: its job is to keep the page photographic and to
-          give the eye somewhere to rest on a long scroll. */}
-      <Surface
-        tone="dark"
-        height="band"
-        photo="/hero-winter.webp"
-        hairline={false}
-      />
-
       {/* ───────────────────────── WORK ───────────────────────── */}
       {showWork && (
         <Surface>
