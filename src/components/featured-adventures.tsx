@@ -1658,7 +1658,8 @@ export function FeaturedAdventures({
         <div className="absolute inset-x-0 top-[42vh] z-30 px-6 sm:top-[44vh] lg:px-10">
           <form
             onSubmit={handleTripSearchSubmit}
-            className="relative mx-auto max-w-3xl text-white"
+            // 43.2rem is max-w-3xl (48rem) less 10%.
+            className="relative mx-auto max-w-[43.2rem] text-white"
           >
             <div className="grid overflow-hidden rounded-[1.75rem] border border-white/32 bg-white/[0.035] shadow-[0_14px_44px_rgba(17,16,11,0.09)] backdrop-blur-[0.5px] sm:rounded-full lg:grid-cols-[1fr_auto]">
               <div className="flex min-h-[60px] flex-col justify-center border-b border-white/24 px-5 py-3 transition-colors sm:border-b-0 lg:border-r">
@@ -1673,7 +1674,7 @@ export function FeaturedAdventures({
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder={searchCopy.wherePlaceholder}
-                  className="min-w-0 appearance-none border-0 bg-transparent p-0 text-sm text-white shadow-none outline-none [background:transparent] placeholder:text-white/62 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-lg"
+                  className="min-w-0 appearance-none border-0 bg-transparent p-0 text-sm text-white shadow-none outline-none [background:transparent] placeholder:text-white/50 selection:bg-white/20 focus:bg-transparent focus:ring-0 lg:text-lg"
                 />
               </div>
 
