@@ -36,36 +36,66 @@ const ITINERARY_SYSTEM = [
   "All human-readable text you produce must be in Mongolian (Cyrillic).",
 ].join(" ");
 
-export async function generateItinerary(trip: Adventure): Promise<AdventureItineraryStep[]> {
-  const days = Math.max(1, Math.min(30, Math.round(trip.days) || 1));
+const STRUCTURE_EXAMPLE = JSON.stringify([
+  {
+    day: "1",
+    title: "Өдрийн гарчиг",
+    items: [{ time: "09:00", text: "Үйл ажиллагааны тайлбар" }],
+  },
+]);
 
-  const prompt = [
+/**
+ * With `source` — usually rows pasted out of a Google Sheet — the model only
+ * restructures what it was given. Without it, it drafts a programme from the
+ * trip's own fields.
+ */
+export async function generateItinerary(
+  trip: Adventure,
+  source = ""
+): Promise<AdventureItineraryStep[]> {
+  const days = Math.max(1, Math.min(30, Math.round(trip.days) || 1));
+  const pasted = source.trim();
+
+  const context = [
     `Тур: "${trip.title}"`,
     `Чиглэл: ${trip.location}, ${trip.country}`,
     `Хугацаа: ${days} өдөр`,
     trip.summary ? `Товч тайлбар: ${trip.summary}` : "",
-    trip.includes.length ? `Багцад багтах: ${trip.includes.join(", ")}` : "",
-    trip.idealFor.length ? `Хэнд тохиромжтой: ${trip.idealFor.join(", ")}` : "",
-    "",
-    `Энэ аяллын ${days} өдрийн хөтөлбөрийг бичнэ үү.`,
-    "Өдөр бүрд 3-5 цагийн хуваарьтай үйл ажиллагаа оруул.",
+  ].filter(Boolean);
+
+  const instruction = pasted
+    ? [
+        "",
+        "Доорх нь хүснэгтээс хуулсан аяллын хуваарь:",
+        "-----",
+        pasted.slice(0, 12000),
+        "-----",
+        "",
+        "Үүнийг доорх JSON бүтцэд хөрвүүлнэ үү.",
+        "ЗӨВХӨН дээрх текстэд байгаа мэдээллийг ашигла — шинэ өдөр, шинэ үйл",
+        "ажиллагаа, байхгүй цаг зохиож нэмэхгүй. Баганын дараалал ямар ч байж",
+        "болно; өдөр, цаг, тайлбарыг нь өөрөө ялгаж ойлгоорой.",
+        "Цагийг эх хэвээр нь үлдээ (жишээ: 09:00, 22:30-23:00).",
+      ]
+    : [
+        "",
+        `Энэ аяллын ${days} өдрийн хөтөлбөрийг бичнэ үү.`,
+        "Өдөр бүрд 3-5 цагийн хуваарьтай үйл ажиллагаа оруул.",
+      ];
+
+  const prompt = [
+    ...context,
+    ...instruction,
     "",
     "Яг энэ JSON бүтцээр буцаа (өөр юу ч бичихгүй):",
-    JSON.stringify([
-      {
-        day: "1",
-        title: "Өдрийн гарчиг",
-        items: [{ time: "09:00", text: "Үйл ажиллагааны тайлбар" }],
-      },
-    ]),
-  ]
-    .filter(Boolean)
-    .join("\n");
+    STRUCTURE_EXAMPLE,
+  ].join("\n");
 
   const text = await runReplicateText({
     system: ITINERARY_SYSTEM,
     prompt,
-    maxTokens: 3000,
+    // A pasted multi-day schedule can be long, and the reply repeats all of it.
+    maxTokens: pasted ? 6000 : 3000,
   });
 
   const steps = normalizeItinerary(parseJsonFromModelText(text));

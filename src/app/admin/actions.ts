@@ -138,7 +138,10 @@ export async function generateItineraryAction(formData: FormData) {
 
   const error = await getActionError(async () => {
     const trip = await requireTrip(formData);
-    await upsertTrip({ ...trip, itinerary: await generateItinerary(trip) });
+    const pasted = formData.get("sheetSource");
+    const source = typeof pasted === "string" ? pasted : "";
+
+    await upsertTrip({ ...trip, itinerary: await generateItinerary(trip, source) });
   });
 
   if (error) {
@@ -149,7 +152,7 @@ export async function generateItineraryAction(formData: FormData) {
   revalidatePath("/tours");
   revalidatePath("/tours/[slug]", "page");
   revalidatePath("/admin");
-  redirectWithStatus(`Хөтөлбөр ${getReplicateModel()} загвараар үүслээ. Шалгаад засна уу.`);
+  redirectWithStatus(`Хөтөлбөр ${getReplicateModel()} загвараар бэлдлээ. Шалгаад засна уу.`);
 }
 
 export async function generateTranslationsAction(formData: FormData) {

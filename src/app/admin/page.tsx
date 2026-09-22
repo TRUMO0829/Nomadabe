@@ -559,17 +559,33 @@ function ProgramEditor({
             энэ хуудсанд буцаж харагдана — шалгаад засаад дахин хадгална уу.
             Нэг удаад 1 минут хүртэл үргэлжилж болно.
           </p>
+          <form action={generateItineraryAction} className="mt-3">
+            <input type="hidden" name="id" defaultValue={trip.id} />
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                Google Sheets-ээс хуулсан хуваарь
+              </span>
+              <textarea
+                name="sheetSource"
+                rows={4}
+                placeholder={"Хүснэгтээс нүднүүдээ хуулаад энд буулгана уу.\nЖишээ:\n1\t22:30-23:00\tЧингис хаан нисэх буудал дээр ирэх\n2\t00:50-04:50\tУлаанбаатар - Гуанжоу нислэг"}
+                className="mt-2 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 font-mono text-xs outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
+              />
+              <span className="mt-1 block text-xs font-medium text-[var(--muted-foreground)]">
+                Буулгасан бол зөвхөн үүнийг эмхэтгэнэ. Хоосон орхивол аяллын
+                мэдээлэлд тулгуурлан шинээр зохионо.
+              </span>
+            </label>
+            <button
+              type="submit"
+              className="mt-3 inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--primary)] hover:border-[var(--foreground)]"
+            >
+              <CalendarDays className="h-4 w-4" />
+              Хөтөлбөр бэлдэх
+            </button>
+          </form>
+
           <div className="mt-3 flex flex-wrap gap-3">
-            <form action={generateItineraryAction}>
-              <input type="hidden" name="id" defaultValue={trip.id} />
-              <button
-                type="submit"
-                className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--primary)] hover:border-[var(--foreground)]"
-              >
-                <CalendarDays className="h-4 w-4" />
-                Хөтөлбөр үүсгэх
-              </button>
-            </form>
             <form action={generateTranslationsAction}>
               <input type="hidden" name="id" defaultValue={trip.id} />
               <button
