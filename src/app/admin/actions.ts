@@ -16,11 +16,15 @@ import {
   upsertFactsFromForm,
   upsertFaqFromForm,
   upsertTeamFromForm,
+  upsertTrip,
+  getTrips,
 } from "@/lib/server/admin-store";
 import { getInquiries, isInquiryStatus, updateInquiryStatus } from "@/lib/server/inquiries";
 import { sendEmail, sendEmailFromForm } from "@/lib/server/mail";
 import { getErrorMessage } from "@/lib/server/supabase-rest";
 import { isTripTranslationConfigured } from "@/lib/server/translate-trip";
+import { generateItinerary, generateTranslations } from "@/lib/server/ai-trip";
+import { getReplicateModel, isReplicateConfigured, getReplicateSetupMessage } from "@/lib/server/replicate";
 
 export async function saveTripAction(formData: FormData) {
   await assertAdminAction();
@@ -114,6 +118,84 @@ export async function deleteTripAction(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/api/trips");
   redirectWithStatus("Хөтөлбөр устгагдлаа.");
+}
+
+/*
+ * The two model-backed admin actions. Each writes straight to the trip and
+ * redirects, so the admin lands back on the form with the result in place and
+ * can edit it before the next save — the generated text is a draft, not an
+ * answer.
+ *
+ * Both can take a minute: Replicate cold-starts a model that has not run
+ * recently, and at one or two trips a month every call is a cold start.
+ */
+export async function generateItineraryAction(formData: FormData) {
+  await assertAdminAction();
+
+  if (!isReplicateConfigured()) {
+    redirectWithStatus(`Алдаа: ${getReplicateSetupMessage()}`);
+  }
+
+  const error = await getActionError(async () => {
+    const trip = await requireTrip(formData);
+    await upsertTrip({ ...trip, itinerary: await generateItinerary(trip) });
+  });
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/tours");
+  revalidatePath("/tours/[slug]", "page");
+  revalidatePath("/admin");
+  redirectWithStatus(`Хөтөлбөр ${getReplicateModel()} загвараар үүслээ. Шалгаад засна уу.`);
+}
+
+export async function generateTranslationsAction(formData: FormData) {
+  await assertAdminAction();
+
+  if (!isReplicateConfigured()) {
+    redirectWithStatus(`Алдаа: ${getReplicateSetupMessage()}`);
+  }
+
+  const error = await getActionError(async () => {
+    const trip = await requireTrip(formData);
+    const generated = await generateTranslations(trip);
+
+    await upsertTrip({
+      ...trip,
+      // Generated languages replace their old entries; anything the model
+      // skipped keeps whatever was there.
+      translations: { ...(trip.translations ?? {}), ...generated },
+    });
+  });
+
+  if (error) {
+    redirectWithStatus(error);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/tours");
+  revalidatePath("/tours/[slug]", "page");
+  revalidatePath("/admin");
+  redirectWithStatus(`Орчуулга ${getReplicateModel()} загвараар үүслээ. Шалгаад засна уу.`);
+}
+
+async function requireTrip(formData: FormData) {
+  const id = formData.get("id");
+
+  if (typeof id !== "string" || !id) {
+    throw new Error("Аяллын дугаар олдсонгүй.");
+  }
+
+  const trip = (await getTrips()).find((item) => item.id === id);
+
+  if (!trip) {
+    throw new Error("Аялал олдсонгүй.");
+  }
+
+  return trip;
 }
 
 export async function saveSiteSettingsAction(formData: FormData) {

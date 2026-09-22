@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Gauge,
+  Globe,
   HelpCircle,
   Inbox,
   LayoutDashboard,
@@ -42,6 +43,8 @@ import {
 import {
   deleteTripAction,
   emailLatestInquiryAction,
+  generateItineraryAction,
+  generateTranslationsAction,
   logoutAdminAction,
   refreshAdminAction,
   saveSiteSettingsAction,
@@ -544,6 +547,42 @@ function ProgramEditor({
       </summary>
       <div className="border-t border-[var(--border)] p-4">
         <TripForm mode="edit" trip={trip} categoryOptions={categoryOptions} />
+
+        {/* Separate forms: these sit outside TripForm because a form cannot
+            nest, and each writes to the trip on its own. */}
+        <div className="mt-4 rounded-md border border-dashed border-[var(--accent)] bg-[var(--muted)]/40 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+            AI туслах
+          </p>
+          <p className="mt-2 text-sm font-medium leading-6 text-[var(--muted-foreground)]">
+            Replicate дээрх загвараар ноорог үүсгэнэ. Үр дүн шууд хадгалагдаж,
+            энэ хуудсанд буцаж харагдана — шалгаад засаад дахин хадгална уу.
+            Нэг удаад 1 минут хүртэл үргэлжилж болно.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <form action={generateItineraryAction}>
+              <input type="hidden" name="id" defaultValue={trip.id} />
+              <button
+                type="submit"
+                className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--primary)] hover:border-[var(--foreground)]"
+              >
+                <CalendarDays className="h-4 w-4" />
+                Хөтөлбөр үүсгэх
+              </button>
+            </form>
+            <form action={generateTranslationsAction}>
+              <input type="hidden" name="id" defaultValue={trip.id} />
+              <button
+                type="submit"
+                className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--primary)] hover:border-[var(--foreground)]"
+              >
+                <Globe className="h-4 w-4" />
+                Орчуулга үүсгэх
+              </button>
+            </form>
+          </div>
+        </div>
+
         <form action={deleteTripAction} className="mt-3">
           <input type="hidden" name="id" defaultValue={trip.id} />
           <ConfirmSubmitButton
